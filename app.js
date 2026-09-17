@@ -651,8 +651,9 @@ const GALLERY_COLLECTION_FILTER_QUERY_PARAM = "collection";
 const GALLERY_TRAIT_CATEGORY_QUERY_PARAM = "trait";
 const GALLERY_TRAIT_VALUE_QUERY_PARAM = "trait-value";
 const GALLERY_TRAIT_COLLECTION_QUERY_PARAM = "trait-collection";
-const WALLET_ROUTE_ADDRESS = getWalletAddressFromPathname(window.location.pathname);
-const WALLET_AUTH_API_BASE_URL = getWalletAuthApiBaseUrl();
+const IS_SHOWROOM = /^\/show\/?$/.test(window.location.pathname);
+let WALLET_ROUTE_ADDRESS = getWalletAddressFromPathname(window.location.pathname);
+const WALLET_AUTH_API_BASE_URL = IS_SHOWROOM ? WALLET_PUBLIC_API_BASE_URL : getWalletAuthApiBaseUrl();
 const WALLET_BINDER_DIRECTORY_ARRIVAL = readWalletBinderDirectoryArrival(WALLET_ROUTE_ADDRESS);
 
 function usesEvilBinderPresentation() {
@@ -1766,6 +1767,171 @@ async function init() {
   });
   preloadAllConfiguredBackTextures().catch(console.error);
   if (!galleryOpen) startCardRenderLoop();
+  if (IS_SHOWROOM) {
+    const { initShowroom } = await import("./showroom.js");
+    await initShowroom(await createShowroomBridge());
+  }
+}
+
+// Showroom prefetching is deliberately detached from active wallet/render state.
+async function createShowroomBridge() {
+  const { createShowroomCache } = await import("./showroom-cache.mjs");
+  const width = BINDER_COVER_OUTER_X - BINDER_COVER_SPINE_WIDTH / 2;
+  const height = BINDER_PAGE_HEIGHT + BINDER_COVER_VERTICAL_OVERHANG;
+  const getProfile = createShowroomCache(address => getPublicWalletBinder(
+    WALLET_PUBLIC_API_BASE_URL, address, { credentials: "omit" },
+  ));
+  const getHoldings = createShowroomCache(address => fetchLiveWalletHoldingsPayload(address, WALLET_PUBLIC_API_BASE_URL));
+  const getArtwork = createShowroomCache(async address => {
+    const profile = await getProfile(address);
+    const settings = normalizeBinderCoverSettings(profile.cover);
+    const [front, back, inside] = await Promise.all([
+      createBinderCoverSurfaceTexture(settings, "front", width, height),
+      createBinderCoverSurfaceTexture(settings, "back", width, height),
+      createShowroomInsideTexture(settings, width, height),
+    ]);
+    return { settings, front, back, inside };
+  }, { capacity: 16, dispose: artwork => {
+    artwork.front.dispose(); artwork.back.dispose(); artwork.inside.dispose();
+  } });
+  const getPrepared = createShowroomCache(async address => {
+    const [profile, holdings] = await Promise.all([
+      getProfile(address), getHoldings(address), ensureAllCollectionCards(),
+    ]);
+    const indexes = new Set(), matchedMints = new Map();
+    addWalletCardMatches(indexes, matchedMints, [
+      ...getCardMatchesForMints(holdings.mints),
+      ...getCardMatchesForReferences(holdings.cardRefs),
+    ]);
+    const ordered = orderWalletCardIndexes([...indexes], profile.cardOrder);
+    return { profile, holdings, result: { indexes: ordered, matchedMints } };
+  });
+  const warmCards = createShowroomCache(async address => {
+    const { result } = await getPrepared(address);
+    // Just the opening spread; the existing bounded texture cache handles later pages.
+    await Promise.allSettled(result.indexes.slice(0, BINDER_SIDE_SLOTS).map(index => getBinderTexture(CARDS[index])));
+  });
+  void ensureAllCollectionCards().catch(() => {});
+  return {
+    list: async cursor => {
+      const payload = await getPublicWalletBinders(WALLET_PUBLIC_API_BASE_URL, { limit: 60, cursor, version: "2" });
+      return { ...payload, binders: await getNonemptyWalletBinderDirectoryEntries(payload.binders || []) };
+    },
+    placeholder: entry => createShowroomBinderModel({ settings: normalizeBinderCoverSettings(entry.cover), front: null, back: null }, entry.supportedCardCount || entry.savedCardCount || 1),
+    model: async entry => {
+      const profile = await getProfile(entry.walletAddress);
+      const settings = normalizeBinderCoverSettings(profile.cover);
+      const [front, back] = await Promise.all(["front", "back"].map(surface => (
+        getBinderCoverSurfaceTextureKey(settings, surface)
+          ? createBinderCoverSurfaceTexture(settings, surface, width, height)
+          : null
+      )));
+      const model = createShowroomBinderModel({ settings, front, back }, entry.supportedCardCount || entry.savedCardCount || 1);
+      model.userData.ownedTextures = [front, back].filter(Boolean);
+      return model;
+    },
+    prefetch: address => Promise.all([getPrepared(address), getArtwork(address), warmCards(address)]),
+    open: async address => {
+      const [{ profile, holdings, result }, artwork] = await Promise.all([getPrepared(address), getArtwork(address)]);
+      WALLET_ROUTE_ADDRESS = address;
+      primeWalletBinderRoute(address);
+      walletRouteProfile = profile;
+      refreshWalletBinderCoverRendering();
+      // Active view owns clones: its cleanup must not dispose showroom textures.
+      binderWalletCoverArtworkSource = getBinderCoverSurfaceTextureKey(artwork.settings, "front");
+      binderWalletCoverArtworkTexture = artwork.front.clone();
+      binderWalletBackCoverArtworkSource = getBinderCoverSurfaceTextureKey(artwork.settings, "back");
+      binderWalletBackCoverArtworkTexture = artwork.back.clone();
+      binderIntroNoteTexture = artwork.inside.clone();
+      walletSwagPackAssets = normalizeWalletSwagPackAssets(holdings.swagPackAssets);
+      walletHoldingsLastFetchedAt = Date.now();
+      walletRouteLoading = false;
+      applyWalletCardFilter(address, result, {
+        cardOrder: profile.cardOrder, tradeCardIds: profile.tradeCardIds, startAtFrontCover: true,
+      });
+      setGalleryOpen(true);
+      setBinderTableView(false, { immediate: true });
+      scheduleWalletHoldingsRefresh();
+    },
+    pickupFrame: () => {
+      resizeBinderRenderer();
+      // setGalleryOpen resets the root's horizontal offset. Apply the full
+      // closed-cover pose synchronously before projecting the pickup target;
+      // waiting for the next scheduled render measures a shifted cover.
+      renderBinderSceneOnce({ includePreload: false, immediateCamera: true });
+      binderScene.updateMatrixWorld(true);
+      binderCamera.updateMatrixWorld(true);
+      const mesh = binderShellState.walletCoverArtwork;
+      const rect = els.binderCanvas.getBoundingClientRect();
+      const project = (x, y) => {
+        const point = mesh.localToWorld(new THREE.Vector3(x, y, 0)).project(binderCamera);
+        return {
+          x: (rect.left + (point.x + 1) * rect.width / 2) / innerWidth * 2 - 1,
+          y: 1 - (rect.top + (1 - point.y) * rect.height / 2) / innerHeight * 2,
+        };
+      };
+      return { center: project(0, 0), top: project(0, height / 2), bottom: project(0, -height / 2) };
+    },
+    close: () => {
+      if (walletHoldingsRefreshTimer) clearTimeout(walletHoldingsRefreshTimer);
+      WALLET_ROUTE_ADDRESS = "";
+      setGalleryOpen(true);
+      resetBinderGalleryPosition();
+      document.title = "Show floor — cards.art";
+    },
+  };
+}
+
+async function createShowroomInsideTexture(settings, width, height) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 1024; canvas.height = Math.round(1024 * height / width);
+  const context = canvas.getContext("2d");
+  const bounds = drawWalletBinderIntroNote(context, {
+    settings, fontStack: SITE_FONT_STACK, textFillStyle: "rgba(156, 153, 146, 0.74)",
+  });
+  const images = await Promise.all(settings.stickers.filter(sticker => sticker.surface === "inside").map(async sticker => {
+    try { return { sticker, image: await loadTextureImage(sticker.imageUrl) }; } catch { return null; }
+  }));
+  for (const entry of images) if (entry) drawBinderCoverStickerImage(context, entry.sticker, entry.image);
+  const texture = configureDisplayTexture(new THREE.CanvasTexture(canvas));
+  texture.userData.linkBounds = bounds.linkBounds;
+  texture.userData.focusBounds = bounds.focusBounds;
+  return texture;
+}
+
+function createShowroomArtworkMesh(texture, width, height) {
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(width, height), new THREE.MeshBasicMaterial({
+    map: texture, transparent: true, toneMapped: false, depthWrite: false,
+    polygonOffset: true, polygonOffsetFactor: -1,
+  }));
+  mesh.visible = Boolean(texture);
+  return mesh;
+}
+
+function createShowroomBinderModel(artwork, cardCount) {
+  const state = createBinderCoverShellModel({ showroomCover: artwork });
+  applyBinderShellClosureGeometry(state, -1);
+  state.walletCoverArtwork.name = "showroom-front-cover";
+  state.walletCoverArtwork.renderOrder = 2;
+  state.walletBackCoverArtwork.renderOrder = 2;
+  // The same shell geometry, cover grain, artwork, spine arc and proportions as the viewer.
+  const model = new THREE.Group();
+  const shell = state.shell;
+  shell.position.x = -BINDER_CLOSED_COVER_CENTER_X;
+  shell.position.z = -BINDER_COVER_Z + BINDER_COVER_THICKNESS / 2;
+  model.add(shell);
+  const leaves = Math.min(10, Math.max(1, Math.ceil(cardCount / BINDER_PAGE_SLOTS)));
+  const pageMaterial = new THREE.MeshStandardMaterial({ color: 0x282d2d, roughness: .56, metalness: .08 });
+  for (let i = 0; i < leaves; i++) {
+    const leaf = new THREE.Mesh(createRoundedCoreGeometry(
+      BINDER_PAGE_WIDTH, BINDER_PAGE_HEIGHT, .018, .045,
+    ), pageMaterial);
+    leaf.position.set(BINDER_PAGE_WIDTH / 2, 0, -.20 + i * .023);
+    shell.add(leaf);
+  }
+  model.scale.setScalar(.94 / state.coverHeight);
+  model.traverse(object => { if (object.isMesh) { object.castShadow = true; object.receiveShadow = true; } });
+  return model;
 }
 
 async function prepareRestoredLazyData(state) {
@@ -7647,7 +7813,7 @@ async function loadWalletBinderDirectory({ reset = false } = {}) {
   }
 }
 
-async function getNonemptyWalletBinderDirectoryEntries(entries, token) {
+async function getNonemptyWalletBinderDirectoryEntries(entries, token = null) {
   if (!entries.length) return [];
   const checked = new Array(entries.length);
   const unresolvedEntries = [];
@@ -7674,7 +7840,7 @@ async function getNonemptyWalletBinderDirectoryEntries(entries, token) {
     while (nextIndex < unresolvedEntries.length) {
       const unresolved = unresolvedEntries[nextIndex];
       nextIndex += 1;
-      if (token !== walletBinderDirectoryToken) return;
+      if (token !== null && token !== walletBinderDirectoryToken) return;
       const { entry, index } = unresolved;
       try {
         const cardCount = await getWalletBinderDirectoryCardCount(entry.walletAddress);
@@ -11392,6 +11558,7 @@ async function loadWalletBinderRoute(address) {
       refreshLiveCardStatuses({ render: false }).catch(() => null),
     ]);
     walletRouteProfile = profile;
+    refreshWalletBinderCoverRendering();
     const result = await findWalletCardIndexes(address);
     walletHoldingsLastFetchedAt = Date.now();
     walletRouteLoading = false;
@@ -11400,7 +11567,7 @@ async function loadWalletBinderRoute(address) {
     applyWalletCardFilter(address, result, {
       cardOrder: profile?.cardOrder,
       tradeCardIds: profile?.tradeCardIds,
-      startAtFrontCover: WALLET_BINDER_DIRECTORY_ARRIVAL,
+      startAtFrontCover: IS_SHOWROOM || WALLET_BINDER_DIRECTORY_ARRIVAL,
     });
     if (WALLET_BINDER_DIRECTORY_ARRIVAL) {
       animateWalletBinderDirectoryArrival().catch(() => {
@@ -11510,7 +11677,7 @@ function syncGlobalTradeMarks(previousIds, nextIds) {
 }
 
 async function getWalletBinderProfile(address) {
-  if (WALLET_BINDER_DIRECTORY_ARRIVAL) {
+  if (IS_SHOWROOM || WALLET_BINDER_DIRECTORY_ARRIVAL) {
     return getPublicWalletBinder(WALLET_PUBLIC_API_BASE_URL, address, {
       credentials: "omit",
     });
@@ -11656,6 +11823,7 @@ function dismissWalletBinderDirectoryArrivalBridge() {
 }
 
 function ensureWalletCanonicalLink(address) {
+  if (IS_SHOWROOM) return;
   let canonical = document.querySelector('link[rel="canonical"]');
   if (!canonical) {
     canonical = document.createElement("link");
@@ -15165,6 +15333,7 @@ function isBinderTableViewActive() {
 }
 
 function toggleBinderTableView() {
+  if (IS_SHOWROOM) { window.dispatchEvent(new Event("showroom-return")); return; }
   if (isBinderFocusView() || binderEvilTableSwapState) return;
   setBinderTableView(binderTableViewTarget < 0.5);
 }
@@ -15377,7 +15546,7 @@ function updateBinderItems(indexes) {
     clearBinderFocus({ silent: true });
   }
 
-  const nextKey = indexes.map((index) => (
+  const nextKey = `${WALLET_ROUTE_ADDRESS || ACTIVE_COLLECTION_ID}\u001e` + indexes.map((index) => (
     `${favoriteKey(index)}:${getBinderCardStickerKinds(CARDS[index]).join(",")}`
   )).join("\u001f");
   if (nextKey === binderIndexesKey) {
@@ -15466,9 +15635,10 @@ function createBinderCoverShellModel({
   collectionId = ACTIVE_COLLECTION_ID,
   includeIntroNote = false,
   emblemActive = false,
+  showroomCover = null,
 } = {}) {
   const shell = new THREE.Group();
-  const coverMaterial = createBinderCoverMaterial();
+  const coverMaterial = createBinderCoverMaterial(showroomCover?.settings);
   const ringMaterial = new THREE.MeshStandardMaterial({
     color: 0x2a2927,
     roughness: 0.82,
@@ -15503,7 +15673,7 @@ function createBinderCoverShellModel({
   const leftCover = new THREE.Mesh(leftCoverGeometry, coverMaterial);
   leftCover.position.x = -coverWidth / 2;
   leftPivot.add(leftCover);
-  const frontCoverEmblem = createBinderFrontCoverEmblem(
+  const frontCoverEmblem = showroomCover ? new THREE.Group() : createBinderFrontCoverEmblem(
     coverWidth,
     coverHeight,
     collectionId,
@@ -15516,7 +15686,9 @@ function createBinderCoverShellModel({
     -BINDER_COVER_THICKNESS / 2 - 0.012,
   );
   leftPivot.add(frontCoverEmblem);
-  const walletCoverArtwork = createBinderWalletCoverArtwork(
+  const walletCoverArtwork = showroomCover
+    ? createShowroomArtworkMesh(showroomCover.front, coverWidth, coverHeight)
+    : createBinderWalletCoverArtwork(
     coverWidth,
     coverHeight,
     { active: emblemActive },
@@ -15544,7 +15716,9 @@ function createBinderCoverShellModel({
   const rightCover = new THREE.Mesh(rightCoverGeometry, coverMaterial.clone());
   rightCover.position.x = coverWidth / 2;
   rightPivot.add(rightCover);
-  const walletBackCoverArtwork = createBinderWalletBackCoverArtwork(
+  const walletBackCoverArtwork = showroomCover
+    ? createShowroomArtworkMesh(showroomCover.back, coverWidth, coverHeight)
+    : createBinderWalletBackCoverArtwork(
     coverWidth,
     coverHeight,
     { active: emblemActive },
@@ -15990,9 +16164,9 @@ function getBinderOutsideCoverTextSettings(settings, surface = "front") {
   };
 }
 
-async function createBinderCoverSurfaceTexture(settings, surfaceName, coverWidth, coverHeight) {
+async function createBinderCoverSurfaceTexture(settings, surfaceName, coverWidth, coverHeight, resolution = 1024) {
   const surface = document.createElement("canvas");
-  surface.width = 1024;
+  surface.width = resolution;
   surface.height = Math.max(1, Math.round(surface.width * coverHeight / coverWidth));
   const context = surface.getContext("2d", { alpha: true });
   context.clearRect(0, 0, surface.width, surface.height);
@@ -22695,12 +22869,16 @@ function resizeBinderRenderer() {
   updateBinderPageControls();
 }
 
-function createBinderCoverMaterial() {
-  const palette = getBinderCoverColorPalette();
+function createBinderCoverMaterial(coverSettings = null) {
+  const palette = coverSettings ? {
+    custom: coverSettings.baseColor !== BINDER_COVER_DEFAULT_COLOR_HEX,
+    base: coverSettings.baseColor !== BINDER_COVER_DEFAULT_COLOR_HEX
+      ? new THREE.Color(coverSettings.baseColor) : BINDER_COVER_BASE_COLOR,
+  } : getBinderCoverColorPalette();
   const map = palette.custom
     ? createBinderCustomCoverTexture()
     : createBinderCoverTexture();
-  const colorFaithful = Boolean(WALLET_ROUTE_ADDRESS);
+  const colorFaithful = Boolean(coverSettings || WALLET_ROUTE_ADDRESS);
   const material = new THREE.MeshStandardMaterial({
     color: colorFaithful ? 0x000000 : palette.base,
     map,
@@ -23030,10 +23208,9 @@ function drawBinderIntroNoteSurface(ctx) {
 
 function drawWalletBinderIntroNote(
   ctx,
-  { fontStack, textFillStyle },
+  { fontStack, textFillStyle, settings = normalizeBinderCoverSettings(walletRouteProfile?.cover) },
 ) {
   const { width, height } = ctx.canvas;
-  const settings = normalizeBinderCoverSettings(walletRouteProfile?.cover);
   if (!settings.insideText) {
     return {
       linkBounds: [],
@@ -25217,6 +25394,7 @@ function loadSessionViewState() {
 }
 
 function saveSessionViewState() {
+  if (IS_SHOWROOM) return;
   try {
     sessionStorage.setItem(SESSION_VIEW_STATE_KEY, JSON.stringify(getSessionViewState()));
   } catch {
