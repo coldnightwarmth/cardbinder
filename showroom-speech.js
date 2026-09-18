@@ -3,7 +3,7 @@ import * as THREE from 'three';
 export function createShowroomSpeech(figure) {
   const bubble=document.createElement('div');
   bubble.className='showroom-speech';bubble.hidden=true;
-  bubble.textContent="Hey- You like cards? These three binders here contain cards created by the artist Evil Biscuit. They're pretty sick ngl. Bummed I missed the mints... Buncha other cool cards in all the other binders here too! Anyway, enjoy the show.";
+  bubble.innerHTML="Hey- You like cards? These three binders here contain cards created by the artist called <strong>Evil Biscuit</strong>. They're <em>pretty sick</em> ngl. Bummed I missed the mints... Buncha other cool cards in all the other binders here too! Anyway, enjoy the show. :)";
   document.body.append(bubble);
   const ray=new THREE.Raycaster(), hit=new THREE.Vector3(), anchor=new THREE.Vector3();
   const bounds=new THREE.Box3(), low=new THREE.Vector3(), high=new THREE.Vector3();

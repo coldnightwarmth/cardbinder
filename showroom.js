@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { createShowroomSpeech } from './showroom-speech.js?v=4';
+import { createShowroomSpeech } from './showroom-speech.js?v=6';
 import { mergeGeometries } from './vendor/BufferGeometryUtils.js';
 import { createResolutionBudget } from './showroom-performance.mjs';
 import { createShowroomRipples } from './showroom-ripples.js?v=soft-2';
@@ -21,7 +21,16 @@ export async function initShowroom(bridge) {
   const leave = document.createElement('a');
   leave.id='showroomLeave'; leave.textContent='Leave Show Room'; leave.hidden=true;
   leave.href='/';
-  const returnTo=new URLSearchParams(location.search).get('returnTo') || document.referrer;
+  const legacyReturn=new URLSearchParams(location.search).get('returnTo');
+  let savedReturn='';
+  try {
+    if(legacyReturn) sessionStorage.setItem('cards:showroom-return',legacyReturn);
+    savedReturn=sessionStorage.getItem('cards:showroom-return') || '';
+  } catch {}
+  const returnTo=legacyReturn || savedReturn || document.referrer;
+  if(location.pathname!=='/show' || location.search || location.hash) {
+    history.replaceState(history.state,'','/show');
+  }
   try {
     const destination=new URL(returnTo || '/',location.origin);
     if(destination.origin===location.origin && !/^\/show\/?$/.test(destination.pathname)) {
@@ -727,11 +736,12 @@ export async function initShowroom(bridge) {
     ray.intersectObjects(pickTargets,true,pickHits);
     return pickHits[0]?.object.userData.binder || null;
   }
+  window.addEventListener('scene-transition-start',()=>{keys.clear();releaseTouchInputs();document.exitPointerLock?.();});
   let previous=performance.now();
   function frame(now) {
     const frameMs=now-previous;
     const dt=Math.min(frameMs/1000,.04);previous=now;
-    if(document.hidden) {requestAnimationFrame(frame);return;}
+    if(document.hidden || window.cardSceneTransition?.departing) {requestAnimationFrame(frame);return;}
     if(!active && !busy) {
       const ratio=resolution.sample(frameMs);
       if(ratio!==null) {renderer.setPixelRatio(ratio);sceneDirty=true;}
@@ -765,5 +775,17 @@ export async function initShowroom(bridge) {
   setInterval(()=>{warmNearby();if(!document.hidden)updateNearbyModels();},1000);
   for(const entry of bridge.collections) addBinder(entry);
   updateNearbyModels();
-  void refresh(); setInterval(()=>{if(!document.hidden)void refresh();},60000);
+  const initialDirectory=refresh();
+  setInterval(()=>{if(!document.hidden)void refresh();},60000);
+  if(window.cardSceneTransition?.arriving) {
+    // Hold the curtain for the directory and nearby cover models, not distant rows.
+    await Promise.race([initialDirectory,new Promise(resolve=>setTimeout(resolve,12000))]);
+    updateNearbyModels();
+    const started=performance.now();
+    while((modelWorkers || modelQueue.length) && performance.now()-started<6000) {
+      await new Promise(resolve=>setTimeout(resolve,50));
+    }
+    await renderer.compileAsync(scene,camera);
+    renderer.render(scene,camera);
+  }
 }

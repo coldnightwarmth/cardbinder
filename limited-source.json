@@ -1,18 +1,20 @@
 {
-  "fetchedAt": "2026-07-24T19:39:12.456Z",
+  "fetchedAt": "2026-09-18T08:05:27.667Z",
   "source": "https://lauraine-qytyxk-fast-mainnet.helius-rpc.com",
   "tensorPage": "https://www.tensor.trade/portfolio?wallet=97qxpvG3zmhbq9ie91bDgN81xqUq7ij5HrVWG5RN9MRv&portSlug=8ab4b754-1a80-4d07-93d8-12e94c1a1c6e",
   "collectionSlug": null,
   "collectionDisplaySlug": null,
   "membershipPolicy": "Exactly the configured curated Solana mint IDs, in configured order",
-  "assetRevision": "limited-cutouts-3",
+  "assetRevision": "limited-natural-4",
   "animationRevision": "limited-animation-1",
   "liveMintCount": 8,
   "tensorFetchedMintCount": 8,
   "tensorReportedMintCount": null,
+  "tensorCollections": [],
   "excludedMintCount": 0,
   "exclusionRules": {
-    "mintIds": []
+    "mintIds": [],
+    "attributeValues": {}
   },
   "cardCount": 8,
   "groupedDuplicateMintCount": 0,
@@ -40,8 +42,8 @@
     "height": 840,
     "quality": 75,
     "effort": 4,
-    "fit": "contain",
-    "background": "#111111",
+    "fit": "inside",
+    "background": "transparent",
     "removeExteriorWhite": false,
     "cardExtractions": {
       "5JFC9TFEdNXB12WRuterfFukHVogCYuHzehTFuqmLkpc": {
@@ -80,6 +82,7 @@
         "closeRadius": 3
       }
     },
+    "sourceCrop": null,
     "imageProxy": "https://prod-image-cdn.tensor.trade/images/600x600/freeze=true"
   },
   "animationConversion": {
@@ -88,13 +91,15 @@
     "height": 840,
     "quality": 75,
     "effort": 4,
-    "fit": "contain",
-    "background": "#111111",
+    "fit": "inside",
+    "background": "transparent",
     "spriteWidth": 340,
     "spriteQuality": 76
   },
   "sharedBack": {
     "source": "english yugioh card back",
+    "sourceUrl": null,
+    "edgeFillColor": null,
     "color": null,
     "file": "assets/limited/backs/limited-back.webp",
     "width": 699,
@@ -117,7 +122,10 @@
       "attributes": [],
       "tokenProgram": "",
       "tokenStandard": "V1_NFT",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "",
+      "sourceName": "drifella card 1"
     },
     {
       "onchainId": "BsUmejVkYwLy5WDoYxvtdmbKjig6WTXjQ1MfpESXo6Ay",
@@ -135,7 +143,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "MplCoreAsset",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "",
+      "sourceName": "Drifella Card 2"
     },
     {
       "onchainId": "5JFC9TFEdNXB12WRuterfFukHVogCYuHzehTFuqmLkpc",
@@ -153,7 +164,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "MplCoreAsset",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "",
+      "sourceName": "MiFella Card 004: Drifella Ball"
     },
     {
       "onchainId": "7USCewaUGspP4ByhAiV8a6MRbGZUbdho4fPTE1AwpF4q",
@@ -176,7 +190,10 @@
       ],
       "tokenProgram": "",
       "tokenStandard": "V1_NFT",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "",
+      "sourceName": "Beckoning Bell No 59822133"
     },
     {
       "onchainId": "3MShd9mS5PeaShUTXYrZ7hFF4xju2nJKXE3sxGLHPy7C",
@@ -295,7 +312,10 @@
       ],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "MplCoreAsset",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "",
+      "sourceName": "☃☃CCsDOsSOTN☃☃angel0003"
     },
     {
       "onchainId": "6QZbX2WeHXMvaWrqvGSJy5A5wdjyWkHdMR76HG4Qrdad",
@@ -398,7 +418,10 @@
       ],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "MplCoreAsset",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "",
+      "sourceName": "☃☃CCsDOsSOTN☃☃angel0001"
     },
     {
       "onchainId": "D7A4LK3B5qpL4WyM1pqBsoCE8tM8XFEybYCU8A5StvLc",
@@ -521,7 +544,10 @@
       ],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "MplCoreAsset",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "",
+      "sourceName": "☃☃CCsDOsSOTN☃☃angel0021"
     },
     {
       "onchainId": "DyhP8FAVfxHNRSBFUkMLH9XJZvbVvAyYDbG6Tt2fbata",
@@ -644,7 +670,10 @@
       ],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "MplCoreAsset",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "",
+      "sourceName": "☃☃CCsDOsSOTN☃☃angel0008"
     }
   ],
   "excludedAssets": [],
@@ -655,6 +684,9 @@
       "stableId": "limited:group-36e830340c9bb833e5079f35",
       "groupKeyHash": "36e830340c9bb833e5079f352eba15400d509e5c6e89e1b7358e8c0c0d82f561",
       "title": "drifella card 1",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "",
+      "sourceName": "drifella card 1",
       "mints": [
         "BWM9X8buLSaXzMYmWhP8oxT9DaCgp7Wy3xxDYTskwZSS"
       ],
@@ -673,6 +705,9 @@
       "stableId": "limited:group-3784ca9cd8fb6e3e37458295",
       "groupKeyHash": "3784ca9cd8fb6e3e37458295d3484421f49918ddbf2e6a973022b924b5a7035e",
       "title": "Drifella Card 2",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "",
+      "sourceName": "Drifella Card 2",
       "mints": [
         "BsUmejVkYwLy5WDoYxvtdmbKjig6WTXjQ1MfpESXo6Ay"
       ],
@@ -691,6 +726,9 @@
       "stableId": "limited:group-da0fde553a79aec08fffe4f1",
       "groupKeyHash": "da0fde553a79aec08fffe4f17fd1b293a064a1b515b7c74145423bc353a562a0",
       "title": "MiFella Card 004: Drifella Ball",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "",
+      "sourceName": "MiFella Card 004: Drifella Ball",
       "mints": [
         "5JFC9TFEdNXB12WRuterfFukHVogCYuHzehTFuqmLkpc"
       ],
@@ -709,6 +747,9 @@
       "stableId": "limited:group-e3546e6d8497883f66ed4a8e",
       "groupKeyHash": "e3546e6d8497883f66ed4a8e230acfdef91fe2b133ea88ab4e89b122029337fe",
       "title": "Beckoning Bell No 59822133",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "",
+      "sourceName": "Beckoning Bell No 59822133",
       "mints": [
         "7USCewaUGspP4ByhAiV8a6MRbGZUbdho4fPTE1AwpF4q"
       ],
@@ -727,6 +768,9 @@
       "stableId": "limited:group-bf3880a5e58f9d1074b1b2b1",
       "groupKeyHash": "bf3880a5e58f9d1074b1b2b1018bda2ad9d318fdef8efd001f5bdb139c01631d",
       "title": "☃☃CCsDOsSOTN☃☃angel0003",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "",
+      "sourceName": "☃☃CCsDOsSOTN☃☃angel0003",
       "mints": [
         "3MShd9mS5PeaShUTXYrZ7hFF4xju2nJKXE3sxGLHPy7C"
       ],
@@ -745,6 +789,9 @@
       "stableId": "limited:group-c8636d6c9119766580a021c7",
       "groupKeyHash": "c8636d6c9119766580a021c76b368167524ceacbdb3d937cd42b8691ff395091",
       "title": "☃☃CCsDOsSOTN☃☃angel0001",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "",
+      "sourceName": "☃☃CCsDOsSOTN☃☃angel0001",
       "mints": [
         "6QZbX2WeHXMvaWrqvGSJy5A5wdjyWkHdMR76HG4Qrdad"
       ],
@@ -763,6 +810,9 @@
       "stableId": "limited:group-644e0fa6e53f55e7ccb2ae03",
       "groupKeyHash": "644e0fa6e53f55e7ccb2ae03800653b31a214e77c023490b2c86f7bdb521bd02",
       "title": "☃☃CCsDOsSOTN☃☃angel0021",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "",
+      "sourceName": "☃☃CCsDOsSOTN☃☃angel0021",
       "mints": [
         "D7A4LK3B5qpL4WyM1pqBsoCE8tM8XFEybYCU8A5StvLc"
       ],
@@ -808,14 +858,14 @@
         "frameDuration": 100,
         "loop": 0,
         "width": 600,
-        "height": 840,
+        "height": 800,
         "sprite": {
           "file": "assets/limited/animated-sprites/0000/card-7.webp",
           "frames": 27,
-          "columns": 7,
-          "rows": 4,
+          "columns": 6,
+          "rows": 5,
           "frameWidth": 340,
-          "frameHeight": 476,
+          "frameHeight": 453,
           "frameDuration": 100
         }
       }
@@ -826,6 +876,9 @@
       "stableId": "limited:group-df5afe5db52e9f465df0185d",
       "groupKeyHash": "df5afe5db52e9f465df0185d0c538e699496865948d9f29726b01374b049869c",
       "title": "☃☃CCsDOsSOTN☃☃angel0008",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "",
+      "sourceName": "☃☃CCsDOsSOTN☃☃angel0008",
       "mints": [
         "DyhP8FAVfxHNRSBFUkMLH9XJZvbVvAyYDbG6Tt2fbata"
       ],
@@ -871,14 +924,14 @@
         "frameDuration": 100,
         "loop": 0,
         "width": 600,
-        "height": 840,
+        "height": 800,
         "sprite": {
           "file": "assets/limited/animated-sprites/0000/card-8.webp",
           "frames": 27,
-          "columns": 7,
-          "rows": 4,
+          "columns": 6,
+          "rows": 5,
           "frameWidth": 340,
-          "frameHeight": 476,
+          "frameHeight": 453,
           "frameDuration": 100
         }
       }

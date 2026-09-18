@@ -2125,7 +2125,7 @@ body.is-light .wallet-binder-directory-button {
 
 .wallet-binder-directory-flight {
   position: fixed;
-  z-index: 201;
+  z-index: 202;
   max-width: none;
   margin: 0;
   aspect-ratio: auto;
@@ -2137,6 +2137,28 @@ body.is-light .wallet-binder-directory-button {
 
 body.is-wallet-binder-directory-transitioning {
   overflow: hidden;
+}
+
+body.is-wallet-binder-directory-transitioning .wallet-search-panel {
+  pointer-events: none;
+}
+
+.wallet-binder-directory-transition-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 201;
+  background:
+    radial-gradient(circle at 64% 78%, rgba(108, 84, 30, 0.32), transparent 46%),
+    linear-gradient(145deg, #121712, #201b0f);
+  opacity: 0;
+  pointer-events: auto;
+  will-change: opacity;
+}
+
+.wallet-binder-directory-transition-layer.is-light {
+  background:
+    radial-gradient(circle at 64% 78%, rgba(152, 119, 54, 0.16), transparent 48%),
+    linear-gradient(145deg, #e9e4d5, #f8f4e8);
 }
 
 .wallet-binder-directory-arrival-layer {
@@ -2192,6 +2214,37 @@ body.is-wallet-binder-directory-transitioning {
   height: 100%;
   display: block;
   object-fit: fill;
+}
+
+body.is-wallet-binder-directory-arriving .wallet-search-panel {
+  display: none !important;
+}
+
+body.is-wallet-binder-directory-arriving .binder-page-controls,
+body.is-wallet-binder-directory-arriving .binder-page-status,
+body.is-wallet-binder-directory-arriving .gallery-filter-controls,
+body.is-wallet-binder-directory-arriving .gallery-view-toggle,
+body.is-wallet-binder-directory-arriving .wallet-search-toggle,
+body.is-wallet-binder-directory-arriving .corner-favorites,
+body.is-wallet-binder-directory-arriving .theme-switch {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transition: none !important;
+}
+
+body.is-wallet-binder-directory-arrival-revealing .binder-page-controls,
+body.is-wallet-binder-directory-arrival-revealing .binder-page-status,
+body.is-wallet-binder-directory-arrival-revealing .gallery-filter-controls,
+body.is-wallet-binder-directory-arrival-revealing .gallery-view-toggle,
+body.is-wallet-binder-directory-arrival-revealing .wallet-search-toggle,
+body.is-wallet-binder-directory-arrival-revealing .corner-favorites,
+body.is-wallet-binder-directory-arrival-revealing .theme-switch {
+  animation: wallet-binder-directory-controls-arrive 320ms cubic-bezier(0.2, 0.78, 0.2, 1) both;
+}
+
+@keyframes wallet-binder-directory-controls-arrive {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .wallet-connect-section {

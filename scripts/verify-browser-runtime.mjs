@@ -15,8 +15,8 @@ import { COMMUNITY_COLLECTIONS } from "./community-collections.mjs";
 import { SWAG_PACK_TRANSPARENT_STICKER_FILES } from "../swag-pack-stickers.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const APP_VERSION = "cardnft-395";
-const STYLE_VERSION = "cardnft-166";
+const APP_VERSION = "cardnft-397";
+const STYLE_VERSION = "cardnft-167";
 const THREE_VERSION = "three-r165-min-1";
 
 const TRAIT_SPECS = [
@@ -39,19 +39,20 @@ const TRAIT_SPECS = [
 ];
 
 const DATA_REVISIONS = Object.freeze({
+  reflection2: "reflection2-public-1",
   cloudcastle: "community-3",
   badhand: "community-2",
   badhand2: "community-1",
-  jpegs: "community-7",
+  jpegs: "community-8",
   nolegs: "community-5",
   playcards: "community-2",
-  kardmane: "community-2",
-  cloudcastles: "community-5",
+  kardmane: "community-3",
+  cloudcastles: "community-6",
   sweetcurse: "community-5",
-  winloop: "community-5",
-  mtgnft: "community-5",
-  igorsquest: "community-5",
-  limited: "community-8",
+  winloop: "community-6",
+  mtgnft: "community-6",
+  igorsquest: "igorsquest-cropped-1",
+  limited: "community-9",
 });
 
 for (const [id, sourceFile, categoriesExport, traitsExport] of TRAIT_SPECS) {
@@ -351,7 +352,10 @@ assert(
     && app.includes("WALLET_BINDER_DIRECTORY_COVER_MIN_LOADING_MS = 1050")
     && app.includes('cover.className = "wallet-binder-directory-cover is-loading"')
     && app.includes("cover.dataset.loadingStartedAt = String(performance.now())")
-    && !app.includes('layer.className = "wallet-binder-directory-transition-layer"')
+    && app.includes('layer.className = "wallet-binder-directory-transition-layer"')
+    && app.includes("function resetWalletBinderDirectoryDeparture()")
+    && app.includes('document.body.classList.add("is-wallet-binder-directory-arriving")')
+    && app.includes("revealControls: true")
     && app.includes("new IntersectionObserver(")
     && app.includes("function transitionFromWalletBinderDirectory(")
     && app.includes("function getWalletBinderDirectoryTransitionTarget(")
@@ -360,7 +364,7 @@ assert(
     && app.includes("function dismissWalletBinderDirectoryArrivalBridge(")
     && app.includes("previewDataUrl")
     && app.includes("binderWalletCoverArtworkPromise")
-    && app.includes("startAtFrontCover: WALLET_BINDER_DIRECTORY_ARRIVAL")
+    && app.includes("startAtFrontCover: IS_SHOWROOM || WALLET_BINDER_DIRECTORY_ARRIVAL")
     && app.includes("function renderWalletBinderDirectoryCover(")
     && walletAuth.includes("async function getPublicWalletBinders(")
     && walletAuth.includes("async function getPublicWalletBinderCover(")
@@ -382,9 +386,11 @@ assert(
     && styles.includes(".wallet-binder-directory-gallery")
     && styles.includes(".wallet-binder-directory-cover.is-loading canvas")
     && styles.includes("@keyframes wallet-binder-directory-cover-loading")
-    && !styles.includes(".wallet-binder-directory-transition-layer")
+    && styles.includes(".wallet-binder-directory-transition-layer")
     && styles.includes(".wallet-binder-directory-flight")
     && styles.includes(".wallet-binder-directory-arrival-cover")
+    && styles.includes(".is-wallet-binder-directory-arriving")
+    && styles.includes("@keyframes wallet-binder-directory-controls-arrive")
     && styles.includes("linear-gradient(145deg, #121712, #201b0f)")
     && walletRouteShell.includes("wallet-binder-arrival-bootstrap")
     && walletRouteShell.includes("--wallet-binder-arrival-preview")
@@ -551,7 +557,7 @@ assert(
 );
 assert(
   app.includes("ensureCollectionTraits")
-    && app.includes("browser-traits-catalog.js?v=browser-traits-9"),
+    && app.includes("browser-traits-catalog.js?v=browser-traits-10"),
   "app does not lazy-load packed browser traits",
 );
 assert(
@@ -1249,7 +1255,7 @@ async function verifyPage({ pagePath, prefix, dataFile }) {
     `${prefix}wallet-auth.js?v=wallet-auth-8`,
     `${prefix}swag-pack-stickers.js?v=swag-pack-transparent-1`,
     `${prefix}vendor/three.module.min.js?v=${THREE_VERSION}`,
-    `${prefix}browser-traits-catalog.js?v=browser-traits-9`,
+    `${prefix}browser-traits-catalog.js?v=browser-traits-10`,
     `${prefix}${dataFile}`,
     'id="binderTableViewButton"',
     'id="walletConnectButton"',

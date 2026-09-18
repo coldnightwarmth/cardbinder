@@ -14,7 +14,7 @@ import { PONCHO_CARDS } from "../poncho-data.js";
 const require = createRequire(import.meta.url);
 const sharp = loadSharp();
 const root = process.cwd();
-const expectedAppVersion = "cardnft-395";
+const expectedAppVersion = "cardnft-397";
 const requestedIds = process.argv.slice(2);
 const collections = requestedIds.length
   ? requestedIds.map((id) => {
@@ -127,10 +127,8 @@ for (const collection of collections) {
       && source.conversion?.height === collection.height
       && source.conversion?.quality === 75
       && source.conversion?.effort === 4
-      && source.conversion?.fit === "contain"
-      && source.conversion?.background === (
-        collection.removeExteriorWhite ? "transparent" : "#111111"
-      )
+      && source.conversion?.fit === "inside"
+      && source.conversion?.background === "transparent"
       && Boolean(source.conversion?.removeExteriorWhite)
         === Boolean(collection.removeExteriorWhite)
       && JSON.stringify(source.conversion?.cardExtractions || {})
@@ -282,7 +280,10 @@ for (const collection of collections) {
     assert(card.file.endsWith(`?v=${collection.revision}`), `${collection.id} card ${cardNumber} has stale URL`);
     assert(cardFile === sourceCard.cardFile, `${collection.id} card ${cardNumber} file differs from source`);
     assert(
-      card.width === collection.width && card.height === collection.height,
+      card.width > 0
+        && card.height > 0
+        && card.width <= collection.width
+        && card.height <= collection.height,
       `${collection.id} card ${cardNumber} declares invalid dimensions`,
     );
     assert(
@@ -339,8 +340,8 @@ for (const collection of collections) {
     ]);
     assert(
       imageMetadata.format === "webp"
-        && imageMetadata.width === collection.width
-        && imageMetadata.height === collection.height,
+        && imageMetadata.width === card.width
+        && imageMetadata.height === card.height,
       `${collection.id} card ${cardNumber} has invalid optimized dimensions`,
     );
     assert(
@@ -415,8 +416,10 @@ for (const collection of collections) {
     if (card.animation) {
       assert(sourceCard.sourceAnimatedGifUri, `${collection.id} card ${cardNumber} lacks a GIF source`);
       assert(
-        sourceCard.animation?.width === collection.width
-          && sourceCard.animation?.height === collection.height,
+        sourceCard.animation?.width > 0
+          && sourceCard.animation?.height > 0
+          && sourceCard.animation?.width <= collection.width
+          && sourceCard.animation?.height <= collection.height,
         `${collection.id} card ${cardNumber} source animation dimensions differ`,
       );
       const {
@@ -452,8 +455,8 @@ for (const collection of collections) {
       ]);
       assert(
         animatedMetadata.format === "webp"
-          && animatedMetadata.width === collection.width
-          && animatedMetadata.pageHeight === collection.height
+          && animatedMetadata.width === sourceCard.animation.width
+          && animatedMetadata.pageHeight === sourceCard.animation.height
           && animatedMetadata.pages === card.animation.frames
           && animatedMetadata.loop === card.animation.loop,
         `${collection.id} card ${cardNumber} animated WebP is invalid`,
@@ -580,8 +583,8 @@ for (const collection of collections) {
     `aria-label="3D ${collection.label} binder"`,
     `../app.js?v=${expectedAppVersion}`,
     "../vendor/three.module.min.js?v=three-r165-min-1",
-    "../browser-traits-catalog.js?v=browser-traits-9",
-    "../styles.css?v=cardnft-166",
+    "../browser-traits-catalog.js?v=browser-traits-10",
+    "../styles.css?v=cardnft-167",
     'id="binderTradeModeButton"',
   ]) {
     assert(page.includes(value), `${collection.id} page is missing ${JSON.stringify(value)}`);
@@ -646,9 +649,9 @@ function verifySharedAppArchitecture() {
     "app does not lock physical cards and binder slots to 2.5x3.5",
   );
   assert(
-    app.includes("const frontMesh = group.userData.frontMesh;")
-      && app.includes("frontMesh.scale.set("),
-    "app does not contain front artwork independently from fixed card geometry",
+    app.includes("proceduralChildren")
+      && app.includes("child.scale.set("),
+    "app does not fit complete card geometry to the natural front artwork",
   );
   assert(
     styles.includes("--card-aspect-padding: 140%;")
@@ -689,13 +692,13 @@ function verifySharedAppArchitecture() {
   "jpegs",
   "clear",
   "nolegs",
+  "reflection2",
   "mtgnft",
   "playcards",
   "kardmane",
   "winloop",
   "sweetcurse",
   "igorsquest",
-  "reflection2",
 ];`),
     "inside-cover collection order differs",
   );

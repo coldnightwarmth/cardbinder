@@ -887,7 +887,11 @@ async function convertCardAssets(collection, paths, entries, previousSnapshot) {
     const outputPath = path.join(ROOT, entry.file);
     await mkdir(path.dirname(outputPath), { recursive: true });
     const previousCard = previousCards.get(entry.stableId);
-    const outputIsCurrent = await isCurrentConvertedImage(collection, outputPath);
+    const outputIsCurrent = await isCurrentConvertedImage(
+      collection,
+      outputPath,
+      previousCard,
+    );
     if (
       !FORCE_IMAGES
       && outputIsCurrent
@@ -901,6 +905,8 @@ async function convertCardAssets(collection, paths, entries, previousSnapshot) {
         )
       )
     ) {
+      entry.width = Number(previousCard?.width) || collection.width;
+      entry.height = Number(previousCard?.height) || collection.height;
       if ((index + 1) % 25 === 0 || index + 1 === entries.length) {
         console.log(`[${collection.id}] images ${index + 1}/${entries.length}`);
       }
@@ -912,7 +918,9 @@ async function convertCardAssets(collection, paths, entries, previousSnapshot) {
       RETRIES,
       `${collection.id} card image ${entry.number}`,
     );
-    await writeFile(outputPath, converted);
+    entry.width = converted.width;
+    entry.height = converted.height;
+    await writeFile(outputPath, converted.buffer);
     if ((index + 1) % 25 === 0 || index + 1 === entries.length) {
       console.log(`[${collection.id}] images ${index + 1}/${entries.length}`);
     }
@@ -969,6 +977,8 @@ async function convertAnimatedAssets(collection, paths, entries, previousSnapsho
         const sprite = await createAnimatedSpriteAtlas(collection, converted.buffer, {
           frames: converted.frames,
           delays: converted.delays,
+          width: converted.width,
+          height: converted.height,
         });
         await Promise.all([
           writeFile(animatedPath, converted.buffer),
@@ -980,8 +990,8 @@ async function convertAnimatedAssets(collection, paths, entries, previousSnapsho
           delays: converted.delays,
           frameDuration: converted.frameDuration,
           loop: converted.loop,
-          width: collection.width,
-          height: collection.height,
+          width: converted.width,
+          height: converted.height,
           sprite: {
             file: animatedSpriteFile,
             frames: converted.frames,
@@ -1007,8 +1017,8 @@ function hasCurrentAnimationConversionSettings(collection, conversion) {
     && conversion.height === collection.height
     && conversion.quality === ANIMATED_WEBP_QUALITY
     && conversion.effort === 4
-    && conversion.fit === "contain"
-    && conversion.background === CARD_PADDING_COLOR
+    && conversion.fit === "inside"
+    && conversion.background === "transparent"
     && conversion.spriteWidth === collection.animatedSpriteWidth
     && conversion.spriteQuality === ANIMATED_SPRITE_QUALITY;
 }
@@ -1035,10 +1045,9 @@ async function convertAnimatedImage(collection, input) {
     .resize({
       width: collection.width,
       height: collection.height,
-      fit: "contain",
-      background: CARD_PADDING_COLOR,
+      fit: "inside",
     })
-    .flatten({ background: CARD_PADDING_COLOR })
+    .ensureAlpha()
     .webp({
       quality: ANIMATED_WEBP_QUALITY,
       effort: 4,
@@ -1054,8 +1063,8 @@ async function convertAnimatedImage(collection, input) {
   if (
     outputMetadata.format !== "webp"
     || outputMetadata.pages !== frames
-    || outputMetadata.width !== collection.width
-    || outputMetadata.pageHeight !== collection.height
+    || outputMetadata.width > collection.width
+    || outputMetadata.pageHeight > collection.height
     || JSON.stringify(outputDelays) !== JSON.stringify(delays)
     || outputMetadata.loop !== loop
   ) {
@@ -1063,6 +1072,8 @@ async function convertAnimatedImage(collection, input) {
   }
   return {
     buffer,
+    width: outputMetadata.width,
+    height: outputMetadata.pageHeight,
     frames,
     delays,
     frameDuration: delays[0],
@@ -1073,7 +1084,7 @@ async function convertAnimatedImage(collection, input) {
 async function createAnimatedSpriteAtlas(collection, animatedBuffer, animation) {
   const frameWidth = collection.animatedSpriteWidth;
   const frameHeight = Math.round(
-    frameWidth * collection.height / collection.width,
+    frameWidth * animation.height / animation.width,
   );
   const columns = getAnimatedAtlasColumns(
     animation.frames,
@@ -1180,8 +1191,8 @@ async function isCurrentAnimatedImage(collection, filePath, animation) {
       limitInputPixels: false,
     }).metadata();
     return metadata.format === "webp"
-      && metadata.width === collection.width
-      && metadata.pageHeight === collection.height
+      && metadata.width === (Number(animation?.width) || collection.width)
+      && metadata.pageHeight === (Number(animation?.height) || collection.height)
       && metadata.pages === animation.frames
       && metadata.loop === animation.loop
       && JSON.stringify(normalizeAnimationDelays(metadata.delay, animation.frames))
@@ -1214,27 +1225,32 @@ async function convertRemoteCardImage(collection, entry) {
     const input = extraction.preferOriginal
       ? await fetchOriginalStillImageBuffer(entry.sourceImageUri)
       : await fetchImageBuffer(entry.sourceImageUri);
-    return convertExtractedCardImage(collection, input, extraction);
+    return resolveConvertedCardImage(
+      await convertExtractedCardImage(collection, input, extraction),
+    );
   }
   if (collection.removeExteriorWhite) {
     const input = await fetchOriginalStillImageBuffer(entry.sourceImageUri);
-    return convertTransparentTrimmedCardImage(collection, input);
+    return resolveConvertedCardImage(
+      await convertTransparentTrimmedCardImage(collection, input),
+    );
   }
   const input = await fetchImageBuffer(entry.sourceImageUri);
-  return sharp(input, { animated: false, limitInputPixels: false })
+  const output = await sharp(input, { animated: false, limitInputPixels: false })
     .rotate()
     .resize({
       width: collection.width,
       height: collection.height,
-      fit: "contain",
-      background: CARD_PADDING_COLOR,
+      fit: "inside",
     })
-    .flatten({ background: CARD_PADDING_COLOR })
+    .ensureAlpha()
     .webp({
       quality: WEBP_QUALITY,
+      alphaQuality: 100,
       effort: 4,
     })
-    .toBuffer();
+    .toBuffer({ resolveWithObject: true });
+  return resolveConvertedCardImage(output);
 }
 
 async function convertCroppedCardImage(collection, input) {
@@ -1245,17 +1261,32 @@ async function convertCroppedCardImage(collection, input) {
   const top = clampPixel(Math.round(metadata.height * crop.top), 0, metadata.height - 1);
   const width = clampPixel(Math.round(metadata.width * crop.width), 1, metadata.width - left);
   const height = clampPixel(Math.round(metadata.height * crop.height), 1, metadata.height - top);
-  return source
+  const output = await source
     .extract({ left, top, width, height })
     .resize({
       width: collection.width,
       height: collection.height,
-      fit: "contain",
-      background: CARD_PADDING_COLOR,
+      fit: "inside",
     })
-    .flatten({ background: CARD_PADDING_COLOR })
-    .webp({ quality: WEBP_QUALITY, effort: 4 })
-    .toBuffer();
+    .ensureAlpha()
+    .webp({ quality: WEBP_QUALITY, alphaQuality: 100, effort: 4 })
+    .toBuffer({ resolveWithObject: true });
+  return resolveConvertedCardImage(output);
+}
+
+function resolveConvertedCardImage(output) {
+  if (Buffer.isBuffer(output)) {
+    return sharp(output).metadata().then((metadata) => ({
+      buffer: output,
+      width: metadata.width,
+      height: metadata.height,
+    }));
+  }
+  return {
+    buffer: output.data,
+    width: output.info.width,
+    height: output.info.height,
+  };
 }
 
 function clampPixel(value, minimum, maximum) {
@@ -2024,8 +2055,8 @@ async function convertSharedBack(collection, paths, previousSnapshot) {
     let resized = sharp(source)
       .rotate()
       .resize(collection.width, collection.height, {
-        fit: "contain",
-        background: CARD_PADDING_COLOR,
+        fit: "inside",
+        background: "transparent",
       });
     if (collection.backEdgeFillColor) {
       const raw = await resized
@@ -2129,10 +2160,8 @@ function hasCurrentConversionSettings(collection, conversion) {
     && conversion.height === collection.height
     && conversion.quality === WEBP_QUALITY
     && conversion.effort === 4
-    && conversion.fit === "contain"
-    && conversion.background === (
-      collection.removeExteriorWhite ? "transparent" : CARD_PADDING_COLOR
-    )
+    && conversion.fit === "inside"
+    && conversion.background === "transparent"
     && Boolean(conversion.removeExteriorWhite) === Boolean(collection.removeExteriorWhite)
     && JSON.stringify(conversion.cardExtractions || {})
       === JSON.stringify(collection.cardExtractions || {})
@@ -2152,14 +2181,14 @@ function hasCurrentConversionSettings(collection, conversion) {
     );
 }
 
-async function isCurrentConvertedImage(collection, filePath) {
+async function isCurrentConvertedImage(collection, filePath, previousCard = null) {
   try {
     const fileStats = await stat(filePath);
     if (!fileStats.isFile() || fileStats.size <= 0) return false;
     const metadata = await sharp(await readFile(filePath)).metadata();
     return metadata.format === "webp"
-      && metadata.width === collection.width
-      && metadata.height === collection.height;
+      && metadata.width === (Number(previousCard?.width) || collection.width)
+      && metadata.height === (Number(previousCard?.height) || collection.height);
   } catch {
     return false;
   }
@@ -2299,8 +2328,8 @@ async function writeSourceSnapshot({
       height: collection.height,
       quality: WEBP_QUALITY,
       effort: 4,
-      fit: "contain",
-      background: collection.removeExteriorWhite ? "transparent" : CARD_PADDING_COLOR,
+      fit: "inside",
+      background: "transparent",
       removeExteriorWhite: Boolean(collection.removeExteriorWhite),
       cardExtractions: collection.cardExtractions || {},
       sourceCrop: collection.sourceCrop || null,
@@ -2325,8 +2354,8 @@ async function writeSourceSnapshot({
         height: collection.height,
         quality: ANIMATED_WEBP_QUALITY,
         effort: 4,
-        fit: "contain",
-        background: CARD_PADDING_COLOR,
+        fit: "inside",
+        background: "transparent",
         spriteWidth: collection.animatedSpriteWidth,
         spriteQuality: ANIMATED_SPRITE_QUALITY,
       }

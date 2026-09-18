@@ -82,7 +82,7 @@ for (const [id, sourceFile, categoriesExport, traitsExport] of COLLECTIONS) {
   await writeFile(path.join(OUTPUT_DIR, `${id}.js`), moduleText);
   catalog[id] = {
     categories,
-    module: `./browser-traits/${id}.js?v=browser-traits-9`,
+    module: `./browser-traits/${id}.js?v=browser-traits-10`,
     records: rows.length,
   };
 }
