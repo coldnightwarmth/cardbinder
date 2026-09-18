@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-09-04T01:44:05.321Z",
+  "fetchedAt": "2026-09-18T06:40:09.424Z",
   "source": "https://graphql.tensor.trade/graphql",
   "tensorPage": "https://www.tensor.trade/trade/badhand2",
   "collectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
@@ -10,9 +10,22 @@
   "liveMintCount": 70,
   "tensorFetchedMintCount": 70,
   "tensorReportedMintCount": 70,
+  "tensorCollections": [
+    {
+      "sourceOrder": 0,
+      "page": "https://www.tensor.trade/trade/badhand2",
+      "pageSlug": "badhand2",
+      "collectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "name": "BAD HAND 2",
+      "displayTitlePrefix": "",
+      "fetchedMintCount": 70,
+      "reportedMintCount": 70
+    }
+  ],
   "excludedMintCount": 0,
   "exclusionRules": {
-    "mintIds": []
+    "mintIds": [],
+    "attributeValues": {}
   },
   "cardCount": 70,
   "groupedDuplicateMintCount": 0,
@@ -48,11 +61,13 @@
   },
   "animationConversion": null,
   "sharedBack": {
-    "source": "english yugioh card back",
+    "source": "english pokemon card back",
+    "sourceUrl": null,
+    "edgeFillColor": null,
     "color": null,
     "file": "assets/badhand2/backs/badhand2-back.webp",
-    "width": 699,
-    "height": 1017
+    "width": 1024,
+    "height": 1419
   },
   "liveAssets": [
     {
@@ -71,7 +86,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 1"
     },
     {
       "onchainId": "4eJZCAGpRM17MTmikUMN6r3WcPigcbyHcNSvGHMNKLgb",
@@ -89,7 +107,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 2"
     },
     {
       "onchainId": "8LLqp9mRPqVgJ5on1ayo2XepKXpw6CQVPiZTAM4qCQTK",
@@ -107,7 +128,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 3"
     },
     {
       "onchainId": "Gt4WZ4BEnWehYdmgFyvxGDtUCycimCJqDDGFZ5pSXbN2",
@@ -125,7 +149,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 4"
     },
     {
       "onchainId": "FmeKUX8x8nSG7VrgPFDc4FhfZboQg9QUQcggLJhyVSRV",
@@ -143,7 +170,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 5"
     },
     {
       "onchainId": "J14Jk9c31nWUSMdK8ucfjJ6o6J1aJyGNQXjYfeJjUK5z",
@@ -161,7 +191,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 6"
     },
     {
       "onchainId": "DdfXyN3SeiZ1W46M9Qv9a1XvRRjCvC5rtKfGv84db6af",
@@ -179,7 +212,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 7"
     },
     {
       "onchainId": "EbQAtQo2CjFgtRmfsPABNoqFpeLGb8aNDY6jc6SAytKV",
@@ -197,7 +233,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 8"
     },
     {
       "onchainId": "F9JekkqLjsZWgx9fnY13QDQC9LPxAd9S5bHnLqTgeUDC",
@@ -215,7 +254,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 9"
     },
     {
       "onchainId": "J1xepmvgRbCc9ozVGW7tMJGvqNzevzKGsi7F2YpkY5fC",
@@ -233,7 +275,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 10"
     },
     {
       "onchainId": "4ocwa96tuarwz8ffAQA7xdd6MLEYRA1mTbWYNoJuCzGG",
@@ -251,7 +296,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "NON_FUNGIBLE",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 11"
     },
     {
       "onchainId": "Hh57jKghoWUuuGp4yyzTtPLUTkpGUFktcjYc9cVaJCVJ",
@@ -269,7 +317,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 12"
     },
     {
       "onchainId": "HVrEiWSQrSb1FM7i9UEHCzjNvwpTHVYvWB57kxiq9d3k",
@@ -287,7 +338,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 13"
     },
     {
       "onchainId": "EmSG5K5BmnHsQFpSwc1AYkEDFjfGrmnpgU7ERLMnwzeC",
@@ -305,7 +359,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 14"
     },
     {
       "onchainId": "AvEScYWmfqkKkTpip4wW1AFkCDphvZ6RVrsaJ7MGxfHk",
@@ -323,7 +380,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "NON_FUNGIBLE",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 15"
     },
     {
       "onchainId": "98cdnqDoKcqmLU3FLyBSH8e5bVzi4sHrqpHSBrYc7RbJ",
@@ -341,7 +401,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "NON_FUNGIBLE",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 16"
     },
     {
       "onchainId": "9WXzZ67zmUZuGJr3sD3PWHCMAbivLCpWNKNEraQDqp9y",
@@ -359,7 +422,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "NON_FUNGIBLE",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 17"
     },
     {
       "onchainId": "HBfKBV9KW2fM5HKFwSKa1SztVqByxihBmNqzT5ANZSNk",
@@ -377,7 +443,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 18"
     },
     {
       "onchainId": "3QFZALdLYuXM1trnh7SD9GDLzBq3ceehp9YXHxrKevrh",
@@ -395,7 +464,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "NON_FUNGIBLE",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 19"
     },
     {
       "onchainId": "3EPdsfCm47gxnDhbnKvwQcatW5FFsHg9hmucJn5k4jDa",
@@ -413,11 +485,14 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 20"
     },
     {
       "onchainId": "AKtPMUR8X1BZHBNaMPEHvpeLAw8KA2enTmiWPLMBFNjR",
-      "owner": "9pBNL4XBDFieiAuYn9bKSUo5pPvFThbuC1JuF1dfgjY2",
+      "owner": "8HHm7TWm5UnWk7ugu2x6nXUo2Tcr7vRiS3N5Vbc8u887",
       "name": "BAD HAND 2 21",
       "imageUri": "https://gateway.irys.xyz/ktzNG3gDXhZEsAMqBt4EJvuMFlL8Q82jDGgNbFjhpJU/BAD-HAND-2-021.png",
       "animationUri": "",
@@ -431,7 +506,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 21"
     },
     {
       "onchainId": "9pEDLodC8FGxdtUqTiFh2hB4s7DuSD2Mcn9msN55F8ez",
@@ -449,7 +527,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 22"
     },
     {
       "onchainId": "AW3CtxQRpZ6nDuJZAteZFiWw2q7otazN8gKnnH6k7KhJ",
@@ -467,7 +548,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "NON_FUNGIBLE",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 23"
     },
     {
       "onchainId": "7ypg1m8HTHiojRDWWQ4tm1GUHawp7HF6mPVBP8CETP1p",
@@ -485,7 +569,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "NON_FUNGIBLE",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 24"
     },
     {
       "onchainId": "2PdWB4oAbaAjWiKP2bYNt6nFsiKtPp4PAQK7KQH9VWDE",
@@ -503,7 +590,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 25"
     },
     {
       "onchainId": "GcMsthFk684ZiS4wt7A7ETE8QMrTGKmhxoMDbUxBhFH",
@@ -521,7 +611,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 26"
     },
     {
       "onchainId": "3ANdDaKa25mZkjrTNfXHBEKy8P7KLsecDuKHmsDz3XNB",
@@ -539,7 +632,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 27"
     },
     {
       "onchainId": "6DrEhTp9nRZUb32hoExq3nvVyZAFr4hwMe8UBVwRLGiY",
@@ -557,7 +653,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 28"
     },
     {
       "onchainId": "4U3VmXbaiyvhGwKN5Z1iYpi15C41L37jcy5oR2RscTXn",
@@ -575,7 +674,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 29"
     },
     {
       "onchainId": "8DGNehBSteCR8gVRRqqWC1o8J2BSB4gRmFKgQDbQc2Tb",
@@ -593,7 +695,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 30"
     },
     {
       "onchainId": "FVB3qySxfXZXptmgeZhECc6MDCnDoPyaV2GBq3v6ESdT",
@@ -611,7 +716,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 31"
     },
     {
       "onchainId": "GFturtt93SUvBcqBnp2UeAbEaDAv3X39HCKPA8cBeUNB",
@@ -629,7 +737,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 32"
     },
     {
       "onchainId": "JDRjMexw1ADAuamDdXNE9tRkjxPrcgrdeAAHLkgBvN17",
@@ -647,7 +758,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 33"
     },
     {
       "onchainId": "3r2UGqPifKdeQ8QcDKJHEHwPYGiv1tTJLXgajWNyWfUQ",
@@ -665,7 +779,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 34"
     },
     {
       "onchainId": "DwrGTQB1jLDhds8WwFgk1Wkp52Mqo9VKjzQUpAa5W7HJ",
@@ -683,7 +800,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 35"
     },
     {
       "onchainId": "6zTjSTtGLDSeFYskF4XvMUxjMiFiyxKCPmT5gyXL7VXV",
@@ -701,7 +821,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 36"
     },
     {
       "onchainId": "pcqZXDYHvGFzSwgY1VnBxSNH2W7cNgCb3gshSE9U14h",
@@ -719,7 +842,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 37"
     },
     {
       "onchainId": "8XmxUQgFtjxygWaDmHhtkNJ5Qr18R7Jv21LFijQ2n8X7",
@@ -737,7 +863,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 38"
     },
     {
       "onchainId": "98zdRR1BuJEEZbt38a4spXNzSJESbn2td1sN3QR28AFF",
@@ -755,7 +884,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 39"
     },
     {
       "onchainId": "5AH5WaTCsWHEXCER9dMAfJj1QP3ZuJLxtrqe8sKQvovz",
@@ -773,7 +905,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 40"
     },
     {
       "onchainId": "8UJRrd52a8WEhWs7y32R432eQi79VeRE9h8zHDsLaXzB",
@@ -791,7 +926,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "NON_FUNGIBLE",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 41"
     },
     {
       "onchainId": "AupWpQmT8fQcHny1GSJHE8aG4qbX9CKtqRbUaVckr4H",
@@ -809,7 +947,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 42"
     },
     {
       "onchainId": "4j5fPNv9SA34x3kxzqkGn8uE6Bf5KPcHwPrYSAynAVhN",
@@ -827,7 +968,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "NON_FUNGIBLE",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 43"
     },
     {
       "onchainId": "2sM6erNwQA2ryf83WpLY6KYd3NXd9ikXaWnih2iLia8K",
@@ -845,7 +989,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 44"
     },
     {
       "onchainId": "CDaQsMnE51pFnB2GbnEX2XymTSf6p3PZzRabtKv1zjfx",
@@ -863,7 +1010,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 45"
     },
     {
       "onchainId": "DuZve9csKUDSV4mxDg2XRqLzQUxKmJJ3DLAUTLuZm5dS",
@@ -881,7 +1031,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 46"
     },
     {
       "onchainId": "7EfRTSfwa5p8TyxoE2BVHsGdvFFJUwMxBHtpakMFpRGW",
@@ -899,7 +1052,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 47"
     },
     {
       "onchainId": "GHKTTfM3Z3exJLPqkPYmE7WQXdrFvHSeY59N1pUpMxQi",
@@ -917,7 +1073,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 48"
     },
     {
       "onchainId": "4PChN3HkFDeCoEzAc57X9H7iQJZZLByEH3xt4ckbjQzf",
@@ -935,7 +1094,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 49"
     },
     {
       "onchainId": "Hpf2geoqnFDaeJQvYXa8kyngGwjwf9syqhEqdxEQHiWm",
@@ -953,7 +1115,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 50"
     },
     {
       "onchainId": "HXZcG6FrTamyhQPUJkXZkTBFMi58UwxSvMaeVMtad4EV",
@@ -971,7 +1136,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 51"
     },
     {
       "onchainId": "CFPDiw7AVfPHmcidVkckJEuHssv9Dg6t3Dr36yYC1hu7",
@@ -989,43 +1157,52 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 52"
     },
     {
       "onchainId": "8MJKF46oyAkzqUfeZNnZ4fW2SMGscmpBuCoDnMXXQTsr",
       "owner": "HJparYWsZpirhC8QshssENHyXs8ZNh9ngYed4Zo3VJ8r",
       "name": "BAD HAND 2 53",
-      "imageUri": "https://gateway.irys.xyz/e0uxAJmRyyhHxkq6TyudKxWJ1E3YeZdzL5LbV7pwAtI/BAD%20HAND%202%20%23053.png",
+      "imageUri": "https://gateway.irys.xyz/ktzNG3gDXhZEsAMqBt4EJvuMFlL8Q82jDGgNbFjhpJU/BAD-HAND-2-053.png",
       "animationUri": "",
-      "metadataUri": "https://gateway.irys.xyz/BgIWUbwtgmxWCKZRGtFxQxXqpksX8MPO3sMijEMDQYs/52",
+      "metadataUri": "https://gateway.irys.xyz/vyxhhTKvNfvmfv68vFtapdJNNJW4PKEmYHN9BTHDG-o/52",
       "files": [
         {
           "type": "image/png",
-          "uri": "https://gateway.irys.xyz/e0uxAJmRyyhHxkq6TyudKxWJ1E3YeZdzL5LbV7pwAtI/BAD%20HAND%202%20%23053.png"
-        }
-      ],
-      "attributes": [],
-      "tokenProgram": "MPL_CORE",
-      "tokenStandard": "NON_FUNGIBLE",
-      "metadataFetchError": ""
-    },
-    {
-      "onchainId": "HBRweZm8pNRK1pVJrQgLSFe8Y69v4H7BREcvKrXEZMW1",
-      "owner": "BAc2cy4iJbjqhEJ3hiM4JZ3SFqSUqFehMnY3r8G2eb6g",
-      "name": "BAD HAND 2 54",
-      "imageUri": "https://gateway.irys.xyz/e0uxAJmRyyhHxkq6TyudKxWJ1E3YeZdzL5LbV7pwAtI/BAD%20HAND%202%20%23054.png",
-      "animationUri": "",
-      "metadataUri": "https://gateway.irys.xyz/BgIWUbwtgmxWCKZRGtFxQxXqpksX8MPO3sMijEMDQYs/53",
-      "files": [
-        {
-          "type": "image/png",
-          "uri": "https://gateway.irys.xyz/e0uxAJmRyyhHxkq6TyudKxWJ1E3YeZdzL5LbV7pwAtI/BAD%20HAND%202%20%23054.png"
+          "uri": "https://gateway.irys.xyz/ktzNG3gDXhZEsAMqBt4EJvuMFlL8Q82jDGgNbFjhpJU/BAD-HAND-2-053.png"
         }
       ],
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 53"
+    },
+    {
+      "onchainId": "HBRweZm8pNRK1pVJrQgLSFe8Y69v4H7BREcvKrXEZMW1",
+      "owner": "BAc2cy4iJbjqhEJ3hiM4JZ3SFqSUqFehMnY3r8G2eb6g",
+      "name": "BAD HAND 2 54",
+      "imageUri": "https://gateway.irys.xyz/ktzNG3gDXhZEsAMqBt4EJvuMFlL8Q82jDGgNbFjhpJU/BAD-HAND-2-054.png",
+      "animationUri": "",
+      "metadataUri": "https://gateway.irys.xyz/vyxhhTKvNfvmfv68vFtapdJNNJW4PKEmYHN9BTHDG-o/53",
+      "files": [
+        {
+          "type": "image/png",
+          "uri": "https://gateway.irys.xyz/ktzNG3gDXhZEsAMqBt4EJvuMFlL8Q82jDGgNbFjhpJU/BAD-HAND-2-054.png"
+        }
+      ],
+      "attributes": [],
+      "tokenProgram": "MPL_CORE",
+      "tokenStandard": "",
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 54"
     },
     {
       "onchainId": "Fh6kwEB8CUGH2XQuxbtCyt6K5nEdRBd2vz5tb5cajtJ8",
@@ -1043,7 +1220,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "NON_FUNGIBLE",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 55"
     },
     {
       "onchainId": "5ropBBU9TveMtyQ7t8WqLnTwcB4dr6c1hf38nxzmnPHz",
@@ -1061,7 +1241,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "NON_FUNGIBLE",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 56"
     },
     {
       "onchainId": "BsaDSo5sTK8Awy7mQdSPZRURTL9b4sWiiRF5JhSVPaQV",
@@ -1079,7 +1262,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "NON_FUNGIBLE",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 57"
     },
     {
       "onchainId": "BS33BssCw6T7fbiexHMcqnDSSNJZKvASDWA1Ninz8Bvq",
@@ -1097,7 +1283,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 58"
     },
     {
       "onchainId": "GZLqBWJ7p1hkrTZXiyx6wj8zxJv1XZ8QVHHep1Tatx1M",
@@ -1115,7 +1304,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 59"
     },
     {
       "onchainId": "CNxxSPwjkg4c5pfUhz97otXbLrbt8e1fMA8nHuSYpJhP",
@@ -1133,7 +1325,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "NON_FUNGIBLE",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 60"
     },
     {
       "onchainId": "F8aCckcs5Z8nsZ39Y39HfrwWAGw4trxgHdfUh8uKotHD",
@@ -1151,7 +1346,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "NON_FUNGIBLE",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 61"
     },
     {
       "onchainId": "9dsXjwjDpK68xN1wKkrFaqGN6taHeGL11dBXaDAaLXu8",
@@ -1169,7 +1367,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "NON_FUNGIBLE",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 62"
     },
     {
       "onchainId": "AFFhX7DXCZcgpPbKEzsp3TdR9Rkp9F8DDF6ax5iVNFEe",
@@ -1187,7 +1388,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "NON_FUNGIBLE",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 63"
     },
     {
       "onchainId": "7qJDwQVzKquxtbb76NMRhzMEfLvaL37YxEdiXoNJuCYs",
@@ -1205,7 +1409,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "NON_FUNGIBLE",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 64"
     },
     {
       "onchainId": "A7YysRm3BUR9oMg5EcPfZZda6w3t1zL9Avw5Sy2uSoAk",
@@ -1223,7 +1430,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 65"
     },
     {
       "onchainId": "3UWKpavddmsktHzieWvJVkhosjLm9GcJrXWgdWLxFBL3",
@@ -1241,7 +1451,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 66"
     },
     {
       "onchainId": "518ZKGKbTQTbAZVevin6qWmcdzvtdDvvaEeB4MnVkLd6",
@@ -1259,7 +1472,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 67"
     },
     {
       "onchainId": "BX6V4UinJPmBEwzxfuCFnDJQfWXyvcmESmAZidB81Nex",
@@ -1277,7 +1493,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 68"
     },
     {
       "onchainId": "3uudWCsuvQcuF7CWcpxFo8zLsaThR2j7HdRopQixvuiR",
@@ -1295,7 +1514,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 69"
     },
     {
       "onchainId": "6ZxJ4pBYRFFEcjoV7steWrctUrbY6hgZUJYvwmCXqkgo",
@@ -1313,7 +1535,10 @@
       "attributes": [],
       "tokenProgram": "MPL_CORE",
       "tokenStandard": "",
-      "metadataFetchError": ""
+      "metadataFetchError": "",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 70"
     }
   ],
   "excludedAssets": [],
@@ -1324,6 +1549,9 @@
       "stableId": "badhand2:group-d12177229603d6dbb794ec6a",
       "groupKeyHash": "d12177229603d6dbb794ec6aad75cc3220612ae37c893d2bb6564b7078e210e6",
       "title": "BAD HAND 2 1",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 1",
       "mints": [
         "okNkcMBgazNQ6mqUB4akv39vVQkpZbeH9PYEBB9V13m"
       ],
@@ -1342,6 +1570,9 @@
       "stableId": "badhand2:group-a78b9642a237c7194ce1a0ea",
       "groupKeyHash": "a78b9642a237c7194ce1a0ea28275fc7f01b981ac8d55fafa001b404b25321c0",
       "title": "BAD HAND 2 2",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 2",
       "mints": [
         "4eJZCAGpRM17MTmikUMN6r3WcPigcbyHcNSvGHMNKLgb"
       ],
@@ -1360,6 +1591,9 @@
       "stableId": "badhand2:group-ab56e9b2ea5de12a156cd0fd",
       "groupKeyHash": "ab56e9b2ea5de12a156cd0fd1bb644eef6176dff2e2cd38240dc65a1f474fa33",
       "title": "BAD HAND 2 3",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 3",
       "mints": [
         "8LLqp9mRPqVgJ5on1ayo2XepKXpw6CQVPiZTAM4qCQTK"
       ],
@@ -1378,6 +1612,9 @@
       "stableId": "badhand2:group-d2a82efc058e7bbf295cbaa1",
       "groupKeyHash": "d2a82efc058e7bbf295cbaa10fe9f843f539969a5010e0170fd9907a52cadaf3",
       "title": "BAD HAND 2 4",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 4",
       "mints": [
         "Gt4WZ4BEnWehYdmgFyvxGDtUCycimCJqDDGFZ5pSXbN2"
       ],
@@ -1396,6 +1633,9 @@
       "stableId": "badhand2:group-6b1f8441c6234f17a051f824",
       "groupKeyHash": "6b1f8441c6234f17a051f8247e5d37b8d14d3fec8bf01880a39028d94f548a12",
       "title": "BAD HAND 2 5",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 5",
       "mints": [
         "FmeKUX8x8nSG7VrgPFDc4FhfZboQg9QUQcggLJhyVSRV"
       ],
@@ -1414,6 +1654,9 @@
       "stableId": "badhand2:group-40bb6b8aa5d0bc7b7fdbad83",
       "groupKeyHash": "40bb6b8aa5d0bc7b7fdbad83f1b4e0d8aea0e841960c926483eb67319da7adec",
       "title": "BAD HAND 2 6",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 6",
       "mints": [
         "J14Jk9c31nWUSMdK8ucfjJ6o6J1aJyGNQXjYfeJjUK5z"
       ],
@@ -1432,6 +1675,9 @@
       "stableId": "badhand2:group-81823e064a7ba45c04f37854",
       "groupKeyHash": "81823e064a7ba45c04f378547a7555b68d52050907736e94509075412b809214",
       "title": "BAD HAND 2 7",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 7",
       "mints": [
         "DdfXyN3SeiZ1W46M9Qv9a1XvRRjCvC5rtKfGv84db6af"
       ],
@@ -1450,6 +1696,9 @@
       "stableId": "badhand2:group-08f3713a113d03c9af87a220",
       "groupKeyHash": "08f3713a113d03c9af87a220b00e23b2a0b65b56162645c7deea83b66ec6a172",
       "title": "BAD HAND 2 8",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 8",
       "mints": [
         "EbQAtQo2CjFgtRmfsPABNoqFpeLGb8aNDY6jc6SAytKV"
       ],
@@ -1468,6 +1717,9 @@
       "stableId": "badhand2:group-d56ffc255e25d7dfa620d6e1",
       "groupKeyHash": "d56ffc255e25d7dfa620d6e1ed95439182a67b0e175fe881d6f637dd771c326d",
       "title": "BAD HAND 2 9",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 9",
       "mints": [
         "F9JekkqLjsZWgx9fnY13QDQC9LPxAd9S5bHnLqTgeUDC"
       ],
@@ -1486,6 +1738,9 @@
       "stableId": "badhand2:group-66bd976b42c1ec337d8a3c11",
       "groupKeyHash": "66bd976b42c1ec337d8a3c1131b607039de85401a14fa2cdcd1ae081f349896f",
       "title": "BAD HAND 2 10",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 10",
       "mints": [
         "J1xepmvgRbCc9ozVGW7tMJGvqNzevzKGsi7F2YpkY5fC"
       ],
@@ -1504,6 +1759,9 @@
       "stableId": "badhand2:group-7e16b1ab49692c5c8ce0d773",
       "groupKeyHash": "7e16b1ab49692c5c8ce0d773c2bd373f46d93abe3d7faa233fb6b638364e36e8",
       "title": "BAD HAND 2 11",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 11",
       "mints": [
         "4ocwa96tuarwz8ffAQA7xdd6MLEYRA1mTbWYNoJuCzGG"
       ],
@@ -1522,6 +1780,9 @@
       "stableId": "badhand2:group-7701ac5dc52a006d6e672bcf",
       "groupKeyHash": "7701ac5dc52a006d6e672bcfab4b56c71c4be21d7592dd6127f2643ffffd5909",
       "title": "BAD HAND 2 12",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 12",
       "mints": [
         "Hh57jKghoWUuuGp4yyzTtPLUTkpGUFktcjYc9cVaJCVJ"
       ],
@@ -1540,6 +1801,9 @@
       "stableId": "badhand2:group-f76cee7b52487adc15a596c0",
       "groupKeyHash": "f76cee7b52487adc15a596c027610e403e0eb63fac85f1df0e806a359e586642",
       "title": "BAD HAND 2 13",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 13",
       "mints": [
         "HVrEiWSQrSb1FM7i9UEHCzjNvwpTHVYvWB57kxiq9d3k"
       ],
@@ -1558,6 +1822,9 @@
       "stableId": "badhand2:group-c058cc6df3e44345363d262a",
       "groupKeyHash": "c058cc6df3e44345363d262a9fe73e00036c002b9ad8ed088f046cc4b981d025",
       "title": "BAD HAND 2 14",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 14",
       "mints": [
         "EmSG5K5BmnHsQFpSwc1AYkEDFjfGrmnpgU7ERLMnwzeC"
       ],
@@ -1576,6 +1843,9 @@
       "stableId": "badhand2:group-b559a505ee00c8c1decadd6b",
       "groupKeyHash": "b559a505ee00c8c1decadd6bd9316d7679eca1716c314546d24896669ef6d349",
       "title": "BAD HAND 2 15",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 15",
       "mints": [
         "AvEScYWmfqkKkTpip4wW1AFkCDphvZ6RVrsaJ7MGxfHk"
       ],
@@ -1594,6 +1864,9 @@
       "stableId": "badhand2:group-16aa423acd269ffb5d4ee1c5",
       "groupKeyHash": "16aa423acd269ffb5d4ee1c5368037962ad348678175bc77bf8a44d15b9393db",
       "title": "BAD HAND 2 16",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 16",
       "mints": [
         "98cdnqDoKcqmLU3FLyBSH8e5bVzi4sHrqpHSBrYc7RbJ"
       ],
@@ -1612,6 +1885,9 @@
       "stableId": "badhand2:group-6c1dbe873620cb6190a086bc",
       "groupKeyHash": "6c1dbe873620cb6190a086bcea3b28789834da88261ef14034c1178d4dd0d777",
       "title": "BAD HAND 2 17",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 17",
       "mints": [
         "9WXzZ67zmUZuGJr3sD3PWHCMAbivLCpWNKNEraQDqp9y"
       ],
@@ -1630,6 +1906,9 @@
       "stableId": "badhand2:group-7af2abb4983cd4ceb5a4c642",
       "groupKeyHash": "7af2abb4983cd4ceb5a4c64231bf04e0492d1f9c42095138ffcb92096049c8f2",
       "title": "BAD HAND 2 18",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 18",
       "mints": [
         "HBfKBV9KW2fM5HKFwSKa1SztVqByxihBmNqzT5ANZSNk"
       ],
@@ -1648,6 +1927,9 @@
       "stableId": "badhand2:group-5146fd7e6cff8ff21d8c27ee",
       "groupKeyHash": "5146fd7e6cff8ff21d8c27ee13036f5d37b95f64d84ac1f43e49e0606cb00592",
       "title": "BAD HAND 2 19",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 19",
       "mints": [
         "3QFZALdLYuXM1trnh7SD9GDLzBq3ceehp9YXHxrKevrh"
       ],
@@ -1666,6 +1948,9 @@
       "stableId": "badhand2:group-f5f62c75d69216a6bb71a3ae",
       "groupKeyHash": "f5f62c75d69216a6bb71a3aec8798a3e6c3d467eb71049d987cc36c0125131fb",
       "title": "BAD HAND 2 20",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 20",
       "mints": [
         "3EPdsfCm47gxnDhbnKvwQcatW5FFsHg9hmucJn5k4jDa"
       ],
@@ -1684,6 +1969,9 @@
       "stableId": "badhand2:group-d6a7299ea96b490482d246a6",
       "groupKeyHash": "d6a7299ea96b490482d246a61d87f654bab0b7259158338379367794ac890528",
       "title": "BAD HAND 2 21",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 21",
       "mints": [
         "AKtPMUR8X1BZHBNaMPEHvpeLAw8KA2enTmiWPLMBFNjR"
       ],
@@ -1702,6 +1990,9 @@
       "stableId": "badhand2:group-d8aad332d7a8c3526d2fbf51",
       "groupKeyHash": "d8aad332d7a8c3526d2fbf5142d1bd5692fe0e96e3e74d4853a81a0d7b6fd117",
       "title": "BAD HAND 2 22",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 22",
       "mints": [
         "9pEDLodC8FGxdtUqTiFh2hB4s7DuSD2Mcn9msN55F8ez"
       ],
@@ -1720,6 +2011,9 @@
       "stableId": "badhand2:group-01c7280956a34036c7c85142",
       "groupKeyHash": "01c7280956a34036c7c85142248a89ee07342d5ffbcaf763052d3911b48cf1a8",
       "title": "BAD HAND 2 23",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 23",
       "mints": [
         "AW3CtxQRpZ6nDuJZAteZFiWw2q7otazN8gKnnH6k7KhJ"
       ],
@@ -1738,6 +2032,9 @@
       "stableId": "badhand2:group-4ae5dc5b9e4f4342d8474682",
       "groupKeyHash": "4ae5dc5b9e4f4342d8474682376bac1bcd0ba3592b0f5b5abbbcb5d6676064b7",
       "title": "BAD HAND 2 24",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 24",
       "mints": [
         "7ypg1m8HTHiojRDWWQ4tm1GUHawp7HF6mPVBP8CETP1p"
       ],
@@ -1756,6 +2053,9 @@
       "stableId": "badhand2:group-f4403b7ee820c5560d473b55",
       "groupKeyHash": "f4403b7ee820c5560d473b556abea6e6db076f42f0bcd161926831d9ad2ac523",
       "title": "BAD HAND 2 25",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 25",
       "mints": [
         "2PdWB4oAbaAjWiKP2bYNt6nFsiKtPp4PAQK7KQH9VWDE"
       ],
@@ -1774,6 +2074,9 @@
       "stableId": "badhand2:group-ef1fdfc97f3bc3f6a1df4853",
       "groupKeyHash": "ef1fdfc97f3bc3f6a1df48535ceb44c3864bbeef27f0d177d5c861e1f45304b3",
       "title": "BAD HAND 2 26",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 26",
       "mints": [
         "GcMsthFk684ZiS4wt7A7ETE8QMrTGKmhxoMDbUxBhFH"
       ],
@@ -1792,6 +2095,9 @@
       "stableId": "badhand2:group-3134b0950b63b8e42c7d0691",
       "groupKeyHash": "3134b0950b63b8e42c7d069169e214f83f3fb2e5a733ba60d68dbd1f9751d193",
       "title": "BAD HAND 2 27",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 27",
       "mints": [
         "3ANdDaKa25mZkjrTNfXHBEKy8P7KLsecDuKHmsDz3XNB"
       ],
@@ -1810,6 +2116,9 @@
       "stableId": "badhand2:group-d2724a4397042804107e3887",
       "groupKeyHash": "d2724a4397042804107e388752e8c6ddbe98477adcd08fcb2fc52eb800ff8ab6",
       "title": "BAD HAND 2 28",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 28",
       "mints": [
         "6DrEhTp9nRZUb32hoExq3nvVyZAFr4hwMe8UBVwRLGiY"
       ],
@@ -1828,6 +2137,9 @@
       "stableId": "badhand2:group-cfe1e60647320d394e17511b",
       "groupKeyHash": "cfe1e60647320d394e17511b6bc3b187da7779ccea99da87d8e660abb0d9ecd7",
       "title": "BAD HAND 2 29",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 29",
       "mints": [
         "4U3VmXbaiyvhGwKN5Z1iYpi15C41L37jcy5oR2RscTXn"
       ],
@@ -1846,6 +2158,9 @@
       "stableId": "badhand2:group-c6b49395b63f68107edfb003",
       "groupKeyHash": "c6b49395b63f68107edfb003bd996879cb5376fa3c4a3ce944e41d5b588a5bfa",
       "title": "BAD HAND 2 30",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 30",
       "mints": [
         "8DGNehBSteCR8gVRRqqWC1o8J2BSB4gRmFKgQDbQc2Tb"
       ],
@@ -1864,6 +2179,9 @@
       "stableId": "badhand2:group-1c4bbad10fe88ad34a69d4ab",
       "groupKeyHash": "1c4bbad10fe88ad34a69d4ab7118bcd0e835efe6da3b99dddd3d900fde50fccf",
       "title": "BAD HAND 2 31",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 31",
       "mints": [
         "FVB3qySxfXZXptmgeZhECc6MDCnDoPyaV2GBq3v6ESdT"
       ],
@@ -1882,6 +2200,9 @@
       "stableId": "badhand2:group-8189371437b33ad71e720f78",
       "groupKeyHash": "8189371437b33ad71e720f78e74ebd8248e3ce12aa1e4536a34455f59b12b456",
       "title": "BAD HAND 2 32",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 32",
       "mints": [
         "GFturtt93SUvBcqBnp2UeAbEaDAv3X39HCKPA8cBeUNB"
       ],
@@ -1900,6 +2221,9 @@
       "stableId": "badhand2:group-1774fbf2c5f29baa64046280",
       "groupKeyHash": "1774fbf2c5f29baa64046280d8316af91b2368312c423bad05257e74a66cb232",
       "title": "BAD HAND 2 33",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 33",
       "mints": [
         "JDRjMexw1ADAuamDdXNE9tRkjxPrcgrdeAAHLkgBvN17"
       ],
@@ -1918,6 +2242,9 @@
       "stableId": "badhand2:group-d9a2047de11d6809bb4c9ea8",
       "groupKeyHash": "d9a2047de11d6809bb4c9ea89b9b7d58a2b9061fd4cf9a770972af3168062e65",
       "title": "BAD HAND 2 34",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 34",
       "mints": [
         "3r2UGqPifKdeQ8QcDKJHEHwPYGiv1tTJLXgajWNyWfUQ"
       ],
@@ -1936,6 +2263,9 @@
       "stableId": "badhand2:group-b18bb1bc3524c18d6a9066ed",
       "groupKeyHash": "b18bb1bc3524c18d6a9066edc52c0c9842ff82191c2225b7dbd6deed5d68b676",
       "title": "BAD HAND 2 35",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 35",
       "mints": [
         "DwrGTQB1jLDhds8WwFgk1Wkp52Mqo9VKjzQUpAa5W7HJ"
       ],
@@ -1954,6 +2284,9 @@
       "stableId": "badhand2:group-98f6049773fe86e89a5e296b",
       "groupKeyHash": "98f6049773fe86e89a5e296b888bc2ab69936c4ec4b26bebfd16959e1c508760",
       "title": "BAD HAND 2 36",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 36",
       "mints": [
         "6zTjSTtGLDSeFYskF4XvMUxjMiFiyxKCPmT5gyXL7VXV"
       ],
@@ -1972,6 +2305,9 @@
       "stableId": "badhand2:group-8e356d122a176f9fba98402a",
       "groupKeyHash": "8e356d122a176f9fba98402af29819ef9e62f398830b2e1b3a56381c904dc082",
       "title": "BAD HAND 2 37",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 37",
       "mints": [
         "pcqZXDYHvGFzSwgY1VnBxSNH2W7cNgCb3gshSE9U14h"
       ],
@@ -1990,6 +2326,9 @@
       "stableId": "badhand2:group-a804918cf6faef39b00bf304",
       "groupKeyHash": "a804918cf6faef39b00bf304ba62ad23dd4663f2d8a90e5c8352a67b619833fa",
       "title": "BAD HAND 2 38",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 38",
       "mints": [
         "8XmxUQgFtjxygWaDmHhtkNJ5Qr18R7Jv21LFijQ2n8X7"
       ],
@@ -2008,6 +2347,9 @@
       "stableId": "badhand2:group-96f1de29414b4dd72199395d",
       "groupKeyHash": "96f1de29414b4dd72199395d266092f36ad254078e1c496438466c5d796f2454",
       "title": "BAD HAND 2 39",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 39",
       "mints": [
         "98zdRR1BuJEEZbt38a4spXNzSJESbn2td1sN3QR28AFF"
       ],
@@ -2026,6 +2368,9 @@
       "stableId": "badhand2:group-f79d94e67fadfe99fdb62252",
       "groupKeyHash": "f79d94e67fadfe99fdb622522c35195956ce2214f610188434da83c3bf2ad4e3",
       "title": "BAD HAND 2 40",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 40",
       "mints": [
         "5AH5WaTCsWHEXCER9dMAfJj1QP3ZuJLxtrqe8sKQvovz"
       ],
@@ -2044,6 +2389,9 @@
       "stableId": "badhand2:group-c31c219c9e8c8ce6f4ab74b7",
       "groupKeyHash": "c31c219c9e8c8ce6f4ab74b72bb5ce471209178f2f2a838dfe4bf3ee810e56c9",
       "title": "BAD HAND 2 41",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 41",
       "mints": [
         "8UJRrd52a8WEhWs7y32R432eQi79VeRE9h8zHDsLaXzB"
       ],
@@ -2062,6 +2410,9 @@
       "stableId": "badhand2:group-91f62a844b8d060e7c1c4949",
       "groupKeyHash": "91f62a844b8d060e7c1c494976a5b6f51e17af522a200cec4801366112b2ea72",
       "title": "BAD HAND 2 42",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 42",
       "mints": [
         "AupWpQmT8fQcHny1GSJHE8aG4qbX9CKtqRbUaVckr4H"
       ],
@@ -2080,6 +2431,9 @@
       "stableId": "badhand2:group-ea0cef90d0745e81a7a56809",
       "groupKeyHash": "ea0cef90d0745e81a7a56809148bfdf0814db9fb47e46df415cc9ace89c503c3",
       "title": "BAD HAND 2 43",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 43",
       "mints": [
         "4j5fPNv9SA34x3kxzqkGn8uE6Bf5KPcHwPrYSAynAVhN"
       ],
@@ -2098,6 +2452,9 @@
       "stableId": "badhand2:group-b270a4fd7cf299e509a39f7f",
       "groupKeyHash": "b270a4fd7cf299e509a39f7ffadc36a2682af631bf67f33bd3f5bb6c35f05f73",
       "title": "BAD HAND 2 44",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 44",
       "mints": [
         "2sM6erNwQA2ryf83WpLY6KYd3NXd9ikXaWnih2iLia8K"
       ],
@@ -2116,6 +2473,9 @@
       "stableId": "badhand2:group-722056e0abf8088d72773bdc",
       "groupKeyHash": "722056e0abf8088d72773bdcdb6d4884914cd6798bda1f9e167a82337c60ddc1",
       "title": "BAD HAND 2 45",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 45",
       "mints": [
         "CDaQsMnE51pFnB2GbnEX2XymTSf6p3PZzRabtKv1zjfx"
       ],
@@ -2134,6 +2494,9 @@
       "stableId": "badhand2:group-8bfcc5b0770148bdfd95297b",
       "groupKeyHash": "8bfcc5b0770148bdfd95297b1690cf68e627e4767b88a46aa29c036275db37ef",
       "title": "BAD HAND 2 46",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 46",
       "mints": [
         "DuZve9csKUDSV4mxDg2XRqLzQUxKmJJ3DLAUTLuZm5dS"
       ],
@@ -2152,6 +2515,9 @@
       "stableId": "badhand2:group-e405276401b0ad47bb95bad3",
       "groupKeyHash": "e405276401b0ad47bb95bad3ddeb27388e9477e3b1e83ebcb9e7e90f34a76f57",
       "title": "BAD HAND 2 47",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 47",
       "mints": [
         "7EfRTSfwa5p8TyxoE2BVHsGdvFFJUwMxBHtpakMFpRGW"
       ],
@@ -2170,6 +2536,9 @@
       "stableId": "badhand2:group-72dde72f7ec23d57476657d8",
       "groupKeyHash": "72dde72f7ec23d57476657d824fe3f8c6dcd93830c2b6487bb4cc6df9dfa0fbe",
       "title": "BAD HAND 2 48",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 48",
       "mints": [
         "GHKTTfM3Z3exJLPqkPYmE7WQXdrFvHSeY59N1pUpMxQi"
       ],
@@ -2188,6 +2557,9 @@
       "stableId": "badhand2:group-bb9a510ecc1d60178806904c",
       "groupKeyHash": "bb9a510ecc1d60178806904c1b9efada03c5a31b2b876209d54ad3936f918e89",
       "title": "BAD HAND 2 49",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 49",
       "mints": [
         "4PChN3HkFDeCoEzAc57X9H7iQJZZLByEH3xt4ckbjQzf"
       ],
@@ -2206,6 +2578,9 @@
       "stableId": "badhand2:group-1a69316342c9937806d4ae11",
       "groupKeyHash": "1a69316342c9937806d4ae112d5e31f880a20b32f9a0ba409a0f8629d747ff83",
       "title": "BAD HAND 2 50",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 50",
       "mints": [
         "Hpf2geoqnFDaeJQvYXa8kyngGwjwf9syqhEqdxEQHiWm"
       ],
@@ -2224,6 +2599,9 @@
       "stableId": "badhand2:group-2ecac858ac5bae4594d71686",
       "groupKeyHash": "2ecac858ac5bae4594d71686d38437a01f2d0931a68db42cfcba9c2fee5cf4c3",
       "title": "BAD HAND 2 51",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 51",
       "mints": [
         "HXZcG6FrTamyhQPUJkXZkTBFMi58UwxSvMaeVMtad4EV"
       ],
@@ -2242,6 +2620,9 @@
       "stableId": "badhand2:group-aeb61d88178c1149cb8d320a",
       "groupKeyHash": "aeb61d88178c1149cb8d320ae06625802f3244f6bdb0401891ef7ea881121335",
       "title": "BAD HAND 2 52",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 52",
       "mints": [
         "CFPDiw7AVfPHmcidVkckJEuHssv9Dg6t3Dr36yYC1hu7"
       ],
@@ -2257,17 +2638,20 @@
     {
       "number": 53,
       "assetNumber": 53,
-      "stableId": "badhand2:group-7d31193de07b4490bc9edd5c",
-      "groupKeyHash": "7d31193de07b4490bc9edd5c9cc6ef7bbdfe185fbc5bdf02daf9ddb4e3b7ce18",
+      "stableId": "badhand2:group-ff52498e578616dc5915d598",
+      "groupKeyHash": "ff52498e578616dc5915d59810e953c83ac5e4e45ee06fa2ef669661e2996ce0",
       "title": "BAD HAND 2 53",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 53",
       "mints": [
         "8MJKF46oyAkzqUfeZNnZ4fW2SMGscmpBuCoDnMXXQTsr"
       ],
-      "sourceMetadataUri": "https://gateway.irys.xyz/BgIWUbwtgmxWCKZRGtFxQxXqpksX8MPO3sMijEMDQYs/52",
-      "sourceImageUri": "https://gateway.irys.xyz/e0uxAJmRyyhHxkq6TyudKxWJ1E3YeZdzL5LbV7pwAtI/BAD%20HAND%202%20%23053.png",
+      "sourceMetadataUri": "https://gateway.irys.xyz/vyxhhTKvNfvmfv68vFtapdJNNJW4PKEmYHN9BTHDG-o/52",
+      "sourceImageUri": "https://gateway.irys.xyz/ktzNG3gDXhZEsAMqBt4EJvuMFlL8Q82jDGgNbFjhpJU/BAD-HAND-2-053.png",
       "sourceAnimatedGifUri": "",
       "sourceAnimatedGifSignature": "",
-      "sourceImageSignature": "edbbd0f5555911f1ddd4a3491cfc051010ecc52a16ca87731936f9d4be525560",
+      "sourceImageSignature": "12914d6746228a8bd829e0188cdbf80ca90cdb906651b88fe08c9b2668ec1bfc",
       "metadataFile": "assets/badhand2/metadata/0000/card-53.json",
       "cardFile": "assets/badhand2/cards/0000/card-53.webp",
       "animation": null
@@ -2275,17 +2659,20 @@
     {
       "number": 54,
       "assetNumber": 54,
-      "stableId": "badhand2:group-f8d3db379786233b3182b7d6",
-      "groupKeyHash": "f8d3db379786233b3182b7d6f50b3e6340b0abc0f7e073d9e2757c891ca02279",
+      "stableId": "badhand2:group-cfa6b7d5b531308f299e4afa",
+      "groupKeyHash": "cfa6b7d5b531308f299e4afa8bbb4b07c36a4a6c7cee1947798676617ba2197c",
       "title": "BAD HAND 2 54",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 54",
       "mints": [
         "HBRweZm8pNRK1pVJrQgLSFe8Y69v4H7BREcvKrXEZMW1"
       ],
-      "sourceMetadataUri": "https://gateway.irys.xyz/BgIWUbwtgmxWCKZRGtFxQxXqpksX8MPO3sMijEMDQYs/53",
-      "sourceImageUri": "https://gateway.irys.xyz/e0uxAJmRyyhHxkq6TyudKxWJ1E3YeZdzL5LbV7pwAtI/BAD%20HAND%202%20%23054.png",
+      "sourceMetadataUri": "https://gateway.irys.xyz/vyxhhTKvNfvmfv68vFtapdJNNJW4PKEmYHN9BTHDG-o/53",
+      "sourceImageUri": "https://gateway.irys.xyz/ktzNG3gDXhZEsAMqBt4EJvuMFlL8Q82jDGgNbFjhpJU/BAD-HAND-2-054.png",
       "sourceAnimatedGifUri": "",
       "sourceAnimatedGifSignature": "",
-      "sourceImageSignature": "94846f521ea32f65d0005abe7ca3953bd4bd5c437a495984ce5624fd0a5861f6",
+      "sourceImageSignature": "bb2d34c00a0227d00105a5ea95b65a037ba4c5e0f711b268f873b2fddba21d56",
       "metadataFile": "assets/badhand2/metadata/0000/card-54.json",
       "cardFile": "assets/badhand2/cards/0000/card-54.webp",
       "animation": null
@@ -2296,6 +2683,9 @@
       "stableId": "badhand2:group-96662c13d8e98cd37acd08a4",
       "groupKeyHash": "96662c13d8e98cd37acd08a4f5fa692d7f194f078127dccc77797c74bd1e9a45",
       "title": "BAD HAND 2 55",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 55",
       "mints": [
         "Fh6kwEB8CUGH2XQuxbtCyt6K5nEdRBd2vz5tb5cajtJ8"
       ],
@@ -2314,6 +2704,9 @@
       "stableId": "badhand2:group-8cad366f711e415d88208b60",
       "groupKeyHash": "8cad366f711e415d88208b600e8c6f124ac844cafad16609fe8bbab7d72dbcf6",
       "title": "BAD HAND 2 56",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 56",
       "mints": [
         "5ropBBU9TveMtyQ7t8WqLnTwcB4dr6c1hf38nxzmnPHz"
       ],
@@ -2332,6 +2725,9 @@
       "stableId": "badhand2:group-475d7655afc70065853d9525",
       "groupKeyHash": "475d7655afc70065853d9525fe0e4ace4eded5035f643ecc9c0bd3697253e116",
       "title": "BAD HAND 2 57",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 57",
       "mints": [
         "BsaDSo5sTK8Awy7mQdSPZRURTL9b4sWiiRF5JhSVPaQV"
       ],
@@ -2350,6 +2746,9 @@
       "stableId": "badhand2:group-e9c5071adc8ad45bd6ec6af8",
       "groupKeyHash": "e9c5071adc8ad45bd6ec6af89f1572664eba8d8c6abe7e0b63005902b90605f6",
       "title": "BAD HAND 2 58",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 58",
       "mints": [
         "BS33BssCw6T7fbiexHMcqnDSSNJZKvASDWA1Ninz8Bvq"
       ],
@@ -2368,6 +2767,9 @@
       "stableId": "badhand2:group-f3591b347b6194f4a2417fb5",
       "groupKeyHash": "f3591b347b6194f4a2417fb5cd35cdbd93cb27ddc08a79ebd1f494b23d135541",
       "title": "BAD HAND 2 59",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 59",
       "mints": [
         "GZLqBWJ7p1hkrTZXiyx6wj8zxJv1XZ8QVHHep1Tatx1M"
       ],
@@ -2386,6 +2788,9 @@
       "stableId": "badhand2:group-b98c13eaa0bb2263dfa28254",
       "groupKeyHash": "b98c13eaa0bb2263dfa282546061a6b3bc4036dfea3c1a1d3bd4240059ced0e3",
       "title": "BAD HAND 2 60",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 60",
       "mints": [
         "CNxxSPwjkg4c5pfUhz97otXbLrbt8e1fMA8nHuSYpJhP"
       ],
@@ -2404,6 +2809,9 @@
       "stableId": "badhand2:group-a32c83b78964d6bfa1e33036",
       "groupKeyHash": "a32c83b78964d6bfa1e330363e2032e7bbb84fd23c7e7a39e7eb80d0282f3e99",
       "title": "BAD HAND 2 61",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 61",
       "mints": [
         "F8aCckcs5Z8nsZ39Y39HfrwWAGw4trxgHdfUh8uKotHD"
       ],
@@ -2422,6 +2830,9 @@
       "stableId": "badhand2:group-f1af25d02b06d95734fed47f",
       "groupKeyHash": "f1af25d02b06d95734fed47fd1cd7565c1c25a4bea215bdf86250782199f498e",
       "title": "BAD HAND 2 62",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 62",
       "mints": [
         "9dsXjwjDpK68xN1wKkrFaqGN6taHeGL11dBXaDAaLXu8"
       ],
@@ -2440,6 +2851,9 @@
       "stableId": "badhand2:group-e626a4a1a9659367d87a08c5",
       "groupKeyHash": "e626a4a1a9659367d87a08c5cfb94a6ff3a32265c9898d1b4de02f22ca50bad6",
       "title": "BAD HAND 2 63",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 63",
       "mints": [
         "AFFhX7DXCZcgpPbKEzsp3TdR9Rkp9F8DDF6ax5iVNFEe"
       ],
@@ -2458,6 +2872,9 @@
       "stableId": "badhand2:group-28606cbd45125b8dd81e0a7c",
       "groupKeyHash": "28606cbd45125b8dd81e0a7c65c41526d4e26bd8bd7f3576c4133276c67db61c",
       "title": "BAD HAND 2 64",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 64",
       "mints": [
         "7qJDwQVzKquxtbb76NMRhzMEfLvaL37YxEdiXoNJuCYs"
       ],
@@ -2476,6 +2893,9 @@
       "stableId": "badhand2:group-bce9c7ccb0b70adeb1d81f0f",
       "groupKeyHash": "bce9c7ccb0b70adeb1d81f0f3884a1971b1d397136493f8a8880807e9704770f",
       "title": "BAD HAND 2 65",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 65",
       "mints": [
         "A7YysRm3BUR9oMg5EcPfZZda6w3t1zL9Avw5Sy2uSoAk"
       ],
@@ -2494,6 +2914,9 @@
       "stableId": "badhand2:group-e4db43b7d61f6f5ebbbdfbc0",
       "groupKeyHash": "e4db43b7d61f6f5ebbbdfbc0b85e7ef96ae15e3af37b9144523c58c13550490d",
       "title": "BAD HAND 2 66",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 66",
       "mints": [
         "3UWKpavddmsktHzieWvJVkhosjLm9GcJrXWgdWLxFBL3"
       ],
@@ -2512,6 +2935,9 @@
       "stableId": "badhand2:group-c07fb4ee57226757b4cfa5e9",
       "groupKeyHash": "c07fb4ee57226757b4cfa5e96620e4b713f07fb4f2f218ba01bb5209df41b1fb",
       "title": "BAD HAND 2 67",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 67",
       "mints": [
         "518ZKGKbTQTbAZVevin6qWmcdzvtdDvvaEeB4MnVkLd6"
       ],
@@ -2530,6 +2956,9 @@
       "stableId": "badhand2:group-2dc27b1ee9f52c4fec3c3a56",
       "groupKeyHash": "2dc27b1ee9f52c4fec3c3a565d99ce16297b0b97b8ef5b64e20a6a1c4bb2392c",
       "title": "BAD HAND 2 68",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 68",
       "mints": [
         "BX6V4UinJPmBEwzxfuCFnDJQfWXyvcmESmAZidB81Nex"
       ],
@@ -2548,6 +2977,9 @@
       "stableId": "badhand2:group-d70ae10667b4020a7a34e37c",
       "groupKeyHash": "d70ae10667b4020a7a34e37ca278b34c99b6ac74f2f8d1c099cf084341f17591",
       "title": "BAD HAND 2 69",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 69",
       "mints": [
         "3uudWCsuvQcuF7CWcpxFo8zLsaThR2j7HdRopQixvuiR"
       ],
@@ -2566,6 +2998,9 @@
       "stableId": "badhand2:group-37a8284324998ffd1b9cb05c",
       "groupKeyHash": "37a8284324998ffd1b9cb05c74124ad0932559ef39937351839ebb799306d193",
       "title": "BAD HAND 2 70",
+      "sourceCollectionOrder": 0,
+      "sourceCollectionSlug": "3afd0857-0fde-4fe6-8a75-bea756209527",
+      "sourceName": "BAD HAND 2 70",
       "mints": [
         "6ZxJ4pBYRFFEcjoV7steWrctUrbY6hgZUJYvwmCXqkgo"
       ],

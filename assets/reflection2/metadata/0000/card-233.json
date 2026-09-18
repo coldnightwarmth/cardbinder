@@ -1,0 +1,92 @@
+{
+  "name": "have you considered reflection 2 #2959",
+  "image": "https://gateway.irys.xyz/Xr2rKM-xnxP_I_n0ZEfB0uzpl7RXXEV2nyOMt9PvOnk",
+  "symbol": "REF2",
+  "creators": [
+    {
+      "share": 100,
+      "address": "BvUvpLf1Gur5wypNomSkmmS8e1GAXAbzvhNZYdUm3n5i",
+      "verified": false
+    }
+  ],
+  "attributes": [
+    {
+      "trait_type": "Stack Depth",
+      "value": "Medium"
+    },
+    {
+      "trait_type": "Layer Count",
+      "value": "18"
+    },
+    {
+      "trait_type": "Composition",
+      "value": "Veil Wash"
+    },
+    {
+      "trait_type": "Deck",
+      "value": "Enchantress"
+    },
+    {
+      "trait_type": "Pack Tier",
+      "value": "Standard"
+    }
+  ],
+  "properties": {
+    "files": [
+      {
+        "uri": "https://gateway.irys.xyz/Xr2rKM-xnxP_I_n0ZEfB0uzpl7RXXEV2nyOMt9PvOnk",
+        "type": "image/webp"
+      },
+      {
+        "uri": "https://gateway.irys.xyz/C_h-vBlzB79uWVhKjo9PtpWsBTcb0AiBXmLTJKYC210",
+        "role": "preview",
+        "type": "image/webp"
+      }
+    ],
+    "mirrors": [
+      {
+        "uri": "ar://Xr2rKM-xnxP_I_n0ZEfB0uzpl7RXXEV2nyOMt9PvOnk",
+        "role": "image",
+        "type": "image/webp"
+      },
+      {
+        "uri": "https://arweave.net/Xr2rKM-xnxP_I_n0ZEfB0uzpl7RXXEV2nyOMt9PvOnk",
+        "role": "image",
+        "type": "image/webp"
+      },
+      {
+        "uri": "https://permagate.io/Xr2rKM-xnxP_I_n0ZEfB0uzpl7RXXEV2nyOMt9PvOnk",
+        "role": "image",
+        "type": "image/webp"
+      },
+      {
+        "uri": "ar://C_h-vBlzB79uWVhKjo9PtpWsBTcb0AiBXmLTJKYC210",
+        "role": "preview",
+        "type": "image/webp"
+      },
+      {
+        "uri": "https://arweave.net/C_h-vBlzB79uWVhKjo9PtpWsBTcb0AiBXmLTJKYC210",
+        "role": "preview",
+        "type": "image/webp"
+      },
+      {
+        "uri": "https://permagate.io/C_h-vBlzB79uWVhKjo9PtpWsBTcb0AiBXmLTJKYC210",
+        "role": "preview",
+        "type": "image/webp"
+      }
+    ],
+    "category": "image",
+    "creators": [
+      {
+        "share": 100,
+        "address": "BvUvpLf1Gur5wypNomSkmmS8e1GAXAbzvhNZYdUm3n5i",
+        "verified": false
+      }
+    ]
+  },
+  "description": "have you considered reflection 2, an autocollaged study of the weaponization of nostalgia.",
+  "seller_fee_basis_points": 500,
+  "collection_mints": [
+    "AaSyq57zUF6TS9AkuFcZCkDAFr4cn28oEsEWZqgh8SMT"
+  ]
+}

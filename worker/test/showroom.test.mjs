@@ -2,20 +2,23 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { seatFor, canWalkAt, facingStart } from '../../showroom-layout.mjs';
 
-test('show floor grows both rows with exactly three unique seats per table', () => {
-  const seats = new Set(), tables = new Map();
-  for (let i = 0; i < 600; i++) {
-    const {side,row,slot} = seatFor(i);
-    const key = `${side}:${row}`;
-    assert.ok(side === -1 || side === 1);
-    assert.ok(slot >= 0 && slot < 3);
-    seats.add(`${key}:${slot}`);
-    tables.set(key, (tables.get(key) || 0) + 1);
+test('wallet and collection rows grow independently with three nearest-first seats per table', () => {
+  for (const side of [-1, 1]) {
+    const seats = new Set(), tables = new Map();
+    for (let i = 0; i < 600; i++) {
+      const seat = seatFor(i, side);
+      assert.equal(seat.side, side);
+      assert.equal(seat.slot, 2 - i % 3);
+      const key = `${seat.side}:${seat.row}`;
+      seats.add(`${key}:${seat.slot}`);
+      tables.set(key, (tables.get(key) || 0) + 1);
+    }
+    assert.equal(seats.size, 600);
+    assert.equal(tables.size, 200);
+    assert.ok([...tables.values()].every(count => count === 3));
+    assert.deepEqual(seatFor(600, side), {side,row:200,slot:2});
   }
-  assert.equal(seats.size, 600);
-  assert.equal(tables.size, 200);
-  assert.ok([...tables.values()].every(count => count === 3));
-  assert.deepEqual(seatFor(600), {side:-1,row:100,slot:0});
+  assert.deepEqual(seatFor(0), {side:-1,row:0,slot:2});
 });
 
 test('walking preserves the central aisle and blocks tables while allowing the open floor', () => {
@@ -145,7 +148,7 @@ test('mouse capture recovers after Escape rejection and clears stale fallback st
   canvas.requestPointerLock=()=>{requests++;return new Promise((resolve,fail)=>{reject=fail;});};
   const document={pointerLockElement:null,addEventListener:(name,handler)=>handlers[name]=handler};
   const context=vm.createContext({canvas,document,hud:{querySelector:()=>button},status:{},keys:new Set(),
-    active:null,busy:false,lockRequest:0,fallback:false,dragging:false,dragged:false});
+    touchMode:false,leave:{hidden:true},active:null,busy:false,lockRequest:0,fallback:false,dragging:false,dragged:false});
   vm.runInContext(implementation,context);
   context.lock();reject({name:'SecurityError'});await Promise.resolve();
   assert.equal(context.fallback,true);
@@ -156,4 +159,59 @@ test('mouse capture recovers after Escape rejection and clears stale fallback st
   assert.equal(context.fallback,false,'temporary Escape rejection must not enable drag mode');
   context.lock();document.pointerLockElement=canvas;handlers.pointerlockchange();
   assert.equal(context.fallback,false);assert.equal(button.hidden,true);assert.equal(requests,4);
+});
+
+test('touch joystick movement is analog and camera-relative', () => {
+  const source=readFileSync(new URL('../../showroom.js',import.meta.url),'utf8');
+  const implementation=source.slice(source.indexOf('  function move(dt)'),source.indexOf('  const pickTargets'));
+  const camera={position:{x:0,z:0},rotation:{y:0}};
+  const context=vm.createContext({
+    THREE,camera,keys:new Set(),touchMove:{x:0,y:-.5},canWalk:()=>true,
+  });
+  vm.runInContext(implementation,context);
+  context.move(1);
+  assert.ok(Math.abs(camera.position.x)<1e-10);
+  assert.ok(Math.abs(camera.position.z+1.35)<1e-10);
+  camera.position.x=0;camera.position.z=0;context.touchMove.x=.25;context.touchMove.y=0;
+  context.move(1);
+  assert.ok(Math.abs(camera.position.x-.675)<1e-10);
+  assert.ok(Math.abs(camera.position.z)<1e-10);
+});
+
+test('touch showroom supports drag look, centered highlighting, and tap-to-open', () => {
+  const source=readFileSync(new URL('../../showroom.js',import.meta.url),'utf8');
+  assert.match(source,/id="showroomTouchJoystick"/);
+  assert.match(source,/event\.pointerType==='touch'/);
+  assert.match(source,/camera\.rotation\.y-=dx\*\.0034/);
+  assert.match(source,/touchBinderAt\(event\.clientX,event\.clientY\) \|\| hovered/);
+  assert.match(source,/fallback && !touchMode && !dragging \? mousePoint : center/);
+});
+
+test('showroom has the taller eye line and animated particle figure behind the evil table', () => {
+  const source=readFileSync(new URL('../../showroom.js',import.meta.url),'utf8');
+  assert.match(source,/camera\.position\.set\(0, 1\.72, 3\.5\)/);
+  assert.match(source,/new THREE\.Points\(geometry,material\)/);
+  assert.match(source,/ghost\.name='evil-biscuit-table-ghost'/);
+  assert.match(source,/ghost\.position\.set\(4\.28,0,\.04\)/);
+  assert.match(source,/evilTableGhost\.material\.uniforms\.time\.value=now\*\.001/);
+});
+
+
+import { createResolutionBudget } from '../../showroom-performance.mjs';
+test('adaptive resolution is bounded, recovers, and ignores suspended frames', () => {
+  const budget=createResolutionBudget(2);
+  for(let i=0;i<1000;i++) budget.sample(1000);
+  assert.ok(Math.abs(budget.ratio-2)<1e-9);
+  for(let i=0;i<3000;i++) budget.sample(30);
+  assert.ok(Math.abs(budget.ratio-1)<1e-9);
+  for(let i=0;i<10000;i++) budget.sample(16);
+  assert.ok(Math.abs(budget.ratio-2)<1e-9);
+  const lowDpi=createResolutionBudget(.8);
+  for(let i=0;i<3000;i++)lowDpi.sample(30);
+  assert.equal(lowDpi.ratio,.8);
+});
+test('adaptive resolution holds steady at healthy frame rates', () => {
+  const budget=createResolutionBudget(1.5);
+  for(let i=0;i<1000;i++) assert.equal(budget.sample(20),null);
+  assert.equal(budget.ratio,1.5);
 });

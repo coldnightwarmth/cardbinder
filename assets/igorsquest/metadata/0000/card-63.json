@@ -1,8 +1,8 @@
 {
-  "name": "Igors Quest #933",
+  "name": "Igors Quest #894",
   "description": "Collect over 40 unique monsters, freaks and ghouls in Igors Quest: Shadylands!",
   "symbol": "IGORSQUEST",
-  "image": "https://we-assets.pinit.io/75t7GEYpY7uThhjQrhrg13YnUbtY6Gy5CNG1UxoisyNQ/7f2d4a0b-58cb-4c8a-a1b3-1fba7a857ecb/pack-0-nft-1427.png",
+  "image": "https://we-assets.pinit.io/75t7GEYpY7uThhjQrhrg13YnUbtY6Gy5CNG1UxoisyNQ/7f2d4a0b-58cb-4c8a-a1b3-1fba7a857ecb/pack-0-nft-1383.png",
   "attributes": [
     {
       "trait_type": "Big Background",
@@ -10,30 +10,30 @@
     },
     {
       "trait_type": "Card",
-      "value": "Arctic"
+      "value": "Blued"
     },
     {
       "trait_type": "Background",
-      "value": "Millardia"
+      "value": "Cave"
     },
     {
       "trait_type": "CharactersComplete",
-      "value": "Johnston"
+      "value": "Brainiac Rare"
     },
     {
       "trait_type": "Rarity Rank",
-      "value": "653"
+      "value": "177"
     }
   ],
   "properties": {
     "files": [
       {
-        "uri": "https://we-assets.pinit.io/75t7GEYpY7uThhjQrhrg13YnUbtY6Gy5CNG1UxoisyNQ/7f2d4a0b-58cb-4c8a-a1b3-1fba7a857ecb/pack-0-nft-1427.png",
+        "uri": "https://we-assets.pinit.io/75t7GEYpY7uThhjQrhrg13YnUbtY6Gy5CNG1UxoisyNQ/7f2d4a0b-58cb-4c8a-a1b3-1fba7a857ecb/pack-0-nft-1383.png",
         "type": "image/png"
       }
     ]
   },
   "collection_mints": [
-    "8x2wyJN8ba6AvePPyFJNMLFq2Fa7Sb8XNGU5j3tfB4Qr"
+    "6tDy6iLCbdQ6oQfCHGLbKaugWcy2EPHVT98QbNFPVPjZ"
   ]
 }

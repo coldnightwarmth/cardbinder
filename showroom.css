@@ -1,4 +1,4 @@
-#showroomCanvas { position:fixed; inset:0; width:100%; height:100%; z-index:0; }
+#showroomCanvas { position:fixed; inset:0; width:100%; height:100%; z-index:0; touch-action:none; }
 body.showroom { background:#151718; }
 .showroom #table { background:transparent; }
 .showroom-walking #table, .showroom-walking .theme-switch { visibility:hidden; pointer-events:none; }
@@ -50,4 +50,104 @@ body.showroom { background:#151718; }
 #showroomTop,
 #showroomHint {
   display: none !important;
+}
+
+#showroomLeave {
+  position: absolute;
+  bottom: max(28px, env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+#showroomLeave[hidden] { display: none !important; }
+
+#showroomTouchJoystick {
+  position: absolute;
+  right: max(22px, env(safe-area-inset-right));
+  bottom: max(22px, env(safe-area-inset-bottom));
+  width: 118px;
+  height: 118px;
+  z-index: 23;
+  pointer-events: auto;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+#showroomTouchJoystick[hidden],
+.showroom:not(.showroom-walking) #showroomTouchJoystick { display:none !important; }
+#showroomTouchJoystickBase {
+  position:absolute;
+  inset:7px;
+  border-radius:50%;
+  border:1px solid #ffffff38;
+  background:radial-gradient(circle at 38% 32%,#ffffff20,#13182066 68%);
+  box-shadow:inset 0 0 24px #00000026,0 8px 30px #00000024;
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+}
+#showroomTouchJoystickThumb {
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:46px;
+  height:46px;
+  border-radius:50%;
+  border:1px solid #ffffff6b;
+  background:linear-gradient(145deg,#f0eadcdd,#aaa391c7);
+  box-shadow:0 5px 18px #00000042,inset 0 1px 0 #ffffffb8;
+  transform:translate(-50%,-50%);
+  transition:transform 90ms ease-out,box-shadow 120ms ease;
+  will-change:transform;
+}
+#showroomTouchJoystick.is-active #showroomTouchJoystickThumb {
+  transition:none;
+  box-shadow:0 3px 12px #00000055,inset 0 1px 0 #ffffffd0;
+}
+.showroom.is-light #showroomTouchJoystickBase {
+  border-color:#242b3438;
+  background:radial-gradient(circle at 38% 32%,#ffffff8c,#afb6be63 72%);
+}
+.showroom.is-light #showroomTouchJoystickThumb {
+  border-color:#252b3266;
+  background:linear-gradient(145deg,#fffdf4ed,#c9c5b8dc);
+}
+@media(max-width:600px) {
+  #showroomTouchJoystick {
+    right:max(14px,env(safe-area-inset-right));
+    bottom:max(14px,env(safe-area-inset-bottom));
+    width:108px;
+    height:108px;
+  }
+}
+
+/* Reuse the main site's switch only while the Escape menu is visible. */
+.showroom.showroom-walking:has(#showroomLeave:not([hidden])) .theme-switch {
+  display: inline-flex !important;
+  visibility: visible;
+  pointer-events: auto;
+  z-index: 21;
+}
+
+.showroom-speech {
+  position: fixed;
+  z-index: 19;
+  box-sizing: border-box;
+  width: min(340px, calc(100vw - 24px));
+  padding: 17px 20px;
+  border: 1px solid rgba(255,255,255,.4);
+  border-radius: 20px 20px 5px 20px;
+  background: rgba(248,246,240,.96);
+  color: #25272c;
+  box-shadow: 0 8px 32px rgba(0,0,0,.2);
+  font: 15px/1.5 Georgia, 'Times New Roman', serif;
+  pointer-events: none;
+}
+.showroom-speech[hidden] { display: none; }
+.showroom-speech::after {
+  content: '';
+  position: absolute;
+  right: 12px;
+  bottom: -12px;
+  border-top: 12px solid rgba(248,246,240,.96);
+  border-left: 15px solid transparent;
 }

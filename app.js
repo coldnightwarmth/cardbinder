@@ -41,8 +41,12 @@ const COLLECTION_DATA_SPECS = {
   sweetcurse: { module: "./sweetcurse-data.js?v=community-5", exportName: "SWEETCURSE_CARDS" },
   winloop: { module: "./winloop-data.js?v=community-5", exportName: "WINLOOP_CARDS" },
   mtgnft: { module: "./mtgnft-data.js?v=community-5", exportName: "MTGNFT_CARDS" },
-  igorsquest: { module: "./igorsquest-data.js?v=community-5", exportName: "IGORSQUEST_CARDS" },
+  igorsquest: { module: "./igorsquest-data.js?v=igorsquest-cropped-1", exportName: "IGORSQUEST_CARDS" },
   clear: { module: "./clear-data.js?v=clear-8", exportName: "CLEAR_CARDS" },
+  reflection2: {
+    module: "./reflection2-data.js?v=reflection2-public-1",
+    exportName: "REFLECTION2_CARDS",
+  },
 };
 const REQUESTED_COLLECTION_ID = COLLECTION_DATA_SPECS[document.documentElement.dataset.collectionId]
   ? document.documentElement.dataset.collectionId
@@ -167,7 +171,7 @@ const COLLECTION_CONFIGS = {
     traitModule: getBrowserTraitConfig("badhand2").module,
     traits: null,
     traitFiltersEnabled: getBrowserTraitConfig("badhand2").categories.length > 0,
-    backImage: "assets/badhand2/backs/badhand2-back.webp?v=yugioh-english-2",
+    backImage: "assets/badhand2/backs/badhand2-back.webp?v=pokemon-english-1",
     path: "/badhand2/",
     introGroup: "community",
   },
@@ -284,7 +288,7 @@ const COLLECTION_CONFIGS = {
     traitModule: getBrowserTraitConfig("igorsquest").module,
     traits: null,
     traitFiltersEnabled: getBrowserTraitConfig("igorsquest").categories.length > 0,
-    backImage: "assets/igorsquest/backs/igorsquest-back.webp?v=igorsquest-1",
+    backImage: "assets/igorsquest/backs/igorsquest-back.webp?v=igorsquest-cropped-1",
     path: "/igorsquest/",
     introGroup: "community",
   },
@@ -302,6 +306,19 @@ const COLLECTION_CONFIGS = {
     path: "/clear/",
     introGroup: "community",
   },
+  reflection2: {
+    id: "reflection2",
+    label: "have you considered reflection 2",
+    introLabel: "have you considered reflection 2",
+    cards: getInitialCollectionCards("reflection2"),
+    traitCategories: getBrowserTraitConfig("reflection2").categories,
+    traitModule: getBrowserTraitConfig("reflection2").module,
+    traits: null,
+    traitFiltersEnabled: getBrowserTraitConfig("reflection2").categories.length > 0,
+    backImage: "assets/reflection2/backs/reflection2-back.webp?v=reflection2-mtg-2",
+    path: "/reflection2/",
+    introGroup: "community",
+  },
 };
 const COMMUNITY_COVER_COLLECTION_ORDER = [
   "cardnft1",
@@ -315,6 +332,7 @@ const COMMUNITY_COVER_COLLECTION_ORDER = [
   "jpegs",
   "clear",
   "nolegs",
+  "reflection2",
   "mtgnft",
   "playcards",
   "kardmane",
@@ -1768,7 +1786,7 @@ async function init() {
   preloadAllConfiguredBackTextures().catch(console.error);
   if (!galleryOpen) startCardRenderLoop();
   if (IS_SHOWROOM) {
-    const { initShowroom } = await import("./showroom.js");
+    const { initShowroom } = await import("./showroom.js?v=showroom-speech-2");
     await initShowroom(await createShowroomBridge());
   }
 }
@@ -1813,12 +1831,22 @@ async function createShowroomBridge() {
   });
   void ensureAllCollectionCards().catch(() => {});
   return {
+    collections: COMMUNITY_COVER_COLLECTION_ORDER.map(collectionId => ({ collectionId, label: collectionId === "nolegs" ? "CARDS (no legs)" : collectionId === "jpegs" ? "jpegs.cool cards" : COLLECTION_CONFIGS[collectionId].label })),
     list: async cursor => {
       const payload = await getPublicWalletBinders(WALLET_PUBLIC_API_BASE_URL, { limit: 60, cursor, version: "2" });
       return { ...payload, binders: await getNonemptyWalletBinderDirectoryEntries(payload.binders || []) };
     },
-    placeholder: entry => createShowroomBinderModel({ settings: normalizeBinderCoverSettings(entry.cover), front: null, back: null }, entry.supportedCardCount || entry.savedCardCount || 1),
+    placeholder: entry => entry.collectionId
+      ? createShowroomBinderModel(null, COLLECTION_CONFIGS[entry.collectionId].cards.length, entry.collectionId)
+      : createShowroomBinderModel({ settings: normalizeBinderCoverSettings(entry.cover), front: null, back: null }, entry.supportedCardCount || entry.savedCardCount || 1),
     model: async entry => {
+      if(entry.collectionId) {
+        await ensureCollectionCards(entry.collectionId);
+        if(COLLECTION_CONFIGS[entry.collectionId].introGroup === "evil") {
+          await getBinderFrontCoverEmblemTexture(entry.collectionId);
+        }
+        return createShowroomBinderModel(null, COLLECTION_CONFIGS[entry.collectionId].cards.length, entry.collectionId);
+      }
       const profile = await getProfile(entry.walletAddress);
       const settings = normalizeBinderCoverSettings(profile.cover);
       const [front, back] = await Promise.all(["front", "back"].map(surface => (
@@ -1830,8 +1858,28 @@ async function createShowroomBridge() {
       model.userData.ownedTextures = [front, back].filter(Boolean);
       return model;
     },
-    prefetch: address => Promise.all([getPrepared(address), getArtwork(address), warmCards(address)]),
-    open: async address => {
+    prefetch: async entry => {
+      if(entry.collectionId) {
+        await ensureCollectionCards(entry.collectionId);
+        await Promise.allSettled(COLLECTION_CONFIGS[entry.collectionId].globalIndexes.slice(0, BINDER_SIDE_SLOTS)
+          .map(index => getBinderTexture(CARDS[index])));
+        return;
+      }
+      const address=entry.walletAddress;
+      return Promise.all([getPrepared(address), getArtwork(address), warmCards(address)]);
+    },
+    open: async entry => {
+      if(entry.collectionId) {
+        await Promise.all([ensureCollectionCards(entry.collectionId), preloadCollectionBackTextures(entry.collectionId)]);
+        refreshWalletBinderCoverRendering();
+        WALLET_ROUTE_ADDRESS = "";
+        walletRouteProfile = null;
+        commitActiveEvilBinderCollection(entry.collectionId, { historyMode: "none", showroomCollection: true });
+        setGalleryOpen(true);
+        setBinderTableView(false, { immediate: true });
+        return;
+      }
+      const address=entry.walletAddress;
       const [{ profile, holdings, result }, artwork] = await Promise.all([getPrepared(address), getArtwork(address)]);
       WALLET_ROUTE_ADDRESS = address;
       primeWalletBinderRoute(address);
@@ -1901,15 +1949,16 @@ async function createShowroomInsideTexture(settings, width, height) {
 
 function createShowroomArtworkMesh(texture, width, height) {
   const mesh = new THREE.Mesh(new THREE.PlaneGeometry(width, height), new THREE.MeshBasicMaterial({
-    map: texture, transparent: true, toneMapped: false, depthWrite: false,
+    map: texture || null, transparent: true, toneMapped: false, depthWrite: false,
     polygonOffset: true, polygonOffsetFactor: -1,
   }));
   mesh.visible = Boolean(texture);
   return mesh;
 }
 
-function createShowroomBinderModel(artwork, cardCount) {
-  const state = createBinderCoverShellModel({ showroomCover: artwork });
+function createShowroomBinderModel(artwork, cardCount, collectionId = ACTIVE_COLLECTION_ID) {
+  const state = createBinderCoverShellModel({ showroomCover: artwork, collectionId,
+    showroomCollection: !artwork, emblemActive: !artwork });
   applyBinderShellClosureGeometry(state, -1);
   state.walletCoverArtwork.name = "showroom-front-cover";
   state.walletCoverArtwork.renderOrder = 2;
@@ -2361,6 +2410,20 @@ function initEvents() {
   els.galleryClearFiltersButton.addEventListener("click", clearGallerySortAndFilters);
   els.walletSearchButton.addEventListener("click", toggleWalletSearchPanel);
   els.walletBinderDirectoryButton.addEventListener("click", openWalletBinderDirectory);
+  if (!IS_SHOWROOM) {
+    const row = document.createElement("div");
+    row.className = "wallet-binder-destination-row";
+    els.walletBinderDirectoryButton.before(row);
+    row.append(els.walletBinderDirectoryButton);
+    const enter = document.createElement("a");
+    enter.className = "wallet-binder-directory-button wallet-showroom-link";
+    enter.textContent = "Enter Show Room";
+    const destination = new URL("/show", location.origin);
+    destination.searchParams.set("returnTo", location.pathname + location.search + location.hash);
+    enter.href = destination.href;
+    enter.addEventListener("click", () => saveSessionViewState());
+    row.append(enter);
+  }
   els.walletBinderDirectoryBackButton.addEventListener("click", () => {
     setWalletBinderDirectoryOpen(false);
   });
@@ -2906,10 +2969,10 @@ function populateTraitSortOptions() {
   els.traitSortSelect.replaceChildren();
   els.traitSearchButton.disabled = !filtersAvailable;
   if (!filtersAvailable) {
-    els.gallerySortControl.title = "Trait sorting is not available for this collection yet";
-    els.traitSearchButton.title = "Trait search is not available for this collection yet";
-  } else {
-    els.gallerySortControl.removeAttribute("title");
+    els.traitSearchButton.setAttribute(
+      "aria-label",
+      "Trait search is not available for this collection yet",
+    );
   }
 
   const tradeOption = document.createElement("option");
@@ -6887,7 +6950,7 @@ function renderTraitPanel() {
     tile.className = "trait-tile";
     tile.type = "button";
     if (trait.filterable !== false && traitFiltersEnabledForCollection(trait.collection)) {
-      tile.title = `Show cards with ${trait.value}`;
+      tile.setAttribute("aria-label", `Show cards with ${trait.value}`);
       tile.addEventListener("click", () => openTraitFilteredGallery(trait));
     } else {
       tile.disabled = true;
@@ -7351,7 +7414,6 @@ function updateExternalCardLink(link, mint, href, label) {
   }
   link.hidden = false;
   link.href = href;
-  link.title = label;
   link.setAttribute("aria-label", label);
   link.setAttribute("aria-disabled", "false");
   link.tabIndex = 0;
@@ -7366,7 +7428,6 @@ function updateFavoriteButtons() {
 function updateBinderFavoriteButton() {
   if (isBinderIntroFocused()) {
     els.binderFavoriteButton.setAttribute("aria-pressed", "false");
-    els.binderFavoriteButton.setAttribute("title", "No card to favorite");
     els.binderFavoriteButton.setAttribute("aria-label", "No card to favorite");
     return;
   }
@@ -7374,10 +7435,6 @@ function updateBinderFavoriteButton() {
   const cardIndex = getFocusedBinderCardIndex();
   const active = Number.isInteger(cardIndex) && favorites.has(favoriteKey(cardIndex));
   els.binderFavoriteButton.setAttribute("aria-pressed", String(active));
-  els.binderFavoriteButton.setAttribute(
-    "title",
-    active ? "Remove focused card from favorites" : "Add focused card to favorites",
-  );
   els.binderFavoriteButton.setAttribute(
     "aria-label",
     active ? "Remove focused card from favorites" : "Add focused card to favorites",
@@ -7650,7 +7707,7 @@ function updateTraitSearchButtonLabel() {
   labelElement.textContent = label;
   els.traitSearchButton.classList.toggle("has-active-trait", activeFilter);
   const selectedCollectionLabel = COLLECTION_CONFIGS[activeCollectionFilter]?.label || "";
-  els.traitSearchButton.title = mixedCollections
+  const accessibleLabel = mixedCollections
     ? activeTraitFilter
       ? `Filtered by ${selectedCollectionLabel}: ${activeTraitFilter.value}`
       : selectedCollectionLabel
@@ -7661,7 +7718,7 @@ function updateTraitSearchButtonLabel() {
       : "Search traits";
   els.traitSearchButton.setAttribute(
     "aria-label",
-    els.traitSearchButton.title,
+    accessibleLabel,
   );
 }
 
@@ -7905,7 +7962,6 @@ function createWalletBinderDirectoryCard(entry) {
   link.dataset.walletAddress = address;
   link.setAttribute("role", "listitem");
   link.setAttribute("aria-label", `Open wallet binder ${address}`);
-  link.title = address;
 
   const cover = document.createElement("div");
   cover.className = "wallet-binder-directory-cover is-loading";
@@ -8201,10 +8257,10 @@ function updateWalletSearchState() {
   const visible = galleryOpen;
   els.walletSearchButton.hidden = !visible;
   els.walletSearchButton.setAttribute("aria-pressed", String(Boolean(walletFilterCardIndexSet)));
-  els.walletSearchButton.title = walletFilterCardIndexSet && walletFilterAddress
+  const accessibleLabel = walletFilterCardIndexSet && walletFilterAddress
     ? `Wallet filter: ${shortenSolAddress(walletFilterAddress)}`
     : "Search wallet holdings";
-  els.walletSearchButton.setAttribute("aria-label", "Search wallet holdings");
+  els.walletSearchButton.setAttribute("aria-label", accessibleLabel);
 
   if (!visible && walletSearchOpen) {
     setWalletSearchPanelOpen(false, { preserveMessage: true });
@@ -8680,7 +8736,6 @@ function createBinderOrderPositionLabel(position) {
   const label = document.createElement("span");
   label.className = "binder-order-card-position";
   label.setAttribute("aria-hidden", "true");
-  label.title = "Double-click to edit position";
   label.textContent = String(position + 1);
   return label;
 }
@@ -12944,7 +12999,7 @@ function renderMixedCollectionFilterPicker() {
     const filterButton = document.createElement("button");
     filterButton.className = "mixed-collection-filter-button";
     filterButton.type = "button";
-    filterButton.title = `Show ${option.collection.label} cards`;
+    filterButton.setAttribute("aria-label", `Show ${option.collection.label} cards`);
     filterButton.setAttribute(
       "aria-pressed",
       String(activeCollectionFilter === option.collection.id),
@@ -12978,9 +13033,9 @@ function renderMixedCollectionFilterPicker() {
     traitsButton.type = "button";
     traitsButton.textContent = "view all traits";
     traitsButton.disabled = !traitFiltersEnabledForCollection(option.collection.id);
-    traitsButton.title = traitsButton.disabled
+    traitsButton.setAttribute("aria-label", traitsButton.disabled
       ? `Trait filters are not available for ${option.collection.label}`
-      : `View all ${option.collection.label} traits`;
+      : `View all ${option.collection.label} traits`);
     traitsButton.addEventListener("click", () => {
       openMixedCollectionTraitSearch(option.collection.id, traitsButton).catch((error) => {
         console.warn("Collection traits could not be opened", error);
@@ -13030,7 +13085,7 @@ function createMixedTraitSearchHeader(collectionId) {
   backButton.className = "mixed-trait-search-back";
   backButton.type = "button";
   backButton.textContent = "collections";
-  backButton.title = "Back to collection filters";
+  backButton.setAttribute("aria-label", "Back to collection filters");
   backButton.addEventListener("click", () => {
     traitSearchCollectionId = "";
     resetTraitSearchQuery();
@@ -13232,7 +13287,7 @@ function createTraitSearchTile(group, trait, traitIndex) {
   const tile = document.createElement("button");
   tile.className = "trait-search-tile";
   tile.type = "button";
-  tile.title = `Show cards with ${trait.value}`;
+  tile.setAttribute("aria-label", `Show cards with ${trait.value}`);
   tile.dataset.traitCategoryKey = getTraitSearchCollapseKey(group.category);
   tile.dataset.traitIndex = String(traitIndex);
 
@@ -13477,7 +13532,6 @@ function updateGalleryViewModeButton() {
   els.body.classList.toggle("is-binder-view", isBinderMode);
   els.galleryViewToggleButton.hidden = !galleryOpen;
   els.galleryViewToggleButton.setAttribute("aria-pressed", String(showingSimpleGallery));
-  els.galleryViewToggleButton.title = showingSimpleGallery ? "Show 3D binder" : "Show simple gallery";
   els.galleryViewToggleButton.setAttribute(
     "aria-label",
     showingSimpleGallery ? "Show 3D binder" : "Show simple gallery",
@@ -13519,7 +13573,7 @@ function appendGalleryCardRange(indexes, start, end, priorityImageCount, before 
     const button = document.createElement("button");
     button.className = "gallery-card";
     button.type = "button";
-    button.title = card.title;
+    button.setAttribute("aria-label", card.title);
     button.dataset.cardIndex = String(index);
 
     const image = document.createElement("img");
@@ -15163,12 +15217,13 @@ function commitActiveEvilBinderCollection(
     historyMode = "push",
     prepareBinder = true,
     tableCollectionOrder = null,
+    showroomCollection = false,
   } = {},
 ) {
   const destination = COLLECTION_CONFIGS[collectionId];
   if (
     !destination
-    || destination.introGroup !== "evil"
+    || (destination.introGroup !== "evil" && !(IS_SHOWROOM && showroomCollection))
     || !destination.cardsLoaded
     || !Array.isArray(destination.globalIndexes)
   ) {
@@ -15636,9 +15691,10 @@ function createBinderCoverShellModel({
   includeIntroNote = false,
   emblemActive = false,
   showroomCover = null,
+  showroomCollection = false,
 } = {}) {
   const shell = new THREE.Group();
-  const coverMaterial = createBinderCoverMaterial(showroomCover?.settings);
+  const coverMaterial = createBinderCoverMaterial(showroomCover?.settings, showroomCollection);
   const ringMaterial = new THREE.MeshStandardMaterial({
     color: 0x2a2927,
     roughness: 0.82,
@@ -15677,7 +15733,7 @@ function createBinderCoverShellModel({
     coverWidth,
     coverHeight,
     collectionId,
-    { active: emblemActive },
+    { active: emblemActive, independent: showroomCollection },
   );
   frontCoverEmblem.rotation.y = Math.PI;
   frontCoverEmblem.position.set(
@@ -15686,8 +15742,8 @@ function createBinderCoverShellModel({
     -BINDER_COVER_THICKNESS / 2 - 0.012,
   );
   leftPivot.add(frontCoverEmblem);
-  const walletCoverArtwork = showroomCover
-    ? createShowroomArtworkMesh(showroomCover.front, coverWidth, coverHeight)
+  const walletCoverArtwork = showroomCover || showroomCollection
+    ? createShowroomArtworkMesh(showroomCover?.front, coverWidth, coverHeight)
     : createBinderWalletCoverArtwork(
     coverWidth,
     coverHeight,
@@ -15716,8 +15772,8 @@ function createBinderCoverShellModel({
   const rightCover = new THREE.Mesh(rightCoverGeometry, coverMaterial.clone());
   rightCover.position.x = coverWidth / 2;
   rightPivot.add(rightCover);
-  const walletBackCoverArtwork = showroomCover
-    ? createShowroomArtworkMesh(showroomCover.back, coverWidth, coverHeight)
+  const walletBackCoverArtwork = showroomCover || showroomCollection
+    ? createShowroomArtworkMesh(showroomCover?.back, coverWidth, coverHeight)
     : createBinderWalletBackCoverArtwork(
     coverWidth,
     coverHeight,
@@ -16305,12 +16361,16 @@ function createBinderFrontCoverEmblem(
   coverWidth,
   coverHeight,
   collectionId = ACTIVE_COLLECTION_ID,
-  { active = false } = {},
+  { active = false, independent = false } = {},
 ) {
+  const collectionConfig = COLLECTION_CONFIGS[collectionId];
   const emblemEnabled = (
-    !WALLET_ROUTE_ADDRESS
+    (!WALLET_ROUTE_ADDRESS || independent)
     &&
-    COLLECTION_CONFIGS[collectionId]?.introGroup === "evil"
+    (
+      collectionConfig?.introGroup === "evil"
+      || Boolean(collectionConfig?.coverEmblem)
+    )
   );
   const emblemAspect = getBinderFrontCoverEmblemAspect(collectionId);
   let emblemHeight = coverHeight * BINDER_FRONT_COVER_EMBLEM_HEIGHT_RATIO;
@@ -17958,6 +18018,7 @@ function removeBinderPage(page) {
 
 function disposeObject(object) {
   object.traverse((child) => {
+    child.userData.showroomTitleTexture?.dispose();
     if (!child.isMesh) return;
     if (child.geometry && !child.geometry.userData?.sharedBinderGeometry) {
       child.geometry.dispose();
@@ -19013,7 +19074,6 @@ function updateBinderPageControls() {
   const tableViewLabel = binderTableViewTarget > 0.5
     ? "Return binder to upright view"
     : "Place binder on table";
-  els.binderTableViewButton.setAttribute("title", tableViewLabel);
   els.binderTableViewButton.setAttribute("aria-label", tableViewLabel);
   els.binderZoomOutButton.hidden = !focused;
   els.binderOpenCardButton.hidden = !focused;
@@ -19022,7 +19082,6 @@ function updateBinderPageControls() {
   els.binderFavoriteButton.disabled = introFocused;
   els.binderOpenCardButton.setAttribute("aria-disabled", String(introFocused));
   els.binderFavoriteButton.setAttribute("aria-disabled", String(introFocused));
-  els.binderOpenCardButton.setAttribute("title", introFocused ? "No card to open" : "Open card view");
   els.binderOpenCardButton.setAttribute("aria-label", introFocused ? "No card to open" : "Open card view");
   els.binderShuffleButton.hidden = focused;
   els.binderShuffleButton.disabled = flippingOuterCover || swappingTableBinder;
@@ -19033,9 +19092,7 @@ function updateBinderPageControls() {
     els.binderPreviousPageButton.disabled = true;
     els.binderNextPageButton.disabled = true;
     const busyLabel = swappingTableBinder ? "Switching binder" : "Flipping binder";
-    els.binderPreviousPageButton.setAttribute("title", busyLabel);
     els.binderPreviousPageButton.setAttribute("aria-label", busyLabel);
-    els.binderNextPageButton.setAttribute("title", busyLabel);
     els.binderNextPageButton.setAttribute("aria-label", busyLabel);
     queueSessionViewStateSave();
     return;
@@ -19045,9 +19102,7 @@ function updateBinderPageControls() {
     const hasCards = binderVisibleIndexes.length > 0;
     els.binderPreviousPageButton.disabled = !hasCards;
     els.binderNextPageButton.disabled = !hasCards;
-    els.binderPreviousPageButton.setAttribute("title", "Previous card in binder");
     els.binderPreviousPageButton.setAttribute("aria-label", "Previous card in binder");
-    els.binderNextPageButton.setAttribute("title", "Next card in binder");
     els.binderNextPageButton.setAttribute("aria-label", "Next card in binder");
     queueSessionViewStateSave();
     return;
@@ -19073,9 +19128,7 @@ function updateBinderPageControls() {
         : atEnd
           ? "Close binder"
           : "Next binder page side";
-    els.binderPreviousPageButton.setAttribute("title", previousLabel);
     els.binderPreviousPageButton.setAttribute("aria-label", previousLabel);
-    els.binderNextPageButton.setAttribute("title", nextLabel);
     els.binderNextPageButton.setAttribute("aria-label", nextLabel);
     queueSessionViewStateSave();
     return;
@@ -19100,9 +19153,7 @@ function updateBinderPageControls() {
       : atEnd
         ? "Close binder"
         : "Next binder page";
-  els.binderPreviousPageButton.setAttribute("title", previousLabel);
   els.binderPreviousPageButton.setAttribute("aria-label", previousLabel);
-  els.binderNextPageButton.setAttribute("title", nextLabel);
   els.binderNextPageButton.setAttribute("aria-label", nextLabel);
   queueSessionViewStateSave();
 }
@@ -21158,7 +21209,7 @@ function handleFocusedBinderSwipe(drag, event) {
 
   binderLastOpenTap = null;
   if (horizontal) {
-    moveBinderFocusSpatially(0, primary < 0 ? 1 : -1);
+    moveBinderFocusSpatially(0, primary < 0 ? -1 : 1);
   } else {
     moveBinderFocusSpatially(primary < 0 ? 1 : -1, 0);
   }
@@ -22869,8 +22920,9 @@ function resizeBinderRenderer() {
   updateBinderPageControls();
 }
 
-function createBinderCoverMaterial(coverSettings = null) {
-  const palette = coverSettings ? {
+function createBinderCoverMaterial(coverSettings = null, independent = false) {
+  const palette = independent ? { custom: false, base: BINDER_COVER_BASE_COLOR,
+    baseEmissive: BINDER_COVER_BASE_EMISSIVE } : coverSettings ? {
     custom: coverSettings.baseColor !== BINDER_COVER_DEFAULT_COLOR_HEX,
     base: coverSettings.baseColor !== BINDER_COVER_DEFAULT_COLOR_HEX
       ? new THREE.Color(coverSettings.baseColor) : BINDER_COVER_BASE_COLOR,
@@ -22878,7 +22930,7 @@ function createBinderCoverMaterial(coverSettings = null) {
   const map = palette.custom
     ? createBinderCustomCoverTexture()
     : createBinderCoverTexture();
-  const colorFaithful = Boolean(coverSettings || WALLET_ROUTE_ADDRESS);
+  const colorFaithful = Boolean(coverSettings || (WALLET_ROUTE_ADDRESS && !independent));
   const material = new THREE.MeshStandardMaterial({
     color: colorFaithful ? 0x000000 : palette.base,
     map,
@@ -23072,6 +23124,11 @@ function drawBinderIntroNoteSurface(ctx) {
   ctx.textBaseline = "alphabetic";
   ctx.fillStyle = "rgba(156, 153, 146, 0.74)";
 
+  // Showroom collections keep only the separately rendered Evil Biscuit sprites.
+  // Wallet notes and the collection binders at their own URLs retain their text.
+  if (IS_SHOWROOM && !WALLET_ROUTE_ADDRESS) {
+    return { linkBounds: [], focusBounds: null };
+  }
   const fontStack = SITE_FONT_STACK;
   const maxTextWidth = width * 0.9;
   const textFillStyle = "rgba(156, 153, 146, 0.74)";

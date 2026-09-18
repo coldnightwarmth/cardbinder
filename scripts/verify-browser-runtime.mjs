@@ -15,8 +15,8 @@ import { COMMUNITY_COLLECTIONS } from "./community-collections.mjs";
 import { SWAG_PACK_TRANSPARENT_STICKER_FILES } from "../swag-pack-stickers.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const APP_VERSION = "cardnft-391";
-const STYLE_VERSION = "cardnft-163";
+const APP_VERSION = "cardnft-395";
+const STYLE_VERSION = "cardnft-166";
 const THREE_VERSION = "three-r165-min-1";
 
 const TRAIT_SPECS = [
@@ -192,6 +192,13 @@ assert(
     && styles.includes('#galleryViewToggleButton .gallery-view-mode-icon')
     && /#galleryToggleButton\[aria-pressed="true"\],[\s\S]{0,80}#galleryViewToggleButton\[aria-pressed="true"\]/.test(styles),
   "simple gallery control does not swap to the neutral binder icon",
+);
+assert(
+  styles.includes("body.is-gallery .corner-gallery")
+    && styles.includes("body.is-gallery .gallery-view-toggle")
+    && styles.includes("body.is-gallery .corner-favorites")
+    && styles.includes("body.is-gallery .wallet-search-toggle"),
+  "gallery controls do not close the space left by the hidden gallery toggle",
 );
 assert(
   app.includes('from "./wallet-auth.js?v=wallet-auth-8"')
@@ -1311,6 +1318,14 @@ async function verifyPage({ pagePath, prefix, dataFile }) {
   assert(!page.includes("binder-cover-remove-sticker"), `${pagePath} still shows the old sticker remove button`);
   assert(!page.includes("binder-cover-link-controls"), `${pagePath} still shows link controls as a separate row`);
   assert(!page.includes("Edit card order"), `${pagePath} has the old binder editor title`);
+  assert(
+    !/<(?:button|label)\b[^>]*\btitle=/i.test(page),
+    `${pagePath} still has a native hover tooltip on a button control`,
+  );
+  assert(
+    !/<a\b(?=[^>]*class="[^"]*button)[^>]*\btitle=/i.test(page),
+    `${pagePath} still has a native hover tooltip on a button-styled link`,
+  );
   assert(
     /id="traitSortSelect"[^>]*>[\s\S]*?<option value="marked-for-trade">marked for trade<\/option>[\s\S]*?<option value="listed-first">listed<\/option>[\s\S]*?<option value="all">default<\/option>/.test(page),
     `${pagePath} does not put marked-for-trade and listed before default`,

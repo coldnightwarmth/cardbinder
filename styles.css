@@ -3611,6 +3611,29 @@ textarea::selection {
   bottom: var(--gallery-corner-bottom);
 }
 
+body.is-gallery .corner-gallery {
+  display: none;
+}
+
+body.is-gallery .gallery-view-toggle {
+  right: var(--gallery-corner-inset);
+}
+
+body.is-gallery .corner-favorites {
+  right: calc(
+    var(--gallery-corner-inset)
+    + var(--gallery-favorite-space)
+  );
+}
+
+body.is-gallery .wallet-search-toggle {
+  right: calc(
+    var(--gallery-corner-inset)
+    + var(--gallery-favorite-space)
+    + var(--gallery-favorite-space)
+  );
+}
+
 .gallery-toggle-icon {
   grid-area: 1 / 1;
 }
@@ -4613,4 +4636,21 @@ body.is-gallery .gallery-view-toggle:not([hidden]) {
   body.is-gallery .gallery-filter-controls:has(.gallery-clear-filters-button:not([hidden])) {
     bottom: calc(var(--gallery-corner-bottom) + 54px);
   }
+}
+
+.wallet-binder-destination-row {
+  display: flex;
+  gap: 8px;
+  width: min(100%, 620px);
+}
+.wallet-binder-destination-row > .wallet-binder-directory-button { flex: 1; width: auto; min-width: 0; }
+.wallet-binder-destination-row > .wallet-showroom-link {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: center;
+  text-decoration: none;
+}
+@media (max-width: 480px) {
+  .wallet-binder-destination-row { gap: 6px; }
+  .wallet-binder-destination-row > .wallet-binder-directory-button { font-size: 11px; padding: 8px; gap: 6px; }
 }

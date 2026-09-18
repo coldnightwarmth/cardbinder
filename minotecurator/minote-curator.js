@@ -263,7 +263,6 @@ function updateRatingCounts() {
   fiveStarExportButton.disabled = counts[MAX_RATING] === 0;
   const exportLabel = `Download spreadsheet of ${counts[MAX_RATING]} five-star Mi Note${counts[MAX_RATING] === 1 ? "" : "s"}`;
   fiveStarExportButton.setAttribute("aria-label", exportLabel);
-  fiveStarExportButton.title = exportLabel;
 }
 
 function downloadFiveStarSpreadsheet() {

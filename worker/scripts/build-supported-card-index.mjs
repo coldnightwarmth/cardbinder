@@ -22,6 +22,7 @@ const collections = [
   ["mtgnft", "mtgnft-data.js", "MTGNFT_CARDS"],
   ["igorsquest", "igorsquest-data.js", "IGORSQUEST_CARDS"],
   ["clear", "clear-data.js", "CLEAR_CARDS"],
+  ["reflection2", "reflection2-data.js", "REFLECTION2_CARDS"],
 ];
 
 const mintToCard = new Map();

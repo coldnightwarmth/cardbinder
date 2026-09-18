@@ -1,8 +1,8 @@
 {
-  "name": "Igors Quest #1479",
+  "name": "Igors Quest #1440",
   "description": "Collect over 40 unique monsters, freaks and ghouls in Igors Quest: Shadylands!",
   "symbol": "IGORSQUEST",
-  "image": "https://we-assets.pinit.io/75t7GEYpY7uThhjQrhrg13YnUbtY6Gy5CNG1UxoisyNQ/7f2d4a0b-58cb-4c8a-a1b3-1fba7a857ecb/pack-0-nft-533.png",
+  "image": "https://we-assets.pinit.io/75t7GEYpY7uThhjQrhrg13YnUbtY6Gy5CNG1UxoisyNQ/7f2d4a0b-58cb-4c8a-a1b3-1fba7a857ecb/pack-0-nft-491.png",
   "attributes": [
     {
       "trait_type": "Big Background",
@@ -10,30 +10,30 @@
     },
     {
       "trait_type": "Card",
-      "value": "Le vendor"
+      "value": "Gemerald"
     },
     {
       "trait_type": "Background",
-      "value": "Poles"
+      "value": "Farm"
     },
     {
       "trait_type": "CharactersComplete",
-      "value": "Cyberknight"
+      "value": "Meatmann"
     },
     {
       "trait_type": "Rarity Rank",
-      "value": "1377"
+      "value": "576"
     }
   ],
   "properties": {
     "files": [
       {
-        "uri": "https://we-assets.pinit.io/75t7GEYpY7uThhjQrhrg13YnUbtY6Gy5CNG1UxoisyNQ/7f2d4a0b-58cb-4c8a-a1b3-1fba7a857ecb/pack-0-nft-533.png",
+        "uri": "https://we-assets.pinit.io/75t7GEYpY7uThhjQrhrg13YnUbtY6Gy5CNG1UxoisyNQ/7f2d4a0b-58cb-4c8a-a1b3-1fba7a857ecb/pack-0-nft-491.png",
         "type": "image/png"
       }
     ]
   },
   "collection_mints": [
-    "DuCr3aDAvZfyPUoYEWEuzoevnomy6SQCDzhj9fo8CwMH"
+    "GSBCSDn3HoPGQoRm1WeYpMMxGu6UEX2WpZioxejV1eVZ"
   ]
 }

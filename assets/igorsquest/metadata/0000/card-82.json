@@ -1,39 +1,39 @@
 {
-  "name": "Igors Quest #1265",
+  "name": "Igors Quest #1123",
   "description": "Collect over 40 unique monsters, freaks and ghouls in Igors Quest: Shadylands!",
   "symbol": "IGORSQUEST",
-  "image": "https://we-assets.pinit.io/75t7GEYpY7uThhjQrhrg13YnUbtY6Gy5CNG1UxoisyNQ/7f2d4a0b-58cb-4c8a-a1b3-1fba7a857ecb/pack-0-nft-296.png",
+  "image": "https://we-assets.pinit.io/75t7GEYpY7uThhjQrhrg13YnUbtY6Gy5CNG1UxoisyNQ/7f2d4a0b-58cb-4c8a-a1b3-1fba7a857ecb/pack-0-nft-139.png",
   "attributes": [
     {
       "trait_type": "Big Background",
-      "value": "Lavender Frown"
+      "value": "Chirikov"
     },
     {
       "trait_type": "Card",
-      "value": "Bricked"
+      "value": "Runic Rare"
     },
     {
       "trait_type": "Background",
-      "value": "Planets"
+      "value": "Plains"
     },
     {
       "trait_type": "CharactersComplete",
-      "value": "Dr Suffer"
+      "value": "Guard"
     },
     {
       "trait_type": "Rarity Rank",
-      "value": "711"
+      "value": "380"
     }
   ],
   "properties": {
     "files": [
       {
-        "uri": "https://we-assets.pinit.io/75t7GEYpY7uThhjQrhrg13YnUbtY6Gy5CNG1UxoisyNQ/7f2d4a0b-58cb-4c8a-a1b3-1fba7a857ecb/pack-0-nft-296.png",
+        "uri": "https://we-assets.pinit.io/75t7GEYpY7uThhjQrhrg13YnUbtY6Gy5CNG1UxoisyNQ/7f2d4a0b-58cb-4c8a-a1b3-1fba7a857ecb/pack-0-nft-139.png",
         "type": "image/png"
       }
     ]
   },
   "collection_mints": [
-    "uHMQbz1z87Cy5fKtrXQWbHhiRufW5pf8K5tWfSswFP1"
+    "5RQZQgWhS7SGDsAX7q5FShX47F9Ax6rLiuG73LAY8UBa"
   ]
 }

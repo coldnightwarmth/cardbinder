@@ -951,10 +951,6 @@ function updateBinderFavoriteButton() {
   binderFavoriteButton.classList.toggle("is-active", isFavorite);
   binderFavoriteButton.setAttribute("aria-pressed", String(isFavorite));
   binderFavoriteButton.setAttribute(
-    "title",
-    isFavorite ? "Remove focused card from favorites" : "Add focused card to favorites"
-  );
-  binderFavoriteButton.setAttribute(
     "aria-label",
     isFavorite ? "Remove focused card from favorites" : "Add focused card to favorites"
   );
@@ -963,10 +959,6 @@ function updateBinderFavoriteButton() {
 function updateFavoriteFilterButton() {
   favoriteFilterButton.classList.toggle("is-active", galleryFavoritesOnly);
   favoriteFilterButton.setAttribute("aria-pressed", String(galleryFavoritesOnly));
-  favoriteFilterButton.setAttribute(
-    "title",
-    galleryFavoritesOnly ? "Show all cards" : "Show favorites"
-  );
   favoriteFilterButton.setAttribute(
     "aria-label",
     galleryFavoritesOnly ? "Show all cards" : "Show favorites"
@@ -2651,9 +2643,7 @@ function updateBinderPageControls() {
   if (focused) {
     binderPreviousPageButton.disabled = binderFocusPosition <= 0;
     binderNextPageButton.disabled = binderFocusPosition >= binderVisibleIndexes.length - 1;
-    binderPreviousPageButton.setAttribute("title", "Previous card in binder");
     binderPreviousPageButton.setAttribute("aria-label", "Previous card in binder");
-    binderNextPageButton.setAttribute("title", "Next card in binder");
     binderNextPageButton.setAttribute("aria-label", "Next card in binder");
     return;
   }
@@ -2661,9 +2651,7 @@ function updateBinderPageControls() {
   const currentPage = Math.round(binderTargetTurn);
   binderPreviousPageButton.disabled = currentPage <= 0;
   binderNextPageButton.disabled = currentPage >= binderPageCount;
-  binderPreviousPageButton.setAttribute("title", "Previous binder page");
   binderPreviousPageButton.setAttribute("aria-label", "Previous binder page");
-  binderNextPageButton.setAttribute("title", "Next binder page");
   binderNextPageButton.setAttribute("aria-label", "Next binder page");
 }
 

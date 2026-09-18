@@ -7,6 +7,7 @@ const root = process.cwd();
 const sourcePath = path.join(root, "cardnft1", "index.html");
 const source = await readFile(sourcePath, "utf8");
 const dataRevisions = Object.freeze({
+  reflection2: "reflection2-public-1",
   cloudcastle: "community-3",
   badhand: "community-2",
   badhand2: "community-1",
@@ -21,6 +22,14 @@ const dataRevisions = Object.freeze({
   igorsquest: "community-5",
   limited: "community-8",
 });
+const requestedIds = process.argv.slice(2);
+const collections = requestedIds.length
+  ? requestedIds.map((id) => {
+    const collection = COMMUNITY_COLLECTIONS.find((entry) => entry.id === id);
+    if (!collection) throw new Error(`Unknown community collection: ${id}`);
+    return collection;
+  })
+  : COMMUNITY_COLLECTIONS;
 const requiredTemplateValues = [
   'data-collection-id="cardnft1"',
   "<title>cards.art</title>",
@@ -34,7 +43,7 @@ for (const value of requiredTemplateValues) {
   }
 }
 
-for (const collection of COMMUNITY_COLLECTIONS) {
+for (const collection of collections) {
   const outputDir = path.join(root, collection.route);
   const outputPath = path.join(outputDir, "index.html");
   const dataUrl = `../${collection.id}-data.js?v=${dataRevisions[collection.id]}`;

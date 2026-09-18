@@ -652,6 +652,7 @@ function validateCollectionSortValues(collection, assets) {
   if (!collection.sortByTitleNumber && !collection.additionalTensorCollections?.length) return;
   const seenBySource = new Map();
   for (const asset of assets) {
+    if (matchesConfiguredAttributeExclusion(collection, asset)) continue;
     if (!asset.sortByTitleNumber && !(
       collection.sortByTitleNumber && Number(asset.sourceCollectionOrder || 0) === 0
     )) continue;
@@ -753,6 +754,7 @@ function partitionCollectionGroups(collection, groups) {
   for (const group of groups) {
     const shouldExclude = group.assets.some((asset) => (
       excludedMintIds.has(asset.onchainId)
+      || matchesConfiguredAttributeExclusion(collection, asset)
     ));
     (shouldExclude ? excludedGroups : includedGroups).push(group);
   }
@@ -771,9 +773,35 @@ function partitionCollectionGroups(collection, groups) {
 function getGroupExclusionReason(collection, group) {
   const excludedMintIds = new Set(collection.excludedMintIds || []);
   const matchedMint = group.assets.find((asset) => excludedMintIds.has(asset.onchainId));
-  return matchedMint
-    ? `configured mint exclusion: ${matchedMint.onchainId}`
+  if (matchedMint) return `configured mint exclusion: ${matchedMint.onchainId}`;
+  const matchedAttribute = group.assets
+    .map((asset) => getConfiguredAttributeExclusion(collection, asset))
+    .find(Boolean);
+  return matchedAttribute
+    ? `configured attribute exclusion: ${matchedAttribute.category}=${matchedAttribute.value}`
     : "configured group exclusion";
+}
+
+function matchesConfiguredAttributeExclusion(collection, asset) {
+  return Boolean(getConfiguredAttributeExclusion(collection, asset));
+}
+
+function getConfiguredAttributeExclusion(collection, asset) {
+  const rules = collection.excludedAttributeValues || {};
+  const normalizedRules = new Map(
+    Object.entries(rules).map(([category, values]) => [
+      normalizeComparableText(category),
+      new Set((values || []).map(normalizeComparableText)),
+    ]),
+  );
+  for (const attribute of asset.attributes || []) {
+    const category = normalizeComparableText(attribute.trait_type);
+    const value = normalizeComparableText(attribute.value);
+    if (normalizedRules.get(category)?.has(value)) {
+      return { category: attribute.trait_type, value: attribute.value };
+    }
+  }
+  return null;
 }
 
 async function createCardEntries(collection, paths, groups) {
@@ -1177,6 +1205,10 @@ async function isCurrentAnimatedSprite(filePath, sprite) {
 }
 
 async function convertRemoteCardImage(collection, entry) {
+  if (collection.sourceCrop) {
+    const input = await fetchOriginalStillImageBuffer(entry.sourceImageUri);
+    return convertCroppedCardImage(collection, input);
+  }
   const extraction = getCardExtraction(collection, entry);
   if (extraction) {
     const input = extraction.preferOriginal
@@ -1203,6 +1235,31 @@ async function convertRemoteCardImage(collection, entry) {
       effort: 4,
     })
     .toBuffer();
+}
+
+async function convertCroppedCardImage(collection, input) {
+  const source = sharp(input, { animated: false, limitInputPixels: false }).rotate();
+  const metadata = await source.metadata();
+  const crop = collection.sourceCrop;
+  const left = clampPixel(Math.round(metadata.width * crop.left), 0, metadata.width - 1);
+  const top = clampPixel(Math.round(metadata.height * crop.top), 0, metadata.height - 1);
+  const width = clampPixel(Math.round(metadata.width * crop.width), 1, metadata.width - left);
+  const height = clampPixel(Math.round(metadata.height * crop.height), 1, metadata.height - top);
+  return source
+    .extract({ left, top, width, height })
+    .resize({
+      width: collection.width,
+      height: collection.height,
+      fit: "contain",
+      background: CARD_PADDING_COLOR,
+    })
+    .flatten({ background: CARD_PADDING_COLOR })
+    .webp({ quality: WEBP_QUALITY, effort: 4 })
+    .toBuffer();
+}
+
+function clampPixel(value, minimum, maximum) {
+  return Math.min(maximum, Math.max(minimum, value));
 }
 
 function getCardExtraction(collection, entry) {
@@ -1953,6 +2010,43 @@ function getImageSourceCandidates(sourceUrl) {
 }
 
 async function convertSharedBack(collection, paths, previousSnapshot) {
+  if (collection.backSourceUrl) {
+    if (
+      !FORCE_IMAGES
+      && previousSnapshot?.assetRevision === collection.revision
+      && previousSnapshot?.sharedBack?.sourceUrl === collection.backSourceUrl
+      && previousSnapshot?.sharedBack?.edgeFillColor === (collection.backEdgeFillColor || null)
+      && await isCurrentConvertedImage(collection, paths.backPath)
+    ) {
+      return;
+    }
+    const source = await fetchOriginalStillImageBuffer(collection.backSourceUrl);
+    let resized = sharp(source)
+      .rotate()
+      .resize(collection.width, collection.height, {
+        fit: "contain",
+        background: CARD_PADDING_COLOR,
+      });
+    if (collection.backEdgeFillColor) {
+      const raw = await resized
+        .ensureAlpha()
+        .raw()
+        .toBuffer({ resolveWithObject: true });
+      replaceLightEdgeBackground(raw, collection.backEdgeFillColor);
+      resized = sharp(raw.data, {
+        raw: {
+          width: raw.info.width,
+          height: raw.info.height,
+          channels: raw.info.channels,
+        },
+      });
+    }
+    const buffer = await resized
+      .webp({ quality: WEBP_QUALITY, effort: 4 })
+      .toBuffer();
+    await writeFile(paths.backPath, buffer);
+    return;
+  }
   if (collection.backSource) {
     return;
   }
@@ -1979,6 +2073,56 @@ async function convertSharedBack(collection, paths, previousSnapshot) {
   await writeFile(paths.backPath, buffer);
 }
 
+function replaceLightEdgeBackground(raw, fillColor) {
+  const { data, info } = raw;
+  const { width, height, channels } = info;
+  const fill = /^#([0-9a-f]{6})$/i.exec(fillColor);
+  if (!fill || channels < 3) return;
+  const value = Number.parseInt(fill[1], 16);
+  const replacement = [value >> 16, (value >> 8) & 255, value & 255];
+  const visited = new Uint8Array(width * height);
+  const queue = [];
+
+  const isExterior = (pixel) => {
+    const offset = pixel * channels;
+    if (channels >= 4 && data[offset + 3] < 224) return true;
+    const red = data[offset];
+    const green = data[offset + 1];
+    const blue = data[offset + 2];
+    return Math.min(red, green, blue) >= 96
+      && Math.max(red, green, blue) - Math.min(red, green, blue) <= 40;
+  };
+  const enqueue = (pixel) => {
+    if (visited[pixel] || !isExterior(pixel)) return;
+    visited[pixel] = 1;
+    queue.push(pixel);
+  };
+  for (let x = 0; x < width; x += 1) {
+    enqueue(x);
+    enqueue((height - 1) * width + x);
+  }
+  for (let y = 1; y < height - 1; y += 1) {
+    enqueue(y * width);
+    enqueue(y * width + width - 1);
+  }
+  for (let cursor = 0; cursor < queue.length; cursor += 1) {
+    const pixel = queue[cursor];
+    const x = pixel % width;
+    const y = Math.floor(pixel / width);
+    if (x > 0) enqueue(pixel - 1);
+    if (x + 1 < width) enqueue(pixel + 1);
+    if (y > 0) enqueue(pixel - width);
+    if (y + 1 < height) enqueue(pixel + width);
+  }
+  for (const pixel of queue) {
+    const offset = pixel * channels;
+    data[offset] = replacement[0];
+    data[offset + 1] = replacement[1];
+    data[offset + 2] = replacement[2];
+    if (channels >= 4) data[offset + 3] = 255;
+  }
+}
+
 function hasCurrentConversionSettings(collection, conversion) {
   return conversion?.format === "webp"
     && conversion.width === collection.width
@@ -1992,6 +2136,8 @@ function hasCurrentConversionSettings(collection, conversion) {
     && Boolean(conversion.removeExteriorWhite) === Boolean(collection.removeExteriorWhite)
     && JSON.stringify(conversion.cardExtractions || {})
       === JSON.stringify(collection.cardExtractions || {})
+    && JSON.stringify(conversion.sourceCrop || null)
+      === JSON.stringify(collection.sourceCrop || null)
     && (
       !collection.removeExteriorWhite
       || (
@@ -2135,6 +2281,7 @@ async function writeSourceSnapshot({
     excludedMintCount: excludedAssets.length,
     exclusionRules: {
       mintIds: [...(collection.excludedMintIds || [])],
+      attributeValues: collection.excludedAttributeValues || {},
     },
     cardCount: entries.length,
     groupedDuplicateMintCount: liveAssets.length - entries.length,
@@ -2156,7 +2303,8 @@ async function writeSourceSnapshot({
       background: collection.removeExteriorWhite ? "transparent" : CARD_PADDING_COLOR,
       removeExteriorWhite: Boolean(collection.removeExteriorWhite),
       cardExtractions: collection.cardExtractions || {},
-      ...(collection.removeExteriorWhite
+      sourceCrop: collection.sourceCrop || null,
+      ...((collection.removeExteriorWhite || collection.sourceCrop)
         ? {
           strongColorChroma: collection.strongColorChroma,
           strongDarkMaximum: collection.strongDarkMaximum,
@@ -2185,6 +2333,8 @@ async function writeSourceSnapshot({
       : null,
     sharedBack: {
       source: collection.backSource || "generated solid color",
+      sourceUrl: collection.backSourceUrl || null,
+      edgeFillColor: collection.backEdgeFillColor || null,
       color: collection.backSource ? null : BACK_COLOR,
       file: paths.backFile,
       width: collection.backWidth || collection.width,

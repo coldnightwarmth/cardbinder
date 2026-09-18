@@ -23,6 +23,7 @@ const COLLECTIONS = [
   ["winloop", "winloop-traits.js", "WINLOOP_TRAIT_CATEGORIES", "WINLOOP_TRAITS"],
   ["mtgnft", "mtgnft-traits.js", "MTGNFT_TRAIT_CATEGORIES", "MTGNFT_TRAITS"],
   ["igorsquest", "igorsquest-traits.js", "IGORSQUEST_TRAIT_CATEGORIES", "IGORSQUEST_TRAITS"],
+  ["reflection2", "reflection2-traits.js", "REFLECTION2_TRAIT_CATEGORIES", "REFLECTION2_TRAITS"],
 ];
 
 await mkdir(OUTPUT_DIR, { recursive: true });

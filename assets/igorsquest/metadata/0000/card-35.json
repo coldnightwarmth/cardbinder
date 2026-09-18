@@ -1,39 +1,39 @@
 {
-  "name": "Igors Quest #549",
+  "name": "Igors Quest #541",
   "description": "Collect over 40 unique monsters, freaks and ghouls in Igors Quest: Shadylands!",
   "symbol": "IGORSQUEST",
-  "image": "https://we-assets.pinit.io/75t7GEYpY7uThhjQrhrg13YnUbtY6Gy5CNG1UxoisyNQ/7f2d4a0b-58cb-4c8a-a1b3-1fba7a857ecb/pack-0-nft-1000.png",
+  "image": "https://we-assets.pinit.io/75t7GEYpY7uThhjQrhrg13YnUbtY6Gy5CNG1UxoisyNQ/7f2d4a0b-58cb-4c8a-a1b3-1fba7a857ecb/pack-0-nft-992.png",
   "attributes": [
     {
       "trait_type": "Big Background",
-      "value": "Scratch"
+      "value": "Molded"
     },
     {
       "trait_type": "Card",
-      "value": "Wooded"
+      "value": "Ruby"
     },
     {
       "trait_type": "Background",
-      "value": "Big Glowie"
+      "value": "Planets"
     },
     {
       "trait_type": "CharactersComplete",
-      "value": "Hektor"
+      "value": "Sproto Goon"
     },
     {
       "trait_type": "Rarity Rank",
-      "value": "971"
+      "value": "417"
     }
   ],
   "properties": {
     "files": [
       {
-        "uri": "https://we-assets.pinit.io/75t7GEYpY7uThhjQrhrg13YnUbtY6Gy5CNG1UxoisyNQ/7f2d4a0b-58cb-4c8a-a1b3-1fba7a857ecb/pack-0-nft-1000.png",
+        "uri": "https://we-assets.pinit.io/75t7GEYpY7uThhjQrhrg13YnUbtY6Gy5CNG1UxoisyNQ/7f2d4a0b-58cb-4c8a-a1b3-1fba7a857ecb/pack-0-nft-992.png",
         "type": "image/png"
       }
     ]
   },
   "collection_mints": [
-    "A1FDuZm8GqpMr99mR5Yr8mvkEmQgzV2rHW4nANFdH8kM"
+    "DdoiSHvsTh1sZ4MckpjXCasnPGkzDgoEvMHsBkXjDYvY"
   ]
 }

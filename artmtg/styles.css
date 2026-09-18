@@ -646,6 +646,10 @@ body.binder-card-transitioning.binder-card-transition-away .corner-favorites {
   box-shadow: 0 14px 40px rgba(0, 0, 0, 0.38);
 }
 
+body.gallery-open .corner-gallery {
+  display: none;
+}
+
 body.light-theme .corner-gallery {
   border-color: var(--edge);
   background: var(--button);

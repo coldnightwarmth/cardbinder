@@ -1,39 +1,39 @@
 {
-  "name": "Igors Quest #1106",
+  "name": "Igors Quest #1006",
   "description": "Collect over 40 unique monsters, freaks and ghouls in Igors Quest: Shadylands!",
   "symbol": "IGORSQUEST",
-  "image": "https://we-assets.pinit.io/75t7GEYpY7uThhjQrhrg13YnUbtY6Gy5CNG1UxoisyNQ/7f2d4a0b-58cb-4c8a-a1b3-1fba7a857ecb/pack-0-nft-120.png",
+  "image": "https://we-assets.pinit.io/75t7GEYpY7uThhjQrhrg13YnUbtY6Gy5CNG1UxoisyNQ/7f2d4a0b-58cb-4c8a-a1b3-1fba7a857ecb/pack-0-nft-9.png",
   "attributes": [
     {
       "trait_type": "Big Background",
-      "value": "Sunburn"
+      "value": "Metallurgy"
     },
     {
       "trait_type": "Card",
-      "value": "Darkened"
+      "value": "Runic Rare"
     },
     {
       "trait_type": "Background",
-      "value": "The Aulands"
+      "value": "Mountain"
     },
     {
       "trait_type": "CharactersComplete",
-      "value": "Fruit Of Igor"
+      "value": "Rare Guardian"
     },
     {
       "trait_type": "Rarity Rank",
-      "value": "1171"
+      "value": "23"
     }
   ],
   "properties": {
     "files": [
       {
-        "uri": "https://we-assets.pinit.io/75t7GEYpY7uThhjQrhrg13YnUbtY6Gy5CNG1UxoisyNQ/7f2d4a0b-58cb-4c8a-a1b3-1fba7a857ecb/pack-0-nft-120.png",
+        "uri": "https://we-assets.pinit.io/75t7GEYpY7uThhjQrhrg13YnUbtY6Gy5CNG1UxoisyNQ/7f2d4a0b-58cb-4c8a-a1b3-1fba7a857ecb/pack-0-nft-9.png",
         "type": "image/png"
       }
     ]
   },
   "collection_mints": [
-    "6Hmb33LHEtWyfiDg6MLiLZxmBaZtawXn6qXPHb7E1SX9"
+    "Cdr3w8FLsrud3HToeQxohCLkd8XRx6qerTpHugdubrdo"
   ]
 }

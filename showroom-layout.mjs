@@ -1,7 +1,6 @@
-// Stable seats: three binders per table, alternating sides down the aisle.
-export function seatFor(index) {
-  const table = Math.floor(index / 3);
-  return { side: table % 2 ? 1 : -1, row: Math.floor(table / 2), slot: index % 3 };
+// Each category grows independently, three binders per table, nearest slot first.
+export function seatFor(index, side = -1) {
+  return { side, row: Math.floor(index / 3), slot: 2 - index % 3 };
 }
 export function canWalkAt(x, z, endZ, tables) {
   return Math.abs(x) < 450 && z < 450 && z > Math.min(-450, endZ - 200)

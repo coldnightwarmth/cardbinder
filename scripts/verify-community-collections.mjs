@@ -14,7 +14,7 @@ import { PONCHO_CARDS } from "../poncho-data.js";
 const require = createRequire(import.meta.url);
 const sharp = loadSharp();
 const root = process.cwd();
-const expectedAppVersion = "cardnft-391";
+const expectedAppVersion = "cardnft-395";
 const requestedIds = process.argv.slice(2);
 const collections = requestedIds.length
   ? requestedIds.map((id) => {
@@ -177,11 +177,24 @@ for (const collection of collections) {
   for (const mint of excludedMintSet) {
     assert(!sourceMintSet.has(mint), `${collection.id} includes excluded mint ${mint}`);
   }
-  assertJsonEqual(
-    [...excludedMintSet].sort(),
-    [...(collection.excludedMintIds || [])].sort(),
-    `${collection.id} configured exclusions differ`,
-  );
+  const configuredMintExclusions = new Set(collection.excludedMintIds || []);
+  for (const mint of configuredMintExclusions) {
+    assert(excludedMintSet.has(mint), `${collection.id} configured exclusion ${mint} is missing`);
+  }
+  const attributeExclusions = collection.excludedAttributeValues || {};
+  for (const asset of excludedAssets) {
+    if (configuredMintExclusions.has(asset.onchainId)) continue;
+    const matchesAttributeRule = (asset.attributes || []).some((attribute) => {
+      const configuredValues = attributeExclusions[
+        String(attribute?.trait_type || "").trim().toLowerCase()
+      ] || [];
+      return configuredValues.some((value) => (
+        String(value).trim().toLowerCase()
+          === String(attribute?.value || "").trim().toLowerCase()
+      ));
+    });
+    assert(matchesAttributeRule, `${collection.id} has an unexplained exclusion ${asset.onchainId}`);
+  }
   const digest = createHash("sha256")
     .update(`${[...sourceMints].sort().join("\n")}\n`)
     .digest("hex");
@@ -568,7 +581,7 @@ for (const collection of collections) {
     `../app.js?v=${expectedAppVersion}`,
     "../vendor/three.module.min.js?v=three-r165-min-1",
     "../browser-traits-catalog.js?v=browser-traits-9",
-    "../styles.css?v=cardnft-163",
+    "../styles.css?v=cardnft-166",
     'id="binderTradeModeButton"',
   ]) {
     assert(page.includes(value), `${collection.id} page is missing ${JSON.stringify(value)}`);
@@ -682,6 +695,7 @@ function verifySharedAppArchitecture() {
   "winloop",
   "sweetcurse",
   "igorsquest",
+  "reflection2",
 ];`),
     "inside-cover collection order differs",
   );

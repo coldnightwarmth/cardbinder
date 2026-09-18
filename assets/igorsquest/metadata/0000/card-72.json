@@ -1,12 +1,12 @@
 {
-  "name": "Igors Quest #1023",
+  "name": "Igors Quest #988",
   "description": "Collect over 40 unique monsters, freaks and ghouls in Igors Quest: Shadylands!",
   "symbol": "IGORSQUEST",
-  "image": "https://we-assets.pinit.io/75t7GEYpY7uThhjQrhrg13YnUbtY6Gy5CNG1UxoisyNQ/7f2d4a0b-58cb-4c8a-a1b3-1fba7a857ecb/pack-0-nft-28.png",
+  "image": "https://we-assets.pinit.io/75t7GEYpY7uThhjQrhrg13YnUbtY6Gy5CNG1UxoisyNQ/7f2d4a0b-58cb-4c8a-a1b3-1fba7a857ecb/pack-0-nft-1487.png",
   "attributes": [
     {
       "trait_type": "Big Background",
-      "value": "Clayed"
+      "value": "Molded"
     },
     {
       "trait_type": "Card",
@@ -14,26 +14,27 @@
     },
     {
       "trait_type": "Background",
-      "value": "Swamp Rare"
+      "value": "The Worm"
     },
     {
       "trait_type": "CharactersComplete",
-      "value": "Guard"
+      "value": "Gorgalian"
     },
     {
       "trait_type": "Rarity Rank",
-      "value": "1023"
+      "value": "1117"
     }
   ],
   "properties": {
     "files": [
       {
-        "uri": "https://we-assets.pinit.io/75t7GEYpY7uThhjQrhrg13YnUbtY6Gy5CNG1UxoisyNQ/7f2d4a0b-58cb-4c8a-a1b3-1fba7a857ecb/pack-0-nft-28.png",
+        "uri": "https://we-assets.pinit.io/75t7GEYpY7uThhjQrhrg13YnUbtY6Gy5CNG1UxoisyNQ/7f2d4a0b-58cb-4c8a-a1b3-1fba7a857ecb/pack-0-nft-1487.png",
         "type": "image/png"
       }
     ]
   },
   "collection_mints": [
-    "9vkrYHX6jiRJatH9qWUiFwG6KBMZ5Z9FFYruJaeEQw4C"
+    "AjNymaT43Q8ciaMr2SbcaVL6aQHDPE2eVqkhfvQUNUG4",
+    "H8UcSrtpYoJrc19RHTXXtbnqoieFGSwMvsT8iVXgrW8s"
   ]
 }
