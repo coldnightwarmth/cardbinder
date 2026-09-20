@@ -54,7 +54,7 @@ body.showroom { background:#151718; }
 
 #showroomLeave {
   position: absolute;
-  bottom: max(28px, env(safe-area-inset-bottom));
+  top: max(28px, env(safe-area-inset-top));
   left: 50%;
   transform: translateX(-50%);
   white-space: nowrap;
@@ -63,7 +63,7 @@ body.showroom { background:#151718; }
 
 #showroomTouchJoystick {
   position: absolute;
-  right: max(22px, env(safe-area-inset-right));
+  left: max(22px, env(safe-area-inset-left));
   bottom: max(22px, env(safe-area-inset-bottom));
   width: 118px;
   height: 118px;
@@ -113,10 +113,39 @@ body.showroom { background:#151718; }
 }
 @media(max-width:600px) {
   #showroomTouchJoystick {
-    right:max(14px,env(safe-area-inset-right));
+    left:max(14px,env(safe-area-inset-left));
     bottom:max(14px,env(safe-area-inset-bottom));
     width:108px;
     height:108px;
+  }
+}
+
+#showroomHud #showroomOpenBinder {
+  position:absolute;
+  right:max(28px,env(safe-area-inset-right));
+  bottom:max(28px,env(safe-area-inset-bottom));
+  z-index:23;
+  min-width:104px;
+  min-height:52px;
+  background:#e5ddcf;
+  color:#272a2c;
+  border-color:#ffffff80;
+  font-size:15px;
+  font-weight:600;
+  touch-action:manipulation;
+}
+#showroomHud #showroomOpenBinder[hidden],
+.showroom:not(.showroom-touch) #showroomOpenBinder,
+.showroom:not(.showroom-walking) #showroomOpenBinder { display:none !important; }
+.showroom.is-light #showroomHud #showroomOpenBinder {
+  background:#252a32;
+  color:#f8f7f1;
+  border-color:#252a32;
+}
+@media(max-width:600px) {
+  #showroomHud #showroomOpenBinder {
+    right:max(18px,env(safe-area-inset-right));
+    bottom:max(26px,env(safe-area-inset-bottom));
   }
 }
 
@@ -146,8 +175,36 @@ body.showroom { background:#151718; }
 .showroom-speech::after {
   content: '';
   position: absolute;
-  right: 12px;
+  left: var(--showroom-speech-tail-left, calc(100% - 27px));
   bottom: -12px;
   border-top: 12px solid rgba(248,246,240,.96);
   border-left: 15px solid transparent;
 }
+
+.showroom #shuffleButton { display:none !important; }
+#showroomHand { position:fixed; inset:auto 0 0; height:220px; z-index:40; pointer-events:none; }
+.showroom-hand-card { position:absolute; left:50%; bottom:-100px; width:144px; height:202px; padding:0; border:0; background:transparent; border-radius:8px; touch-action:none; cursor:grab; transform:translateX(calc(-50% + var(--hand-x))) rotate(var(--hand-angle)); transform-origin:50% 100%; z-index:var(--hand-order); transition:transform .18s ease,filter .18s ease; pointer-events:none; }
+.showroom-hand-card img { width:100%; height:100%; object-fit:contain; border-radius:8px; filter:drop-shadow(0 4px 8px #0009); pointer-events:none; }
+.showroom-walking.showroom-hand-interactive .showroom-hand-card { pointer-events:auto; }
+.showroom-hand-card:hover, .showroom-hand-card:focus-visible { transform:translateX(calc(-50% + var(--hand-x))) translateY(-108px) rotate(0deg) scale(1.12); z-index:100; }
+.showroom:not(.showroom-walking) #showroomHand { opacity:0; }
+.showroom-hand-flight { position:fixed; z-index:1000; pointer-events:none; object-fit:contain; transform-origin:0 0; border-radius:8px; }
+.showroom-hand-transfer #cardCanvas { opacity:0; }
+#showroomHandStatus { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
+@media(prefers-reduced-motion:reduce) { .showroom-hand-card { transition:none; } }
+
+.showroom-hand-view #showroomReturn { display:none !important; }
+
+#showroomHandReturnZone {
+  position:fixed; right:max(20px, env(safe-area-inset-right)); bottom:max(20px, env(safe-area-inset-bottom));
+  width:164px; height:222px; box-sizing:border-box; border:1px dotted currentColor; border-radius:14px;
+  color:#eee; display:flex; align-items:center; justify-content:center;
+  font:13px/1.4 system-ui,sans-serif; text-align:center; pointer-events:none; z-index:41;
+}
+#showroomHandReturnZone[hidden] { display:none; }
+.is-light #showroomHandReturnZone { color:#25272c; }
+#showroomHandReturnZone.is-over { background:rgba(255,255,255,.09); }
+.is-light #showroomHandReturnZone.is-over { background:rgba(0,0,0,.07); }
+
+.showroom-hand-choosing .showroom-hand-card { bottom:-35px; transform:translateX(calc(-50% + var(--hand-x))) rotate(var(--hand-angle)); }
+.showroom-hand-choosing .showroom-hand-card:hover,.showroom-hand-choosing .showroom-hand-card:focus-visible { transform:translateX(calc(-50% + var(--hand-x))) translateY(-45px) scale(1.08); }

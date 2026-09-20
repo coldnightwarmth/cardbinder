@@ -1,6 +1,6 @@
 {
-  "name": "have you considered reflection 2 #376",
-  "image": "https://gateway.irys.xyz/Bj0PB_jGDHyYZtuA2ldlNf-ZkQw8KAthMuenjIOCDnk",
+  "name": "have you considered reflection 2 #372",
+  "image": "https://gateway.irys.xyz/1FOWLnLSQSjfLs0zpvi5FMZkS7KMDS1sK0Z1D-qw2zg",
   "symbol": "REF2",
   "creators": [
     {
@@ -12,61 +12,61 @@
   "attributes": [
     {
       "trait_type": "Stack Depth",
-      "value": "Heavy"
+      "value": "Light"
     },
     {
       "trait_type": "Layer Count",
-      "value": "25"
+      "value": "11"
     },
     {
       "trait_type": "Composition",
-      "value": "Craft Assembly"
+      "value": "Slab Stack"
     },
     {
       "trait_type": "Pack Tier",
-      "value": "Limited"
+      "value": "Standard"
     }
   ],
   "properties": {
     "files": [
       {
-        "uri": "https://gateway.irys.xyz/Bj0PB_jGDHyYZtuA2ldlNf-ZkQw8KAthMuenjIOCDnk",
+        "uri": "https://gateway.irys.xyz/1FOWLnLSQSjfLs0zpvi5FMZkS7KMDS1sK0Z1D-qw2zg",
         "type": "image/webp"
       },
       {
-        "uri": "https://gateway.irys.xyz/ksfZPu_-X9yiYUtWid4L_bP8zyNjPpCwQJPgOwAKZmE",
+        "uri": "https://gateway.irys.xyz/_PK1KUkhKm6gcsPTEE4K_Y4j8GWhp16GApS12n4DRwg",
         "role": "preview",
         "type": "image/webp"
       }
     ],
     "mirrors": [
       {
-        "uri": "ar://Bj0PB_jGDHyYZtuA2ldlNf-ZkQw8KAthMuenjIOCDnk",
+        "uri": "ar://1FOWLnLSQSjfLs0zpvi5FMZkS7KMDS1sK0Z1D-qw2zg",
         "role": "image",
         "type": "image/webp"
       },
       {
-        "uri": "https://arweave.net/Bj0PB_jGDHyYZtuA2ldlNf-ZkQw8KAthMuenjIOCDnk",
+        "uri": "https://arweave.net/1FOWLnLSQSjfLs0zpvi5FMZkS7KMDS1sK0Z1D-qw2zg",
         "role": "image",
         "type": "image/webp"
       },
       {
-        "uri": "https://permagate.io/Bj0PB_jGDHyYZtuA2ldlNf-ZkQw8KAthMuenjIOCDnk",
+        "uri": "https://permagate.io/1FOWLnLSQSjfLs0zpvi5FMZkS7KMDS1sK0Z1D-qw2zg",
         "role": "image",
         "type": "image/webp"
       },
       {
-        "uri": "ar://ksfZPu_-X9yiYUtWid4L_bP8zyNjPpCwQJPgOwAKZmE",
+        "uri": "ar://_PK1KUkhKm6gcsPTEE4K_Y4j8GWhp16GApS12n4DRwg",
         "role": "preview",
         "type": "image/webp"
       },
       {
-        "uri": "https://arweave.net/ksfZPu_-X9yiYUtWid4L_bP8zyNjPpCwQJPgOwAKZmE",
+        "uri": "https://arweave.net/_PK1KUkhKm6gcsPTEE4K_Y4j8GWhp16GApS12n4DRwg",
         "role": "preview",
         "type": "image/webp"
       },
       {
-        "uri": "https://permagate.io/ksfZPu_-X9yiYUtWid4L_bP8zyNjPpCwQJPgOwAKZmE",
+        "uri": "https://permagate.io/_PK1KUkhKm6gcsPTEE4K_Y4j8GWhp16GApS12n4DRwg",
         "role": "preview",
         "type": "image/webp"
       }
@@ -83,6 +83,6 @@
   "description": "have you considered reflection 2, an autocollaged study of the weaponization of nostalgia.",
   "seller_fee_basis_points": 500,
   "collection_mints": [
-    "4S9tyTv7wMCVZSoevXxSBz3cydH12Mii6vJCvpJxAd2V"
+    "3FqHJKns7UfBjHBhFuCL5bSVJ7KDsDp2AtEZZUGpp5wJ"
   ]
 }

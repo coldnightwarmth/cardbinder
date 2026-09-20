@@ -166,7 +166,8 @@ test('touch joystick movement is analog and camera-relative', () => {
   const implementation=source.slice(source.indexOf('  function move(dt)'),source.indexOf('  const pickTargets'));
   const camera={position:{x:0,z:0},rotation:{y:0}};
   const context=vm.createContext({
-    THREE,camera,keys:new Set(),touchMove:{x:0,y:-.5},canWalk:()=>true,
+    THREE,camera,columns:{selecting:false},keys:new Set(),touchMove:{x:0,y:-.5},
+    portal:{move(dx,dz){camera.position.x+=dx;camera.position.z+=dz;}},
   });
   vm.runInContext(implementation,context);
   context.move(1);
@@ -185,6 +186,41 @@ test('touch showroom supports drag look, centered highlighting, and tap-to-open'
   assert.match(source,/camera\.rotation\.y-=dx\*\.0034/);
   assert.match(source,/touchBinderAt\(event\.clientX,event\.clientY\) \|\| hovered/);
   assert.match(source,/fallback && !touchMode && !dragging \? mousePoint : center/);
+});
+
+test('showroom background taps put down a binder but binder taps stay in the viewer', () => {
+  const source=readFileSync(new URL('../../app.js',import.meta.url),'utf8');
+  const implementation=source.slice(
+    source.indexOf('function shouldPutDownShowroomBinderFromTap('),
+    source.indexOf('function onBinderPointerCancel('),
+  );
+  const shell=new THREE.Group();
+  shell.add(new THREE.Mesh(new THREE.BoxGeometry(2,3,.1)));
+  const root=new THREE.Group();
+  root.add(shell);
+  const camera=new THREE.PerspectiveCamera(50,1.5,.1,100);
+  camera.position.z=5;
+  camera.lookAt(0,0,0);
+  const raycaster=new THREE.Raycaster(), pointer=new THREE.Vector2();
+  const context=vm.createContext({
+    IS_SHOWROOM:true, document:{body:{classList:{contains:()=>false}}},
+    isBinderFocusView:()=>false, isBinderTableViewActive:()=>false,
+    binderCardViewTransitionActive:false, binderOuterFlipState:null,
+    binderEvilTableSwapState:null, binderShellState:{shell}, binderRoot:root,
+    binderCamera:camera, binderRaycaster:raycaster,
+    setBinderRaycasterFromEvent:({clientX,clientY})=>{
+      pointer.set(clientX/1200*2-1,1-clientY/800*2);
+      raycaster.setFromCamera(pointer,camera);
+    },
+  });
+  vm.runInContext(implementation,context);
+  assert.equal(context.shouldPutDownShowroomBinderFromTap({clientX:600,clientY:400}),false);
+  assert.equal(context.shouldPutDownShowroomBinderFromTap({clientX:40,clientY:40}),true);
+  context.isBinderFocusView=()=>true;
+  assert.equal(context.shouldPutDownShowroomBinderFromTap({clientX:40,clientY:40}),false);
+  context.isBinderFocusView=()=>false;
+  context.document.body.classList.contains=()=>true;
+  assert.equal(context.shouldPutDownShowroomBinderFromTap({clientX:40,clientY:40}),false);
 });
 
 test('showroom has the taller eye line and animated particle figure behind the evil table', () => {

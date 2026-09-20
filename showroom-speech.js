@@ -34,8 +34,12 @@ export function createShowroomSpeech(figure) {
       anchor.project(camera);
       const x=(anchor.x+1)*innerWidth/2, y=(1-anchor.y)*innerHeight/2;
       const width=bubble.offsetWidth, height=bubble.offsetHeight;
-      bubble.style.left=`${Math.max(12,Math.min(innerWidth-width-12,x-width-18))}px`;
+      const bubbleLeft=Math.max(12,Math.min(innerWidth-width-12,x-width-18));
+      bubble.style.left=`${bubbleLeft}px`;
       bubble.style.top=`${Math.max(12,Math.min(innerHeight-height-12,y-height-10))}px`;
+      // Keep the triangle aimed at the speaker when the bubble is clamped by
+      // a narrow viewport instead of leaving it pinned to the far right.
+      bubble.style.setProperty('--showroom-speech-tail-left',`${Math.max(10,Math.min(width-27,x-bubbleLeft-15))}px`);
     },
   };
 }

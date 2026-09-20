@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { BROWSER_TRAIT_CATALOG } from "./browser-traits-catalog.js?v=browser-traits-10";
+import { BROWSER_TRAIT_CATALOG } from "./browser-traits-catalog.js?v=browser-traits-11";
 import { CARD_NFT_ANIMATED } from "./cardnft-animated.js";
 import { CARD_NFT_ANIMATED_SPRITES } from "./cardnft-animated-sprites.js";
 import {
@@ -44,7 +44,7 @@ const COLLECTION_DATA_SPECS = {
   igorsquest: { module: "./igorsquest-data.js?v=igorsquest-cropped-1", exportName: "IGORSQUEST_CARDS" },
   clear: { module: "./clear-data.js?v=clear-8", exportName: "CLEAR_CARDS" },
   reflection2: {
-    module: "./reflection2-data.js?v=reflection2-public-1",
+    module: "./reflection2-data.js?v=reflection2-public-2",
     exportName: "REFLECTION2_CARDS",
   },
 };
@@ -302,7 +302,6 @@ const COLLECTION_CONFIGS = {
     traits: null,
     traitFiltersEnabled: false,
     backImage: "assets/clear/backs/clear-card-back.webp?v=clear-5",
-    showUnpairedBinderBacks: false,
     path: "/clear/",
     introGroup: "community",
   },
@@ -669,6 +668,9 @@ const GALLERY_COLLECTION_FILTER_QUERY_PARAM = "collection";
 const GALLERY_TRAIT_CATEGORY_QUERY_PARAM = "trait";
 const GALLERY_TRAIT_VALUE_QUERY_PARAM = "trait-value";
 const GALLERY_TRAIT_COLLECTION_QUERY_PARAM = "trait-collection";
+let showroomHand = null;
+const showroomDisplayGroups = new Set();
+let showroomBinderEntry = null;
 const IS_SHOWROOM = /^\/show\/?$/.test(window.location.pathname);
 let WALLET_ROUTE_ADDRESS = getWalletAddressFromPathname(window.location.pathname);
 const WALLET_AUTH_API_BASE_URL = IS_SHOWROOM ? WALLET_PUBLIC_API_BASE_URL : getWalletAuthApiBaseUrl();
@@ -936,6 +938,7 @@ const BINDER_TEXTURE_URGENT_PRIORITY = 0;
 const BINDER_TEXTURE_TARGET_PRIORITY = -8;
 const BINDER_TEXTURE_URGENT_RESERVE = 2;
 const BINDER_TEXTURE_APPLY_IDLE_BUDGET = 2;
+const BINDER_TEXTURE_APPLY_TIME_BUDGET_MS = 4;
 const BINDER_TEXTURE_APPLY_BATCH_DELAY_MS = 34;
 const BINDER_TEXTURE_APPLY_DEFER_MS = 120;
 const BINDER_TEXTURE_MAX_RETRIES = 3;
@@ -1014,6 +1017,7 @@ const FOCUSED_BINDER_FULLY_VISIBLE_EDGE_TOLERANCE_PX = 2;
 const GALLERY_PRIORITY_ROWS = 4;
 const GALLERY_INITIAL_RENDER_MIN = 36;
 const GALLERY_RENDER_BATCH_SIZE = 72;
+const GALLERY_RENDER_TIME_BUDGET_MS = 4;
 const GALLERY_RENDER_IDLE_TIMEOUT_MS = 120;
 const GALLERY_RENDER_FALLBACK_DELAY_MS = 32;
 const GALLERY_RENDER_PREFETCH_MARGIN_PX = 1200;
@@ -1255,6 +1259,7 @@ const els = {
 
 const textureLoader = new THREE.TextureLoader();
 textureLoader.setCrossOrigin("anonymous");
+const textureImageLoads = new Map();
 const nftTextureCache = new Map();
 const binderTextureCache = new Map();
 const binderStickerTextures = new Map();
@@ -1411,6 +1416,8 @@ let cardPlaceholderTexture;
 let cardSurfaceNoiseTexture;
 let individualCardModelLoaderModulesPromise = null;
 const individualCardModelSourcePromises = new Map();
+const individualCardModelSourcesPendingDisposal = new Set();
+const MAX_INDIVIDUAL_CARD_MODEL_SOURCES = MEMORY_CONSTRAINED_DEVICE ? 1 : 3;
 const backTexturePromises = new Map();
 const backTextures = new Map();
 let allBackTexturesPreloadPromise = null;
@@ -1790,8 +1797,41 @@ async function init() {
   preloadAllConfiguredBackTextures().catch(console.error);
   if (!galleryOpen) startCardRenderLoop();
   if (IS_SHOWROOM) {
-    const { initShowroom } = await import("./showroom.js?v=showroom-clean-url-1");
-    await initShowroom(await createShowroomBridge());
+    const { initShowroom } = await import("./showroom.js?v=showroom-ritual-timing-1");
+    const { createShowroomHand } = await import("./showroom-hand.js?v=6");
+    const room = await initShowroom(await createShowroomBridge());
+    showroomHand = createShowroomHand({
+      currentCard: () => !galleryOpen && CARDS[currentIndex] ? {
+        index: currentIndex, stableId: CARDS[currentIndex].stableId,
+        title: CARDS[currentIndex].title, image: cardStillAssetUrl(CARDS[currentIndex]),
+      } : null,
+      binder: () => showroomBinderEntry,
+      transitioning: () => cardSwapAnimating || cardShuffleSpinAnimating || binderCardViewTransitionActive,
+      controlsDisabled: setIndividualCardControlsDisabled,
+      cardRect: () => getIndividualCardScreenRect() || getCenteredFallbackRect(),
+      take: async () => {
+        await room.releaseBinderToHand();
+        stopBinderRenderLoop();
+      },
+      open: async card => {
+        const prepared = await prepareIndividualCardFor3D(CARDS[card.index]);
+        room.beginHandView();
+        resetIndividualCardZoom();
+        setCard(card.index, prepared);
+        setGalleryOpen(false);
+      },
+      close: () => {
+        setGalleryOpen(true);
+        stopBinderRenderLoop();
+        room.endHandView();
+      },
+      slotsChanged: () => {
+        if (!showroomBinderEntry) return;
+        updateBinderPageTransforms();
+        requestBinderRenderOnce();
+      },
+    });
+    room.setHand(showroomHand);
   } else if(window.cardSceneTransition?.arriving && galleryOpen) {
     await Promise.allSettled(binderVisibleIndexes.slice(0,BINDER_SIDE_SLOTS).map(index=>getBinderTexture(CARDS[index])));
     renderBinderSceneOnce({includePreload:false,immediateCamera:true});
@@ -1807,12 +1847,26 @@ async function createShowroomBridge() {
     WALLET_PUBLIC_API_BASE_URL, address, { credentials: "omit" },
   ));
   const getHoldings = createShowroomCache(address => fetchLiveWalletHoldingsPayload(address, WALLET_PUBLIC_API_BASE_URL));
-  const getArtwork = createShowroomCache(async address => {
+  const getCoverArtwork = createShowroomCache(async address => {
     const profile = await getProfile(address);
     const settings = normalizeBinderCoverSettings(profile.cover);
+    const [front, back] = await Promise.all(["front", "back"].map(surface => (
+      getBinderCoverSurfaceTextureKey(settings, surface)
+        ? createBinderCoverSurfaceTexture(settings, surface, width, height)
+        : null
+    )));
+    return { settings, front, back };
+  }, { capacity: 16, dispose: artwork => {
+    artwork.front?.dispose(); artwork.back?.dispose();
+  } });
+  const getArtwork = createShowroomCache(async address => {
+    const cover = await getCoverArtwork(address);
+    const { settings } = cover;
+    // Floor models and the opened viewer share the composed image, while each
+    // owns a texture handle so cache eviction cannot dispose a visible cover.
     const [front, back, inside] = await Promise.all([
-      createBinderCoverSurfaceTexture(settings, "front", width, height),
-      createBinderCoverSurfaceTexture(settings, "back", width, height),
+      cover.front?.clone() || createBinderCoverSurfaceTexture(settings, "front", width, height),
+      cover.back?.clone() || createBinderCoverSurfaceTexture(settings, "back", width, height),
       createShowroomInsideTexture(settings, width, height),
     ]);
     return { settings, front, back, inside };
@@ -1838,6 +1892,29 @@ async function createShowroomBridge() {
   });
   void ensureAllCollectionCards().catch(() => {});
   return {
+    createDisplayCard: async index => {
+      const card=CARDS[index],prepared=await prepareIndividualCardFor3D(card);
+      const group=createCardSwapGroup(prepared.frontTexture,prepared.backTexture,card,prepared.effectTextures);
+      makeScreensaverCardGroupSolid(group);
+      group.userData.screensaverEffectActivity=1;
+      try {
+        if(card.model) {
+          const url=new URL(card.model,import.meta.url).href;
+          const source=await loadIndividualCardModelSource(url);
+          const model=createIndividualCardModelInstance(source,url);
+          group.userData.individualCardModelRoot=model;
+          setProceduralCardGroupVisible(group,false);group.add(model);
+        }
+        group.scale.setScalar(1 / CARD_HEIGHT);
+        showroomDisplayGroups.add(group);
+        return {group,update:(time,camera)=>{
+          prepareTextureForImmediateDisplay(group.userData.frontMesh?.material?.map);
+          prepareTextureForImmediateDisplay(group.userData.backMesh?.material?.map);
+          updateCardEffectUniformsForGroup(group,time,camera);
+        },
+          dispose:()=>{showroomDisplayGroups.delete(group);disposeCardSwapGroup(group);}};
+      } catch(error){disposeCardSwapGroup(group);throw error;}
+    },
     collections: COMMUNITY_COVER_COLLECTION_ORDER.map(collectionId => ({ collectionId, label: collectionId === "nolegs" ? "CARDS (no legs)" : collectionId === "jpegs" ? "jpegs.cool cards" : COLLECTION_CONFIGS[collectionId].label })),
     list: async cursor => {
       const payload = await getPublicWalletBinders(WALLET_PUBLIC_API_BASE_URL, { limit: 60, cursor, version: "2" });
@@ -1846,24 +1923,24 @@ async function createShowroomBridge() {
     placeholder: entry => entry.collectionId
       ? createShowroomBinderModel(null, COLLECTION_CONFIGS[entry.collectionId].cards.length, entry.collectionId)
       : createShowroomBinderModel({ settings: normalizeBinderCoverSettings(entry.cover), front: null, back: null }, entry.supportedCardCount || entry.savedCardCount || 1),
-    model: async entry => {
+    model: async (entry, schedule = task => task()) => {
       if(entry.collectionId) {
         await ensureCollectionCards(entry.collectionId);
-        if(COLLECTION_CONFIGS[entry.collectionId].introGroup === "evil") {
+        if(COLLECTION_CONFIGS[entry.collectionId].introGroup === "evil"
+          || COLLECTION_CONFIGS[entry.collectionId].coverEmblem) {
           await getBinderFrontCoverEmblemTexture(entry.collectionId);
         }
-        return createShowroomBinderModel(null, COLLECTION_CONFIGS[entry.collectionId].cards.length, entry.collectionId);
+        return schedule(() => createShowroomBinderModel(null, COLLECTION_CONFIGS[entry.collectionId].cards.length, entry.collectionId));
       }
-      const profile = await getProfile(entry.walletAddress);
-      const settings = normalizeBinderCoverSettings(profile.cover);
-      const [front, back] = await Promise.all(["front", "back"].map(surface => (
-        getBinderCoverSurfaceTextureKey(settings, surface)
-          ? createBinderCoverSurfaceTexture(settings, surface, width, height)
-          : null
-      )));
-      const model = createShowroomBinderModel({ settings, front, back }, entry.supportedCardCount || entry.savedCardCount || 1);
-      model.userData.ownedTextures = [front, back].filter(Boolean);
-      return model;
+      const artwork = await getCoverArtwork(entry.walletAddress);
+      return schedule(() => {
+        const { settings } = artwork;
+        const front = artwork.front?.clone() || null;
+        const back = artwork.back?.clone() || null;
+        const model = createShowroomBinderModel({ settings, front, back }, entry.supportedCardCount || entry.savedCardCount || 1);
+        model.userData.ownedTextures = [front, back].filter(Boolean);
+        return model;
+      });
     },
     prefetch: async entry => {
       if(entry.collectionId) {
@@ -1876,6 +1953,7 @@ async function createShowroomBridge() {
       return Promise.all([getPrepared(address), getArtwork(address), warmCards(address)]);
     },
     open: async entry => {
+      showroomBinderEntry = entry;
       if(entry.collectionId) {
         await Promise.all([ensureCollectionCards(entry.collectionId), preloadCollectionBackTextures(entry.collectionId)]);
         refreshWalletBinderCoverRendering();
@@ -1928,6 +2006,7 @@ async function createShowroomBridge() {
       return { center: project(0, 0), top: project(0, height / 2), bottom: project(0, -height / 2) };
     },
     close: () => {
+      showroomBinderEntry = null;
       if (walletHoldingsRefreshTimer) clearTimeout(walletHoldingsRefreshTimer);
       WALLET_ROUTE_ADDRESS = "";
       setGalleryOpen(true);
@@ -1973,18 +2052,36 @@ function createShowroomBinderModel(artwork, cardCount, collectionId = ACTIVE_COL
   // The same shell geometry, cover grain, artwork, spine arc and proportions as the viewer.
   const model = new THREE.Group();
   const shell = state.shell;
+  // The floor lights strike horizontal covers more directly than the opened
+  // binder lights. Keep only the showroom shell a little darker at rest; the
+  // original colors are restored as it turns toward the interactive viewer.
+  const restScale = 0.72;
+  model.userData.showroomCoverShade = {
+    restScale,
+    materials: [state.leftCover, state.rightCover, state.spine].map(({ material }) => {
+      const originalColor = material.color.clone();
+      const originalEmissive = material.emissive.clone();
+      material.color.multiplyScalar(restScale);
+      material.emissive.multiplyScalar(restScale);
+      return { material, originalColor, originalEmissive };
+    }),
+  };
   shell.position.x = -BINDER_CLOSED_COVER_CENTER_X;
   shell.position.z = -BINDER_COVER_Z + BINDER_COVER_THICKNESS / 2;
   model.add(shell);
   const leaves = Math.min(10, Math.max(1, Math.ceil(cardCount / BINDER_PAGE_SLOTS)));
   const pageMaterial = new THREE.MeshStandardMaterial({ color: 0x282d2d, roughness: .56, metalness: .08 });
+  const pages = new THREE.InstancedMesh(createRoundedCoreGeometry(
+    BINDER_PAGE_WIDTH, BINDER_PAGE_HEIGHT, .018, .045,
+  ), pageMaterial, leaves);
+  const pageTransform = new THREE.Matrix4();
   for (let i = 0; i < leaves; i++) {
-    const leaf = new THREE.Mesh(createRoundedCoreGeometry(
-      BINDER_PAGE_WIDTH, BINDER_PAGE_HEIGHT, .018, .045,
-    ), pageMaterial);
-    leaf.position.set(BINDER_PAGE_WIDTH / 2, 0, -.20 + i * .023);
-    shell.add(leaf);
+    pageTransform.makeTranslation(BINDER_PAGE_WIDTH / 2, 0, -.20 + i * .023);
+    pages.setMatrixAt(i, pageTransform);
   }
+  pages.instanceMatrix.needsUpdate = true;
+  pages.computeBoundingSphere();
+  shell.add(pages);
   model.scale.setScalar(.94 / state.coverHeight);
   model.traverse(object => { if (object.isMesh) { object.castShadow = true; object.receiveShadow = true; } });
   return model;
@@ -3212,6 +3309,7 @@ function setCard(index, options = {}) {
   if (!options.preserveSwapVisuals) resetCardSwapVisualState();
   if (!options.preserveSpinVisuals) resetCardShuffleSpinVisualState();
   updateCardText();
+  showroomHand?.refresh();
   scheduleTraitUiPrewarm(card.collection || ACTIVE_COLLECTION_ID);
   if (traitsOpen) renderTraitPanel();
   updateFavoriteButtons();
@@ -3500,6 +3598,7 @@ function getCardNft2Number(card) {
 }
 
 async function transitionAdjacentCard(direction, loadingButton = null) {
+  if (showroomHand?.viewing) return showroomHand.navigate(direction);
   if (cardSwapAnimating || cardShuffleSpinAnimating || galleryOpen || !CARDS.length) return;
 
   cardSwapAnimating = true;
@@ -3876,7 +3975,7 @@ function syncIndividualCardModel(
         return false;
       }
 
-      const modelRoot = createIndividualCardModelInstance(source);
+      const modelRoot = createIndividualCardModelInstance(source, modelUrl);
       group.userData.individualCardModelRoot = modelRoot;
       group.add(modelRoot);
       setProceduralCardGroupVisible(group, false);
@@ -3934,7 +4033,10 @@ function prewarmIndividualCardModelAssets(card) {
 
 function loadIndividualCardModelSource(url) {
   if (individualCardModelSourcePromises.has(url)) {
-    return individualCardModelSourcePromises.get(url);
+    const cached = individualCardModelSourcePromises.get(url);
+    individualCardModelSourcePromises.delete(url);
+    individualCardModelSourcePromises.set(url, cached);
+    return cached;
   }
 
   if (!individualCardModelLoaderModulesPromise) {
@@ -3963,14 +4065,79 @@ function loadIndividualCardModelSource(url) {
     });
 
   individualCardModelSourcePromises.set(url, promise);
+  promise.then(() => trimIndividualCardModelSourceCache(url)).catch(() => {});
   return promise;
 }
 
-function createIndividualCardModelInstance(source) {
+function getActiveIndividualCardModelSourceUrls() {
+  const urls = new Set();
+  for (const group of [cardGroup, cardSwapIncomingGroup, ...showroomDisplayGroups]) {
+    const url = group?.userData?.individualCardModelRoot?.userData?.individualCardModelSourceUrl;
+    if (url) urls.add(url);
+  }
+  return urls;
+}
+
+function trimIndividualCardModelSourceCache(protectedUrl = "") {
+  let protectedScans = 0;
+  while (
+    individualCardModelSourcePromises.size > MAX_INDIVIDUAL_CARD_MODEL_SOURCES
+    && protectedScans < individualCardModelSourcePromises.size
+  ) {
+    const oldest = individualCardModelSourcePromises.entries().next().value;
+    if (!oldest) break;
+    const [url, promise] = oldest;
+    const activeUrls = getActiveIndividualCardModelSourceUrls();
+    if (url === protectedUrl || activeUrls.has(url)) {
+      individualCardModelSourcePromises.delete(url);
+      individualCardModelSourcePromises.set(url, promise);
+      protectedScans += 1;
+      continue;
+    }
+    individualCardModelSourcePromises.delete(url);
+    promise.then((source) => queueIndividualCardModelSourceDisposal(url, source)).catch(() => {});
+    protectedScans = 0;
+  }
+  flushIndividualCardModelSourceDisposals();
+}
+
+function queueIndividualCardModelSourceDisposal(url, source) {
+  if (!source) return;
+  individualCardModelSourcesPendingDisposal.add({ url, source });
+  flushIndividualCardModelSourceDisposals();
+}
+
+function flushIndividualCardModelSourceDisposals() {
+  const activeUrls = getActiveIndividualCardModelSourceUrls();
+  for (const entry of individualCardModelSourcesPendingDisposal) {
+    if (activeUrls.has(entry.url)) continue;
+    disposeIndividualCardModelSource(entry.source);
+    individualCardModelSourcesPendingDisposal.delete(entry);
+  }
+}
+
+function disposeIndividualCardModelSource(source) {
+  const textures = new Set();
+  source.traverse((object) => {
+    object.geometry?.dispose();
+    for (const material of [].concat(object.material || [])) {
+      for (const value of Object.values(material || {})) {
+        if (value?.isTexture) textures.add(value);
+      }
+      material?.dispose?.();
+    }
+  });
+  for (const texture of textures) texture.dispose();
+}
+
+function createIndividualCardModelInstance(source, sourceUrl = "") {
   const model = source.clone(true);
   model.traverse((object) => {
     if (!object.isMesh) return;
-    object.geometry = object.geometry.clone();
+    // These clear-card meshes contain millions of vertices. Their geometry is
+    // immutable, so sharing it with the cached source avoids a second decoded
+    // copy that can exhaust mobile memory in the showroom.
+    object.userData.sharedIndividualCardModelGeometry = true;
     object.material = Array.isArray(object.material)
       ? object.material.map((material) => material.clone())
       : object.material.clone();
@@ -3992,6 +4159,7 @@ function createIndividualCardModelInstance(source) {
 
   const root = new THREE.Group();
   root.name = "individual-card-model";
+  root.userData.individualCardModelSourceUrl = sourceUrl;
   root.add(model);
   return root;
 }
@@ -4037,6 +4205,9 @@ function applyIndividualCardModelRenderingProfile(card) {
   for (const light of cardClearResinLights) light.visible = isClearResin;
 
   if (isClearResin) {
+    cardRenderer.transmissionResolutionScale = IS_SHOWROOM
+      ? (MEMORY_CONSTRAINED_DEVICE ? 0.35 : 0.65)
+      : 1;
     updateIndividualCardClearResinPointLight();
     cardRenderer.toneMapping = THREE.ACESFilmicToneMapping;
     cardRenderer.toneMappingExposure = 1.25;
@@ -4048,6 +4219,7 @@ function applyIndividualCardModelRenderingProfile(card) {
       0,
     );
   } else {
+    cardRenderer.transmissionResolutionScale = 1;
     cardRenderer.toneMapping = THREE.NoToneMapping;
     cardRenderer.toneMappingExposure = 1;
     cardScene.environment = null;
@@ -4082,6 +4254,8 @@ function removeIndividualCardModel(group) {
   group.remove(modelRoot);
   disposeCardSwapGroup(modelRoot);
   group.userData.individualCardModelRoot = null;
+  trimIndividualCardModelSourceCache();
+  flushIndividualCardModelSourceDisposals();
 }
 
 function setProceduralCardGroupVisible(group, visible) {
@@ -4214,6 +4388,7 @@ function preloadNextIndividualCardTexture(indexes, token, offset = 0) {
   Promise.resolve()
     .then(() => prepareIndividualCardFor3D(card))
     .then(({ frontTexture, backTexture, effectTextures }) => {
+      if (token !== individualCardPrewarmToken) return;
       prewarmIndividualCardEffect(card, frontTexture, backTexture, effectTextures);
     })
     .catch(() => {})
@@ -4440,7 +4615,14 @@ function getAdjacentIndividualCardIndex(direction) {
   return sequence[modulo(currentPosition + Math.sign(direction || 1), sequence.length)];
 }
 
+function isShowroomCardHeld(index) {
+  return Boolean(IS_SHOWROOM && showroomBinderEntry && CARDS[index]
+    && showroomHand?.has(showroomBinderEntry, CARDS[index].stableId));
+}
+
 function getIndividualCardSequenceIndexes() {
+  if (showroomHand?.viewing) return showroomHand.cards.map(card => card.index);
+  if (IS_SHOWROOM && showroomBinderEntry) return getVisibleIndexes().filter(index => !isShowroomCardHeld(index));
   if (favoritesOnly || walletFilterCardIndexSet || activeTraitFilter) {
     const visibleIndexes = getVisibleIndexes();
     if (visibleIndexes.length) return visibleIndexes;
@@ -4459,6 +4641,7 @@ function resetCardSwapVisualState() {
 }
 
 function setIndividualCardControlsDisabled(disabled) {
+  showroomHand?.refresh();
   els.cardBinderReturnButton.disabled = disabled;
   els.previousButton.disabled = disabled;
   els.nextButton.disabled = disabled;
@@ -4530,7 +4713,7 @@ function removeCardSwapIncomingGroup() {
 
 function disposeCardSwapGroup(group) {
   group.traverse((object) => {
-    object.geometry?.dispose();
+    if (!object.userData?.sharedIndividualCardModelGeometry) object.geometry?.dispose();
     if (!object.material) return;
     const materials = Array.isArray(object.material) ? object.material : [object.material];
     for (const material of materials) material.dispose();
@@ -7269,6 +7452,7 @@ function toggleFocusedBinderFavorite() {
 }
 
 function canEditCardName() {
+  if (showroomHand?.viewing || showroomHand?.busy) return false;
   return Boolean(
     CARDS.length
     && !galleryOpen
@@ -7546,6 +7730,7 @@ function setGalleryOpen(open, options = {}) {
   }
   updateCardNameJumpState();
   updateBinderOrderEditorAvailability();
+  showroomHand?.refresh();
   queueSessionViewStateSave();
 }
 
@@ -8164,6 +8349,7 @@ async function transitionFromWalletBinderDirectory(link, address) {
   layer.setAttribute("aria-hidden", "true");
   const flight = cloneWalletBinderDirectoryCover(cover);
   flight.classList.add("wallet-binder-directory-flight");
+  flight.append(createTransitionLoadingRing("wallet-binder-directory-transition-loader"));
   Object.assign(flight.style, {
     left: `${sourceRect.left}px`,
     top: `${sourceRect.top}px`,
@@ -11850,6 +12036,7 @@ function installWalletBinderDirectoryArrivalBridge() {
     image.alt = "";
     cover.append(image);
   }
+  cover.append(createTransitionLoadingRing("wallet-binder-directory-transition-loader"));
   document.body.classList.add("is-wallet-binder-directory-arriving");
   els.binderCanvas.style.opacity = "0";
   document.body.append(layer, cover);
@@ -11859,6 +12046,7 @@ function installWalletBinderDirectoryArrivalBridge() {
 
 function clearWalletBinderDirectoryArrivalBootstrap() {
   const root = document.documentElement;
+  root.querySelector(".wallet-binder-arrival-bootstrap-loader")?.remove();
   root.classList.remove(
     "wallet-binder-arrival-bootstrap",
     "wallet-binder-arrival-bootstrap-light",
@@ -13637,9 +13825,16 @@ function renderGrid(indexes) {
   }
 }
 
-function appendGalleryCardRange(indexes, start, end, priorityImageCount, before = null) {
+function appendGalleryCardRange(indexes, start, end, priorityImageCount, before = null, deadline = null) {
   const fragment = document.createDocumentFragment();
-  for (let position = start; position < end; position += 1) {
+  const startedAt = performance.now();
+  let position = start;
+  for (; position < end; position += 1) {
+    // Measure the actual node construction, including work when an idle callback timed out.
+    if (position > start && deadline && (
+      performance.now() - startedAt >= GALLERY_RENDER_TIME_BUDGET_MS
+      || (!deadline.didTimeout && deadline.timeRemaining() < 2)
+    )) break;
     const index = indexes[position];
     const card = CARDS[index];
     if (!card) continue;
@@ -13667,6 +13862,7 @@ function appendGalleryCardRange(indexes, start, end, priorityImageCount, before 
     fragment.append(button);
   }
   els.galleryGrid.insertBefore(fragment, before);
+  return position;
 }
 
 function beginGalleryIncrementalRender(state) {
@@ -13714,24 +13910,13 @@ function scheduleGalleryCardBatch(state) {
 
     const start = state.position;
     const hardEnd = Math.min(state.indexes.length, start + GALLERY_RENDER_BATCH_SIZE);
-    let end = start;
-    while (end < hardEnd) {
-      if (
-        end > start + 11
-        && deadline
-        && !deadline.didTimeout
-        && deadline.timeRemaining() < 2
-      ) {
-        break;
-      }
-      end += 1;
-    }
-    appendGalleryCardRange(
+    const end = appendGalleryCardRange(
       state.indexes,
       start,
-      end,
+      hardEnd,
       state.priorityImageCount,
       state.observerDriven ? galleryRenderSentinel : null,
+      deadline || { didTimeout: true },
     );
     state.position = end;
 
@@ -13910,16 +14095,22 @@ function animateGalleryCardTilts() {
       continue;
     }
 
+    if (settled) {
+      state.x = state.targetX;
+      state.y = state.targetY;
+      state.vx = 0;
+      state.vy = 0;
+    }
     applyGalleryCardTilt(card, state);
-    keepAnimating = true;
+    keepAnimating = keepAnimating || !settled;
   }
 
   if (keepAnimating) galleryTiltFrame = requestAnimationFrame(animateGalleryCardTilts);
 }
 
 function isGalleryCardTiltSettled(state) {
-  return Math.abs(state.x) < GALLERY_CARD_TILT_SETTLE_EPSILON
-    && Math.abs(state.y) < GALLERY_CARD_TILT_SETTLE_EPSILON
+  return Math.abs(state.targetX - state.x) < GALLERY_CARD_TILT_SETTLE_EPSILON
+    && Math.abs(state.targetY - state.y) < GALLERY_CARD_TILT_SETTLE_EPSILON
     && Math.abs(state.vx) < GALLERY_CARD_TILT_SETTLE_EPSILON
     && Math.abs(state.vy) < GALLERY_CARD_TILT_SETTLE_EPSILON;
 }
@@ -16809,8 +17000,30 @@ function createBinderPage(pageIndex, indexes, placeholderTexture, materials) {
         cell.group.add(card);
         cell.group.add(createBinderLoadingRing(card, -1, backOffset));
         cardMeshes.push(card);
-      } else if (hasFrontCard && ACTIVE_COLLECTION.showUnpairedBinderBacks !== false) {
-        const card = createBinderBackCard(placeholderTexture, frontCardIndex);
+      }
+
+      // Each physical card also has a back face inside the pocket. Keeping
+      // those faces present lets an empty or loading slot reveal the card on
+      // the reverse side of the page instead of an unrelated placeholder.
+      if (hasFrontCard) {
+        const card = createBinderBackCard(
+          placeholderTexture,
+          frontCardIndex,
+          -1,
+          backOffset,
+          frontOffset,
+        );
+        cell.group.add(card);
+        cardMeshes.push(card);
+      }
+      if (hasBackCard) {
+        const card = createBinderBackCard(
+          placeholderTexture,
+          backCardIndex,
+          1,
+          frontOffset,
+          backOffset,
+        );
         cell.group.add(card);
         cardMeshes.push(card);
       }
@@ -17315,7 +17528,7 @@ function createBinderCard(
 
   card.position.z = side * BINDER_CARD_LIFT;
   if (side < 0) card.rotation.y = Math.PI;
-  card.renderOrder = 12;
+  card.renderOrder = 13;
   if (hasCard) {
     card.userData.cardIndex = cardIndex;
     card.userData.binderPosition = binderPosition;
@@ -17337,18 +17550,31 @@ function createBinderCard(
   return card;
 }
 
-function createBinderBackCard(texture, sourceCardIndex = null) {
+function createBinderBackCard(
+  texture,
+  sourceCardIndex = null,
+  side = -1,
+  revealPosition = -1,
+  sourcePosition = -1,
+) {
   const sourceCard = Number.isInteger(sourceCardIndex)
     ? CARDS[sourceCardIndex]
     : null;
   const backTexture = getCachedBackTexture(sourceCard) || texture;
   prepareTextureForImmediateDisplay(backTexture);
-  const card = createBinderCard(backTexture, null, -1);
+  const card = createBinderCard(backTexture, null, side);
   if (sourceCard) {
     applyBinderCardAspectFit(card, sourceCard, backTexture);
   }
+  card.renderOrder = 12;
   card.userData.binderBackCard = true;
   card.userData.binderBackCardIndex = sourceCardIndex;
+  card.userData.binderBackRevealPosition = revealPosition;
+  card.userData.binderBackSourcePosition = sourcePosition;
+  const sourceCardMesh = binderCardMeshByPosition.get(sourcePosition);
+  if (sourceCardMesh) sourceCardMesh.userData.binderOwnBackMesh = card;
+  const coveringCard = binderCardMeshByPosition.get(revealPosition);
+  if (coveringCard) coveringCard.userData.binderReverseBackMesh = card;
   return card;
 }
 
@@ -17751,7 +17977,9 @@ function flushBinderTextureApplyQueue(now = performance.now()) {
   }
 
   let applied = 0;
+  const startedAt = performance.now();
   while (applied < BINDER_TEXTURE_APPLY_IDLE_BUDGET && binderTextureApplyQueue.length) {
+    if (applied > 0 && performance.now() - startedAt >= BINDER_TEXTURE_APPLY_TIME_BUDGET_MS) break;
     const entryIndex = binderTextureApplyQueue.findIndex(
       (candidate) => !shouldDeferBinderTextureEntry(candidate, now),
     );
@@ -17776,13 +18004,21 @@ function applyQueuedBinderTexture(entry, now = performance.now()) {
   }
 
   const targetOpacity = getBinderPageOpacityForPosition(entry.position);
-  const visibleFloor = getBinderUnloadedCardOpacity(targetOpacity);
+  const visibleFloor = getBinderLoadingCardOpacity(currentMesh, targetOpacity);
   const startOpacity = clamp(
     Math.max(currentMesh.material.opacity ?? 0, visibleFloor),
     0,
     Math.max(targetOpacity, visibleFloor),
   );
   prepareTextureForImmediateDisplay(entry.texture);
+  // Preloaded pages are hidden; upload here so their first page turn does not upload a whole spread.
+  if (typeof binderRenderer?.initTexture === "function") {
+    try {
+      binderRenderer.initTexture(entry.texture);
+    } catch {
+      // The normal render path still uploads textures on drivers that reject eager initialization.
+    }
+  }
   currentMesh.material.map = entry.texture;
   applyBinderCardAspectFit(
     currentMesh,
@@ -18336,6 +18572,12 @@ function handleBinderClosureNavigation(direction) {
   const closedSide = getBinderTargetClosedSide();
   if (closedSide) {
     if (direction === -closedSide) {
+      if (closedSide < 0 && isBinderSinglePageView()
+        && navigator.maxTouchPoints > 0 && !usesEvilBinderPresentation()
+        && binderVisibleIndexes.length > 0) {
+        binderSinglePageSide = 0;
+        binderSinglePageSideTouched = true;
+      }
       setBinderClosureTarget(0);
     } else if (direction === closedSide) {
       beginBinderOuterFlip(direction);
@@ -18573,6 +18815,13 @@ function snapBinderNavigationState() {
 }
 
 function turnBinderSinglePage(direction) {
+  // Page 1 and the inside front cover share turn 0. Move across that
+  // spread before allowing a second backward step to close the cover.
+  if (!getBinderTargetClosedSide() && direction < 0
+    && getBinderSinglePageSide() === 0) {
+    showBinderSinglePageSide(BINDER_SINGLE_PAGE_COVER_SIDE);
+    return;
+  }
   if (handleBinderClosureNavigation(direction)) return;
 
   const totalSides = getBinderTotalPageSides();
@@ -19631,6 +19880,7 @@ function getBinderSinglePageCenterX(side = getBinderSinglePageSide()) {
 }
 
 function focusBinderPosition(position, { immediate = false, pinnedTexture = null } = {}) {
+  if (isShowroomCardHeld(binderVisibleIndexes[position])) return;
   if (!Number.isInteger(position) || position < 0 || position >= binderVisibleIndexes.length) return;
 
   if (isBinderTableViewActive()) {
@@ -19791,9 +20041,11 @@ function getBinderFocusedGridPosition(position = binderFocusPosition) {
     pageIndex,
     isBackSide,
     row,
-    column: isBackSide ? BINDER_COLUMNS - 1 - rawColumn : rawColumn,
+    // Back-side slots are already reversed when the page is constructed.
+    // Turning that page left restores their normal screen-space order.
+    column: rawColumn,
     spreadColumn: isBackSide
-      ? BINDER_COLUMNS - 1 - rawColumn
+      ? rawColumn
       : BINDER_COLUMNS + rawColumn,
     turn: getBinderTurnForPosition(position),
   };
@@ -19816,7 +20068,7 @@ function getBinderPositionForGridSpot(gridSpot) {
     return -1;
   }
 
-  const localColumn = isBackSide ? BINDER_COLUMNS - 1 - column : column;
+  const localColumn = column;
   const sideOffset = isBackSide ? BINDER_SIDE_SLOTS : 0;
   const position = pageIndex * BINDER_PAGE_SLOTS
     + sideOffset
@@ -19936,14 +20188,19 @@ async function openFocusedBinderCard() {
 }
 
 async function transitionIndividualCardToFocusedBinder() {
+  if (showroomHand?.viewing) return showroomHand.close();
   if (binderCardViewTransitionActive || !Number.isInteger(currentIndex)) return;
 
   const cardIndex = currentIndex;
+  const card = CARDS[cardIndex];
+  const clearModelTransition = card?.collection === "clear"
+    && getIndividualCardModelRenderingProfile(card) === INDIVIDUAL_CARD_CLEAR_RESIN_PROFILE;
   const returnTexture = getIndividualCardReturnTexture(cardIndex);
   lockBinderFocusZoomOut(BINDER_FOCUS_TRANSITION_LOCK_MS);
   setCardEffectViewTargetOpacity(0);
   const transitionCard = document.createElement("img");
   transitionCard.className = "binder-card-transition-card";
+  transitionCard.classList.toggle("is-clear-model-transition", clearModelTransition);
   transitionCard.alt = "";
   transitionCard.decoding = "async";
   transitionCard.src = getIndividualTransitionImageSource();
@@ -20117,23 +20374,33 @@ async function transitionFocusedBinderCardToIndividual(cardIndex, focusedMesh, {
     );
   }
 
+  const card = CARDS[cardIndex];
+  const waitForClearModel = card?.collection === "clear"
+    && getIndividualCardModelRenderingProfile(card) === INDIVIDUAL_CARD_CLEAR_RESIN_PROFILE;
   const transitionCard = document.createElement("img");
   transitionCard.className = "binder-card-transition-card";
+  transitionCard.classList.toggle("is-clear-model-transition", waitForClearModel);
   transitionCard.alt = "";
   transitionCard.decoding = "async";
   transitionCard.src = getBinderTransitionImageSource(focusedMesh, cardIndex);
+  const transitionLoadingRing = waitForClearModel
+    ? createTransitionLoadingRing("binder-card-transition-loading-ring")
+    : null;
 
   const sourceRect = getBinderMeshScreenRect(focusedMesh) || getCenteredFallbackRect();
   els.body.classList.add("binder-card-transitioning");
   els.body.classList.remove("binder-card-transition-away", "binder-card-transition-show-card");
   applyTransitionRect(transitionCard, sourceRect);
-  document.body.append(transitionCard);
+  if (transitionLoadingRing) applyTransitionLoadingRingRect(transitionLoadingRing, sourceRect);
+  document.body.append(
+    transitionCard,
+    ...(transitionLoadingRing ? [transitionLoadingRing] : []),
+  );
   transitionCard.getBoundingClientRect();
 
   try {
     resetIndividualCardZoom();
     setCardEffectViewTargetOpacity(0, { immediate: true });
-    const card = CARDS[cardIndex];
     const prepared = getPreparedIndividualCardResult(card);
     const frontTexture = prepared?.frontTexture || getImmediateBinderMeshTexture(focusedMesh);
     const backTexture = prepared?.backTexture || null;
@@ -20143,8 +20410,6 @@ async function transitionFocusedBinderCardToIndividual(cardIndex, focusedMesh, {
     if (backTexture) cardOptions.backTexture = backTexture;
     if (prepared) cardOptions.effectTextures = effectTextures;
     setCard(cardIndex, cardOptions);
-    const waitForClearModel = card.collection === "clear"
-      && getIndividualCardModelRenderingProfile(card) === INDIVIDUAL_CARD_CLEAR_RESIN_PROFILE;
     const individualModelReadyPromise = waitForClearModel
       ? cardGroup.userData.individualCardModelReadyPromise
       : null;
@@ -20167,6 +20432,9 @@ async function transitionFocusedBinderCardToIndividual(cardIndex, focusedMesh, {
     requestAnimationFrame(() => {
       els.body.classList.add("binder-card-transition-away");
       applyTransitionRect(transitionCard, targetRect);
+      if (transitionLoadingRing) {
+        applyTransitionLoadingRingRect(transitionLoadingRing, targetRect);
+      }
     });
 
     if (waitForClearModel) {
@@ -20186,11 +20454,21 @@ async function transitionFocusedBinderCardToIndividual(cardIndex, focusedMesh, {
     binderFocusPosition = -1;
     setCardEffectViewTargetOpacity(1);
     els.body.classList.add("binder-card-transition-show-card");
+    // The clear-card GLB is ready now. Remove its flat transition proxy before
+    // hiding the binder so no rectangular image or shadow can survive into the
+    // individual 3D view, even for clear cards inside mixed wallet binders.
+    if (waitForClearModel) {
+      transitionCard.remove();
+      transitionLoadingRing?.remove();
+    }
     setGalleryOpen(false);
-    transitionCard.classList.add("is-dissolving");
-    await delay(240);
+    if (!waitForClearModel) {
+      transitionCard.classList.add("is-dissolving");
+      await delay(240);
+    }
   } finally {
     transitionCard.remove();
+    transitionLoadingRing?.remove();
     els.body.classList.remove(
       "binder-card-transitioning",
       "binder-card-transition-away",
@@ -20322,12 +20600,44 @@ function getCenteredFallbackRect() {
 }
 
 function applyTransitionRect(element, rect) {
-  const radius = getTransitionCardRadius(rect);
+  const radius = element.classList.contains("is-clear-model-transition")
+    ? 0
+    : getTransitionCardRadius(rect);
   element.style.left = `${rect.left}px`;
   element.style.top = `${rect.top}px`;
   element.style.width = `${rect.width}px`;
   element.style.height = `${rect.height}px`;
   element.style.borderRadius = `${radius}px`;
+}
+
+function createTransitionLoadingRing(className = "") {
+  const ring = document.createElement("span");
+  ring.className = `transition-loading-ring ${className}`.trim();
+  ring.setAttribute("aria-hidden", "true");
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", "0 0 100 100");
+  svg.setAttribute("focusable", "false");
+  const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+  circle.setAttribute("cx", "50");
+  circle.setAttribute("cy", "50");
+  circle.setAttribute("r", "46.5");
+  circle.setAttribute("pathLength", "100");
+  circle.setAttribute("stroke-dasharray", "79 21");
+  svg.append(circle);
+  ring.append(svg);
+  return ring;
+}
+
+function applyTransitionLoadingRingRect(element, rect) {
+  if (!element || !rect) return;
+  const size = rect.width * 0.17;
+  element.style.left = `${rect.left + (rect.width - size) / 2}px`;
+  const belowPreview = element.classList.contains("binder-card-transition-loading-ring");
+  element.style.top = belowPreview
+    ? `${rect.top + rect.height + Math.max(4, size * 0.28)}px`
+    : `${rect.top + (rect.height - size) / 2}px`;
+  element.style.width = `${size}px`;
+  element.style.height = `${size}px`;
 }
 
 function getTransitionCardRadius(rect) {
@@ -21127,6 +21437,10 @@ function onBinderPointerUp(event) {
   }
 
   if (wasClick) {
+    if (shouldPutDownShowroomBinderFromTap(event)) {
+      window.dispatchEvent(new Event("showroom-return"));
+      return;
+    }
     if (handleBinderListedStickerTap(event)) return;
     if (handleBinderTableDisplayModelTap(event)) return;
     if (handleBinderTableDieTap(event)) return;
@@ -21144,6 +21458,27 @@ function onBinderPointerUp(event) {
     updateBinderPageControls();
     startBinderRenderLoop();
   }
+}
+
+function shouldPutDownShowroomBinderFromTap(event) {
+  if (
+    !IS_SHOWROOM
+    || document.body.classList.contains("showroom-walking")
+    || isBinderFocusView()
+    || binderCardViewTransitionActive
+    || binderOuterFlipState
+    || binderEvilTableSwapState
+    || isBinderTableViewActive()
+    || !binderShellState?.shell
+    || !binderCamera
+  ) return false;
+
+  // The canvas fills the viewport, so its empty pixels are not distinguishable
+  // from the binder by DOM hit-testing. Test the actual cover geometry instead.
+  binderRoot.updateMatrixWorld(true);
+  binderCamera.updateMatrixWorld(true);
+  setBinderRaycasterFromEvent(event);
+  return binderRaycaster.intersectObject(binderShellState.shell, true).length === 0;
 }
 
 function onBinderPointerCancel(event) {
@@ -21288,7 +21623,7 @@ function handleFocusedBinderSwipe(drag, event) {
 
   binderLastOpenTap = null;
   if (horizontal) {
-    moveBinderFocusSpatially(0, primary < 0 ? -1 : 1);
+    moveBinderFocusSpatially(0, primary < 0 ? 1 : -1);
   } else {
     moveBinderFocusSpatially(primary < 0 ? 1 : -1, 0);
   }
@@ -21655,6 +21990,7 @@ function getBinderStickerScreenBounds(sticker, canvasRect) {
 function getBinderCardRaycastMeshes() {
   return binderCardMeshes.filter((mesh) => (
     Number.isInteger(mesh.userData.cardIndex)
+    && !isShowroomCardHeld(mesh.userData.cardIndex)
     && isVisibleThroughParents(mesh)
     && isBinderCardOnCurrentPages(mesh)
   ));
@@ -22574,6 +22910,7 @@ function setBinderPageOpacity(
   page.cardOpacity = opacity;
   page.stickerCoverOpacity = clamp(stickerCoverOpacity, 0, 1);
   for (const mesh of page.cardMeshes || []) {
+    mesh.visible = !isShowroomCardHeld(mesh.userData.cardIndex ?? mesh.userData.binderBackCardIndex);
     const material = mesh.material;
     if (!material) continue;
     const cardOpacity = getBinderCardRenderedOpacity(mesh, opacity, now);
@@ -22610,8 +22947,13 @@ function getBinderStickerCoverOpacityForPosition(position) {
 }
 
 function getBinderCardRenderedOpacity(mesh, pageOpacity, now = performance.now()) {
+  if (mesh.userData.binderBackCard) {
+    return getBinderBackRevealOpacity(mesh, pageOpacity, now);
+  }
   if (!mesh.userData.binderCard) return pageOpacity;
-  if (!mesh.userData.textureLoaded) return getBinderUnloadedCardOpacity(pageOpacity);
+  if (!mesh.userData.textureLoaded || mesh.userData.textureLoadFailed) {
+    return getBinderLoadingCardOpacity(mesh, pageOpacity);
+  }
   if (mesh.userData.textureFadeComplete) return pageOpacity;
 
   const startedAt = mesh.userData.textureFadeStartedAt;
@@ -22628,12 +22970,53 @@ function getBinderCardRenderedOpacity(mesh, pageOpacity, now = performance.now()
 
   const startOpacity = Number.isFinite(mesh.userData.textureFadeStartOpacity)
     ? clamp(mesh.userData.textureFadeStartOpacity, 0, Math.max(pageOpacity, 1))
-    : getBinderUnloadedCardOpacity(pageOpacity);
+    : getBinderLoadingCardOpacity(mesh, pageOpacity);
   return THREE.MathUtils.lerp(
     Math.min(startOpacity, pageOpacity),
     pageOpacity,
     easeInOutCubic(progress),
   );
+}
+
+function isBinderBackSourceReady(mesh) {
+  const sourcePosition = mesh?.userData?.binderBackSourcePosition;
+  if (!Number.isInteger(sourcePosition) || sourcePosition < 0) return false;
+  const sourceCard = binderCardMeshByPosition.get(sourcePosition);
+  return Boolean(
+    sourceCard?.userData?.binderCard
+    && sourceCard.userData.textureLoaded
+    && !sourceCard.userData.textureLoadFailed
+    && !isShowroomCardHeld(sourceCard.userData.cardIndex)
+  );
+}
+
+function getBinderBackRevealOpacity(mesh, pageOpacity, now = performance.now()) {
+  const opacity = clamp(pageOpacity, 0, 1);
+  if (!isBinderBackSourceReady(mesh)) return 0;
+  const revealPosition = mesh?.userData?.binderBackRevealPosition;
+  if (!Number.isInteger(revealPosition) || revealPosition < 0) return opacity;
+
+  const coveringCard = binderCardMeshByPosition.get(revealPosition);
+  if (
+    !coveringCard
+    || isShowroomCardHeld(coveringCard.userData.cardIndex)
+    || !coveringCard.userData.textureLoaded
+    || coveringCard.userData.textureLoadFailed
+  ) {
+    return opacity;
+  }
+  if (coveringCard.userData.textureFadeComplete) return 0;
+
+  const startedAt = coveringCard.userData.textureFadeStartedAt;
+  if (!Number.isFinite(startedAt)) return 0;
+  const progress = clamp((now - startedAt) / BINDER_CARD_LOAD_FADE_MS, 0, 1);
+  return opacity * (1 - easeInOutCubic(progress));
+}
+
+function getBinderLoadingCardOpacity(mesh, pageOpacity) {
+  return isBinderBackSourceReady(mesh?.userData?.binderReverseBackMesh)
+    ? 0
+    : getBinderUnloadedCardOpacity(pageOpacity);
 }
 
 function getBinderUnloadedCardOpacity(pageOpacity) {
@@ -22652,6 +23035,29 @@ function updateBinderCardLoadFades(now = performance.now()) {
       material.opacity = opacity;
     }
     setBinderCardStickerOpacity(mesh, opacity);
+    const affectedBacks = new Set([
+      mesh.userData.binderReverseBackMesh,
+      mesh.userData.binderOwnBackMesh,
+    ]);
+    for (const reverseBack of affectedBacks) {
+      if (!reverseBack?.material) continue;
+      const revealPosition = reverseBack.userData.binderBackRevealPosition;
+      const revealPageOpacity = getBinderPageOpacityForPosition(revealPosition);
+      const backOpacity = getBinderBackRevealOpacity(reverseBack, revealPageOpacity, now);
+      reverseBack.material.opacity = backOpacity;
+      reverseBack.visible = backOpacity > 0.001
+        && !isShowroomCardHeld(reverseBack.userData.binderBackCardIndex);
+
+      const coveringCard = binderCardMeshByPosition.get(revealPosition);
+      if (
+        coveringCard?.material
+        && (!coveringCard.userData.textureLoaded || coveringCard.userData.textureLoadFailed)
+      ) {
+        const coveringOpacity = getBinderLoadingCardOpacity(coveringCard, revealPageOpacity);
+        coveringCard.material.opacity = coveringOpacity;
+        setBinderCardStickerOpacity(coveringCard, coveringOpacity);
+      }
+    }
     if (!mesh.userData.textureFadeComplete) fadeActive = true;
   }
   return fadeActive;
@@ -22669,6 +23075,7 @@ function updateBinderLoadingRings(now = performance.now()) {
     const shouldShow = Boolean(
       ring.parent
       && card?.parent
+      && !isShowroomCardHeld(card.userData.cardIndex)
       && !card.userData.textureLoaded
       && !card.userData.textureLoadFailed
       && page?.group.visible
@@ -23203,9 +23610,9 @@ function drawBinderIntroNoteSurface(ctx) {
   ctx.textBaseline = "alphabetic";
   ctx.fillStyle = "rgba(156, 153, 146, 0.74)";
 
-  // Showroom collections keep only the separately rendered Evil Biscuit sprites.
-  // Wallet notes and the collection binders at their own URLs retain their text.
-  if (IS_SHOWROOM && !WALLET_ROUTE_ADDRESS) {
+  // Non-Evil showroom collections stay blank; Evil Biscuit collections retain
+  // their opening note without any showroom links or link hitboxes.
+  if (IS_SHOWROOM && !WALLET_ROUTE_ADDRESS && !usesEvilBinderPresentation()) {
     return { linkBounds: [], focusBounds: null };
   }
   const fontStack = SITE_FONT_STACK;
@@ -23232,17 +23639,31 @@ function drawBinderIntroNoteSurface(ctx) {
   const firstLinePrefix = `this is a 3d binder viewer for ${binderName} by  `;
   const textOffsetY = -54;
 
-  const evilBiscuitLinkBounds = drawBinderIntroLinkedLine(ctx, {
-    prefix: firstLinePrefix,
-    linkText,
-    y: 144 + textOffsetY,
-    maxWidth: maxTextWidth,
-    fontSize: baseFontSize,
-    fontStack,
-    textFillStyle,
-    linkFillStyle,
-    url: BINDER_INTRO_LINK_URL,
-  });
+  const evilBiscuitLinkBounds = IS_SHOWROOM
+    ? null
+    : drawBinderIntroLinkedLine(ctx, {
+      prefix: firstLinePrefix,
+      linkText,
+      y: 144 + textOffsetY,
+      maxWidth: maxTextWidth,
+      fontSize: baseFontSize,
+      fontStack,
+      textFillStyle,
+      linkFillStyle,
+      url: BINDER_INTRO_LINK_URL,
+    });
+  if (IS_SHOWROOM) {
+    ctx.fillStyle = textFillStyle;
+    drawCenteredBinderIntroText(
+      ctx,
+      firstLinePrefix + linkText,
+      width / 2,
+      144 + textOffsetY,
+      maxTextWidth,
+      baseFontSize,
+      fontStack,
+    );
+  }
 
   ctx.fillStyle = textFillStyle;
   drawCenteredBinderIntroText(
@@ -23268,6 +23689,8 @@ function drawBinderIntroNoteSurface(ctx) {
   ctx.fillStyle = "rgba(150, 146, 139, 0.78)";
   ctx.textAlign = "center";
   ctx.fillText("🩸", width / 2, 390 + textOffsetY);
+
+  if (IS_SHOWROOM) return { linkBounds: [], focusBounds: null };
 
   const linkBounds = [evilBiscuitLinkBounds];
   let focusBottomY = 390 + textOffsetY + 42 * 0.48;
@@ -24069,6 +24492,10 @@ function estimateBinderTextureBytes(card) {
 
 function isTextureAttachedToCardScene(texture) {
   if (!texture) return false;
+  for (const group of showroomDisplayGroups) {
+    if (group.userData.frontMesh?.material?.map === texture
+      || group.userData.backMesh?.material?.map === texture) return true;
+  }
   if (cardFrontMesh?.material?.map === texture || cardBackMesh?.material?.map === texture) return true;
   for (const mesh of binderFullResolutionMeshes) {
     if (mesh?.material?.map === texture) return true;
@@ -24302,31 +24729,47 @@ async function loadBinderDisplayTexture(card) {
 }
 
 function loadTextureImage(url, { fetchPriority = "auto" } = {}) {
-  return new Promise((resolve, reject) => {
-    const image = new Image();
-    image.crossOrigin = "anonymous";
-    image.decoding = "async";
-    if ("fetchPriority" in image) image.fetchPriority = fetchPriority;
-    image.onload = () => resolve(image);
+  const key = String(url);
+  const pending = textureImageLoads.get(key);
+  if (pending) {
+    if (fetchPriority === "high" && "fetchPriority" in pending.image) {
+      pending.image.fetchPriority = "high";
+    }
+    return pending.promise;
+  }
+
+  const image = new Image();
+  image.crossOrigin = "anonymous";
+  image.decoding = "async";
+  if ("fetchPriority" in image) image.fetchPriority = fetchPriority;
+  const promise = new Promise((resolve, reject) => {
+    image.onload = async () => {
+      // onload alone can defer decode until drawImage or the first GPU upload.
+      if (typeof image.decode === "function") await image.decode().catch(() => {});
+      resolve(image);
+    };
     image.onerror = () => reject(new Error(`Unable to load texture ${url}`));
-    image.src = url;
   });
+  const entry = { image, promise };
+  textureImageLoads.set(key, entry);
+  const clear = () => {
+    image.onload = null;
+    image.onerror = null;
+    if (textureImageLoads.get(key) === entry) textureImageLoads.delete(key);
+  };
+  promise.then(clear, clear);
+  image.src = key;
+  return promise;
 }
 
 async function loadHighPriorityTexture(url, options = {}) {
   const image = await loadTextureImage(url, { fetchPriority: "high" });
-  if (typeof image.decode === "function") {
-    await image.decode().catch(() => {});
-  }
   return configureDisplayTexture(new THREE.Texture(image), options);
 }
 
-function loadTexture(url, options = {}) {
-  return new Promise((resolve, reject) => {
-    textureLoader.load(url, (texture) => {
-      resolve(configureDisplayTexture(texture, options));
-    }, undefined, reject);
-  });
+async function loadTexture(url, options = {}) {
+  const image = await loadTextureImage(url);
+  return configureDisplayTexture(new THREE.Texture(image), options);
 }
 
 function loadCardNft2EffectTextures(cardNumber) {
@@ -24413,6 +24856,12 @@ function getProtectedCardEffectTextureKeys() {
 
 function isEffectTextureAttached(texture) {
   if (!texture) return false;
+  for (const group of showroomDisplayGroups) {
+    for (const mesh of group.userData.effectMeshes || []) {
+      const uniforms=mesh.material?.uniforms;
+      if (uniforms?.uFoilTexture?.value === texture || uniforms?.uMaskTexture?.value === texture) return true;
+    }
+  }
   const meshes = [
     cardGradientMesh,
     cardBackGradientMesh,

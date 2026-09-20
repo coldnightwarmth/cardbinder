@@ -1,5 +1,7 @@
 import * as THREE from 'three';
-import { createShowroomSpeech } from './showroom-speech.js?v=6';
+import { createShowroomColumns } from './showroom-columns.js?v=5';
+import { createShowroomPortal } from './showroom-portal.js?v=5';
+import { createShowroomSpeech } from './showroom-speech.js?v=7';
 import { mergeGeometries } from './vendor/BufferGeometryUtils.js';
 import { createResolutionBudget } from './showroom-performance.mjs';
 import { createShowroomRipples } from './showroom-ripples.js?v=soft-2';
@@ -16,7 +18,7 @@ export async function initShowroom(bridge) {
   canvas.id = 'showroomCanvas'; canvas.setAttribute('aria-label', 'First person card show floor');
   document.body.prepend(canvas);
   const hud = document.createElement('div'); hud.id = 'showroomHud';
-  hud.innerHTML = `<div id="showroomTop"><div class="showroom-title"><small>CARDS.ART / COMMUNITY</small><strong>The show floor</strong><span id="showroomCount">Loading public binders…</span></div><a href="/">Home</a><button id="showroomTheme">Switch style</button><button id="showroomReturn">Back to table</button></div><div id="showroomCrosshair"></div><div id="showroomHint"><span id="showroomStatus" role="status">WASD to walk · Mouse to look · Esc to release mouse</span> <button id="showroomEnter">Enter show floor</button></div><div id="showroomTouchJoystick" role="application" aria-label="Movement joystick" hidden><div id="showroomTouchJoystickBase"><span id="showroomTouchJoystickThumb"></span></div></div>`;
+  hud.innerHTML = `<div id="showroomTop"><div class="showroom-title"><small>CARDS.ART / COMMUNITY</small><strong>The show floor</strong><span id="showroomCount">Loading public binders…</span></div><a href="/">Home</a><button id="showroomTheme">Switch style</button><button id="showroomReturn">Back to table</button></div><div id="showroomCrosshair"></div><div id="showroomHint"><span id="showroomStatus" role="status">WASD to walk · Mouse to look · Esc to release mouse</span> <button id="showroomEnter">Enter show floor</button></div><div id="showroomTouchJoystick" role="application" aria-label="Movement joystick" hidden><div id="showroomTouchJoystickBase"><span id="showroomTouchJoystickThumb"></span></div></div><button id="showroomOpenBinder" type="button" hidden>Open</button>`;
   document.body.append(hud);
   const leave = document.createElement('a');
   leave.id='showroomLeave'; leave.textContent='Leave Show Room'; leave.hidden=true;
@@ -51,7 +53,8 @@ export async function initShowroom(bridge) {
   const touchJoystick = hud.querySelector('#showroomTouchJoystick');
   const touchJoystickBase = hud.querySelector('#showroomTouchJoystickBase');
   const touchJoystickThumb = hud.querySelector('#showroomTouchJoystickThumb');
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias:true });
+  const openBinderButton = hud.querySelector('#showroomOpenBinder');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, stencil:true });
   const resolution=createResolutionBudget(Math.min(devicePixelRatio,2));
   renderer.setPixelRatio(resolution.ratio); renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -59,6 +62,9 @@ export async function initShowroom(bridge) {
   // The reflective floor supplies grounding without unstable shadow-map passes.
   renderer.shadowMap.enabled = false;
   const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(65, 1, .05, 600);
+  // The room itself never moves. Static descendants can keep their world
+  // matrices between the main and reflection passes.
+  scene.updateMatrix();scene.matrixAutoUpdate=false;
   camera.position.set(0, 1.72, 3.5); camera.rotation.order = 'YXZ';
   camera.rotation.x = -.12;
   const environment = new RoomEnvironment();
@@ -206,13 +212,16 @@ export async function initShowroom(bridge) {
   const speech=createShowroomSpeech(evilTableGhost);
   // Planar reflection uses the r165 Reflector bundled alongside the site's Three.js.
   const ripples=createShowroomRipples();
+  const constrainedGpu=(Number(navigator.deviceMemory)>0 && Number(navigator.deviceMemory)<=4)
+    || matchMedia('(max-width:720px)').matches;
+  const floorReflectionSize=constrainedGpu?512:1024;
   const shader = THREE.UniformsUtils.clone(Reflector.ReflectorShader.uniforms);
   shader.footsteps={value:ripples.steps};
   shader.rippleTime={value:0};
   shader.horizonColor={value:new THREE.Color()};
-  shader.strength={value:.27}; shader.texel={value:new THREE.Vector2(1/1024,1/1024)};
+  shader.strength={value:.27}; shader.texel={value:new THREE.Vector2(1/floorReflectionSize,1/floorReflectionSize)};
   const floor = new Reflector(new THREE.PlaneGeometry(2000,2000), {
-    textureWidth:1024,textureHeight:1024,multisample:0,color:0x25272b,
+    textureWidth:floorReflectionSize,textureHeight:floorReflectionSize,multisample:0,color:0x25272b,
     shader:{ uniforms:shader, vertexShader:Reflector.ReflectorShader.vertexShader
       .replace('void main()', 'varying vec3 floorWorld;\nvoid main()')
       .replace('void main() {', 'void main() {\nfloorWorld = (modelMatrix * vec4(position, 1.)).xyz;'),
@@ -269,15 +278,43 @@ export async function initShowroom(bridge) {
   const reflectedView=new THREE.Matrix4(), reflectedProjection=new THREE.Matrix4();
   let reflectionReady=false, reflectionAt=0;
   floor.onBeforeRender=function(...args) {
-    if(reflectionReady && performance.now()-reflectionAt<1000 && !sceneDirty && !busy && reflectedView.equals(camera.matrixWorld)
-      && reflectedProjection.equals(camera.projectionMatrix)) return;
-    reflectedView.copy(camera.matrixWorld);reflectedProjection.copy(camera.projectionMatrix);reflectionReady=true;reflectionAt=performance.now();
+    const viewCamera=args[2] || camera;
+    if(reflectionReady && performance.now()-reflectionAt<1000 && !sceneDirty && !busy && reflectedView.equals(viewCamera.matrixWorld)
+      && reflectedProjection.equals(viewCamera.projectionMatrix)) return;
+    reflectedView.copy(viewCamera.matrixWorld);reflectedProjection.copy(viewCamera.projectionMatrix);reflectionReady=true;reflectionAt=performance.now();
     const visible=outline.visible, ghostVisible=evilTableGhost.visible;
     outline.visible=false;stars.object.visible=false;evilTableGhost.visible=false;
+    const portalVisible=portal.surface.visible;portal.surface.visible=false;
+    const stencilMaterials=[];
+    scene.traverse(object=>{
+      for(const material of (Array.isArray(object.material)?object.material:[object.material])) {
+        if(material?.stencilWrite) {stencilMaterials.push(material);material.stencilWrite=false;}
+      }
+    });
     try { reflect.apply(this,args); }
-    finally { outline.visible=visible;stars.object.visible=true;evilTableGhost.visible=ghostVisible; }
+    finally {
+      for(const material of stencilMaterials)material.stencilWrite=true;
+      outline.visible=visible;stars.object.visible=true;evilTableGhost.visible=ghostVisible;portal.surface.visible=portalVisible;
+    }
   };
   let sceneDirty=true;
+  let showroomBuffersSuspended=false;
+  function suspendShowroomBuffers() {
+    if(showroomBuffersSuspended)return;
+    showroomBuffersSuspended=true;
+    // The binder and individual card use their own WebGL contexts. Release the
+    // showroom's largest offscreen target while either is active so multi-million
+    // vertex clear-card models fit reliably on mobile GPUs.
+    floor.getRenderTarget().setSize(1,1);
+    portal.suspend();
+    renderer.renderLists.dispose();
+  }
+  function restoreShowroomBuffers() {
+    if(!showroomBuffersSuspended)return;
+    showroomBuffersSuspended=false;
+    floor.getRenderTarget().setSize(floorReflectionSize,floorReflectionSize);
+    reflectionReady=false;sceneDirty=true;
+  }
   const textures = await Promise.all(['table-wood-seamless.png','table-wood-light-seamless.png'].map(async name => {
     try { const t = await new THREE.TextureLoader().loadAsync(`/assets/ui/${name}`); t.colorSpace=THREE.SRGBColorSpace; t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(1,2); return t; } catch { return null; }
   }));
@@ -303,6 +340,20 @@ export async function initShowroom(bridge) {
   hud.querySelector('#showroomTheme').onclick=()=>document.querySelector('#themeToggle').click();
   const tables=[], binders=[], addresses=new Set(), keys=new Set();
   let endZ=-8, active=null, hovered=null, busy=false, directoryLoading=false;
+  let columns=null, hoveredColumn=null;
+  const portal=createShowroomPortal({renderer,scene,camera,
+    canWalkOutside:(x,z)=>canWalkAt(x,z,endZ,tables),
+    canWalkRoom:(x,z)=>columns?.canWalk(x,z) ?? true,
+    onCross:()=>{outline.visible=false;hovered=null;},
+  });
+  columns=createShowroomColumns({room:portal.room,camera,renderer,bridge,resume:()=>{if(!touchMode)lock(true);}});
+  function activateColumn(column=hoveredColumn) {
+    if(!column)return false;
+    if(column.card || column.ritual)return columns.activate(column);
+    keys.clear();releaseTouchInputs();document.exitPointerLock?.();
+    return columns.activate(column);
+  }
+  const renderShowroom=()=>portal.render();
   let fallback=false, dragging=false, dragged=false, touchMode=false, touchLook=null;
   let suppressTouchClickUntil=0;
   let touchJoystickPointerId=null;
@@ -322,9 +373,18 @@ export async function initShowroom(bridge) {
     const mesh=new THREE.Mesh(geometry,material);mesh.rotation.x=-Math.PI/2;mesh.position.set(x,y,z);
     mesh.castShadow=true;mesh.receiveShadow=true;scene.add(mesh);return mesh;
   }
+  const tableTemplates=[];
   function addTable(side,row) {
+    const tableX=side*3, tableZ=-row*5;
+    if(tableTemplates.length) {
+      for(const template of tableTemplates) {
+        const mesh=template.clone();
+        mesh.position.set(tableX,0,tableZ);mesh.updateMatrix();scene.add(mesh);
+      }
+      tables.push({x:tableX,z:tableZ});return;
+    }
     const firstMesh=scene.children.length;
-    const x=side*3, z=-row*5;
+    const x=0, z=0;
     roundedSlab(1.7,4.5,.046,.13,wood,x,.78,z);
     roundedSlab(1.68,4.48,.017,.12,trim,x,.757,z);
     const rubber=new THREE.MeshStandardMaterial({color:0x171a1d,roughness:.96});
@@ -362,42 +422,94 @@ export async function initShowroom(bridge) {
       const geometry=mergeGeometries(parts,false);
       parts.forEach(part=>part.dispose());
       const mesh=new THREE.Mesh(geometry,material);
-      mesh.matrixAutoUpdate=false;scene.add(mesh);
+      geometry.computeBoundingSphere();
+      mesh.position.set(tableX,0,tableZ);mesh.updateMatrix();
+      mesh.matrixAutoUpdate=false;tableTemplates.push(mesh);scene.add(mesh);
     }
-    tables.push({x,z});
+    tables.push({x:tableX,z:tableZ});
   }
   const modelQueue=[];let modelWorkers=0;
+  const modelTasks=[];
+  function scheduleModelWork(task) {
+    return new Promise((resolve,reject)=>modelTasks.push({task,resolve,reject}));
+  }
+  function flushModelWork() {
+    if(active || busy || portal.nearThreshold || document.hidden || !modelTasks.length)return;
+    // One build, texture upload, or model insertion per frame. Promise
+    // completions must not upload several newly arrived covers in one paint.
+    const {task,resolve,reject}=modelTasks.shift();
+    try {resolve(task());} catch(error) {reject(error);}
+  }
+  function freezeModel(model) {
+    model.traverse(object=>{
+      object.updateMatrix();object.matrixAutoUpdate=false;
+      if(object.geometry && !object.geometry.boundingSphere)object.geometry.computeBoundingSphere();
+    });
+  }
+  const uploadedTextures=new WeakMap();
+  async function prepareModel(model) {
+    const textures=new Set();
+    model.traverse(object=>{
+      for(const material of [].concat(object.material || [])) {
+        for(const value of Object.values(material))if(value?.isTexture)textures.add(value);
+      }
+    });
+    for(const texture of textures) {
+      if(uploadedTextures.get(texture)===texture.version)continue;
+      await scheduleModelWork(()=>{
+        if(uploadedTextures.get(texture)===texture.version)return;
+        renderer.initTexture(texture);uploadedTextures.set(texture,texture.version);
+      });
+    }
+    freezeModel(model);
+    // Compile against the room's real lights/environment before the model
+    // becomes visible; supported drivers can finish this off the main thread.
+    await scheduleModelWork(()=>renderer.compileAsync(model,camera,scene));
+  }
   function disposeModel(model) {
-    model.traverse(o=>{o.userData.showroomTitleTexture?.dispose();o.geometry?.dispose();if(o.material)for(const m of [].concat(o.material))m.dispose();});
+    model.traverse(o=>{o.userData.showroomTitleTexture?.dispose();if(o.isInstancedMesh)o.dispose();o.geometry?.dispose();if(o.material)for(const m of [].concat(o.material))m.dispose();});
     for(const texture of model.userData.ownedTextures || []) texture.dispose();
   }
   function updateNearbyModels() {
+    if(active || busy || portal.inside || document.hidden)return;
     for(const item of binders) {
       if(item===active)continue;
       const distance=item.home.distanceTo(camera.position);
       if(distance<24 && !item.modelLoaded && !item.modelQueued && performance.now()>(item.retryAt||0)) {
         item.modelQueued=true;modelQueue.push(item);
-      } else if(distance>36 && item.modelLoaded) {
-        item.group.remove(item.model);disposeModel(item.model);
-        item.model=bridge.placeholder(item.entry);item.group.add(item.model);
-        item.model.traverse(o=>o.userData.binder=item);item.modelLoaded=false;sceneDirty=true;
+      } else if(distance>36 && item.modelLoaded && !item.unloadQueued) {
+        item.unloadQueued=true;
+        void scheduleModelWork(()=>{
+          item.unloadQueued=false;
+          if(item.removed || item.home.distanceToSquared(camera.position)<=36*36)return;
+          const placeholder=bridge.placeholder(item.entry);freezeModel(placeholder);
+          item.group.remove(item.model);disposeModel(item.model);
+          item.model=placeholder;item.group.add(placeholder);
+          placeholder.traverse(o=>o.userData.binder=item);item.modelLoaded=false;sceneDirty=true;
+        });
       }
     }
     modelQueue.sort((a,b)=>a.home.distanceToSquared(camera.position)-b.home.distanceToSquared(camera.position));
     pumpModels();
   }
   function pumpModels() {
+    if(active || busy || portal.inside || document.hidden)return;
     while(modelWorkers<3 && modelQueue.length) {
       const item=modelQueue.shift();
       if(item.removed || item.home.distanceToSquared(camera.position)>36*36) {item.modelQueued=false;continue;}
       modelWorkers++;
-      bridge.model(item.entry).then(model=>{
-        if(item.removed) {disposeModel(model);return;}
-        const old=item.model;
-        item.group.remove(old);item.group.add(model);item.model=model;item.modelLoaded=true;sceneDirty=true;
-        model.traverse(o=>o.userData.binder=item);
-        // Dispose only geometry/material; cover textures belong to the shared cache.
-        disposeModel(old);
+      bridge.model(item.entry,scheduleModelWork).then(async model=>{
+        try {
+          await prepareModel(model);
+          await scheduleModelWork(()=>{
+            if(item.removed || item.home.distanceToSquared(camera.position)>36*36) {disposeModel(model);return;}
+            const old=item.model;
+            item.group.remove(old);item.group.add(model);item.model=model;item.modelLoaded=true;sceneDirty=true;
+            model.traverse(o=>o.userData.binder=item);
+            // Shared cover textures survive; model-owned artwork is released.
+            disposeModel(old);
+          });
+        } catch(error) {disposeModel(model);throw error;}
       }).catch(()=>{item.retryAt=performance.now()+30000;}).finally(()=>{item.modelQueued=false;modelWorkers--;pumpModels();});
     }
   }
@@ -411,22 +523,25 @@ export async function initShowroom(bridge) {
     const x=seat.side*3,z=-seat.row*5+(seat.slot-1)*1.4;
     group.position.set(x,.838,z);
     group.rotation.order='YXZ';group.rotation.set(-Math.PI/2,facingStart(x,z,i),0);
-    const model=bridge.placeholder(entry);group.add(model);
-    const nameplate=createShowroomNameplate(entry,side,z); scene.add(nameplate);
+    const model=bridge.placeholder(entry);freezeModel(model);group.add(model);
+    group.updateMatrix();group.matrixAutoUpdate=false;
+    const nameplate=createShowroomNameplate(entry,side,z);freezeModel(nameplate);scene.add(nameplate);
     const item={group,model,nameplate,entry,side,seatIndex:i,home:group.position.clone(),rotation:group.quaternion.clone()};binders.push(item);
     group.traverse(o=>o.userData.binder=item);
   }
   let prefetching=0;
   const warmed=new Map();
   function warmNearby() {
-    if(active || document.hidden || prefetching>=2) return;
-    const nearby=binders.filter(item=>item.home.distanceTo(camera.position)<7)
-      .sort((a,b)=>a.home.distanceToSquared(camera.position)-b.home.distanceToSquared(camera.position));
+    if(active || portal.inside || document.hidden || prefetching>=2) return;
+    const nearby=binders.filter(item=>item.home.distanceToSquared(camera.position)<49)
+      .sort((a,b)=>a===hovered?-1:b===hovered?1:a.home.distanceToSquared(camera.position)-b.home.distanceToSquared(camera.position));
     for(const item of nearby) {
       if(prefetching>=2) break;
       if(Date.now()-(warmed.get(item)||0)<45000)continue;
       warmed.set(item,Date.now());prefetching++;
-      bridge.prefetch(item.entry).catch(()=>warmed.delete(item)).finally(()=>prefetching--);
+      bridge.prefetch(item.entry).catch(()=>warmed.set(item,Date.now()-35000)).finally(()=>{
+        prefetching--;if(!active && !document.hidden)setTimeout(warmNearby,0);
+      });
     }
   }
   function touchExploreStatus() {
@@ -513,7 +628,7 @@ export async function initShowroom(bridge) {
       }
       for(const entry of eligible.values()) {
         if(addresses.has(entry.walletAddress))continue;
-        addresses.add(entry.walletAddress);addBinder(entry);
+        await scheduleModelWork(()=>{addresses.add(entry.walletAddress);addBinder(entry);sceneDirty=true;});
       }
       updateNearbyModels();
       endZ=-Math.max(1,...binders.map(item=>seatFor(item.seatIndex).row+1))*5-3;
@@ -556,7 +671,7 @@ export async function initShowroom(bridge) {
     return pickBinder(pointer);
   }
   function beginTouchLook(event) {
-    if(event.pointerType!=='touch' || active || busy || touchLook)return false;
+    if(event.pointerType!=='touch' || active || busy || touchLook || columns.selecting)return false;
     activateTouchMode();
     touchLook={
       pointerId:event.pointerId,
@@ -587,7 +702,10 @@ export async function initShowroom(bridge) {
     const isTap=!cancelled && !look.moved && performance.now()-look.startedAt<650;
     suppressTouchClickUntil=performance.now()+700;
     touchLook=null;dragging=false;dragged=false;
-    if(isTap && !active && !busy) {
+    if(isTap && !active && !busy && portal.inside) {
+      const pointer=new THREE.Vector2(event.clientX/innerWidth*2-1,1-event.clientY/innerHeight*2);
+      activateColumn(columns.pick(pointer) || hoveredColumn);
+    } else if(isTap && !active && !busy) {
       const target=touchBinderAt(event.clientX,event.clientY) || hovered;
       if(target)void open(target);
     }
@@ -644,10 +762,20 @@ export async function initShowroom(bridge) {
       function step(now) {
         const t=reduced?1:Math.min(1,(now-start)/550), ease=t*t*(3-2*t);
         item.group.position.lerpVectors(from,to,ease); item.group.quaternion.slerpQuaternions(q,rot,ease);
+        const coverShade=item.model?.userData.showroomCoverShade;
+        if(coverShade) {
+          const pickupProgress=returning?1-ease:ease;
+          const scale=THREE.MathUtils.lerp(coverShade.restScale,1,pickupProgress);
+          for(const entry of coverShade.materials) {
+            entry.material.color.copy(entry.originalColor).multiplyScalar(scale);
+            entry.material.emissive.copy(entry.originalEmissive).multiplyScalar(scale);
+          }
+        }
+        item.group.updateMatrix();
         if(t<1) requestAnimationFrame(step);
         else {
           // Paint the exact endpoint before handing off to the interactive canvas.
-          renderer.render(scene,camera);
+          renderShowroom();
           resolve();
         }
       } requestAnimationFrame(step);
@@ -655,7 +783,7 @@ export async function initShowroom(bridge) {
   }
   async function open(item) {
     if(active || busy) return;
-    active=item;busy=true; leave.hidden=true; keys.clear(); releaseTouchInputs(); document.exitPointerLock?.(); outline.visible=false;
+    active=item;busy=true; openBinderButton.hidden=true; leave.hidden=true; keys.clear(); releaseTouchInputs(); document.exitPointerLock?.(); outline.visible=false;
     status.textContent='Opening binder…';
     try {
       await bridge.open(item.entry);
@@ -663,8 +791,9 @@ export async function initShowroom(bridge) {
       item.group.visible=false;
       // Remove the moving proxy from the backdrop before revealing the real
       // binder, rather than leaving its previous frame behind for one paint.
-      renderer.render(scene,camera); sceneDirty=false;
+      renderShowroom(); sceneDirty=false;
       document.body.classList.remove('showroom-walking');
+      suspendShowroomBuffers();
       status.textContent='Browse the binder · Back to table to keep exploring';
     } catch (error) {
       console.warn("Showroom binder could not load", error);
@@ -673,22 +802,88 @@ export async function initShowroom(bridge) {
     } finally {busy=false;}
   }
   async function close() {
-    if(!active || busy) return;
+    if(!active || active.hand || busy) return;
     busy=true; const item=active;
+    restoreShowroomBuffers();
     // Request capture inside the return-button gesture, before the animation awaits.
     // Movement stays frozen until the binder has landed.
     if(!fallback && !touchMode) lock(true);
     document.body.classList.add('showroom-walking'); bridge.close(); item.group.visible=true;
     await tween(item,true); active=null;busy=false;
+    updateNearbyModels();warmNearby();
     status.textContent=touchMode
       ? touchExploreStatus()
       : 'WASD to walk · Mouse to look · Click an outlined binder';
     hud.querySelector('#showroomEnter').hidden=touchMode || fallback || document.pointerLockElement===canvas;
   }
+  async function releaseBinderToHand() {
+    if (!active || active.hand || busy) throw new Error('Binder is not ready');
+    busy=true;
+    const item=active;
+    restoreShowroomBuffers();
+    item.group.position.copy(item.home); item.group.quaternion.copy(item.rotation); item.group.updateMatrix();
+    const shade=item.model?.userData.showroomCoverShade;
+    for(const entry of shade?.materials || []) {
+      entry.material.color.copy(entry.originalColor).multiplyScalar(shade.restScale);
+      entry.material.emissive.copy(entry.originalEmissive).multiplyScalar(shade.restScale);
+    }
+    const materials=new Map();
+    item.group.traverse(object => {
+      for(const material of (Array.isArray(object.material) ? object.material : [object.material])) {
+        if(material && !materials.has(material)) {
+          materials.set(material,{opacity:material.opacity,transparent:material.transparent});
+          material.transparent=true;material.opacity=0;material.needsUpdate=true;
+        }
+      }
+    });
+    item.group.visible=true;
+    document.body.classList.add('showroom-walking');bridge.close();
+    // Capture during the hand-button gesture, before the fade awaits.
+    // Active/busy keep movement frozen until the binder is back on the table.
+    if(!fallback && !touchMode) lock(true);
+    try {
+      await new Promise(resolve => {
+        const start=performance.now(), reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+        function step(now) {
+          const t=reduced?1:Math.min(1,(now-start)/420);
+          for(const [material,original] of materials) material.opacity=original.opacity*t;
+          sceneDirty=true;
+          if(t<1) requestAnimationFrame(step); else resolve();
+        }
+        requestAnimationFrame(step);
+      });
+    } finally {
+      for(const [material,original] of materials) {
+        material.opacity=original.opacity;material.transparent=original.transparent;material.needsUpdate=true;
+      }
+      active=null;busy=false;leave.hidden=touchMode || document.pointerLockElement===canvas;sceneDirty=true;
+      updateNearbyModels();warmNearby();
+    }
+  }
+  function beginHandView() {
+    active={hand:true};keys.clear();releaseTouchInputs();document.exitPointerLock?.();
+    leave.hidden=true;outline.visible=false;
+    renderShowroom();sceneDirty=false;
+    document.body.classList.remove('showroom-walking');
+    suspendShowroomBuffers();
+  }
+  function endHandView() {
+    active=null;restoreShowroomBuffers();
+    document.body.classList.add('showroom-walking');leave.hidden=false;
+  }
   window.addEventListener('showroom-return',close); hud.querySelector('#showroomReturn').onclick=close;
+  openBinderButton.onclick=()=>{
+    if(portal.inside){activateColumn();return;}
+    if(hovered && !active && !busy)void open(hovered);
+  };
   canvas.onclick=e=>{
     if(active || busy)return;
     if(performance.now()<suppressTouchClickUntil)return;
+    if(portal.inside && !columns.selecting){
+      const point=document.pointerLockElement===canvas?center:new THREE.Vector2(e.clientX/innerWidth*2-1,1-e.clientY/innerHeight*2);
+      if(activateColumn(columns.pick(point)))return;
+    }
+    if(columns.selecting)return;
     if(document.pointerLockElement===canvas) {
       if(hovered)void open(hovered);
       return;
@@ -704,10 +899,8 @@ export async function initShowroom(bridge) {
     // An earlier blocked request never prevents a fresh scene click retry.
     lock();
   };
-  function canWalk(x,z) {
-    return canWalkAt(x,z,endZ,tables);
-  }
   function move(dt) {
+      if(columns.selecting)return;
       const forward=THREE.MathUtils.clamp(
         Number(keys.has('KeyW'))-Number(keys.has('KeyS'))-touchMove.y,
         -1,1,
@@ -722,19 +915,25 @@ export async function initShowroom(bridge) {
       const speed=dt*2.7*(keys.has('ShiftLeft') || keys.has('ShiftRight') ? 2.25 : 1)*amount/norm, yaw=camera.rotation.y;
       const dx=(right*Math.cos(yaw)-forward*Math.sin(yaw))*speed;
       const dz=(-forward*Math.cos(yaw)-right*Math.sin(yaw))*speed;
-      if(canWalk(camera.position.x+dx,camera.position.z))camera.position.x+=dx;
-      if(canWalk(camera.position.x,camera.position.z+dz))camera.position.z+=dz;
+      portal.move(dx,dz);
   }
   const pickTargets=[], pickHits=[];
+  const pickView=new THREE.Matrix4(), pickPoint=new THREE.Vector2(Infinity,Infinity);
+  let pickedBinder=null;
   function pickBinder(point) {
+    if(portal.inside)return null;
+    camera.updateMatrixWorld();
+    if(!sceneDirty && pickView.equals(camera.matrixWorld) && pickPoint.equals(point))return pickedBinder;
+    pickView.copy(camera.matrixWorld);pickPoint.copy(point);
     pickTargets.length=0;pickHits.length=0;
     for(const item of binders) {
       if(item.group.visible && item.home.distanceToSquared(camera.position)<16)pickTargets.push(item.group);
     }
-    camera.updateMatrixWorld();
+    for(const target of pickTargets)target.updateWorldMatrix(true,true);
     ray.setFromCamera(point,camera);ray.far=2.7;
     ray.intersectObjects(pickTargets,true,pickHits);
-    return pickHits[0]?.object.userData.binder || null;
+    pickedBinder=pickHits[0]?.object.userData.binder || null;
+    return pickedBinder;
   }
   window.addEventListener('scene-transition-start',()=>{keys.clear();releaseTouchInputs();document.exitPointerLock?.();});
   let previous=performance.now();
@@ -742,14 +941,17 @@ export async function initShowroom(bridge) {
     const frameMs=now-previous;
     const dt=Math.min(frameMs/1000,.04);previous=now;
     if(document.hidden || window.cardSceneTransition?.departing) {requestAnimationFrame(frame);return;}
-    if(!active && !busy) {
+    if(!active && !busy && !portal.crossingZone) {
       const ratio=resolution.sample(frameMs);
       if(ratio!==null) {renderer.setPixelRatio(ratio);sceneDirty=true;}
     }
     if(!active && (document.pointerLockElement===canvas || fallback || touchMode)) {
       move(dt);
     }
-    speech.update(now,camera,document.pointerLockElement===canvas || touchMode || dragging ? center : mousePoint,!active && !busy);
+    portal.place(tables);
+    speech.update(now,camera,document.pointerLockElement===canvas || touchMode || dragging ? center : mousePoint,!active && !busy && !portal.inside);
+    hoveredColumn=columns.update(now,document.pointerLockElement===canvas || touchMode?center:mousePoint,
+      portal.inside && !active && !busy);
     const oldHovered=hovered;
     hovered=null;
     if(!active) {
@@ -758,22 +960,32 @@ export async function initShowroom(bridge) {
       if(hovered && (hovered!==oldHovered || sceneDirty)){outline.setFromObject(hovered.group); status.textContent=`${touchMode?'Tap':'Click'} to open ${hovered.entry.label || `${hovered.entry.walletAddress?.slice(0,4)}…${hovered.entry.walletAddress?.slice(-4)}`}`;}
       else if(!hovered && oldHovered && touchMode) status.textContent='Drag to look · Use the joystick to walk · Center and tap a binder';
       else if(!hovered && oldHovered && document.pointerLockElement===canvas) status.textContent='WASD to walk · Mouse to look · Approach a binder to open it';
+      if(hovered && hovered!==oldHovered)warmNearby();
+    }
+    openBinderButton.hidden=!touchMode || !(hovered || hoveredColumn) || Boolean(active || busy || columns.selecting);
+    openBinderButton.textContent=hoveredColumn?(hoveredColumn.ritual?'Begin ritual':hoveredColumn.card?'Take card':'Place card'):'Open';
+    if(hoveredColumn)openBinderButton.setAttribute('aria-label',hoveredColumn.ritual?'Begin ritual with the three displayed cards':hoveredColumn.card?'Take displayed card into your hand':'Choose a card to display');
+    if(!openBinderButton.hidden && hovered && hovered!==oldHovered) {
+      openBinderButton.setAttribute('aria-label',`Open ${hovered.entry.label || hovered.entry.walletAddress || 'binder'}`);
     }
 
     if(!document.hidden && (!active || busy || sceneDirty)) {
-      ripples.update(now,camera);
+      if(!portal.inside)ripples.update(now,camera);
       floor.material.uniforms.rippleTime.value=now*.001;
       evilTableGhost.material.uniforms.time.value=now*.001;
       evilTableGhost.material.uniforms.pixelRatio.value=renderer.getPixelRatio();
-      stars.update(now,camera,renderer);
-      renderer.render(scene,camera);sceneDirty=false;
+      stars.update(now,portal.exteriorCamera,renderer);
+      renderShowroom();sceneDirty=false;
     }
+    flushModelWork();
     requestAnimationFrame(frame);
   }
   function resize(){sceneDirty=true;renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();}
   window.addEventListener('resize',resize);resize();requestAnimationFrame(frame);
   setInterval(()=>{warmNearby();if(!document.hidden)updateNearbyModels();},1000);
-  for(const entry of bridge.collections) addBinder(entry);
+  for(const entry of bridge.collections) await scheduleModelWork(()=>{addBinder(entry);sceneDirty=true;});
+  portal.place(tables);
+  await portal.prepare();
   updateNearbyModels();
   const initialDirectory=refresh();
   setInterval(()=>{if(!document.hidden)void refresh();},60000);
@@ -786,6 +998,7 @@ export async function initShowroom(bridge) {
       await new Promise(resolve=>setTimeout(resolve,50));
     }
     await renderer.compileAsync(scene,camera);
-    renderer.render(scene,camera);
+    renderShowroom();
   }
+  return { releaseBinderToHand, beginHandView, endHandView, setHand:hand=>columns.setHand(hand) };
 }

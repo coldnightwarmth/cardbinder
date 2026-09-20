@@ -3,7 +3,7 @@
   <head>
     <script src="/scene-transition.js?v=1"></script>
     <base href="/">
-    <link rel="stylesheet" href="/showroom.css?v=speech-1">
+    <link rel="stylesheet" href="/showroom.css?v=columns-2">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
     <title>card show</title>
@@ -52,6 +52,24 @@
           radial-gradient(circle at 64% 78%, rgba(152, 119, 54, 0.16), transparent 48%),
           linear-gradient(145deg, #e9e4d5, #f8f4e8);
       }
+      html.wallet-binder-arrival-bootstrap > .wallet-binder-arrival-bootstrap-loader {
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        z-index: 2147483002;
+        width: min(9.52vw, 73.1px, 9.28vh);
+        aspect-ratio: 1;
+        box-sizing: border-box;
+        border: min(0.67vw, 5.12px, 0.65vh) solid rgba(217, 211, 197, 0.76);
+        border-right-color: transparent;
+        border-radius: 50%;
+        pointer-events: none;
+        animation: wallet-binder-arrival-bootstrap-spin 5460ms linear infinite;
+      }
+      @keyframes wallet-binder-arrival-bootstrap-spin {
+        from { transform: translate(-50%, -50%) rotate(0turn); }
+        to { transform: translate(-50%, -50%) rotate(1turn); }
+      }
     </style>
     <script>
       (() => {
@@ -79,6 +97,10 @@
           }
           root.classList.add("wallet-binder-arrival-bootstrap");
           root.classList.toggle("wallet-binder-arrival-bootstrap-light", Boolean(arrival.light));
+          const loader = document.createElement("span");
+          loader.className = "wallet-binder-arrival-bootstrap-loader";
+          loader.setAttribute("aria-hidden", "true");
+          root.append(loader);
         } catch {
           // The normal application shell remains the fallback.
         }
@@ -88,7 +110,7 @@
     <link rel="apple-touch-icon" href="./cardnft.png">
     <link rel="preconnect" href="https://cdn.lil.org" crossorigin>
     <link rel="dns-prefetch" href="//cdn.lil.org">
-    <link rel="stylesheet" href="./styles.css?v=cardnft-167">
+    <link rel="stylesheet" href="./styles.css?v=cardnft-170">
     <script type="importmap">
       {
         "imports": {
@@ -96,11 +118,11 @@
         }
       }
     </script>
-    <link rel="modulepreload" href="./app.js?v=cardnft-397">
+    <link rel="modulepreload" href="./app.js?v=cardnft-421">
     <link rel="modulepreload" href="./wallet-auth.js?v=wallet-auth-8">
     <link rel="modulepreload" href="./swag-pack-stickers.js?v=swag-pack-transparent-1">
     <link rel="modulepreload" href="./vendor/three.module.min.js?v=three-r165-min-1">
-    <link rel="modulepreload" href="./browser-traits-catalog.js?v=browser-traits-10">
+    <link rel="modulepreload" href="./browser-traits-catalog.js?v=browser-traits-11">
     <link rel="modulepreload" href="./cardnft2-data.js?v=cardnft2-3">
   </head>
   <body class="showroom showroom-walking">
@@ -529,6 +551,6 @@
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3.6 2.55 5.16 5.7.83-4.12 4.02.97 5.68L12 16.6l-5.1 2.69.97-5.68-4.12-4.02 5.7-.83L12 3.6Z"></path></svg>
     </button>
 
-    <script type="module" src="./app.js?v=cardnft-397"></script>
+    <script type="module" src="./app.js?v=cardnft-421"></script>
   </body>
 </html>

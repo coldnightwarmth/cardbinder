@@ -133,8 +133,8 @@ assert(
     && page.includes('rel="apple-touch-icon" href="../cardnft.png"'),
   "Poncho page has the wrong favicon URL",
 );
-assert(page.includes("../app.js?v=cardnft-397"), "Poncho page has a stale app cache key");
-assert(page.includes("../styles.css?v=cardnft-167"), "Poncho page has a stale style cache key");
+assert(page.includes("../app.js?v=cardnft-421"), "Poncho page has a stale app cache key");
+assert(page.includes("../styles.css?v=cardnft-170"), "Poncho page has a stale style cache key");
 assert(page.includes("../wallet-auth.js?v=wallet-auth-8"), "Poncho page has a stale wallet auth cache key");
 assert(page.includes('id="binderOrderEditButton"'), "Poncho page is missing the binder order editor");
 assert(page.includes('id="binderTradeModeButton"'), "Poncho page is missing the trade marking control");

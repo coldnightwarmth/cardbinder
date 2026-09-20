@@ -9,7 +9,7 @@ export const COMMUNITY_COLLECTIONS = Object.freeze([
     tensorSlug: "677bb15b-cf89-4957-a983-64433e84f144",
     width: 600,
     height: 840,
-    revision: "reflection2-public-1",
+    revision: "reflection2-public-2",
     sortByTitleNumber: true,
     backSource: "classic Magic: The Gathering card back scan",
     backSourceUrl: "https://oasisgamesslc.com/img/product/magiccard/mtgback.png",

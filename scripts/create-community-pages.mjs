@@ -7,7 +7,7 @@ const root = process.cwd();
 const sourcePath = path.join(root, "cardnft1", "index.html");
 const source = await readFile(sourcePath, "utf8");
 const dataRevisions = Object.freeze({
-  reflection2: "reflection2-public-1",
+  reflection2: "reflection2-public-2",
   cloudcastle: "community-3",
   badhand: "community-2",
   badhand2: "community-1",

@@ -15,8 +15,8 @@ import { COMMUNITY_COLLECTIONS } from "./community-collections.mjs";
 import { SWAG_PACK_TRANSPARENT_STICKER_FILES } from "../swag-pack-stickers.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const APP_VERSION = "cardnft-397";
-const STYLE_VERSION = "cardnft-167";
+const APP_VERSION = "cardnft-421";
+const STYLE_VERSION = "cardnft-170";
 const THREE_VERSION = "three-r165-min-1";
 
 const TRAIT_SPECS = [
@@ -39,7 +39,7 @@ const TRAIT_SPECS = [
 ];
 
 const DATA_REVISIONS = Object.freeze({
-  reflection2: "reflection2-public-1",
+  reflection2: "reflection2-public-2",
   cloudcastle: "community-3",
   badhand: "community-2",
   badhand2: "community-1",
@@ -388,6 +388,12 @@ assert(
     && styles.includes("@keyframes wallet-binder-directory-cover-loading")
     && styles.includes(".wallet-binder-directory-transition-layer")
     && styles.includes(".wallet-binder-directory-flight")
+    && app.includes('flight.append(createTransitionLoadingRing("wallet-binder-directory-transition-loader"))')
+    && app.includes('cover.append(createTransitionLoadingRing("wallet-binder-directory-transition-loader"))')
+    && styles.includes(".wallet-binder-directory-transition-loader")
+    && walletRouteShell.includes("wallet-binder-arrival-bootstrap-spin")
+    && walletRouteShell.includes("wallet-binder-arrival-bootstrap-loader")
+    && app.includes('root.querySelector(".wallet-binder-arrival-bootstrap-loader")?.remove()')
     && styles.includes(".wallet-binder-directory-arrival-cover")
     && styles.includes(".is-wallet-binder-directory-arriving")
     && styles.includes("@keyframes wallet-binder-directory-controls-arrive")
@@ -557,14 +563,15 @@ assert(
 );
 assert(
   app.includes("ensureCollectionTraits")
-    && app.includes("browser-traits-catalog.js?v=browser-traits-10"),
+    && app.includes("browser-traits-catalog.js?v=browser-traits-11"),
   "app does not lazy-load packed browser traits",
 );
 assert(
   app.includes('clear: { module: "./clear-data.js?v=clear-8"')
     && app.includes('backImage: "assets/clear/backs/clear-card-back.webp?v=clear-5"')
-    && app.includes("showUnpairedBinderBacks: false")
-    && app.includes("hasFrontCard && ACTIVE_COLLECTION.showUnpairedBinderBacks !== false")
+    && app.includes("function createBinderBackCard(")
+    && app.includes("binderBackRevealPosition")
+    && app.includes("function getBinderBackRevealOpacity(")
     && app.includes("function syncIndividualCardModel(")
     && app.includes("function loadIndividualCardModelSource(")
     && app.includes("./vendor/DRACOLoader.js?v=three-r165-draco-1")
@@ -616,8 +623,19 @@ assert(
     && app.includes("group.userData.individualCardModelReadyPromise = readyPromise")
     && app.includes("function prewarmIndividualCardModelAssets(card)")
     && app.includes("prewarmIndividualCardModelAssets(focusedCard)")
-    && app.includes("const waitForClearModel = card.collection")
+    && app.includes("const waitForClearModel = card?.collection")
     && app.includes("individualModelReadyPromise || Promise.resolve(false)")
+    && app.includes('transitionCard.classList.toggle("is-clear-model-transition", waitForClearModel)')
+    && app.includes('? createTransitionLoadingRing("binder-card-transition-loading-ring")')
+    && app.includes("applyTransitionLoadingRingRect(transitionLoadingRing, targetRect)")
+    && app.includes('document.createElementNS("http://www.w3.org/2000/svg", "circle")')
+    && app.includes('element.classList.contains("binder-card-transition-loading-ring")')
+    && app.includes("if (waitForClearModel) {")
+    && app.includes("transitionLoadingRing?.remove()")
+    && styles.includes(".binder-card-transition-card.is-clear-model-transition")
+    && styles.includes(".binder-card-transition-loading-ring")
+    && styles.includes(".transition-loading-ring circle")
+    && styles.includes("@keyframes binder-preview-loading-spin")
     && styles.includes('html[data-collection-id="clear"] .binder-card-transition-card')
     && /html\[data-collection-id="clear"\] \.binder-card-transition-card[\s\S]{0,220}border-radius: 0;[\s\S]{0,120}box-shadow: none;/.test(styles)
     && !app.includes("modelOpacity")
@@ -1255,7 +1273,7 @@ async function verifyPage({ pagePath, prefix, dataFile }) {
     `${prefix}wallet-auth.js?v=wallet-auth-8`,
     `${prefix}swag-pack-stickers.js?v=swag-pack-transparent-1`,
     `${prefix}vendor/three.module.min.js?v=${THREE_VERSION}`,
-    `${prefix}browser-traits-catalog.js?v=browser-traits-10`,
+    `${prefix}browser-traits-catalog.js?v=browser-traits-11`,
     `${prefix}${dataFile}`,
     'id="binderTableViewButton"',
     'id="walletConnectButton"',
