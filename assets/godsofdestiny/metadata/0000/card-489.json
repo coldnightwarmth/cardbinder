@@ -1,0 +1,26 @@
+{
+  "name": "Valkyrie #544",
+  "description": "Act III - Gods of Destiny ✧ A collection of 666 unique cards, each bound to fate.",
+  "external_url": "www.valkyries-order.xyz",
+  "attributes": [
+    {
+      "trait_type": "Card type",
+      "value": "Action"
+    },
+    {
+      "trait_type": "Rarity",
+      "value": "Common"
+    }
+  ],
+  "image": "https://we-assets.pinit.io/vTS5wMvsu72Uj5Rxdab5YXVxmFSv3cyytC1jR666EQb/36a13d4f-b125-4099-817b-3c6838609726/550",
+  "properties": {
+    "files": [
+      {
+        "uri": "https://we-assets.pinit.io/vTS5wMvsu72Uj5Rxdab5YXVxmFSv3cyytC1jR666EQb/36a13d4f-b125-4099-817b-3c6838609726/550"
+      }
+    ]
+  },
+  "collection_mints": [
+    "8M19r6jBhca1VV7orb6oB7CnSt5sj8vW3tWe75P8J7F2"
+  ]
+}

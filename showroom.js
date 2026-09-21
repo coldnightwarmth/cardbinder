@@ -1,3 +1,4 @@
+import { createShowroomSky } from './showroom-sky.js?v=5';
 import * as THREE from 'three';
 import { createShowroomColumns } from './showroom-columns.js?v=5';
 import { createShowroomPortal } from './showroom-portal.js?v=5';
@@ -62,6 +63,7 @@ export async function initShowroom(bridge) {
   // The reflective floor supplies grounding without unstable shadow-map passes.
   renderer.shadowMap.enabled = false;
   const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(65, 1, .05, 600);
+  const sky=createShowroomSky();scene.add(sky.object);
   // The room itself never moves. Static descendants can keep their world
   // matrices between the main and reflection passes.
   scene.updateMatrix();scene.matrixAutoUpdate=false;
@@ -325,6 +327,7 @@ export async function initShowroom(bridge) {
     currentTheme=light;sceneDirty=true;
     stars.theme(light);
     scene.background=new THREE.Color(light ? 0xe4e2de:0x181d23);
+    sky.setTheme(scene.background,light);
     scene.fog=new THREE.Fog(scene.background, 14, 75);
     floor.material.uniforms.horizonColor.value.copy(scene.background).convertLinearToSRGB();
     floor.material.uniforms.color.value.set(light?0xb7b6b3:0x15191f);
@@ -360,7 +363,26 @@ export async function initShowroom(bridge) {
   const touchMove={x:0,y:0};
   let lockRequest=0;
   const ray=new THREE.Raycaster(), center=new THREE.Vector2(), mousePoint=new THREE.Vector2();
-  const outline=new THREE.BoxHelper(new THREE.Object3D(),0xffdd8c); outline.visible=false; scene.add(outline);
+  const outline=new THREE.Group(); outline.visible=false; scene.add(outline);
+  const outlineBounds=new THREE.Box3();
+  const outlineBox=new THREE.Box3Helper(outlineBounds,0xffdd8c);outline.add(outlineBox);
+  const outlineInverse=new THREE.Matrix4(),outlineTransform=new THREE.Matrix4(),outlineMeshBounds=new THREE.Box3();
+  function fitBinderOutline(group) {
+    group.updateWorldMatrix(true,true);
+    outlineInverse.copy(group.matrixWorld).invert();outlineBounds.makeEmpty();
+    group.traverseVisible(object=>{
+      if(!object.isMesh || !object.geometry)return;
+      // Instanced page geometry is centered at the origin; its instances are
+      // shifted into the closed binder. Bound the instances, not the template.
+      if(object.isInstancedMesh && !object.boundingBox)object.computeBoundingBox();
+      if(!object.geometry.boundingBox)object.geometry.computeBoundingBox();
+      outlineTransform.multiplyMatrices(outlineInverse,object.matrixWorld);
+      outlineMeshBounds.copy(object.isInstancedMesh ? object.boundingBox : object.geometry.boundingBox).applyMatrix4(outlineTransform);
+      outlineBounds.union(outlineMeshBounds);
+    });
+    outlineBounds.expandByScalar(.008);
+    group.matrixWorld.decompose(outline.position,outline.quaternion,outline.scale);
+  }
   function roundedSlab(width,length,depth,radius,material,x,y,z) {
     const shape=new THREE.Shape(), w=width/2, h=length/2, r=radius;
     shape.moveTo(-w+r,-h);shape.lineTo(w-r,-h);shape.quadraticCurveTo(w,-h,w,-h+r);
@@ -513,6 +535,40 @@ export async function initShowroom(bridge) {
       }).catch(()=>{item.retryAt=performance.now()+30000;}).finally(()=>{item.modelQueued=false;modelWorkers--;pumpModels();});
     }
   }
+  let sunSlab=null,sunSlabLoading=false;
+  const sunSlabWallet='HxdFH2HsqwtJJCbdaW3Dh5KuBuov3Q9fMz7BL4pmmNVh';
+  async function addSunSlab(item) {
+    if(sunSlab || sunSlabLoading)return;
+    sunSlabLoading=true;
+    let display;
+    try {
+      const {createShowroomSlab}=await import('./showroom-slab.js?v=3');
+      display=await bridge.createSunSlabCard();
+      if(item.removed){display.dispose();return;}
+      sunSlab=createShowroomSlab(display,scene.environment);
+      sunSlab.group.scale.setScalar(.95);
+      sunSlab.group.position.set(item.home.x+.38,.85,item.home.z-.63);
+      const bounds=new THREE.Box3().setFromObject(sunSlab.group);
+      sunSlab.group.position.y+=.834-bounds.min.y;
+      scene.add(sunSlab.group);sceneDirty=true;
+    } catch(error){display?.dispose();console.warn('Unable to load the Sun slab',error);}
+    finally{sunSlabLoading=false;}
+  }
+  let drifellaSlab=null,drifellaSlabLoading=false;
+  async function addDrifellaSlab(item) {
+    if(drifellaSlab || drifellaSlabLoading)return;
+    drifellaSlabLoading=true;
+    let display;
+    try {
+      const {createShowroomSlabStand}=await import('./showroom-slab-stand.js?v=2');
+      display=await bridge.createDrifellaSlabCard();
+      if(item.removed){display.dispose();return;}
+      drifellaSlab=createShowroomSlabStand(display,scene.environment);
+      drifellaSlab.group.position.set(item.home.x-.12,.834,item.home.z-.67);
+      scene.add(drifellaSlab.group);sceneDirty=true;
+    } catch(error){display?.dispose();console.warn('Unable to load the Drifella slab stand',error);}
+    finally{drifellaSlabLoading=false;}
+  }
   function addBinder(entry) {
     const side=entry.collectionId ? 1 : -1;
     const occupied=new Set(binders.filter(item=>item.side===side).map(item=>item.seatIndex));
@@ -523,11 +579,22 @@ export async function initShowroom(bridge) {
     const x=seat.side*3,z=-seat.row*5+(seat.slot-1)*1.4;
     group.position.set(x,.838,z);
     group.rotation.order='YXZ';group.rotation.set(-Math.PI/2,facingStart(x,z,i),0);
+    if(entry.collectionId==='clear') {
+      group.rotation.y+=THREE.MathUtils.degToRad(17);
+      group.position.z-=.20;
+    }
+    if(entry.collectionId==='reflection2')group.position.z+=.12;
+    if(entry.collectionId==='cardnft2') {
+      group.position.z+=.06;
+      group.rotation.y-=THREE.MathUtils.degToRad(4);
+    }
     const model=bridge.placeholder(entry);freezeModel(model);group.add(model);
     group.updateMatrix();group.matrixAutoUpdate=false;
     const nameplate=createShowroomNameplate(entry,side,z);freezeModel(nameplate);scene.add(nameplate);
     const item={group,model,nameplate,entry,side,seatIndex:i,home:group.position.clone(),rotation:group.quaternion.clone()};binders.push(item);
     group.traverse(o=>o.userData.binder=item);
+    if(entry.walletAddress===sunSlabWallet)void addSunSlab(item);
+    if(entry.walletAddress?.startsWith('7A5BtUh'))void addDrifellaSlab(item);
   }
   let prefetching=0;
   const warmed=new Map();
@@ -623,6 +690,8 @@ export async function initShowroom(bridge) {
       for(let i=binders.length-1;i>=0;i--) {
         const item=binders[i];
         if(item.entry.collectionId || eligible.has(item.entry.walletAddress))continue;
+        if(item.entry.walletAddress===sunSlabWallet && sunSlab){scene.remove(sunSlab.group);sunSlab.dispose();sunSlab=null;}
+        if(item.entry.walletAddress?.startsWith('7A5BtUh') && drifellaSlab){scene.remove(drifellaSlab.group);drifellaSlab.dispose();drifellaSlab=null;}
         item.removed=true;scene.remove(item.group,item.nameplate);disposeModel(item.model);disposeModel(item.nameplate);
         warmed.delete(item);addresses.delete(item.entry.walletAddress);binders.splice(i,1);
       }
@@ -938,6 +1007,9 @@ export async function initShowroom(bridge) {
   window.addEventListener('scene-transition-start',()=>{keys.clear();releaseTouchInputs();document.exitPointerLock?.();});
   let previous=performance.now();
   function frame(now) {
+    sky.update(now);
+    if(sunSlab && !document.hidden)sunSlab.update(now*.001,camera);
+    if(drifellaSlab && !document.hidden)drifellaSlab.update(now*.001,camera);
     const frameMs=now-previous;
     const dt=Math.min(frameMs/1000,.04);previous=now;
     if(document.hidden || window.cardSceneTransition?.departing) {requestAnimationFrame(frame);return;}
@@ -957,7 +1029,7 @@ export async function initShowroom(bridge) {
     if(!active) {
       hovered=pickBinder(fallback && !touchMode && !dragging ? mousePoint : center);
       outline.visible=!!hovered;
-      if(hovered && (hovered!==oldHovered || sceneDirty)){outline.setFromObject(hovered.group); status.textContent=`${touchMode?'Tap':'Click'} to open ${hovered.entry.label || `${hovered.entry.walletAddress?.slice(0,4)}…${hovered.entry.walletAddress?.slice(-4)}`}`;}
+      if(hovered && (hovered!==oldHovered || sceneDirty)){fitBinderOutline(hovered.group); status.textContent=`${touchMode?'Tap':'Click'} to open ${hovered.entry.label || `${hovered.entry.walletAddress?.slice(0,4)}…${hovered.entry.walletAddress?.slice(-4)}`}`;}
       else if(!hovered && oldHovered && touchMode) status.textContent='Drag to look · Use the joystick to walk · Center and tap a binder';
       else if(!hovered && oldHovered && document.pointerLockElement===canvas) status.textContent='WASD to walk · Mouse to look · Approach a binder to open it';
       if(hovered && hovered!==oldHovered)warmNearby();
@@ -984,6 +1056,59 @@ export async function initShowroom(bridge) {
   window.addEventListener('resize',resize);resize();requestAnimationFrame(frame);
   setInterval(()=>{warmNearby();if(!document.hidden)updateNearbyModels();},1000);
   for(const entry of bridge.collections) await scheduleModelWork(()=>{addBinder(entry);sceneDirty=true;});
+  const clearBinder=binders.find(item=>item.entry.collectionId==='clear');
+  if(clearBinder) {
+    try {
+      const {createShowroomDratini}=await import('./showroom-dratini.js?v=7');
+      const display=await createShowroomDratini(renderer,scene.environment);
+      display.position.set(clearBinder.home.x+.35,.803+display.userData.tableHeightOffset,clearBinder.home.z+.57);
+      display.rotation.y=-Math.PI/2;
+      // Rotate the arrangement around its shared center, then save the binder's
+      // new resting pose so pickup and return animations still use world space.
+      const pivot=clearBinder.home.clone().add(display.position).multiplyScalar(.5);
+      const turn=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),THREE.MathUtils.degToRad(-12));
+      for(const object of [clearBinder.group,display]) {
+        object.position.sub(pivot).applyQuaternion(turn).add(pivot);
+        object.quaternion.premultiply(turn);object.updateMatrix();
+      }
+      clearBinder.home.copy(clearBinder.group.position);
+      clearBinder.rotation.copy(clearBinder.group.quaternion);
+      freezeModel(display);scene.add(display);sceneDirty=true;
+    } catch(error) { console.warn('Unable to load the Dratini table display',error); }
+  }
+  const reflectionBinder=binders.find(item=>item.entry.collectionId==='reflection2');
+  if(reflectionBinder) {
+    try {
+      const {createShowroomGremlin}=await import('./showroom-gremlin.js?v=4');
+      const figure=await createShowroomGremlin();
+      // Left from the aisle, with the feet on the tabletop and the face toward visitors.
+      // Table top: .78 base + .046 extrusion + .006 bevel; allow .002 clearance.
+      figure.position.set(reflectionBinder.home.x+.08,.834,reflectionBinder.home.z-.60);
+      figure.rotation.y=-Math.PI/2+THREE.MathUtils.degToRad(25);
+      freezeModel(figure);scene.add(figure);sceneDirty=true;
+    } catch(error) { console.warn('Unable to load the thumbs-up table figure',error); }
+  }
+  const valkyrieBinder=binders.find(item=>item.entry.collectionId==='godsofdestiny');
+  if(valkyrieBinder) {
+    try {
+      const {createShowroomAngelgotchi}=await import('./showroom-angelgotchi.js?v=3');
+      const figure=await createShowroomAngelgotchi();
+      figure.position.set(valkyrieBinder.home.x+.38,.834,valkyrieBinder.home.z-.59);
+      figure.rotation.y=-Math.PI/2-THREE.MathUtils.degToRad(12);
+      freezeModel(figure);scene.add(figure);sceneDirty=true;
+    } catch(error) {console.warn('Unable to load the Angelgotchi table figure',error);}
+  }
+  const cardNft2Binder=binders.find(item=>item.entry.collectionId==='cardnft2');
+  if(cardNft2Binder) {
+    try {
+      const {createShowroomPack}=await import('./showroom-pack.js?v=5');
+      const pack=await createShowroomPack(renderer);
+      pack.position.set(cardNft2Binder.home.x,.832,cardNft2Binder.home.z-.64);
+      const bounds=new THREE.Box3().setFromObject(pack);
+      pack.position.y+=.833-bounds.min.y;
+      freezeModel(pack);scene.add(pack);sceneDirty=true;
+    } catch(error) { console.warn('Unable to load the Card NFT 2 pack',error); }
+  }
   portal.place(tables);
   await portal.prepare();
   updateNearbyModels();

@@ -15,7 +15,7 @@ import { COMMUNITY_COLLECTIONS } from "./community-collections.mjs";
 import { SWAG_PACK_TRANSPARENT_STICKER_FILES } from "../swag-pack-stickers.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const APP_VERSION = "cardnft-421";
+const APP_VERSION = "cardnft-460";
 const STYLE_VERSION = "cardnft-170";
 const THREE_VERSION = "three-r165-min-1";
 
@@ -36,10 +36,11 @@ const TRAIT_SPECS = [
   ["winloop", "winloop-traits.js", "WINLOOP_TRAIT_CATEGORIES", "WINLOOP_TRAITS"],
   ["mtgnft", "mtgnft-traits.js", "MTGNFT_TRAIT_CATEGORIES", "MTGNFT_TRAITS"],
   ["igorsquest", "igorsquest-traits.js", "IGORSQUEST_TRAIT_CATEGORIES", "IGORSQUEST_TRAITS"],
+  ["godsofdestiny", "godsofdestiny-traits.js", "GODSOFDESTINY_TRAIT_CATEGORIES", "GODSOFDESTINY_TRAITS"],
 ];
 
 const DATA_REVISIONS = Object.freeze({
-  reflection2: "reflection2-public-2",
+  reflection2: "reflection2-public-3",
   cloudcastle: "community-3",
   badhand: "community-2",
   badhand2: "community-1",
@@ -52,6 +53,7 @@ const DATA_REVISIONS = Object.freeze({
   winloop: "community-6",
   mtgnft: "community-6",
   igorsquest: "igorsquest-cropped-1",
+  godsofdestiny: "godsofdestiny-cropped-3",
   limited: "community-9",
 });
 
@@ -511,8 +513,8 @@ assert(
     && TENSOR_LISTED_CARD_IDS.size > 0
     && TENSOR_LISTED_CARD_MINTS instanceof Map
     && TENSOR_LISTED_CARD_MINTS.size === TENSOR_LISTED_CARD_IDS.size
-    && Object.keys(TENSOR_LISTING_SUMMARIES).length === 17
-    && app.includes('from "./marketplace-status.js?v=marketplace-status-6"')
+    && Object.keys(TENSOR_LISTING_SUMMARIES).length === 18
+    && app.includes('from "./marketplace-status.js?v=marketplace-status-7"')
     && app.includes("card.listed = TENSOR_LISTED_CARD_IDS.has(card.stableId)")
     && app.includes("card.listedMint = TENSOR_LISTED_CARD_MINTS.get(card.stableId)")
     && app.includes('category: "listed?"')
@@ -563,15 +565,36 @@ assert(
 );
 assert(
   app.includes("ensureCollectionTraits")
-    && app.includes("browser-traits-catalog.js?v=browser-traits-11"),
+    && app.includes("browser-traits-catalog.js?v=browser-traits-13"),
   "app does not lazy-load packed browser traits",
+);
+assert(
+  app.includes('./showroom.js?v=showroom-cloud-sky-5'),
+  "showroom runtime cache key is stale",
+);
+assert(
+  app.includes("function isShowroomIndividualCardBackgroundTap(")
+    && app.includes("startedOutsideCard: isShowroomIndividualCardBackgroundTap(event)")
+    && app.includes('window.dispatchEvent(new Event("showroom-return"))'),
+  "showroom individual-card background taps do not put the binder down",
+);
+assert(
+  app.includes('./showroom-hand.js?v=7'),
+  "showroom hand controls cache key is stale",
 );
 assert(
   app.includes('clear: { module: "./clear-data.js?v=clear-8"')
     && app.includes('backImage: "assets/clear/backs/clear-card-back.webp?v=clear-5"')
     && app.includes("function createBinderBackCard(")
+    && app.includes("function shouldCreateBinderBackCard(")
+    && app.includes('return ACTIVE_COLLECTION_ID !== "clear"')
+    && app.includes("if (hasFrontCard && shouldCreateBinderBackCard(frontCardIndex))")
+    && app.includes("if (hasBackCard && shouldCreateBinderBackCard(backCardIndex))")
     && app.includes("binderBackRevealPosition")
     && app.includes("function getBinderBackRevealOpacity(")
+    && app.includes("function isClearBinderLoadingCard(")
+    && app.includes("if (isClearBinderLoadingCard(coveringCard)) return 0")
+    && app.includes("if (isClearBinderLoadingCard(mesh)) return getBinderUnloadedCardOpacity(pageOpacity)")
     && app.includes("function syncIndividualCardModel(")
     && app.includes("function loadIndividualCardModelSource(")
     && app.includes("./vendor/DRACOLoader.js?v=three-r165-draco-1")
@@ -1273,7 +1296,7 @@ async function verifyPage({ pagePath, prefix, dataFile }) {
     `${prefix}wallet-auth.js?v=wallet-auth-8`,
     `${prefix}swag-pack-stickers.js?v=swag-pack-transparent-1`,
     `${prefix}vendor/three.module.min.js?v=${THREE_VERSION}`,
-    `${prefix}browser-traits-catalog.js?v=browser-traits-11`,
+    `${prefix}browser-traits-catalog.js?v=browser-traits-13`,
     `${prefix}${dataFile}`,
     'id="binderTableViewButton"',
     'id="walletConnectButton"',

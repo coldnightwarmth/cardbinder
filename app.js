@@ -1,11 +1,11 @@
 import * as THREE from "three";
-import { BROWSER_TRAIT_CATALOG } from "./browser-traits-catalog.js?v=browser-traits-11";
+import { BROWSER_TRAIT_CATALOG } from "./browser-traits-catalog.js?v=browser-traits-13";
 import { CARD_NFT_ANIMATED } from "./cardnft-animated.js";
 import { CARD_NFT_ANIMATED_SPRITES } from "./cardnft-animated-sprites.js";
 import {
   TENSOR_LISTED_CARD_IDS,
   TENSOR_LISTED_CARD_MINTS,
-} from "./marketplace-status.js?v=marketplace-status-6";
+} from "./marketplace-status.js?v=marketplace-status-7";
 import {
   disconnectSolanaWallet,
   getCompatibleSolanaWallets,
@@ -26,6 +26,7 @@ import { CARD_NFT_2_COMMON_IDS } from "./cardnft2-common-ids.js?v=cardnft2-commo
 import { SWAG_PACK_TRANSPARENT_STICKER_FILES } from "./swag-pack-stickers.js?v=swag-pack-transparent-1";
 
 const COLLECTION_DATA_SPECS = {
+  godsofdestiny: { module: "./godsofdestiny-data.js?v=godsofdestiny-cropped-3", exportName: "GODSOFDESTINY_CARDS" },
   cardnft1: { module: "./cardnft-data.js?v=cardnft1-1", exportName: "CARD_NFTS" },
   cardnft2: { module: "./cardnft2-data.js?v=cardnft2-3", exportName: "CARD_NFT_2S" },
   poncho: { module: "./poncho-data.js?v=poncho-4", exportName: "PONCHO_CARDS" },
@@ -44,7 +45,7 @@ const COLLECTION_DATA_SPECS = {
   igorsquest: { module: "./igorsquest-data.js?v=igorsquest-cropped-1", exportName: "IGORSQUEST_CARDS" },
   clear: { module: "./clear-data.js?v=clear-8", exportName: "CLEAR_CARDS" },
   reflection2: {
-    module: "./reflection2-data.js?v=reflection2-public-2",
+    module: "./reflection2-data.js?v=reflection2-public-3",
     exportName: "REFLECTION2_CARDS",
   },
 };
@@ -71,6 +72,19 @@ function getBrowserTraitConfig(collectionId) {
 }
 
 const COLLECTION_CONFIGS = {
+  godsofdestiny: {
+    id: "godsofdestiny",
+    label: "Valkyrie Order - Gods Of Destiny",
+    introLabel: "gods of destiny",
+    cards: getInitialCollectionCards("godsofdestiny"),
+    traitCategories: getBrowserTraitConfig("godsofdestiny").categories,
+    traitModule: getBrowserTraitConfig("godsofdestiny").module,
+    traits: null,
+    traitFiltersEnabled: getBrowserTraitConfig("godsofdestiny").categories.length > 0,
+    backImage: "assets/godsofdestiny/backs/godsofdestiny-back.webp?v=godsofdestiny-cropped-3",
+    path: "/godsofdestiny/",
+    introGroup: "community",
+  },
   cardnft1: {
     id: "cardnft1",
     label: "Card NFT",
@@ -338,6 +352,7 @@ const COMMUNITY_COVER_COLLECTION_ORDER = [
   "winloop",
   "sweetcurse",
   "igorsquest",
+  "godsofdestiny",
 ];
 const MIXED_COLLECTION_SORT_ORDER = new Map(
   COMMUNITY_COVER_COLLECTION_ORDER.map((collectionId, index) => [collectionId, index]),
@@ -859,6 +874,12 @@ const BINDER_TABLE_DISPLAY_MODEL_SPECS = Object.freeze([
     pitchOffset: -Math.PI / 2,
     scaleMultiplier: 1.24,
     positionYOffset: -0.14,
+  }),
+  Object.freeze({
+    id: "thumbsup-grem",
+    url: new URL("./assets/models/table-display/thumbsup-grem.glb?v=table-display-1", import.meta.url).href,
+    materialProfile: "matte-orange",
+    scaleMultiplier: 0.9,
   }),
 ]);
 const BINDER_TABLE_DISPLAY_MODEL_X = -3.1;
@@ -1797,8 +1818,8 @@ async function init() {
   preloadAllConfiguredBackTextures().catch(console.error);
   if (!galleryOpen) startCardRenderLoop();
   if (IS_SHOWROOM) {
-    const { initShowroom } = await import("./showroom.js?v=showroom-ritual-timing-1");
-    const { createShowroomHand } = await import("./showroom-hand.js?v=6");
+    const { initShowroom } = await import("./showroom.js?v=showroom-cloud-sky-5");
+    const { createShowroomHand } = await import("./showroom-hand.js?v=7");
     const room = await initShowroom(await createShowroomBridge());
     showroomHand = createShowroomHand({
       currentCard: () => !galleryOpen && CARDS[currentIndex] ? {
@@ -1892,6 +1913,18 @@ async function createShowroomBridge() {
   });
   void ensureAllCollectionCards().catch(() => {});
   return {
+    async createDrifellaSlabCard() {
+      await ensureCollectionCards("limited");
+      const index=COLLECTION_CONFIGS.limited.globalIndexes.find(index=>CARDS[index].stableId==="limited:group-36e830340c9bb833e5079f35");
+      if(index===undefined)throw new Error("Drifella Card 1 is unavailable");
+      return this.createDisplayCard(index);
+    },
+    async createSunSlabCard() {
+      await ensureCollectionCards("jpegs");
+      const index=COLLECTION_CONFIGS.jpegs.globalIndexes.find(index=>CARDS[index].title.toLowerCase()==="sun");
+      if(index===undefined)throw new Error("Sun card is unavailable");
+      return this.createDisplayCard(index);
+    },
     createDisplayCard: async index => {
       const card=CARDS[index],prepared=await prepareIndividualCardFor3D(card);
       const group=createCardSwapGroup(prepared.frontTexture,prepared.backTexture,card,prepared.effectTextures);
@@ -14656,24 +14689,34 @@ function beginBinderTableDieToss(index) {
 
   const currentTopFace = entry.group.userData.binderTableDieTopFace || 0;
   const nextTopFace = getRandomBinderTableDieFace(currentTopFace);
-  const spinAxis = new THREE.Vector3(
-    Math.random() * 1.6 - 0.8,
-    Math.random() * 1.6 - 0.8,
-    Math.random() * 1.2 - 0.6,
-  );
-  if (Math.abs(spinAxis.x) + Math.abs(spinAxis.y) < 0.35) {
-    spinAxis.x += spinAxis.x < 0 ? -0.65 : 0.65;
+  const startQuaternion = entry.group.quaternion.clone();
+  const targetQuaternion = getBinderTableDieLandingQuaternion(nextTopFace);
+  // Plan one continuous rotation that ends on the chosen face. Blending an
+  // independently spinning quaternion into a target can reverse its spin.
+  const relative = startQuaternion.clone().invert().multiply(targetQuaternion);
+  if (relative.w < 0) relative.set(-relative.x, -relative.y, -relative.z, -relative.w);
+  const angle = 2 * Math.acos(clamp(relative.w, -1, 1));
+  const spinAxis = new THREE.Vector3(relative.x, relative.y, relative.z).normalize();
+  if (spinAxis.lengthSq() < 0.001) spinAxis.set(1, 0, 0);
+  const phases = [{ duration: BINDER_TABLE_DIE_TOSS_DURATION_MS, height: BINDER_TABLE_DIE_TOSS_HEIGHT, speed: 1 }];
+  // The same gravity governs the smaller rebound arcs; impacts shed energy.
+  if (Math.random() < 0.65) {
+    const restitution = 0.24 + Math.random() * 0.12;
+    phases.push({ duration: BINDER_TABLE_DIE_TOSS_DURATION_MS * restitution,
+      height: BINDER_TABLE_DIE_TOSS_HEIGHT * restitution ** 2, speed: 0.3 });
+    if (Math.random() < 0.4) phases.push({ duration: BINDER_TABLE_DIE_TOSS_DURATION_MS * restitution * 0.4,
+      height: BINDER_TABLE_DIE_TOSS_HEIGHT * (restitution * 0.4) ** 2, speed: 0.09 });
   }
-  spinAxis.normalize();
+  phases.push({ duration: 220, height: 0, speed: 0.07, settle: true });
+  const duration = phases.reduce((sum, phase) => sum + phase.duration, 0);
+  const travel = phases.reduce((sum, phase) => sum + phase.duration * phase.speed / (phase.settle ? 3 : 1), 0);
   entry.animation = {
-    startedAt: performance.now(),
-    startQuaternion: entry.group.quaternion.clone(),
-    targetQuaternion: getBinderTableDieLandingQuaternion(nextTopFace),
-    spinAxis,
-    spinTurns: 2.6 + Math.random() * 2.1,
+    startedAt: performance.now(), startQuaternion, targetQuaternion, spinAxis,
+    spinAngle: Math.PI * 2 * (1 + Math.floor(Math.random() * 2)) + angle,
+    phases, duration, travel, rotation: new THREE.Quaternion(),
     topFace: nextTopFace,
   };
-  markBinderInteractionActive(BINDER_TABLE_DIE_TOSS_DURATION_MS + 160);
+  markBinderInteractionActive(duration + 160);
   startBinderRenderLoop();
   return true;
 }
@@ -14685,31 +14728,26 @@ function updateBinderTableDice(now = performance.now()) {
     if (!animation) continue;
     active = true;
 
-    const progress = clamp(
-      (now - animation.startedAt) / BINDER_TABLE_DIE_TOSS_DURATION_MS,
-      0,
-      1,
+    const elapsed = Math.max(0, now - animation.startedAt);
+    let remaining = elapsed, travel = 0, height = 0;
+    for (const phase of animation.phases) {
+      const progress = clamp(remaining / phase.duration, 0, 1);
+      const fraction = phase.settle ? (1 - (1 - progress) ** 3) / 3 : progress;
+      travel += phase.duration * phase.speed * fraction;
+      height = 4 * phase.height * progress * (1 - progress);
+      if (remaining < phase.duration) break;
+      remaining -= phase.duration;
+    }
+    animation.rotation.setFromAxisAngle(animation.spinAxis,
+      animation.spinAngle * Math.min(1, travel / animation.travel));
+    entry.group.quaternion.copy(animation.startQuaternion).multiply(animation.rotation);
+    // Keep corners above the tabletop while the die rocks onto its final face.
+    const { x, y, z, w } = entry.group.quaternion;
+    const support = BINDER_TABLE_DIE_SIZE / 2 * (
+      Math.abs(2 * (x * z - y * w)) + Math.abs(2 * (y * z + x * w))
+      + Math.abs(1 - 2 * (x * x + y * y)) - 1
     );
-    const height = (
-      4
-      * BINDER_TABLE_DIE_TOSS_HEIGHT
-      * progress
-      * (1 - progress)
-    );
-    entry.group.position.z = entry.baseZ + height;
-
-    const spinQuaternion = new THREE.Quaternion().setFromAxisAngle(
-      animation.spinAxis,
-      animation.spinTurns * Math.PI * 2 * progress,
-    );
-    const airborneQuaternion = animation.startQuaternion
-      .clone()
-      .multiply(spinQuaternion);
-    const landingProgress = easeInOutCubic(
-      clamp((progress - 0.62) / 0.38, 0, 1),
-    );
-    airborneQuaternion.slerp(animation.targetQuaternion, landingProgress);
-    entry.group.quaternion.copy(airborneQuaternion);
+    entry.group.position.z = entry.baseZ + Math.max(height, support);
 
     const heightProgress = height / BINDER_TABLE_DIE_TOSS_HEIGHT;
     entry.shadowMaterial.userData.tableAccessoryOpacityFactor = (
@@ -14718,7 +14756,7 @@ function updateBinderTableDice(now = performance.now()) {
     entry.shadow.scale.x = 1 + heightProgress * 0.36;
     entry.shadow.scale.y = 0.7 + heightProgress * 0.18;
 
-    if (progress < 1) continue;
+    if (elapsed < animation.duration) continue;
 
     entry.group.position.z = entry.baseZ;
     entry.group.quaternion.copy(animation.targetQuaternion);
@@ -14918,6 +14956,19 @@ function createBinderTableDisplayModelEntry(gltf, spec) {
   const materials = spec.materialProfile === "blue-resin"
     ? applyBinderTableBlueResinMaterial(model)
     : preserveBinderTableDisplayModelMaterials(model);
+  if (spec.materialProfile === "matte-orange") {
+    for (const material of materials) {
+      material.map = null;
+      material.color.set(0xe99045).multiplyScalar(1.15);
+      material.metalness = 0;
+      material.metalnessMap = null;
+      material.roughness = 1;
+      material.roughnessMap = null;
+      material.emissive?.set(0x000000);
+      if ("clearcoat" in material) material.clearcoat = 0;
+      material.needsUpdate = true;
+    }
+  }
   model.traverse((child) => {
     if (!child.isMesh) return;
     if (!child.geometry.getAttribute("normal")) child.geometry.computeVertexNormals();
@@ -17005,7 +17056,7 @@ function createBinderPage(pageIndex, indexes, placeholderTexture, materials) {
       // Each physical card also has a back face inside the pocket. Keeping
       // those faces present lets an empty or loading slot reveal the card on
       // the reverse side of the page instead of an unrelated placeholder.
-      if (hasFrontCard) {
+      if (hasFrontCard && shouldCreateBinderBackCard(frontCardIndex)) {
         const card = createBinderBackCard(
           placeholderTexture,
           frontCardIndex,
@@ -17016,7 +17067,7 @@ function createBinderPage(pageIndex, indexes, placeholderTexture, materials) {
         cell.group.add(card);
         cardMeshes.push(card);
       }
-      if (hasBackCard) {
+      if (hasBackCard && shouldCreateBinderBackCard(backCardIndex)) {
         const card = createBinderBackCard(
           placeholderTexture,
           backCardIndex,
@@ -17043,6 +17094,11 @@ function createBinderPage(pageIndex, indexes, placeholderTexture, materials) {
     pageIndex,
     sheetMeshes: collectBinderSheetMeshes(group),
   };
+}
+
+function shouldCreateBinderBackCard(cardIndex) {
+  return ACTIVE_COLLECTION_ID !== "clear"
+    || CARDS[cardIndex]?.collection !== "clear";
 }
 
 function addClearBinderPageBacking(group, sourceMaterial) {
@@ -20853,6 +20909,8 @@ function onCardPointerDown(event) {
     rotationY: targetRotationY,
     panX: targetPanX,
     panY: targetPanY,
+    startedOutsideCard: isShowroomIndividualCardBackgroundTap(event),
+    moved: false,
   };
 }
 
@@ -20873,6 +20931,7 @@ function onCardPointerMove(event) {
   if (!dragState || event.pointerId !== dragState.pointerId) return;
   const dx = event.clientX - dragState.x;
   const dy = event.clientY - dragState.y;
+  if (Math.hypot(dx, dy) > 6) dragState.moved = true;
   if (dragState.mode === "pan" || isCardPanMode()) {
     dragState.mode = "pan";
     targetRotationX = 0;
@@ -20908,7 +20967,12 @@ function onCardPointerUp(event) {
   }
 
   if (!dragState || event.pointerId !== dragState.pointerId) return;
+  const finishedDrag = dragState;
   dragState = null;
+  if (finishedDrag.startedOutsideCard && !finishedDrag.moved) {
+    window.dispatchEvent(new Event("showroom-return"));
+    return;
+  }
   if (!isTouchLikePointer(event)) updateCardEffectPointerFromEvent(event);
   if (!isCardPanMode()) {
     targetRotationX = 0;
@@ -20916,6 +20980,25 @@ function onCardPointerUp(event) {
   } else if (!isTouchLikePointer(event)) {
     updateIndividualCardHoverTiltTarget(event);
   }
+}
+
+function isShowroomIndividualCardBackgroundTap(event) {
+  if (
+    !IS_SHOWROOM
+    || galleryOpen
+    || isBinderMode
+    || binderCardViewTransitionActive
+    || showroomHand?.viewing
+    || !Number.isInteger(currentIndex)
+  ) return false;
+
+  const rect = getIndividualCardScreenRect();
+  if (!rect) return false;
+  const padding = 4;
+  return event.clientX < rect.left - padding
+    || event.clientX > rect.left + rect.width + padding
+    || event.clientY < rect.top - padding
+    || event.clientY > rect.top + rect.height + padding;
 }
 
 function onCardPointerCaptureLost(event) {
@@ -22997,6 +23080,7 @@ function getBinderBackRevealOpacity(mesh, pageOpacity, now = performance.now()) 
   if (!Number.isInteger(revealPosition) || revealPosition < 0) return opacity;
 
   const coveringCard = binderCardMeshByPosition.get(revealPosition);
+  if (isClearBinderLoadingCard(coveringCard)) return 0;
   if (
     !coveringCard
     || isShowroomCardHeld(coveringCard.userData.cardIndex)
@@ -23014,9 +23098,18 @@ function getBinderBackRevealOpacity(mesh, pageOpacity, now = performance.now()) 
 }
 
 function getBinderLoadingCardOpacity(mesh, pageOpacity) {
+  if (isClearBinderLoadingCard(mesh)) return getBinderUnloadedCardOpacity(pageOpacity);
   return isBinderBackSourceReady(mesh?.userData?.binderReverseBackMesh)
     ? 0
     : getBinderUnloadedCardOpacity(pageOpacity);
+}
+
+function isClearBinderLoadingCard(mesh) {
+  const cardIndex = mesh?.userData?.cardIndex;
+  return ACTIVE_COLLECTION_ID === "clear"
+    && Number.isInteger(cardIndex)
+    && CARDS[cardIndex]?.collection === "clear"
+    && (!mesh.userData.textureLoaded || mesh.userData.textureLoadFailed);
 }
 
 function getBinderUnloadedCardOpacity(pageOpacity) {

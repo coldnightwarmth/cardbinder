@@ -9,6 +9,7 @@ const PAGE_LIMIT = Number(process.env.TENSOR_LISTING_PAGE_LIMIT || 250);
 const RETRIES = Number(process.env.TENSOR_LISTING_RETRIES || 4);
 
 const COLLECTIONS = [
+  { id: "godsofdestiny", module: "godsofdestiny-data.js", exportName: "GODSOFDESTINY_CARDS", tensorSlug: "99f022bd-8ea2-4663-a257-339907e757fb" },
   { id: "cardnft1", module: "cardnft-data.js", exportName: "CARD_NFTS", tensorSlug: "4d146b80-f705-4e17-92a5-4b03849abac2" },
   { id: "cardnft2", module: "cardnft2-data.js", exportName: "CARD_NFT_2S", tensorSlug: "0ae22a03-5109-4179-ad81-6f842f2b06a6" },
   { id: "poncho", module: "poncho-data.js", exportName: "PONCHO_CARDS", tensorSlug: "9aa9b85e-4e43-4900-be61-199e7cce1943" },

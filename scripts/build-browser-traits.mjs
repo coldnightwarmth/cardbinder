@@ -7,6 +7,7 @@ const OUTPUT_DIR = path.join(ROOT, "browser-traits");
 const CATALOG_PATH = path.join(ROOT, "browser-traits-catalog.js");
 
 const COLLECTIONS = [
+  ["godsofdestiny", "godsofdestiny-traits.js", "GODSOFDESTINY_TRAIT_CATEGORIES", "GODSOFDESTINY_TRAITS"],
   ["cardnft1", "cardnft-traits.js", "CARD_NFT_TRAIT_CATEGORIES", "CARD_NFT_TRAITS"],
   ["cardnft2", "cardnft2-traits.js", "CARD_NFT_2_TRAIT_CATEGORIES", "CARD_NFT_2_TRAITS"],
   ["poncho", "poncho-traits.js", "PONCHO_TRAIT_CATEGORIES", "PONCHO_TRAITS"],
@@ -82,7 +83,7 @@ for (const [id, sourceFile, categoriesExport, traitsExport] of COLLECTIONS) {
   await writeFile(path.join(OUTPUT_DIR, `${id}.js`), moduleText);
   catalog[id] = {
     categories,
-    module: `./browser-traits/${id}.js?v=browser-traits-11`,
+    module: `./browser-traits/${id}.js?v=browser-traits-12`,
     records: rows.length,
   };
 }

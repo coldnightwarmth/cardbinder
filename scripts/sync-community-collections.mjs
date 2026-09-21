@@ -1218,7 +1218,7 @@ async function isCurrentAnimatedSprite(filePath, sprite) {
 async function convertRemoteCardImage(collection, entry) {
   if (collection.sourceCrop) {
     const input = await fetchOriginalStillImageBuffer(entry.sourceImageUri);
-    return convertCroppedCardImage(collection, input);
+    return convertCroppedCardImage(collection, entry, input);
   }
   const extraction = getCardExtraction(collection, entry);
   if (extraction) {
@@ -1253,10 +1253,10 @@ async function convertRemoteCardImage(collection, entry) {
   return resolveConvertedCardImage(output);
 }
 
-async function convertCroppedCardImage(collection, input) {
+async function convertCroppedCardImage(collection, entry, input) {
   const source = sharp(input, { animated: false, limitInputPixels: false }).rotate();
   const metadata = await source.metadata();
-  const crop = collection.sourceCrop;
+  const crop = getSourceCrop(collection, entry);
   const left = clampPixel(Math.round(metadata.width * crop.left), 0, metadata.width - 1);
   const top = clampPixel(Math.round(metadata.height * crop.top), 0, metadata.height - 1);
   const width = clampPixel(Math.round(metadata.width * crop.width), 1, metadata.width - left);
@@ -1266,12 +1266,20 @@ async function convertCroppedCardImage(collection, input) {
     .resize({
       width: collection.width,
       height: collection.height,
-      fit: "inside",
+      fit: crop.fit === "fill" ? "fill" : "inside",
     })
     .ensureAlpha()
     .webp({ quality: WEBP_QUALITY, alphaQuality: 100, effort: 4 })
     .toBuffer({ resolveWithObject: true });
   return resolveConvertedCardImage(output);
+}
+
+function getSourceCrop(collection, entry) {
+  const overrides = collection.sourceCropOverrides || {};
+  for (const mint of entry.mints || [entry.mint]) {
+    if (overrides[mint]) return overrides[mint];
+  }
+  return collection.sourceCrop;
 }
 
 function resolveConvertedCardImage(output) {
@@ -2167,6 +2175,8 @@ function hasCurrentConversionSettings(collection, conversion) {
       === JSON.stringify(collection.cardExtractions || {})
     && JSON.stringify(conversion.sourceCrop || null)
       === JSON.stringify(collection.sourceCrop || null)
+    && JSON.stringify(conversion.sourceCropOverrides || {})
+      === JSON.stringify(collection.sourceCropOverrides || {})
     && (
       !collection.removeExteriorWhite
       || (
@@ -2333,6 +2343,7 @@ async function writeSourceSnapshot({
       removeExteriorWhite: Boolean(collection.removeExteriorWhite),
       cardExtractions: collection.cardExtractions || {},
       sourceCrop: collection.sourceCrop || null,
+      sourceCropOverrides: collection.sourceCropOverrides || {},
       ...((collection.removeExteriorWhite || collection.sourceCrop)
         ? {
           strongColorChroma: collection.strongColorChroma,

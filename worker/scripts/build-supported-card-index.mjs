@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 const workerRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const siteRoot = path.resolve(workerRoot, "..");
 const collections = [
+  ["godsofdestiny", "godsofdestiny-data.js", "GODSOFDESTINY_CARDS"],
   ["cardnft1", "cardnft-data.js", "CARD_NFTS"],
   ["cardnft2", "cardnft2-data.js", "CARD_NFT_2S"],
   ["poncho", "poncho-data.js", "PONCHO_CARDS"],

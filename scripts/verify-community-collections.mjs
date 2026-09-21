@@ -14,7 +14,7 @@ import { PONCHO_CARDS } from "../poncho-data.js";
 const require = createRequire(import.meta.url);
 const sharp = loadSharp();
 const root = process.cwd();
-const expectedAppVersion = "cardnft-421";
+const expectedAppVersion = "cardnft-460";
 const requestedIds = process.argv.slice(2);
 const collections = requestedIds.length
   ? requestedIds.map((id) => {
@@ -583,7 +583,7 @@ for (const collection of collections) {
     `aria-label="3D ${collection.label} binder"`,
     `../app.js?v=${expectedAppVersion}`,
     "../vendor/three.module.min.js?v=three-r165-min-1",
-    "../browser-traits-catalog.js?v=browser-traits-11",
+    "../browser-traits-catalog.js?v=browser-traits-13",
     "../styles.css?v=cardnft-170",
     'id="binderTradeModeButton"',
   ]) {
@@ -699,6 +699,7 @@ function verifySharedAppArchitecture() {
   "winloop",
   "sweetcurse",
   "igorsquest",
+  "godsofdestiny",
 ];`),
     "inside-cover collection order differs",
   );

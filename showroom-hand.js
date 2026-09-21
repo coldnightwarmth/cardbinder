@@ -14,7 +14,7 @@ export function createShowroomHand(adapter) {
   const button = document.createElement('button');
   button.id = 'showroomHandButton'; button.className = 'icon-button'; button.type = 'button';
   button.innerHTML = document.querySelector('#binderOpenCardButton').innerHTML;
-  document.querySelector('#shuffleButton').after(button);
+  document.querySelector('#favoriteButton').after(button);
   let busy = false, drag = null, choice = null;
   const placed = new Set();
   const available = () => state.cards.filter(card => !placed.has(card.key));
