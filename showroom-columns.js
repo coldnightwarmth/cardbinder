@@ -1,3 +1,4 @@
+import { applyPedestalResinLighting } from './showroom-resin.mjs?v=5';
 import * as THREE from 'three';
 import { ritualPose } from './showroom-ritual.mjs?v=2';
 
@@ -118,6 +119,7 @@ export function createShowroomColumns({room,camera,renderer,bridge,resume=()=>{}
             if(!material?.isMeshStandardMaterial)continue;
             material.envMap=room.userData.cardEnvironment;
             material.envMapIntensity=1;
+            if(display.group.userData.modelRenderProfile==='mons-clear-resin')applyPedestalResinLighting(material, THREE);
             material.envMapRotation.set(0,THREE.MathUtils.degToRad(121),0);
             material.needsUpdate=true;
           }

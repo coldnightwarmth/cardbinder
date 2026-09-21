@@ -19,7 +19,7 @@ export function createShowroomSlab(display, environment) {
     s.lineTo(x+r,y+h);s.quadraticCurveTo(x,y+h,x,y+h-r);
     s.lineTo(x,y+r);s.quadraticCurveTo(x,y,x+r,y);return s;
   };
-  const glass=new THREE.MeshPhysicalMaterial({color:0xf4fcff,roughness:.025,metalness:0,transmission:.97,thickness:.009,ior:1.49,clearcoat:.6,clearcoatRoughness:.12,envMap:environment,envMapIntensity:.6});
+  const glass=new THREE.MeshPhysicalMaterial({color:0xf4fcff,roughness:0,metalness:0,transmission:.97,thickness:.009,ior:1.49,clearcoat:.6,clearcoatRoughness:.12,envMap:environment,envMapIntensity:.6});
   const plateGeometry=new THREE.ExtrudeGeometry(shape(.294,.42,.015),{depth:.003,bevelEnabled:true,bevelSize:.002,bevelThickness:.001,bevelSegments:2,curveSegments:8,steps:1});
   for(const z of [-.011,.008]){const plate=new THREE.Mesh(plateGeometry,glass);plate.position.z=z;root.add(plate);}
   const rimShape=shape(.294,.42,.015);

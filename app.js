@@ -1818,7 +1818,7 @@ async function init() {
   preloadAllConfiguredBackTextures().catch(console.error);
   if (!galleryOpen) startCardRenderLoop();
   if (IS_SHOWROOM) {
-    const { initShowroom } = await import("./showroom.js?v=showroom-cloud-sky-5");
+    const { initShowroom } = await import("./showroom.js?v=showroom-resin-5");
     const { createShowroomHand } = await import("./showroom-hand.js?v=7");
     const room = await initShowroom(await createShowroomBridge());
     showroomHand = createShowroomHand({
@@ -1936,6 +1936,7 @@ async function createShowroomBridge() {
           const source=await loadIndividualCardModelSource(url);
           const model=createIndividualCardModelInstance(source,url);
           group.userData.individualCardModelRoot=model;
+          group.userData.modelRenderProfile=getIndividualCardModelRenderingProfile(card);
           setProceduralCardGroupVisible(group,false);group.add(model);
         }
         group.scale.setScalar(1 / CARD_HEIGHT);
@@ -23704,7 +23705,7 @@ function drawBinderIntroNoteSurface(ctx) {
   ctx.fillStyle = "rgba(156, 153, 146, 0.74)";
 
   // Non-Evil showroom collections stay blank; Evil Biscuit collections retain
-  // their opening note without any showroom links or link hitboxes.
+  // their opening note and artist link, without collection navigation links.
   if (IS_SHOWROOM && !WALLET_ROUTE_ADDRESS && !usesEvilBinderPresentation()) {
     return { linkBounds: [], focusBounds: null };
   }
@@ -23732,9 +23733,7 @@ function drawBinderIntroNoteSurface(ctx) {
   const firstLinePrefix = `this is a 3d binder viewer for ${binderName} by  `;
   const textOffsetY = -54;
 
-  const evilBiscuitLinkBounds = IS_SHOWROOM
-    ? null
-    : drawBinderIntroLinkedLine(ctx, {
+  const evilBiscuitLinkBounds = drawBinderIntroLinkedLine(ctx, {
       prefix: firstLinePrefix,
       linkText,
       y: 144 + textOffsetY,
@@ -23745,18 +23744,6 @@ function drawBinderIntroNoteSurface(ctx) {
       linkFillStyle,
       url: BINDER_INTRO_LINK_URL,
     });
-  if (IS_SHOWROOM) {
-    ctx.fillStyle = textFillStyle;
-    drawCenteredBinderIntroText(
-      ctx,
-      firstLinePrefix + linkText,
-      width / 2,
-      144 + textOffsetY,
-      maxTextWidth,
-      baseFontSize,
-      fontStack,
-    );
-  }
 
   ctx.fillStyle = textFillStyle;
   drawCenteredBinderIntroText(
@@ -23783,7 +23770,7 @@ function drawBinderIntroNoteSurface(ctx) {
   ctx.textAlign = "center";
   ctx.fillText("🩸", width / 2, 390 + textOffsetY);
 
-  if (IS_SHOWROOM) return { linkBounds: [], focusBounds: null };
+  if (IS_SHOWROOM) return { linkBounds: [evilBiscuitLinkBounds], focusBounds: null };
 
   const linkBounds = [evilBiscuitLinkBounds];
   let focusBottomY = 390 + textOffsetY + 42 * 0.48;

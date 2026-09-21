@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { createShowroomSlab } from './showroom-slab.js?v=3';
+import { createShowroomSlab } from './showroom-slab.js?v=4';
 
 export function createShowroomSlabStand(display,environment) {
   const slab=createShowroomSlab(display,environment);

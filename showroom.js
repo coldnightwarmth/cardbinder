@@ -1,6 +1,6 @@
 import { createShowroomSky } from './showroom-sky.js?v=5';
 import * as THREE from 'three';
-import { createShowroomColumns } from './showroom-columns.js?v=5';
+import { createShowroomColumns } from './showroom-columns.js?v=10';
 import { createShowroomPortal } from './showroom-portal.js?v=5';
 import { createShowroomSpeech } from './showroom-speech.js?v=7';
 import { mergeGeometries } from './vendor/BufferGeometryUtils.js';
@@ -56,8 +56,15 @@ export async function initShowroom(bridge) {
   const touchJoystickThumb = hud.querySelector('#showroomTouchJoystickThumb');
   const openBinderButton = hud.querySelector('#showroomOpenBinder');
   const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, stencil:true });
-  const resolution=createResolutionBudget(Math.min(devicePixelRatio,2));
-  renderer.setPixelRatio(resolution.ratio); renderer.outputColorSpace = THREE.SRGBColorSpace;
+  const showroomMaxRatio=Math.min(devicePixelRatio,2);
+  const resolution=createResolutionBudget(showroomMaxRatio);
+  // A finer pixel grid retains small exhibit artwork. Keep a quality floor so
+  // adaptive resolution cannot turn cards into unreadable blocks on Retina screens.
+  // Nearest-neighbor presentation includes the portal without another render pass.
+  // Expanded binders and card viewers retain their independent full-res canvases.
+  const showroomPixelRatio=ratio=>Math.max(.6,ratio/showroomMaxRatio*.75);
+  canvas.style.imageRendering='pixelated';
+  renderer.setPixelRatio(showroomPixelRatio(resolution.ratio)); renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.12;
   // The reflective floor supplies grounding without unstable shadow-map passes.
@@ -542,7 +549,7 @@ export async function initShowroom(bridge) {
     sunSlabLoading=true;
     let display;
     try {
-      const {createShowroomSlab}=await import('./showroom-slab.js?v=3');
+      const {createShowroomSlab}=await import('./showroom-slab.js?v=4');
       display=await bridge.createSunSlabCard();
       if(item.removed){display.dispose();return;}
       sunSlab=createShowroomSlab(display,scene.environment);
@@ -560,7 +567,7 @@ export async function initShowroom(bridge) {
     drifellaSlabLoading=true;
     let display;
     try {
-      const {createShowroomSlabStand}=await import('./showroom-slab-stand.js?v=2');
+      const {createShowroomSlabStand}=await import('./showroom-slab-stand.js?v=3');
       display=await bridge.createDrifellaSlabCard();
       if(item.removed){display.dispose();return;}
       drifellaSlab=createShowroomSlabStand(display,scene.environment);
@@ -1015,7 +1022,7 @@ export async function initShowroom(bridge) {
     if(document.hidden || window.cardSceneTransition?.departing) {requestAnimationFrame(frame);return;}
     if(!active && !busy && !portal.crossingZone) {
       const ratio=resolution.sample(frameMs);
-      if(ratio!==null) {renderer.setPixelRatio(ratio);sceneDirty=true;}
+      if(ratio!==null) {renderer.setPixelRatio(showroomPixelRatio(ratio));sceneDirty=true;}
     }
     if(!active && (document.pointerLockElement===canvas || fallback || touchMode)) {
       move(dt);

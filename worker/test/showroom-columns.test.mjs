@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import * as THREE from '../../vendor/three.module.js';
 const source=(await readFile(new URL('../../showroom-columns.js',import.meta.url),'utf8'))
+  .replace("'./showroom-resin.mjs?v=5'",`'${new URL('../../showroom-resin.mjs',import.meta.url).href}'`)
   .replace("'./showroom-ritual.mjs?v=2'",`'${new URL('../../showroom-ritual.mjs',import.meta.url).href}'`)
   .replace("from 'three'",`from '${new URL('../../vendor/three.module.js',import.meta.url).href}'`);
 const {createShowroomColumns}=await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
