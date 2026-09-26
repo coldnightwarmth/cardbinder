@@ -1818,7 +1818,7 @@ async function init() {
   preloadAllConfiguredBackTextures().catch(console.error);
   if (!galleryOpen) startCardRenderLoop();
   if (IS_SHOWROOM) {
-    const { initShowroom } = await import("./showroom.js?v=showroom-presence-1");
+    const { initShowroom } = await import("./showroom.js?v=showroom-chat-1");
     const { createShowroomHand } = await import("./showroom-hand.js?v=8");
     const room = await initShowroom(await createShowroomBridge());
     showroomHand = createShowroomHand({
@@ -26098,6 +26098,7 @@ function saveSessionViewState() {
 }
 
 function applyTheme(isLight) {
+  if (IS_SHOWROOM) isLight = false;
   els.themeToggle.checked = isLight;
   els.body.classList.toggle("is-light", isLight);
   if (activeIndividualCardModelRenderProfile === INDIVIDUAL_CARD_CLEAR_RESIN_PROFILE) {
@@ -26105,7 +26106,7 @@ function applyTheme(isLight) {
     startCardRenderLoop();
   }
   updateBinderTableSurfaceTheme(isLight);
-  writeStorageValue(
+  if (!IS_SHOWROOM) writeStorageValue(
     getBrowserStorage("localStorage"),
     "cardnft:theme:v1",
     isLight ? "light" : "dark",

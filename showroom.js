@@ -1,5 +1,6 @@
+import {createChatInput} from './showroom-chat.js?v=1';
 import { createExhibitBudget } from './showroom-exhibit-lod.js?v=1';
-import { createShowroomMultiplayer } from './showroom-multiplayer.js?v=6';
+import { createShowroomMultiplayer } from './showroom-multiplayer.js?v=7';
 import { createShowroomSky } from './showroom-sky.js?v=5';
 import * as THREE from 'three';
 import { createShowroomColumns } from './showroom-columns.js?v=11';
@@ -21,7 +22,7 @@ export async function initShowroom(bridge) {
   canvas.id = 'showroomCanvas'; canvas.setAttribute('aria-label', 'First person card show floor');
   document.body.prepend(canvas);
   const hud = document.createElement('div'); hud.id = 'showroomHud';
-  hud.innerHTML = `<div id="showroomTop"><div class="showroom-title"><small>CARDS.ART / COMMUNITY</small><strong>The show floor</strong><span id="showroomCount">Loading public binders…</span></div><a href="/">Home</a><button id="showroomTheme">Switch style</button><button id="showroomReturn">Back to table</button></div><div id="showroomCrosshair"></div><div id="showroomHint"><span id="showroomStatus" role="status">WASD to walk · Mouse to look · Esc to release mouse</span> <button id="showroomEnter">Enter show floor</button></div><div id="showroomTouchJoystick" role="application" aria-label="Movement joystick" hidden><div id="showroomTouchJoystickBase"><span id="showroomTouchJoystickThumb"></span></div></div><button id="showroomOpenBinder" type="button" hidden>Open</button>`;
+  hud.innerHTML = `<div id="showroomTop"><div class="showroom-title"><small>CARDS.ART / COMMUNITY</small><strong>The show floor</strong><span id="showroomCount">Loading public binders…</span></div><a href="/">Home</a><button id="showroomReturn">Back to table</button></div><div id="showroomCrosshair"></div><div id="showroomHint"><span id="showroomStatus" role="status">WASD to walk · Mouse to look · Esc to release mouse</span> <button id="showroomEnter">Enter show floor</button></div><div id="showroomTouchJoystick" role="application" aria-label="Movement joystick" hidden><div id="showroomTouchJoystickBase"><span id="showroomTouchJoystickThumb"></span></div></div><button id="showroomOpenBinder" type="button" hidden>Open</button>`;
   document.body.append(hud);
   const leave = document.createElement('a');
   leave.id='showroomLeave'; leave.textContent='Leave Show Room'; leave.hidden=true;
@@ -340,7 +341,7 @@ export async function initShowroom(bridge) {
   }));
   let currentTheme;
   function theme() {
-    const light=document.body.classList.contains('is-light');
+    const light=false;
     if(light===currentTheme)return;
     currentTheme=light;sceneDirty=true;
     stars.theme(light);
@@ -358,7 +359,7 @@ export async function initShowroom(bridge) {
     sun.intensity=light?3.3:3.8;
   }
   new MutationObserver(theme).observe(document.body,{attributes:true,attributeFilter:['class']}); theme();
-  hud.querySelector('#showroomTheme').onclick=()=>document.querySelector('#themeToggle').click();
+
   const tables=[], binders=[], addresses=new Set(), keys=new Set();
   let endZ=-8, active=null, hovered=null, busy=false, directoryLoading=false;
   let columns=null, hoveredColumn=null, sharedRowsBuilt=0;
@@ -375,6 +376,7 @@ export async function initShowroom(bridge) {
     return columns.activate(column);
   }
   const multiplayer=createShowroomMultiplayer({scene,room:portal.room,camera,portal,bridge,columns,ripples,onDirty:()=>{multiplayerDirty=true;}});
+  const chat=createChatInput(hud,multiplayer.network);
   const renderShowroom=()=>portal.render();
   let fallback=false, dragging=false, dragged=false, touchMode=false, touchLook=null;
   let suppressTouchClickUntil=0;
@@ -1056,6 +1058,7 @@ export async function initShowroom(bridge) {
     portal.place(tables);
     speech.update(now,camera,document.pointerLockElement===canvas || touchMode || dragging ? center : mousePoint,!active && !busy && !portal.inside);
     multiplayer.update(now);
+    chat.update(!active && !busy && !fallback && document.pointerLockElement!==canvas && !leave.hidden);
     // Reserve the shared wallet-table footprint even when a visitor's private
     // directory fetch differs. Portal position and player coordinates agree.
     const sharedRows=Math.ceil(multiplayer.seats.length/3);

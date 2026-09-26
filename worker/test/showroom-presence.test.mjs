@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {Showroom,INACTIVE_MS} from '../src/showroom.js';
+import {Showroom} from '../src/showroom.js';
+const INACTIVE_MS=5*60*1000;
 import {freshRoom} from '../src/showroom-state.js';
 function fixture(){
  const player={id:'idle',pose:{x:0,y:1.72,z:3.5,yaw:0,pitch:0,room:'showroom'},lastActive:Date.now()-INACTIVE_MS-1,lastMove:0,seen:[]};
@@ -20,4 +21,10 @@ test('duplicate poses do not keep idle players alive, changed poses do',async()=
 });
 test('inactivity scheduling preserves an earlier ritual alarm',async()=>{
  const {server,alarms,player}=fixture();player.lastActive=Date.now();server.room.ritual={startedAt:Date.now()};await server.scheduleAlarm();assert.ok(alarms.at(-1)<Date.now()+INACTIVE_MS);
+});
+test('chat broadcasts bounded plain text, expires, rate limits, and restores presence',async()=>{
+ const {server,ws,player,messages}=fixture();await server.alarm();
+ await server.webSocketMessage(ws,JSON.stringify({type:'chat',text:'Hello <world>\n'+'x'.repeat(200)}));
+ const chat=messages.find(m=>m.type==='chat');assert.ok(chat);assert.equal(chat.id,player.id);assert.equal(chat.text.length,180);assert.ok(!chat.text.includes('\n'));assert.ok(chat.expiresAt>Date.now()+14000);assert.equal(player.inactive,false);
+ await server.webSocketMessage(ws,JSON.stringify({type:'chat',text:'again'}));assert.equal(messages.filter(m=>m.type==='chat').length,1);
 });

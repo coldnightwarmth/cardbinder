@@ -1,6 +1,6 @@
 import {SHOWROOM_CARD_IDS} from './showroom-catalog.js';
 import {freshRoom,applyAction,finishRitual,RITUAL_MS,publicPlayer} from './showroom-state.js';
-export const INACTIVE_MS=5*60*1000;
+const INACTIVE_MS=5*60*1000;
 export default {
  async fetch(request,env) {
   const url=new URL(request.url);
@@ -50,6 +50,12 @@ export class Showroom {
   if(typeof data!=='string'||data.length>16384){ws.close(1009,'Message too large');return;}
   let message;try{message=JSON.parse(data);}catch{return;}
   const player=ws.deserializeAttachment(),now=Date.now();
+  if(message.type==='chat'){
+   if(typeof message.text!=='string'||now-(player.lastChat||0)<1000)return;
+   const text=message.text.replace(/[\u0000-\u001f\u007f]/g,' ').trim().slice(0,180);if(!text)return;
+   player.lastChat=now;await this.activate(ws,player,now);
+   this.broadcast({type:'chat',id:player.id,text,expiresAt:now+15000});return;
+  }
   if(message.type==='activity'){if(now-(player.lastActivityPacket||0)<1000)return;player.lastActivityPacket=now;await this.activate(ws,player,now);return;}
   if(message.type==='pose') {
     if(now-player.lastMove<45)return;

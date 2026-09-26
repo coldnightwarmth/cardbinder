@@ -1,4 +1,4 @@
-export function connectShowroom({url,onState,onPose,onStatus}) {
+export function connectShowroom({url,onState,onPose,onStatus,onChat}) {
  const session=crypto.randomUUID();let id=null,socket,closed=false,delay=1000,room=null,offset=0;const pending=new Map();
  function connect(){onStatus('Connecting');socket=new WebSocket(`${url}?session=${session}`);
  socket.onopen=()=>{delay=1000;onStatus('Online');};
@@ -6,6 +6,7 @@ export function connectShowroom({url,onState,onPose,onStatus}) {
  if(m.type==='welcome'){id=m.id;}
  else if(m.type==='state'){room=m.room;offset=m.now-Date.now();onState(m,id);}
  else if(m.type==='pose'||m.type==='leave')onPose(m);
+ else if(m.type==='chat')onChat?.(m);
  else if(m.type==='ack'){const p=pending.get(m.requestId);if(p){clearTimeout(p.timer);pending.delete(m.requestId);m.error?p.reject(Error(m.error)):p.resolve(m.result);}}};
  socket.onclose=()=>{onStatus('Reconnecting');for(const p of pending.values()){clearTimeout(p.timer);p.reject(Error('Connection interrupted. Please try again.'));}pending.clear();if(!closed)setTimeout(connect,delay=Math.min(delay*1.5,15000));};socket.onerror=()=>socket.close();
  }

@@ -1,7 +1,8 @@
+import {createChatBubble} from './showroom-chat.js?v=1';
 import {createShowroomAvatar} from './showroom-avatar.js?v=2';
 import {createPoseBuffer,remoteHandPose} from './showroom-motion.mjs?v=3';
 import * as THREE from 'three';
-import {connectShowroom} from './showroom-network.js?v=2';
+import {connectShowroom} from './showroom-network.js?v=3';
 export function createShowroomMultiplayer({scene,room,camera,portal,bridge,columns,ripples,onDirty}) {
  let hand=null,lastSent=0,lastPose='',settlePackets=0,state=null,epoch=0,lastSnapshot=null,retryTimer=null;
  const peers=new Map();
@@ -22,7 +23,7 @@ export function createShowroomMultiplayer({scene,room,camera,portal,bridge,colum
  }
  function layoutCard(display,index,count){const p=remoteHandPose(index,count);display.group.position.set(p.x,p.y+.57,p.z+.49);display.group.rotation.set(p.rx,p.ry,p.rz);}
 
- function remove(id){const p=peers.get(id);if(!p)return;clearTimeout(p.retry);p.avatar?.dispose();p.group.removeFromParent();ripples.forget(id);for(const d of p.cards.values())d.dispose?.();peers.delete(id);}
+ function remove(id){const p=peers.get(id);if(!p)return;clearTimeout(p.retry);p.bubble?.dispose();p.avatar?.dispose();p.group.removeFromParent();ripples.forget(id);for(const d of p.cards.values())d.dispose?.();peers.delete(id);}
  async function refresh(message){state=message.room;const token=++epoch;const live=new Set(message.players.map(p=>p.id));for(const id of peers.keys())if(!live.has(id))remove(id);for(const p of message.players)pose(p.id,p.pose,p.poseTime||message.now);
  await hand?.syncShared(state,network.id,bridge.resolveSharedCard).catch(console.warn);
  if(token!==epoch)return;
@@ -42,11 +43,11 @@ export function createShowroomMultiplayer({scene,room,camera,portal,bridge,colum
  });
  }
  onDirty();}
- const network=connectShowroom({url:location.hostname==='localhost'&&new URLSearchParams(location.search).has('multiplayerLocal')?'ws://localhost:8788/connect':'wss://cards-art-showroom.kururuga-online-leaderboard.workers.dev/connect',onState:m=>{lastSnapshot=m;void refresh(m).catch(error=>{console.warn(error);clearTimeout(retryTimer);retryTimer=setTimeout(()=>{if(lastSnapshot)void refresh(lastSnapshot).catch(console.warn);},2000);});},onPose:m=>{if(m.type==='leave')remove(m.id);else pose(m.id,m.pose,m.time);onDirty();},onStatus:status=>{if(status==='Online')lastPose='';}});
+ const network=connectShowroom({url:location.hostname==='localhost'&&new URLSearchParams(location.search).has('multiplayerLocal')?'ws://localhost:8788/connect':'wss://cards-art-showroom.kururuga-online-leaderboard.workers.dev/connect',onState:m=>{lastSnapshot=m;void refresh(m).catch(error=>{console.warn(error);clearTimeout(retryTimer);retryTimer=setTimeout(()=>{if(lastSnapshot)void refresh(lastSnapshot).catch(console.warn);},2000);});},onChat:m=>{const p=peers.get(m.id);if(!p)return;p.bubble?.dispose();p.bubble=createChatBubble(m.text);p.bubbleExpires=m.expiresAt;p.group.add(p.bubble.sprite);onDirty();},onPose:m=>{if(m.type==='leave')remove(m.id);else pose(m.id,m.pose,m.time);onDirty();},onStatus:status=>{if(status==='Online')lastPose='';}});
  columns.setNetwork(network);
  return {network,setHand(value){hand=value;hand.setNetwork(network);if(state)void hand.syncShared(state,network.id,bridge.resolveSharedCard);},
  update(now){if(now-lastSent>=1000/15){const p={x:+camera.position.x.toFixed(3),y:+camera.position.y.toFixed(3),z:+camera.position.z.toFixed(3),yaw:+camera.rotation.y.toFixed(3),pitch:+camera.rotation.x.toFixed(3),room:portal.inside?'cube':'showroom'};const serialized=JSON.stringify(p);if(serialized!==lastPose)settlePackets=3;if(serialized!==lastPose||settlePackets>0){network.send({type:'pose',pose:p});if(serialized===lastPose)settlePackets--;lastPose=serialized;}lastSent=now;}
- for(const [id,p] of peers){const sample=p.motion.sample(now);if(!sample)continue;
+ for(const [id,p] of peers){if(p.bubble&&network.now()>=p.bubbleExpires){p.bubble.dispose();p.bubble=null;}const sample=p.motion.sample(now);if(!sample)continue;
   const dt=Math.min(.1,Math.max(0,(now-(p.lastUpdate||now))/1000));p.lastUpdate=now;
   const velocity=p.previous&&dt>0?Math.hypot(sample.x-p.previous.x,sample.z-p.previous.z)/dt:0;p.previous=sample;
   p.group.position.set(sample.x,sample.y,sample.z);p.group.rotation.y=sample.yaw;
