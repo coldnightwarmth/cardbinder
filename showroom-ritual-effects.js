@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {PORTAL_ROOM_SIZE} from './showroom-portal-layout.mjs';
 
 // Page-local only: reconnects keep the current effect; a refresh creates a new
 // multiplayer identity and starts with the ordinary showroom rendering again.
@@ -21,8 +22,8 @@ export function ritualPixelRatio(mode,dpr,ordinaryRatio) {
 export function createShowroomRitualEffects({room,renderer,onCameraChange,onDirty}) {
   const cameraState=createRitualCameraState(onCameraChange);
   const material=new THREE.MeshBasicMaterial({toneMapped:false});
-  const art=new THREE.Mesh(new THREE.PlaneGeometry(8.2,8.2*1327/3125),material);
-  art.name='drif-triptych-summon';art.position.set(6.725,3.2,-8.4);art.rotation.y=-Math.PI/2;
+  const art=new THREE.Mesh(new THREE.PlaneGeometry(PORTAL_ROOM_SIZE*.85,PORTAL_ROOM_SIZE*.85*1327/3125),material);
+  art.name='drif-triptych-summon';art.position.set(PORTAL_ROOM_SIZE/2-.025,PORTAL_ROOM_SIZE/2,-PORTAL_ROOM_SIZE/2);art.rotation.y=-Math.PI/2;
   art.visible=false;room.add(art);
   let wallArt=null,ready=false;
   const texture=new THREE.TextureLoader().load(new URL('./assets/showroom/rituals/drif-triptych.jpg',import.meta.url).href,

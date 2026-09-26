@@ -1,9 +1,9 @@
-import {createChatBubble} from './showroom-chat.js?v=1';
+import {createChatBubble} from './showroom-chat.js?v=2';
 import {createShowroomAvatar} from './showroom-avatar.js?v=2';
 import {createPoseBuffer,remoteHandPose} from './showroom-motion.mjs?v=3';
 import * as THREE from 'three';
 import {connectShowroom} from './showroom-network.js?v=3';
-export function createShowroomMultiplayer({scene,room,camera,portal,bridge,columns,ripples,onDirty,onRoomState}) {
+export function createShowroomMultiplayer({scene,room,camera,portal,bridge,columns,ripples,onDirty,onRoomState,onOwnChat}) {
  let hand=null,lastSent=0,lastPose='',settlePackets=0,state=null,epoch=0,lastSnapshot=null,retryTimer=null;
  const peers=new Map();
  const socketPosition=new THREE.Vector3();
@@ -43,7 +43,7 @@ export function createShowroomMultiplayer({scene,room,camera,portal,bridge,colum
  });
  }
  onDirty();}
- const network=connectShowroom({url:location.hostname==='localhost'&&new URLSearchParams(location.search).has('multiplayerLocal')?'ws://localhost:8788/connect':'wss://cards-art-showroom.kururuga-online-leaderboard.workers.dev/connect',onState:m=>{lastSnapshot=m;void refresh(m).catch(error=>{console.warn(error);clearTimeout(retryTimer);retryTimer=setTimeout(()=>{if(lastSnapshot)void refresh(lastSnapshot).catch(console.warn);},2000);});},onChat:m=>{const p=peers.get(m.id);if(!p)return;p.bubble?.dispose();p.bubble=createChatBubble(m.text);p.bubbleExpires=m.expiresAt;p.group.add(p.bubble.sprite);onDirty();},onPose:m=>{if(m.type==='leave')remove(m.id);else pose(m.id,m.pose,m.time);onDirty();},onStatus:status=>{if(status==='Online')lastPose='';}});
+ const network=connectShowroom({url:location.hostname==='localhost'&&new URLSearchParams(location.search).has('multiplayerLocal')?'ws://localhost:8788/connect':'wss://cards-art-showroom.kururuga-online-leaderboard.workers.dev/connect',onState:m=>{lastSnapshot=m;void refresh(m).catch(error=>{console.warn(error);clearTimeout(retryTimer);retryTimer=setTimeout(()=>{if(lastSnapshot)void refresh(lastSnapshot).catch(console.warn);},2000);});},onChat:m=>{if(m.id===network.id){onOwnChat?.(m.text);return;}const p=peers.get(m.id);if(!p)return;p.bubble?.dispose();p.bubble=createChatBubble(m.text);p.bubbleExpires=m.expiresAt;p.group.add(p.bubble.sprite);onDirty();},onPose:m=>{if(m.type==='leave')remove(m.id);else pose(m.id,m.pose,m.time);onDirty();},onStatus:status=>{if(status==='Online')lastPose='';}});
  columns.setNetwork(network);
  return {network,setHand(value){hand=value;hand.setNetwork(network);if(state)void hand.syncShared(state,network.id,bridge.resolveSharedCard);},
  update(now){if(now-lastSent>=1000/15){const p={x:+camera.position.x.toFixed(3),y:+camera.position.y.toFixed(3),z:+camera.position.z.toFixed(3),yaw:+camera.rotation.y.toFixed(3),pitch:+camera.rotation.x.toFixed(3),room:portal.inside?'cube':'showroom'};const serialized=JSON.stringify(p);if(serialized!==lastPose)settlePackets=3;if(serialized!==lastPose||settlePackets>0){network.send({type:'pose',pose:p});if(serialized===lastPose)settlePackets--;lastPose=serialized;}lastSent=now;}
