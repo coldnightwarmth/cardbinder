@@ -1,6 +1,6 @@
 import {chatAnchor,chatVisibleThroughDoor} from './showroom-chat-projection.mjs';
 import {createChatBubble} from './showroom-chat.js?v=3';
-import {createShowroomAvatar} from './showroom-avatar.js?v=2';
+import {createShowroomAvatar} from './showroom-avatar.js?v=3';
 import {createPoseBuffer,remoteHandPose} from './showroom-motion.mjs?v=3';
 import * as THREE from 'three';
 import {connectShowroom} from './showroom-network.js?v=3';
@@ -30,7 +30,8 @@ export function createShowroomMultiplayer({scene,room,camera,portal,bridge,colum
   const presented=held.some(card=>card.id===p.presentedCard)?p.presentedCard:null;
   held.forEach((card,index)=>{const display=p.cards.get(card.id);if(!display?.group)return;
     display.group.visible=!presented||card.id===presented;
-    if(presented){display.group.position.set(0,.10,-.10);display.group.rotation.set(0,Math.PI,0);}
+    display.group.scale.setScalar(presented ? .34 : .27);
+    if(presented){display.group.position.set(0,0,0);display.group.rotation.set(.16,Math.PI,0);}
     else layoutCard(display,index,held.length);
   });p.layoutDirty=false;
  }
@@ -63,8 +64,11 @@ export function createShowroomMultiplayer({scene,room,camera,portal,bridge,colum
   const velocity=p.previous&&dt>0?Math.hypot(sample.x-p.previous.x,sample.z-p.previous.z)/dt:0;p.previous=sample;
   p.group.position.set(sample.x,sample.y,sample.z);p.group.rotation.y=sample.yaw;
   if(p.avatar){
-   p.avatar.update(dt,velocity,p.holding);p.group.updateWorldMatrix(true,true);
-   if(p.avatar.socket){p.avatar.socket.getWorldPosition(socketPosition);p.group.worldToLocal(socketPosition);p.cardsRoot.position.copy(socketPosition);p.cardsRoot.position.y+=.09;p.cardsRoot.position.z-=.07;}
+   p.avatar.update(dt,velocity,p.holding,sample.pitch);p.group.updateWorldMatrix(true,true);
+   if(p.avatar.socket){p.avatar.socket.getWorldPosition(socketPosition);p.group.worldToLocal(socketPosition);p.cardsRoot.position.copy(socketPosition);const tilt=p.avatar.handPitch;
+    p.cardsRoot.rotation.x=tilt;
+    p.cardsRoot.position.y+=.09*Math.cos(tilt)+.07*Math.sin(tilt);
+    p.cardsRoot.position.z+=.09*Math.sin(tilt)-.07*Math.cos(tilt);}
   }else p.cardsRoot.position.set(0,-.57,-.49);
   if(p.layoutDirty)layoutPeerHand(p);
   if(p.bubble){

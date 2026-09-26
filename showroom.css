@@ -220,7 +220,7 @@ body.showroom { background:#151718; }
 .showroom-chat-message {align-self:flex-start;max-width:100%;box-sizing:border-box;flex-shrink:0;padding:9px 13px;border:1px solid #424751;border-radius:12px;background:#20242dec;color:#eee;font:14px/1.4 system-ui;overflow-wrap:anywhere;white-space:pre-wrap;}
 .showroom-chat-feedback {position:absolute;top:calc(100% + 2px);color:#ddd;font:12px system-ui;}
 
-#showroomFavorites {position:fixed;right:20px;bottom:20px;width:44px;height:44px;padding:0;display:grid;place-items:center;border:1px solid #424751;border-radius:12px;background:#20242dec;color:#fff;cursor:pointer;pointer-events:auto;z-index:60;}
+#showroomHud #showroomFavorites {position:fixed;right:20px;bottom:20px;width:44px;height:44px;padding:0;display:grid;place-items:center;border:1px solid #424751;border-radius:12px;background:#20242dec;color:#fff;cursor:pointer;pointer-events:auto;z-index:60;}
 #showroomFavorites[hidden]{display:none;}
 #showroomFavorites:hover,#showroomFavorites:focus-visible{background:#353c49;border-color:#929bac;}
 
@@ -229,3 +229,5 @@ body.showroom { background:#151718; }
 .showroom-hand-card.is-presented {transform:translateX(calc(-50% + var(--hand-x))) translateY(-108px) rotate(0deg) scale(1.12);z-index:100;}
 .showroom-player-chat {position:fixed;z-index:80;width:max-content;max-width:min(280px,calc(100vw - 16px));box-sizing:border-box;padding:9px 13px;border:1px solid #687181;border-radius:13px;background:#181e28f5;color:#fff;box-shadow:0 3px 14px #0006;font:14px/1.4 system-ui;white-space:pre-wrap;overflow-wrap:anywhere;pointer-events:none;}
 .showroom-player-chat[hidden]{display:none;}
+
+#showroomFavorites svg {display:block;transform:translateY(.5px);}

@@ -1,7 +1,8 @@
+import {createShowroomPointerLock} from './showroom-pointer-lock.mjs';
 import {createChatInput} from './showroom-chat.js?v=3';
 import {createShowroomRitualEffects,ritualPixelRatio} from './showroom-ritual-effects.js?v=3';
 import { createExhibitBudget } from './showroom-exhibit-lod.js?v=1';
-import { createShowroomMultiplayer } from './showroom-multiplayer.js?v=10';
+import { createShowroomMultiplayer } from './showroom-multiplayer.js?v=12';
 import { createShowroomSky } from './showroom-sky.js?v=5';
 import * as THREE from 'three';
 import { createShowroomColumns } from './showroom-columns.js?v=11';
@@ -45,17 +46,17 @@ export async function initShowroom(bridge) {
     }
   } catch { /* Invalid return destinations go to the main page. */ }
   hud.append(leave);
-  // Escape may be consumed by native pointer lock, so also watch lock loss.
   document.addEventListener('keydown',event=>{
-    if(!['Escape','Tab'].includes(event.code)||active||busy||columns?.selecting)return;
-    event.preventDefault();event.stopPropagation();
-    releaseControls();
+    if(!['Escape','Tab','Enter'].includes(event.code)||active||busy||columns?.selecting||event.isComposing)return;
+    const menuOpen=!leave.hidden;
+    // Enter in the menu belongs to the focused chat input/send control.
+    if(event.code==='Enter'&&menuOpen)return;
+    event.preventDefault();event.stopPropagation();if(event.repeat)return;
+    // Some browsers deliver Escape after its native unlock event. Do not
+    // interpret that same press as a request to capture the mouse again.
+    if(event.code==='Escape'&&performance.now()-lastNativeUnlockAt<100)return;
+    if(menuOpen)lock();else releaseControls();
   },true);
-  document.addEventListener('pointerlockchange',()=>{
-    leave.hidden=document.body.classList.contains('showroom-touch')
-      || document.pointerLockElement===canvas
-      || Boolean(active || busy);
-  });
   const status = hud.querySelector('#showroomStatus'), count = hud.querySelector('#showroomCount');
   const touchJoystick = hud.querySelector('#showroomTouchJoystick');
   const touchJoystickBase = hud.querySelector('#showroomTouchJoystickBase');
@@ -394,15 +395,15 @@ export async function initShowroom(bridge) {
     onRoomState:(state,id,now)=>ritualEffects.sync(state,id,now),onOwnChat:text=>chat.record(text)});
   const chat=createChatInput(hud,multiplayer.network,{resume:()=>lock(true)});
   function releaseControls(){
-    lockRequest++;fallback=false;dragging=false;keys.clear();releaseTouchInputs();
-    document.exitPointerLock?.();leave.hidden=false;hud.querySelector('#showroomEnter').hidden=false;chat.focus();
+    fallback=false;dragging=false;keys.clear();releaseTouchInputs();
+    pointerControls.release();leave.hidden=false;hud.querySelector('#showroomEnter').hidden=false;chat.focus();
   }
   const renderShowroom=()=>portal.render();
   let fallback=false, dragging=false, dragged=false, touchMode=false, touchLook=null;
   let suppressTouchClickUntil=0;
   let touchJoystickPointerId=null;
   const touchMove={x:0,y:0};
-  let lockRequest=0;
+  let lastNativeUnlockAt=-Infinity;
   const ray=new THREE.Raycaster(), center=new THREE.Vector2(), mousePoint=new THREE.Vector2();
   const outline=new THREE.Group(); outline.visible=false; scene.add(outline);
   const outlineBounds=new THREE.Box3();
@@ -670,7 +671,7 @@ export async function initShowroom(bridge) {
   }
   function activateTouchMode() {
     if(touchMode)return;
-    touchMode=true;fallback=false;lockRequest++;
+    touchMode=true;fallback=false;pointerControls.release();
     document.body.classList.add('showroom-touch');
     touchJoystick.hidden=false;
     hud.querySelector('#showroomEnter').hidden=true;
@@ -756,32 +757,24 @@ export async function initShowroom(bridge) {
     } catch { count.textContent='Could not refresh binders'; status.textContent='Retrying shortly. You can still explore the room.'; }
     finally { directoryLoading=false; }
   }
+  const pointerControls=createShowroomPointerLock({element:canvas,document,
+    onChange:(locked,reason)=>{
+      fallback=false;dragging=false;dragged=false;keys.clear();
+      if(reason==='native')lastNativeUnlockAt=performance.now();
+      leave.hidden=touchMode||locked||Boolean(active||busy);
+      hud.querySelector('#showroomEnter').hidden=touchMode||locked;
+      if(!leave.hidden)chat.focus();
+    },
+    onError:()=>{status.textContent='Click the scene to resume mouse look';},
+  });
   function lock(resuming=false) {
-    if ((active || busy) && !resuming) return;
-    if(touchMode)return;
-    leave.hidden=true;
-    const request=++lockRequest;
-    const failed=error=>{
-      if(request!==lockRequest || document.pointerLockElement===canvas)return;
-      // Escape can cause a transient rejection. It must never permanently
-      // switch a pointer-lock-capable browser into drag-to-look mode.
-      fallback=!canvas.requestPointerLock || ['NotSupportedError','SecurityError'].includes(error?.name);
-      status.textContent=fallback
-        ? 'WASD to walk · Drag to look · Click a nearby binder'
-        : 'Click the scene to resume mouse look';
-      hud.querySelector('#showroomEnter').hidden=fallback;
-    };
-    try {
-      if(!canvas.requestPointerLock) {failed();return;}
-      canvas.requestPointerLock()?.catch(failed);
-    } catch(error) {failed(error);}
+    if(((active||busy)&&!resuming)||touchMode)return;
+    fallback=false;dragging=false;dragged=false;keys.clear();releaseTouchInputs();
+    leave.hidden=true;chat.update(false);
+    if(!canvas.requestPointerLock){fallback=true;return;}
+    pointerControls.request();
   }
   hud.querySelector('#showroomEnter').onclick=()=>lock();
-  document.addEventListener('pointerlockchange',()=>{
-    lockRequest++;
-    fallback=false; dragging=false; dragged=false; keys.clear();
-    hud.querySelector('#showroomEnter').hidden=touchMode || document.pointerLockElement===canvas;
-  });
   function touchBinderAt(clientX,clientY) {
     const pointer=new THREE.Vector2(clientX/innerWidth*2-1,1-clientY/innerHeight*2);
     return pickBinder(pointer);
@@ -850,7 +843,6 @@ export async function initShowroom(bridge) {
   });
   document.addEventListener('keydown',e=>{
     if (active || (document.pointerLockElement!==canvas && !fallback)) return;
-    if (e.code==='Escape') {lockRequest++;fallback=false;dragging=false;keys.clear();hud.querySelector('#showroomEnter').hidden=false;return;}
     if (['ShiftLeft','ShiftRight'].includes(e.code)) {keys.add(e.code);e.preventDefault();}
     if (['KeyW','KeyA','KeyS','KeyD'].includes(e.code)) {keys.add(e.code);if(!e.repeat) move(1/60);e.preventDefault();}
   });
@@ -1017,6 +1009,7 @@ export async function initShowroom(bridge) {
   canvas.onclick=e=>{
     if(active || busy)return;
     if(performance.now()<suppressTouchClickUntil)return;
+    if(!touchMode && !columns.selecting && document.pointerLockElement!==canvas && canvas.requestPointerLock){lock();return;}
     if(portal.inside && !columns.selecting){
       const point=document.pointerLockElement===canvas?center:new THREE.Vector2(e.clientX/innerWidth*2-1,1-e.clientY/innerHeight*2);
       if(activateColumn(columns.pick(point)))return;

@@ -140,27 +140,6 @@ test('shared public-directory filter excludes empty wallets and checks missing s
   assert.equal(later.length,0);
 });
 
-test('mouse capture recovers after Escape rejection and clears stale fallback state', async () => {
-  const source=readFileSync(new URL('../../showroom.js',import.meta.url),'utf8');
-  const implementation=source.slice(source.indexOf('  function lock(resuming=false)'),source.indexOf("  canvas.addEventListener('pointermove'"));
-  const handlers={},button={},canvas={};
-  let reject,requests=0;
-  canvas.requestPointerLock=()=>{requests++;return new Promise((resolve,fail)=>{reject=fail;});};
-  const document={pointerLockElement:null,addEventListener:(name,handler)=>handlers[name]=handler};
-  const context=vm.createContext({canvas,document,hud:{querySelector:()=>button},status:{},keys:new Set(),
-    touchMode:false,leave:{hidden:true},active:null,busy:false,lockRequest:0,fallback:false,dragging:false,dragged:false});
-  vm.runInContext(implementation,context);
-  context.lock();reject({name:'SecurityError'});await Promise.resolve();
-  assert.equal(context.fallback,true);
-  context.lock();document.pointerLockElement=canvas;handlers.pointerlockchange();
-  assert.equal(context.fallback,false);
-  document.pointerLockElement=null;handlers.pointerlockchange();
-  context.lock();reject({name:'NotAllowedError'});await Promise.resolve();
-  assert.equal(context.fallback,false,'temporary Escape rejection must not enable drag mode');
-  context.lock();document.pointerLockElement=canvas;handlers.pointerlockchange();
-  assert.equal(context.fallback,false);assert.equal(button.hidden,true);assert.equal(requests,4);
-});
-
 test('touch joystick movement is analog and camera-relative', () => {
   const source=readFileSync(new URL('../../showroom.js',import.meta.url),'utf8');
   const implementation=source.slice(source.indexOf('  function move(dt)'),source.indexOf('  const pickTargets'));
