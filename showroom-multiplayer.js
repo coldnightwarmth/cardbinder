@@ -1,4 +1,4 @@
-import {createShowroomAvatar} from './showroom-avatar.js?v=1';
+import {createShowroomAvatar} from './showroom-avatar.js?v=2';
 import {createPoseBuffer,remoteHandPose} from './showroom-motion.mjs?v=2';
 import * as THREE from 'three';
 import {connectShowroom} from './showroom-network.js?v=1';

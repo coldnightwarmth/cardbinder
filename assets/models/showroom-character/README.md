@@ -25,7 +25,7 @@ All clips loop. Walking has no forward root travel: the game moves the avatar. B
 
 19 bones including `Root`, `Pelvis`, `Chest`, `Head`, separate upper arms/forearms/hands, thighs/shins/feet, two tail bones, and `CardSocket.R`. Skin weights are assigned and normalized, with blended influence at sleeve elbows, knees, torso, and tail. The saved mesh's vertex groups remain editable with Blender's Weight Paint tools. The rig uses keyed FK poses, not an animator-facing IK control rig.
 
-Blender: +Z up, -Y forward; character right is -X. GLB: +Y up, +Z forward. Blender bone `CardSocket.R` becomes `CardSocketR` in Three.js's sanitized object names. Attach card objects to that node (with their local offset/orientation adjusted for the card model). The showroom now uses this model for remote players through `showroom-avatar.js`. Each player owns its skeleton and animation mixer while sharing geometry and textures. Movement selects idle/walk, shared hand ownership selects the holding variants, and cards track the hand socket. The character is scaled to 60% and rotated to match the camera-facing convention.
+Blender: +Z up, -Y forward; character right is -X. GLB: +Y up, +Z forward. Blender bone `CardSocket.R` becomes `CardSocketR` in Three.js's sanitized object names. Attach card objects to that node (with their local offset/orientation adjusted for the card model). The showroom now uses this model for remote players through `showroom-avatar.js`. Each player owns its skeleton and animation mixer while sharing geometry and textures. Movement selects idle/walk, shared hand ownership selects the holding variants, and cards track the hand socket. The character is scaled to 66% and rotated to match the camera-facing convention.
 
 7,756 triangles, 4,004 source vertices, 19 bones, one embedded texture, 13 exported material primitives. Blender validated normalized weights, finite deformations, closed animation loops, and grounded supporting feet at every keyed frame. The GLB was loaded in Three.js and all four clips and the card attachment were checked in-browser.
 
@@ -36,3 +36,5 @@ Blender: +Z up, -Y forward; character right is -X. GLB: +Y up, +Z forward. Blend
 Revision 2: bag turned 72 degrees around the left hip under the arm with reshaped strap; fins swept back 20 degrees; back of the cranium deepened by 34%; raised denim pocket stitching and hoodie pocket outline removed. Slight left-arm clearance adjustment preserves bag clearance during the animation clips.
 
 Revision 3: bag moved farther behind the left hip and turned to 100 degrees (mostly side-facing, slightly rearward). Removed the left-arm clearance offset so both arms rest symmetrically, accepting some bag contact as requested.
+
+Revision 4: smooth normals on curved character surfaces, preserving the faceted fins and flat facial accents. Showroom avatar size increased by 10%, retaining the floor offset and the right-hand socket attachment.

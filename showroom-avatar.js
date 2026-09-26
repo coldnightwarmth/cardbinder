@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import {GLTFLoader} from './vendor/GLTFLoader.js';
 let assetPromise;
-function asset(){return assetPromise ||= new GLTFLoader().loadAsync(new URL('./assets/models/showroom-character/blue-fin-character.glb?v=3',import.meta.url).href).catch(error=>{assetPromise=null;throw error;});}
+function asset(){return assetPromise ||= new GLTFLoader().loadAsync(new URL('./assets/models/showroom-character/blue-fin-character.glb?v=4',import.meta.url).href).catch(error=>{assetPromise=null;throw error;});}
 // Geometry, materials, and textures are shared; each visitor owns their bones.
 export function cloneAvatar(source){
  const clone=source.clone(true),lookup=new Map();
@@ -10,7 +10,7 @@ export function cloneAvatar(source){
  return clone;
 }
 export async function createShowroomAvatar(){
- const gltf=await asset(),model=cloneAvatar(gltf.scene);model.name='showroom-player-character';model.scale.setScalar(.60);model.position.y=-1.72;model.rotation.y=Math.PI;
+ const gltf=await asset(),model=cloneAvatar(gltf.scene);model.name='showroom-player-character';model.scale.setScalar(.66);model.position.y=-1.72;model.rotation.y=Math.PI;
  const mixer=new THREE.AnimationMixer(model),actions=new Map(gltf.animations.map(clip=>[clip.name,mixer.clipAction(clip)]));
  const socket=model.getObjectByName('CardSocketR')||model.getObjectByName('CardSocket.R');
  let current='',moving=false,speed=0;

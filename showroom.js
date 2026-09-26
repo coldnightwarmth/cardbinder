@@ -1,5 +1,5 @@
 import { createExhibitBudget } from './showroom-exhibit-lod.js?v=1';
-import { createShowroomMultiplayer } from './showroom-multiplayer.js?v=4';
+import { createShowroomMultiplayer } from './showroom-multiplayer.js?v=5';
 import { createShowroomSky } from './showroom-sky.js?v=5';
 import * as THREE from 'three';
 import { createShowroomColumns } from './showroom-columns.js?v=11';
@@ -290,7 +290,10 @@ export async function initShowroom(bridge) {
   let reflectionReady=false, reflectionAt=0;
   floor.onBeforeRender=function(...args) {
     const viewCamera=args[2] || camera;
-    if(reflectionReady && performance.now()-reflectionAt<qualitySettings.reflectionInterval && !busy)return;
+    // A moving camera needs a matching reflected view every frame. Throttling
+    // it reuses an old projection and makes sharp doorway edges jump.
+    const viewUnchanged=reflectedView.equals(viewCamera.matrixWorld) && reflectedProjection.equals(viewCamera.projectionMatrix);
+    if(reflectionReady && viewUnchanged && performance.now()-reflectionAt<qualitySettings.reflectionInterval && !busy)return;
     if(reflectionReady && performance.now()-reflectionAt<1000 && !sceneDirty && !busy && reflectedView.equals(viewCamera.matrixWorld)
       && reflectedProjection.equals(viewCamera.projectionMatrix)) return;
     reflectedView.copy(viewCamera.matrixWorld);reflectedProjection.copy(viewCamera.projectionMatrix);reflectionReady=true;reflectionAt=performance.now();

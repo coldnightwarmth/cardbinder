@@ -47,3 +47,14 @@ test('near detail stays hidden until prepared and distance hysteresis prevents f
  const restore=lod.reflection();assert.equal(near.visible,false);assert.equal(far.visible,true);restore();assert.equal(near.visible,true);assert.equal(far.visible,false);
  lod.update(5.1,1,()=>{});assert.equal(near.visible,false);lod.update(4.7,1,()=>{});assert.equal(near.visible,false);lod.update(4.4,1,()=>{});assert.equal(near.visible,true);assert.equal(loads,2,'reuse loaded geometry');
 });
+test('reflection throttling never reuses a stale moving camera projection',()=>{
+ const source=readFileSync(new URL('../../showroom.js',import.meta.url),'utf8');
+ const start=source.indexOf('    const viewCamera=args[2] || camera;'),end=source.indexOf('    reflectedView.copy(viewCamera.matrixWorld)',start);
+ const camera=new THREE.PerspectiveCamera(60,1,.05,500);camera.updateMatrixWorld();
+ const context=vm.createContext({camera,reflectedView:camera.matrixWorld.clone(),reflectedProjection:camera.projectionMatrix.clone(),reflectionReady:true,reflectionAt:100,performance:{now:()=>110},qualitySettings:{reflectionInterval:100},busy:false,sceneDirty:true});
+ vm.runInContext('function shouldRender(...args){'+source.slice(start,end)+'return true;}',context);
+ assert.equal(context.shouldRender(),undefined,'unchanged view can reuse the reflection');
+ camera.position.x=.001;camera.updateMatrixWorld();assert.equal(context.shouldRender(),true,'translation updates even inside the throttle interval');
+ camera.position.x=0;camera.rotation.y=.001;camera.updateMatrixWorld();assert.equal(context.shouldRender(),true,'rotation updates immediately');
+ camera.rotation.y=0;camera.updateMatrixWorld();camera.fov=61;camera.updateProjectionMatrix();assert.equal(context.shouldRender(),true,'projection change updates immediately');
+});

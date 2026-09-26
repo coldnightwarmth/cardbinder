@@ -59,7 +59,7 @@ def bind(obj,weights):
             group.add([vert.index],value/total,'REPLACE')
     parts.append(obj);return obj
 
-def finish(obj,name,mat,weights,smooth=False,rect=None):
+def finish(obj,name,mat,weights,smooth=True,rect=None):
     obj.name=name;move_collection(obj)
     bpy.context.view_layer.objects.active=obj;obj.select_set(True)
     bpy.ops.object.transform_apply(location=True,rotation=True,scale=True)
@@ -68,7 +68,7 @@ def finish(obj,name,mat,weights,smooth=False,rect=None):
     if rect:uv_sample(obj,rect)
     bind(obj,weights);obj.select_set(False);return obj
 
-def ell(name,loc,scale,mat,bone,segments=20,rings=12,smooth=False,rect=None):
+def ell(name,loc,scale,mat,bone,segments=20,rings=12,smooth=True,rect=None):
     bpy.ops.mesh.primitive_uv_sphere_add(segments=segments,ring_count=rings,location=loc)
     o=bpy.context.object;o.scale=scale;return finish(o,name,mat,bone,smooth,rect)
 def box(name,loc,scale,mat,bone,bevel=.04,rect=None):
@@ -81,6 +81,8 @@ def box(name,loc,scale,mat,bone,bevel=.04,rect=None):
 def mesh(name,verts,faces,mat,bone,rect=None):
     data=bpy.data.meshes.new(name);data.from_pydata(verts,[],faces);data.update()
     obj=bpy.data.objects.new(name,data);collection.objects.link(obj);data.materials.append(mat)
+    if not name.startswith(('Faceted fin','Angled eyebrow','Mouth opening','Tiny fang')):
+        for polygon in data.polygons:polygon.use_smooth=True
     if rect:uv_sample(obj,rect)
     return bind(obj,bone)
 def line(name,coords,radius,mat,bone):
@@ -116,7 +118,7 @@ for poly in torso.data.polygons:
             uv.data[li].uv=uvrect((1027,203,1209,448),max(0,min(1,(co.x+.4)/.8)),max(0,min(1,(co.z-.75)/.81)))
 # Hem, hood, neckline and cords.
 vertical_rings('Ribbed hoodie hem',[(.745,.37,.23,0,0),(.81,.397,.247,0,0)],fabric,'Pelvis',20,FAB)
-ell('Hood folded behind neck',(0,.145,1.51),(.36,.265,.235),fabric,'Chest',20,10,False,FAB)
+ell('Hood folded behind neck',(0,.145,1.51),(.36,.265,.235),fabric,'Chest',20,10,True,FAB)
 line('Hood neckline',[(-.22,-.13,1.55),(-.13,-.215,1.49),(0,-.23,1.475),(.13,-.215,1.49),(.22,-.13,1.55)],.025,fabric,'Chest')
 for x in [-.10,.10]:
     line('Drawstring',[(x,-.227,1.47),(x*.86,-.25,1.37),(x*.9,-.263,1.27)],.012,fabric,'Chest')
