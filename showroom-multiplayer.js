@@ -1,6 +1,6 @@
 import {chatAnchor,chatVisibleThroughDoor} from './showroom-chat-projection.mjs';
 import {createChatBubble} from './showroom-chat.js?v=3';
-import {createShowroomAvatar} from './showroom-avatar.js?v=3';
+import {createShowroomAvatar} from './showroom-avatar.js?v=4';
 import {createPoseBuffer,remoteHandPose} from './showroom-motion.mjs?v=3';
 import * as THREE from 'three';
 import {connectShowroom} from './showroom-network.js?v=3';

@@ -15,7 +15,7 @@ import { COMMUNITY_COLLECTIONS } from "./community-collections.mjs";
 import { SWAG_PACK_TRANSPARENT_STICKER_FILES } from "../swag-pack-stickers.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const APP_VERSION = "cardnft-485";
+const APP_VERSION = "cardnft-486";
 const STYLE_VERSION = "cardnft-170";
 const THREE_VERSION = "three-r165-min-1";
 
@@ -569,7 +569,7 @@ assert(
   "app does not lazy-load packed browser traits",
 );
 assert(
-  app.includes('./showroom.js?v=showroom-controls-3'),
+  app.includes('./showroom.js?v=showroom-controls-4'),
   "showroom runtime cache key is stale",
 );
 assert(

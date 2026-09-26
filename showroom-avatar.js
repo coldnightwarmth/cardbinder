@@ -29,16 +29,18 @@ export function createAvatarLookPose(model){
     base[i].copy(bone.quaternion);
     bone.parent.getWorldQuaternion(parentRotation).invert();
     localAxis.copy(axis).applyQuaternion(parentRotation).normalize();
-    const angle=bone===head?THREE.MathUtils.clamp(pitch,-.85,.85):pitch*held;
+    // Eyes contribute to gaze; the neck and shoulder need not copy the
+    // full camera angle, especially when looking down at a nearby table.
+    const angle=bone===head?THREE.MathUtils.clamp(pitch*.72,-.72,.72):pitch*.7*held;
     bone.quaternion.premultiply(turn.setFromAxisAngle(localAxis,-angle));
    });
    applied=true;
-   return pitch*held;
+   return pitch*.7*held;
   },
  };
 }
 export async function createShowroomAvatar(){
- const gltf=await asset(),model=cloneAvatar(gltf.scene);model.name='showroom-player-character';model.scale.setScalar(.66);model.position.y=-1.72;model.rotation.y=Math.PI;
+ const gltf=await asset(),model=cloneAvatar(gltf.scene);model.name='showroom-player-character';model.scale.setScalar(.78);model.position.y=-1.72;model.rotation.y=Math.PI;
  const mixer=new THREE.AnimationMixer(model),actions=new Map(gltf.animations.map(clip=>[clip.name,mixer.clipAction(clip)]));
  const socket=model.getObjectByName('CardSocketR')||model.getObjectByName('CardSocket.R');
  const look=createAvatarLookPose(model);

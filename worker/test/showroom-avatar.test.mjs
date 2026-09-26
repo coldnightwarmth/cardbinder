@@ -20,14 +20,14 @@ test('camera aim is additive, bounded, and only raises the holding arm',()=>{
  model.rotation.y=Math.PI;chest.rotation.z=.13;head.rotation.y=.05;arm.rotation.z=.2;
  const restHead=head.quaternion.clone(),restArm=arm.quaternion.clone(),look=context.createAvatarLookPose(model);
  for(let i=0;i<120;i++){look.restore();look.apply(1/60,.6,false);}
- assert(arm.quaternion.angleTo(restArm)<1e-7);assert(Math.abs(head.quaternion.angleTo(restHead)-.6)<1e-6);
+ assert(arm.quaternion.angleTo(restArm)<1e-7);assert(Math.abs(head.quaternion.angleTo(restHead)-.432)<1e-6);
  look.restore();assert(head.quaternion.angleTo(restHead)<1e-7);
  let pitch;for(let i=0;i<120;i++){look.restore();pitch=look.apply(1/60,.6,true);}
- assert(Math.abs(pitch-.6)<1e-6);assert(Math.abs(arm.quaternion.angleTo(restArm)-.6)<1e-6);
+ assert(Math.abs(pitch-.42)<1e-6);assert(Math.abs(arm.quaternion.angleTo(restArm)-.42)<1e-6);
  const steady=head.quaternion.clone();for(let i=0;i<600;i++){look.restore();look.apply(1/60,.6,true);}
  assert(head.quaternion.angleTo(steady)<1e-6,'no accumulating drift');
  for(let i=0;i<120;i++){look.restore();look.apply(1/60,100,true);}
- assert(Math.abs(head.quaternion.angleTo(restHead)-.85)<1e-6);
+ assert(Math.abs(head.quaternion.angleTo(restHead)-.72)<1e-6);
  for(let i=0;i<120;i++){look.restore();pitch=look.apply(1/60,-.6,false);}
  assert(Math.abs(pitch)<1e-6);assert(arm.quaternion.angleTo(restArm)<1e-6);
 });

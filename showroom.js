@@ -2,7 +2,7 @@ import {createShowroomPointerLock} from './showroom-pointer-lock.mjs';
 import {createChatInput} from './showroom-chat.js?v=3';
 import {createShowroomRitualEffects,ritualPixelRatio} from './showroom-ritual-effects.js?v=3';
 import { createExhibitBudget } from './showroom-exhibit-lod.js?v=1';
-import { createShowroomMultiplayer } from './showroom-multiplayer.js?v=12';
+import { createShowroomMultiplayer } from './showroom-multiplayer.js?v=13';
 import { createShowroomSky } from './showroom-sky.js?v=5';
 import * as THREE from 'three';
 import { createShowroomColumns } from './showroom-columns.js?v=11';
