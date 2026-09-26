@@ -51,7 +51,7 @@ export function createShowroomHand(adapter) {
   function refresh() {
     button.setAttribute('aria-label', state.selected ? 'Put card back in its binder' : 'Take card into your hand');
     button.title = button.getAttribute('aria-label');
-    button.disabled = busy || !adapter.currentCard();
+    button.disabled = busy || !adapter.currentCard() || (!state.selected && adapter.unavailable?.());
     document.querySelector('#cardBinderReturnButton').setAttribute('aria-label', state.selected ? 'Return card to your hand' : 'Back to binder position');
     document.body.classList.toggle('showroom-hand-interactive', !document.pointerLockElement);
     document.body.classList.toggle('showroom-hand-view', Boolean(state.selected));
@@ -107,7 +107,7 @@ export function createShowroomHand(adapter) {
 
   async function take() {
     const card = adapter.currentCard(), origin = adapter.binder();
-    if (!card || !origin || state.has(origin, card.stableId)) return;
+    if (!card || !origin || adapter.unavailable?.() || state.has(origin, card.stableId)) return;
     const from = adapter.cardRect();
     const shared=network?await network.action({type:"borrow",card:{stableId:card.stableId,origin}}):null;
     const held = state.add(origin, {...card,...(shared?{sharedId:shared.id}: {})}); refresh();
@@ -234,6 +234,7 @@ export function createShowroomHand(adapter) {
     get viewing() { return state.selected; },
     get busy() { return busy; },
     has: (origin, stableId) => state.has(origin, stableId),
+    hasCard: stableId => state.cards.some(card => card.stableId === stableId),
     get cards() { return available(); },
     choose(place,cancel,resume){if(busy)return;announcement.textContent='Choose a card from your hand to place on the column.';choice={place,cancel,resume,resumed:false};document.body.classList.add('showroom-hand-choosing');refresh();},
     restore(key){placed.delete(key);refresh();},

@@ -59,6 +59,11 @@ export async function initShowroom(bridge) {
   const touchJoystickBase = hud.querySelector('#showroomTouchJoystickBase');
   const touchJoystickThumb = hud.querySelector('#showroomTouchJoystickThumb');
   const openBinderButton = hud.querySelector('#showroomOpenBinder');
+  let favoritesReady=false;
+  const favoritesButton=document.createElement('button');favoritesButton.id='showroomFavorites';
+  favoritesButton.type='button';favoritesButton.hidden=true;favoritesButton.setAttribute('aria-label','Open favorite cards binder');
+  favoritesButton.title='Favorite cards';favoritesButton.innerHTML='<svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 2.78 5.63 6.22.91-4.5 4.39 1.06 6.2L12 17.2l-5.56 2.93 1.06-6.2L3 9.54l6.22-.91Z"/></svg>';
+  hud.append(favoritesButton);favoritesButton.onclick=()=>void openFavorites();
   const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, stencil:true });
   const showroomMaxRatio=Math.min(devicePixelRatio,2);
   const resolution=createResolutionBudget(showroomMaxRatio);
@@ -904,6 +909,20 @@ export async function initShowroom(bridge) {
       status.textContent='This binder could not load. Click it to retry.';
     } finally {busy=false;}
   }
+  async function openFavorites() {
+    if(active || busy || columns.selecting)return;
+    active={favorites:true};busy=true;favoritesButton.hidden=true;openBinderButton.hidden=true;leave.hidden=true;
+    keys.clear();releaseTouchInputs();document.exitPointerLock?.();outline.visible=false;
+    try {
+      await bridge.open({favorites:true});
+      renderShowroom();sceneDirty=false;
+      document.body.classList.remove('showroom-walking');suspendShowroomBuffers();
+      status.textContent='Your favorite cards · Back to table to keep exploring';
+    } catch(error) {
+      console.warn('Favorites binder could not load',error);bridge.close();active=null;leave.hidden=false;
+      status.textContent='Favorites could not load. Please try again.';
+    } finally {busy=false;}
+  }
   async function close() {
     if(!active || active.hand || busy) return;
     busy=true; const item=active;
@@ -911,8 +930,9 @@ export async function initShowroom(bridge) {
     // Request capture inside the return-button gesture, before the animation awaits.
     // Movement stays frozen until the binder has landed.
     if(!fallback && !touchMode) lock(true);
-    document.body.classList.add('showroom-walking'); bridge.close(); item.group.visible=true;
-    await tween(item,true); active=null;busy=false;
+    document.body.classList.add('showroom-walking'); bridge.close();
+    if(!item.favorites){item.group.visible=true;await tween(item,true);}
+    active=null;busy=false;
     updateNearbyModels();warmNearby();
     status.textContent=touchMode
       ? touchExploreStatus()
@@ -921,6 +941,7 @@ export async function initShowroom(bridge) {
   }
   async function releaseBinderToHand() {
     if (!active || active.hand || busy) throw new Error('Binder is not ready');
+    if(active.favorites){await close();return;}
     busy=true;
     const item=active;
     restoreShowroomBuffers();
@@ -1066,7 +1087,8 @@ export async function initShowroom(bridge) {
     speech.update(now,camera,document.pointerLockElement===canvas || touchMode || dragging ? center : mousePoint,!active && !busy && !portal.inside);
     multiplayer.update(now);
     ritualEffects.update(multiplayer.network.now());
-    chat.update(!active && !busy && !fallback && document.pointerLockElement!==canvas && !leave.hidden);
+    const escapeControls=!active && !busy && !fallback && document.pointerLockElement!==canvas && !leave.hidden;
+    chat.update(escapeControls);favoritesButton.hidden=!favoritesReady || !escapeControls || columns.selecting;
     // Reserve the shared wallet-table footprint even when a visitor's private
     // directory fetch differs. Portal position and player coordinates agree.
     const sharedRows=Math.ceil(multiplayer.seats.length/3);
@@ -1176,5 +1198,5 @@ export async function initShowroom(bridge) {
     await renderer.compileAsync(scene,camera);
     renderShowroom();
   }
-  return { releaseBinderToHand, beginHandView, endHandView, setHand:hand=>{columns.setHand(hand);multiplayer.setHand(hand);} };
+  return { releaseBinderToHand, beginHandView, endHandView, setHand:hand=>{favoritesReady=true;columns.setHand(hand);multiplayer.setHand(hand);} };
 }

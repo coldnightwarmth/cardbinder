@@ -1818,15 +1818,17 @@ async function init() {
   preloadAllConfiguredBackTextures().catch(console.error);
   if (!galleryOpen) startCardRenderLoop();
   if (IS_SHOWROOM) {
-    const { initShowroom } = await import("./showroom.js?v=showroom-rituals-2");
-    const { createShowroomHand } = await import("./showroom-hand.js?v=8");
+    const { initShowroom } = await import("./showroom.js?v=showroom-favorites-1");
+    const { createShowroomHand } = await import("./showroom-hand.js?v=9");
     const room = await initShowroom(await createShowroomBridge());
     showroomHand = createShowroomHand({
       currentCard: () => !galleryOpen && CARDS[currentIndex] ? {
         index: currentIndex, stableId: CARDS[currentIndex].stableId,
         title: CARDS[currentIndex].title, image: cardStillAssetUrl(CARDS[currentIndex]),
       } : null,
-      binder: () => showroomBinderEntry,
+      binder: () => showroomBinderEntry?.favorites
+        ? { collectionId: CARDS[currentIndex]?.collection } : showroomBinderEntry,
+      unavailable: () => isShowroomCardHeld(currentIndex),
       transitioning: () => cardSwapAnimating || cardShuffleSpinAnimating || binderCardViewTransitionActive,
       controlsDisabled: setIndividualCardControlsDisabled,
       cardRect: () => getIndividualCardScreenRect() || getCenteredFallbackRect(),
@@ -2019,6 +2021,16 @@ async function createShowroomBridge() {
     },
     open: async entry => {
       showroomBinderEntry = entry;
+      if(entry.favorites) {
+        WALLET_ROUTE_ADDRESS = "";walletRouteProfile = null;
+        resetWalletCardFilter();
+        favoritesOnly = false;
+        await toggleFavoriteFilter();
+        refreshWalletBinderCoverRendering();
+        setGalleryOpen(true);
+        setBinderTableView(false, { immediate: true });
+        return;
+      }
       if(entry.collectionId) {
         await Promise.all([ensureCollectionCards(entry.collectionId), preloadCollectionBackTextures(entry.collectionId)]);
         refreshWalletBinderCoverRendering();
@@ -4683,7 +4695,9 @@ function getAdjacentIndividualCardIndex(direction) {
 
 function isShowroomCardHeld(index) {
   return Boolean(IS_SHOWROOM && showroomBinderEntry && CARDS[index]
-    && showroomHand?.has(showroomBinderEntry, CARDS[index].stableId));
+    && (showroomBinderEntry.favorites
+      ? showroomHand?.hasCard(CARDS[index].stableId)
+      : showroomHand?.has(showroomBinderEntry, CARDS[index].stableId)));
 }
 
 function getIndividualCardSequenceIndexes() {

@@ -211,11 +211,15 @@ body.showroom { background:#151718; }
 
 /* Showroom is dark-only, including the released-control HUD. */
 .showroom .theme-switch { display:none !important; visibility:hidden !important; }
-#showroomChat {position:fixed;left:20px;bottom:20px;display:flex;gap:7px;align-items:center;pointer-events:auto;z-index:60;max-width:calc(100vw - 40px);}
+#showroomChat {position:fixed;left:20px;bottom:20px;display:flex;gap:7px;align-items:center;pointer-events:auto;z-index:60;max-width:calc(100vw - 104px);}
 #showroomChat[hidden]{display:none;}
-#showroomChat input {width:min(320px,calc(100vw - 100px));padding:12px 15px;border:1px solid #424751;border-radius:12px;background:#20242dec;color:#fff;font:14px system-ui;outline:none;}
+#showroomChat input {width:min(320px,calc(100vw - 160px));min-width:0;padding:12px 15px;border:1px solid #424751;border-radius:12px;background:#20242dec;color:#fff;font:14px system-ui;outline:none;}
 #showroomChat input:focus{border-color:#929bac;}
 #showroomChat button {border:1px solid #424751;border-radius:11px;background:#292f39;color:#fff;width:42px;height:42px;min-width:42px;flex:0 0 42px;padding:0;display:grid;place-items:center;line-height:1;box-sizing:border-box;cursor:pointer;}
 .showroom-chat-log {position:absolute;bottom:calc(100% + 12px);left:0;width:100%;max-height:min(35vh,260px);overflow-y:auto;display:flex;flex-direction:column;gap:7px;scrollbar-width:thin;scrollbar-color:#555c68 transparent;}
 .showroom-chat-message {align-self:flex-start;max-width:100%;box-sizing:border-box;flex-shrink:0;padding:9px 13px;border:1px solid #424751;border-radius:12px;background:#20242dec;color:#eee;font:14px/1.4 system-ui;overflow-wrap:anywhere;white-space:pre-wrap;}
 .showroom-chat-feedback {position:absolute;top:calc(100% + 2px);color:#ddd;font:12px system-ui;}
+
+#showroomFavorites {position:fixed;right:20px;bottom:20px;width:44px;height:44px;padding:0;display:grid;place-items:center;border:1px solid #424751;border-radius:12px;background:#20242dec;color:#fff;cursor:pointer;pointer-events:auto;z-index:60;}
+#showroomFavorites[hidden]{display:none;}
+#showroomFavorites:hover,#showroomFavorites:focus-visible{background:#353c49;border-color:#929bac;}
