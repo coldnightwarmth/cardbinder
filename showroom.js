@@ -1,6 +1,7 @@
 import {createChatInput} from './showroom-chat.js?v=1';
+import {createShowroomRitualEffects,ritualPixelRatio} from './showroom-ritual-effects.js?v=1';
 import { createExhibitBudget } from './showroom-exhibit-lod.js?v=1';
-import { createShowroomMultiplayer } from './showroom-multiplayer.js?v=7';
+import { createShowroomMultiplayer } from './showroom-multiplayer.js?v=8';
 import { createShowroomSky } from './showroom-sky.js?v=5';
 import * as THREE from 'three';
 import { createShowroomColumns } from './showroom-columns.js?v=11';
@@ -67,7 +68,8 @@ export async function initShowroom(bridge) {
   // adaptive resolution cannot turn cards into unreadable blocks on Retina screens.
   // Nearest-neighbor presentation includes the portal without another render pass.
   // Expanded binders and card viewers retain their independent full-res canvases.
-  const showroomPixelRatio=ratio=>Math.max(.6,ratio/showroomMaxRatio*.75);
+  let ritualCameraMode=null;
+  const showroomPixelRatio=ratio=>ritualPixelRatio(ritualCameraMode,devicePixelRatio,Math.max(.6,ratio/showroomMaxRatio*.75));
   canvas.style.imageRendering='pixelated';
   renderer.setPixelRatio(showroomPixelRatio(resolution.ratio)); renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -375,7 +377,12 @@ export async function initShowroom(bridge) {
     keys.clear();releaseTouchInputs();document.exitPointerLock?.();
     return columns.activate(column);
   }
-  const multiplayer=createShowroomMultiplayer({scene,room:portal.room,camera,portal,bridge,columns,ripples,onDirty:()=>{multiplayerDirty=true;}});
+  const ritualEffects=createShowroomRitualEffects({room:portal.room,renderer,onDirty:()=>{sceneDirty=true;},onCameraChange:mode=>{
+    ritualCameraMode=mode;canvas.style.imageRendering=mode==='native'?'auto':'pixelated';
+    renderer.setPixelRatio(showroomPixelRatio(resolution.ratio));sceneDirty=true;
+  }});
+  const multiplayer=createShowroomMultiplayer({scene,room:portal.room,camera,portal,bridge,columns,ripples,onDirty:()=>{multiplayerDirty=true;},
+    onRoomState:(state,id,now)=>ritualEffects.sync(state,id,now)});
   const chat=createChatInput(hud,multiplayer.network);
   const renderShowroom=()=>portal.render();
   let fallback=false, dragging=false, dragged=false, touchMode=false, touchLook=null;
@@ -1058,6 +1065,7 @@ export async function initShowroom(bridge) {
     portal.place(tables);
     speech.update(now,camera,document.pointerLockElement===canvas || touchMode || dragging ? center : mousePoint,!active && !busy && !portal.inside);
     multiplayer.update(now);
+    ritualEffects.update(multiplayer.network.now());
     chat.update(!active && !busy && !fallback && document.pointerLockElement!==canvas && !leave.hidden);
     // Reserve the shared wallet-table footprint even when a visitor's private
     // directory fetch differs. Portal position and player coordinates agree.
@@ -1095,7 +1103,7 @@ export async function initShowroom(bridge) {
     flushModelWork();
     requestAnimationFrame(frame);
   }
-  function resize(){sceneDirty=true;renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();}
+  function resize(){sceneDirty=true;renderer.setPixelRatio(showroomPixelRatio(resolution.ratio));renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();}
   window.addEventListener('resize',resize);resize();requestAnimationFrame(frame);
   setInterval(()=>{warmNearby();if(!document.hidden)updateNearbyModels();},1000);
   for(const entry of bridge.collections) await scheduleModelWork(()=>{addBinder(entry);sceneDirty=true;});

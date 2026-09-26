@@ -1,5 +1,5 @@
 import {SHOWROOM_CARD_IDS} from './showroom-catalog.js';
-import {freshRoom,applyAction,finishRitual,RITUAL_MS,publicPlayer} from './showroom-state.js';
+import {freshRoom,applyAction,finishRitual,expireWallArt,RITUAL_MS,publicPlayer} from './showroom-state.js';
 const INACTIVE_MS=5*60*1000;
 export default {
  async fetch(request,env) {
@@ -17,16 +17,18 @@ export default {
 export class Showroom {
  constructor(ctx) {
   this.ctx=ctx;this.room=freshRoom();this.directoryCheckedAt=0;this.directory=new Set();
-  ctx.blockConcurrencyWhile(async()=>{this.room=await ctx.storage.get('room')||freshRoom();if(finishRitual(this.room,Date.now()))await ctx.storage.put('room',this.room);await this.scheduleAlarm();});
+  ctx.blockConcurrencyWhile(async()=>{this.room=await ctx.storage.get('room')||freshRoom();const now=Date.now();let changed=finishRitual(this.room,now,this.participants());if(expireWallArt(this.room,now))changed=true;if(changed)await ctx.storage.put('room',this.room);await this.scheduleAlarm();});
   ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair('ping','pong'));
  }
  sockets(){return this.ctx.getWebSockets();}
+ participants(){return this.sockets().map(ws=>ws.deserializeAttachment()).filter(Boolean);}
  send(ws,message){try{ws.send(JSON.stringify(message));}catch{}}
  broadcast(message){for(const ws of this.sockets())this.send(ws,message);}
  snapshot(){return {type:'state',now:Date.now(),room:this.room,players:this.sockets().filter(ws=>!ws.deserializeAttachment()?.inactive).map(ws=>publicPlayer(ws.deserializeAttachment()))};}
  async scheduleAlarm(){
   const deadlines=this.sockets().map(ws=>ws.deserializeAttachment()).filter(p=>p&&!p.inactive).map(p=>(p.lastActive??p.lastMove??Date.now())+INACTIVE_MS);
   if(this.room.ritual)deadlines.push(this.room.ritual.startedAt+RITUAL_MS);
+  if(this.room.wallArt)deadlines.push(this.room.wallArt.expiresAt);
   if(deadlines.length)await this.ctx.storage.setAlarm(Math.max(Date.now()+1,Math.min(...deadlines)));
  }
  async activate(ws,player,now){const returning=player.inactive;player.lastActive=now;player.inactive=false;ws.serializeAttachment(player);if(returning){this.broadcast(this.snapshot());await this.scheduleAlarm();}}
@@ -103,7 +105,7 @@ export class Showroom {
         } else if(Math.hypot(player.pose.x-[-3.1,0,3.1][message.action.slot],player.pose.z+10.7)>3)throw Error('Move closer to the pedestal');
       }
       if(message.action?.type==='borrow'&&!SHOWROOM_CARD_IDS.has(message.action.card?.stableId))throw Error('Unknown card');
-      const result=applyAction(this.room,player.id,message.action,now);
+      const result=applyAction(this.room,player.id,message.action,now,this.participants());
       await this.ctx.storage.put('room',this.room);
       await this.activate(ws,player,now);await this.scheduleAlarm();
       reply={type:'ack',requestId:message.requestId,result};this.broadcast(this.snapshot());
@@ -112,7 +114,8 @@ export class Showroom {
   });
  }
  async alarm(){
-  const now=Date.now();let changed=finishRitual(this.room,now);
+  const now=Date.now();let changed=finishRitual(this.room,now,this.participants());
+  if(expireWallArt(this.room,now))changed=true;
   for(const ws of this.sockets()){
    const player=ws.deserializeAttachment();if(!player||player.inactive||now-(player.lastActive??player.lastMove??0)<INACTIVE_MS)continue;
    player.inactive=true;ws.serializeAttachment(player);

@@ -1818,7 +1818,7 @@ async function init() {
   preloadAllConfiguredBackTextures().catch(console.error);
   if (!galleryOpen) startCardRenderLoop();
   if (IS_SHOWROOM) {
-    const { initShowroom } = await import("./showroom.js?v=showroom-chat-1");
+    const { initShowroom } = await import("./showroom.js?v=showroom-rituals-1");
     const { createShowroomHand } = await import("./showroom-hand.js?v=8");
     const room = await initShowroom(await createShowroomBridge());
     showroomHand = createShowroomHand({
@@ -1959,6 +1959,7 @@ async function createShowroomBridge() {
       const card=CARDS[index],prepared=await prepareIndividualCardFor3D(card);
       const group=createCardSwapGroup(prepared.frontTexture,prepared.backTexture,card,prepared.effectTextures);
       makeScreensaverCardGroupSolid(group);
+      stabilizeShowroomDisplayCardDepth(group);
       group.userData.screensaverEffectActivity=1;
       try {
         if(card.model) {
@@ -3985,6 +3986,7 @@ function createCardSwapGroup(frontTexture, backTexture, card = null, effectTextu
 
   group.userData.frontMesh = frontMesh;
   group.userData.backMesh = backMesh;
+  group.userData.coreMesh = core;
   group.userData.frontNoiseMesh = frontNoise;
   group.userData.backNoiseMesh = backNoise;
   group.userData.frontGradientMesh = frontGradientMesh || null;
@@ -5404,6 +5406,17 @@ function warmScreensaverCardGpuResources() {
   } finally {
     screensaverRenderer.setRenderTarget(previousTarget);
   }
+}
+
+function stabilizeShowroomDisplayCardDepth(group) {
+  // Only the edge of the cardboard needs a separate mesh. Its solid front/back
+  // caps sit less than a millimetre behind the art at pedestal scale and fight
+  // with it in the depth buffer when viewed down the aisle through the portal.
+  // Keep real edge thickness and depth testing against the room, but let the
+  // artwork itself provide the two faces rather than overlapping dark caps.
+  const geometry = group.userData.coreMesh?.geometry;
+  const edge = geometry?.groups.find(part => part.materialIndex === 1);
+  if (edge) geometry.setDrawRange(edge.start, edge.count);
 }
 
 function makeScreensaverCardGroupSolid(group) {

@@ -3,7 +3,7 @@ import {createShowroomAvatar} from './showroom-avatar.js?v=2';
 import {createPoseBuffer,remoteHandPose} from './showroom-motion.mjs?v=3';
 import * as THREE from 'three';
 import {connectShowroom} from './showroom-network.js?v=3';
-export function createShowroomMultiplayer({scene,room,camera,portal,bridge,columns,ripples,onDirty}) {
+export function createShowroomMultiplayer({scene,room,camera,portal,bridge,columns,ripples,onDirty,onRoomState}) {
  let hand=null,lastSent=0,lastPose='',settlePackets=0,state=null,epoch=0,lastSnapshot=null,retryTimer=null;
  const peers=new Map();
  const socketPosition=new THREE.Vector3();
@@ -24,7 +24,7 @@ export function createShowroomMultiplayer({scene,room,camera,portal,bridge,colum
  function layoutCard(display,index,count){const p=remoteHandPose(index,count);display.group.position.set(p.x,p.y+.57,p.z+.49);display.group.rotation.set(p.rx,p.ry,p.rz);}
 
  function remove(id){const p=peers.get(id);if(!p)return;clearTimeout(p.retry);p.bubble?.dispose();p.avatar?.dispose();p.group.removeFromParent();ripples.forget(id);for(const d of p.cards.values())d.dispose?.();peers.delete(id);}
- async function refresh(message){state=message.room;const token=++epoch;const live=new Set(message.players.map(p=>p.id));for(const id of peers.keys())if(!live.has(id))remove(id);for(const p of message.players)pose(p.id,p.pose,p.poseTime||message.now);
+ async function refresh(message){state=message.room;onRoomState?.(state,network.id,message.now);const token=++epoch;const live=new Set(message.players.map(p=>p.id));for(const id of peers.keys())if(!live.has(id))remove(id);for(const p of message.players)pose(p.id,p.pose,p.poseTime||message.now);
  await hand?.syncShared(state,network.id,bridge.resolveSharedCard).catch(console.warn);
  if(token!==epoch)return;
  await columns.syncShared(state,network.now());
