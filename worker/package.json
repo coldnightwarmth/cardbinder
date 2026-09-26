@@ -19,7 +19,9 @@
     "deploy:pages": "npm run build:pages && wrangler pages deploy",
     "dev": "wrangler dev --local --config wrangler-worker.jsonc --var ALLOW_LOCALHOST_ORIGINS:true",
     "smoke:local": "node scripts/smoke-local-auth.mjs",
-    "test": "node --test test/*.test.mjs"
+    "test": "node --test test/*.test.mjs",
+    "dev:showroom": "wrangler dev --config wrangler-showroom.jsonc --port 8788",
+    "deploy:showroom": "node scripts/build-showroom-catalog.mjs && wrangler deploy --config wrangler-showroom.jsonc"
   },
   "dependencies": {
     "@solana/wallet-standard-features": "1.4.0",

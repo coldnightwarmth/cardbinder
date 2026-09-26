@@ -1,4 +1,4 @@
-import { createShowroomHandState } from './showroom-hand-state.mjs';
+import { createShowroomHandState } from './showroom-hand-state.mjs?v=2';
 
 export function createShowroomHand(adapter) {
   const state = createShowroomHandState();
@@ -15,8 +15,9 @@ export function createShowroomHand(adapter) {
   button.id = 'showroomHandButton'; button.className = 'icon-button'; button.type = 'button';
   button.innerHTML = document.querySelector('#binderOpenCardButton').innerHTML;
   document.querySelector('#favoriteButton').after(button);
-  let busy = false, drag = null, choice = null;
+  let busy = false, drag = null, choice = null, network = null;
   const placed = new Set();
+  let syncEpoch=0;
   const available = () => state.cards.filter(card => !placed.has(card.key));
   function finishChoice(){const previous=choice;choice=null;document.body.classList.remove('showroom-hand-choosing');previous?.cancel();if(previous&&!previous.resumed)previous.resume?.();refresh();}
   let swallowBackgroundClick=false;
@@ -39,10 +40,10 @@ export function createShowroomHand(adapter) {
     try {destination=await choice.place(card);}
     catch(error){choice.resumed=false;document.exitPointerLock?.();throw error;}
     const node=nodes.get(card.key);
-    node.style.visibility='hidden';
-    try {await fly(card,node.getBoundingClientRect(),destination.rect);destination.commit();placed.add(card.key);finishChoice();}
+    if(node)node.style.visibility='hidden';
+    try {await fly(card,node?.getBoundingClientRect(),destination.rect);destination.commit();placed.add(card.key);finishChoice();}
     catch(error){destination.cancel();throw error;}
-    finally{node.style.visibility='';}
+    finally{if(node)node.style.visibility='';}
   }
   const nodes = new Map();
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
@@ -108,14 +109,15 @@ export function createShowroomHand(adapter) {
     const card = adapter.currentCard(), origin = adapter.binder();
     if (!card || !origin || state.has(origin, card.stableId)) return;
     const from = adapter.cardRect();
-    const held = state.add(origin, card); refresh();
+    const shared=network?await network.action({type:"borrow",card:{stableId:card.stableId,origin}}):null;
+    const held = state.add(origin, {...card,...(shared?{sharedId:shared.id}: {})}); refresh();
     document.body.classList.add('showroom-hand-transfer');
     const node = nodes.get(held.key), to = node.getBoundingClientRect();
     node.style.visibility = 'hidden';
     try {
       await Promise.all([adapter.take(), fly(held, from, to)]);
       announcement.textContent = `${held.title} added to your hand.`;
-    } catch (error) { state.remove(held.key); throw error; }
+    } catch (error) { state.remove(held.key); if(shared)await network.action({type:'return',id:shared.id}).catch(()=>{}); throw error; }
     finally { node.style.visibility = ''; adapter.slotsChanged(); }
   }
 
@@ -150,6 +152,7 @@ export function createShowroomHand(adapter) {
     document.body.classList.add('showroom-hand-transfer');
     await Promise.all([adapter.close(), fly(card, from,
       { left: innerWidth / 2 - 15, top: innerHeight * .6, width: 30, height: 42 }, true)]);
+    if(network && card.sharedId)await network.action({type:"return",id:card.sharedId});
     state.remove(card.key); adapter.slotsChanged();
     announcement.textContent = `${card.title} returned to its binder.`;
   }
@@ -184,6 +187,7 @@ export function createShowroomHand(adapter) {
     finished.node.style.visibility = 'hidden';
     try {
       await fly(finished.card, from, from, true);
+      if(network && finished.card.sharedId)await network.action({type:"return",id:finished.card.sharedId});
       state.remove(finished.card.key); adapter.slotsChanged();
       announcement.textContent = `${finished.card.title} returned to its binder.`;
     } finally { finished.node.style.visibility = ''; }
@@ -211,6 +215,22 @@ export function createShowroomHand(adapter) {
   window.addEventListener('resize', refresh);
   refresh();
   return {
+    setNetwork(value){network=value;},
+    async syncShared(room,player,resolve) {
+      const token=++syncEpoch;
+      const wanted=Object.values(room.cards).filter(card=>card.holder===player || card.borrower===player);
+      for(const card of state.cards)if(card.sharedId&&!wanted.some(c=>c.id===card.sharedId)){
+        if(state.selected?.key===card.key){state.select(null);await adapter.close();}
+        state.remove(card.key);placed.delete(card.key);
+      }
+      for(const card of wanted){
+        const resolved=await resolve(card);
+        if(token!==syncEpoch)return;
+        const existing=state.add(resolved.origin,{...resolved,sharedId:card.id});existing.sharedId=card.id;
+        if(card.holder===player)placed.delete(existing.key);else placed.add(existing.key);
+      }
+      adapter.slotsChanged();refresh();
+    },
     get viewing() { return state.selected; },
     get busy() { return busy; },
     has: (origin, stableId) => state.has(origin, stableId),

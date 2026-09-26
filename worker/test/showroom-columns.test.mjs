@@ -54,3 +54,15 @@ test('ritual requires three cards, blocks pickup, then clears displays and retur
  assert.deepEqual(returned,['binder-0:card','binder-1:card','binder-2:card']);
  assert(columns.columns.every(column=>!column.card&&!column.display));assert.equal(lamp.material.color.getHex(),0x080908);
 });
+
+test('network snapshots replace pedestals and late ritual join uses the shared clock',async()=>{
+ const room=new THREE.Scene(),camera=new THREE.PerspectiveCamera();let disposed=0;
+ const columns=createShowroomColumns({room,camera,renderer:{},bridge:{async createSharedDisplay(){return {group:new THREE.Group(),update(){},dispose(){disposed++;}};}}});
+ columns.setNetwork({action:async()=>{}});
+ const state={revision:1,cards:{a:{id:'a'}},slots:[null,'a',null],ritual:null};
+ await columns.syncShared(state,1000);assert.equal(columns.columns[1].card.id,'a');assert(columns.columns[1].display);
+ const before=performance.now();await columns.syncShared({...state,revision:2,ritual:{startedAt:1000}},5900);
+ columns.update(before+10,new THREE.Vector2(),false);assert(columns.columns[1].display.group.position.y>3.9);
+ await columns.syncShared({revision:3,cards:{},slots:[null,null,null],ritual:null},8000);
+ assert.equal(disposed,1);assert.equal(columns.columns[1].display,null);assert.equal(columns.ritualActive,false);
+});

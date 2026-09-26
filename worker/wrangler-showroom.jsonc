@@ -1,0 +1,10 @@
+{
+ "$schema":"node_modules/wrangler/config-schema.json",
+ "name":"cards-art-showroom",
+ "main":"src/showroom.js",
+ "compatibility_date":"2026-08-04",
+ "workers_dev":true,
+ "vars":{"ALLOW_LOCALHOST_ORIGINS":"true"},
+ "durable_objects":{"bindings":[{"name":"SHOWROOM","class_name":"Showroom"}]},
+ "migrations":[{"tag":"v1","new_sqlite_classes":["Showroom"]}]
+}

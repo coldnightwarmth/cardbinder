@@ -11,10 +11,10 @@ export function createShowroomHandState() {
   return {
     get cards() { return [...cards.values()]; },
     get selected() { return cards.get(selected) || null; },
-    has(origin, stableId) { return cards.has(keyFor(origin, stableId)); },
+    has(origin, stableId) { return [...cards.values()].some(card=>showroomBinderKey(card.origin)===showroomBinderKey(origin)&&card.stableId===stableId); },
     add(origin, card) {
       if (!showroomBinderKey(origin) || !card?.stableId) throw new Error('Missing card source');
-      const key = keyFor(origin, card.stableId);
+      const key = card.sharedId || keyFor(origin, card.stableId);
       if (!cards.has(key)) cards.set(key, { ...card, key, origin: { ...origin } });
       return cards.get(key);
     },

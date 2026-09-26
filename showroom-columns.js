@@ -32,13 +32,14 @@ export function createShowroomColumns({room,camera,renderer,bridge,resume=()=>{}
   lamp.position.set(.04,0,.32);ritualButton.add(lamp);
   const ritualTarget={ritual:true};
   const buttonBounds=new THREE.Box3(new THREE.Vector3(-6.75,1.1,-8.6),new THREE.Vector3(-6.55,1.5,-8.2));
-  let ritual=null;
+  let ritual=null,network=null,sharedRevision=-1,sharedEpoch=0;
   function syncRitualButton() {
     const count=columns.filter(column=>column.card).length;
     lamp.material.color.setHex(count===3?0x37e66a:count?0xffc533:0x080908);
     buttonCap.position.x=ritual ? .012 : .045;
   }
   function startRitual() {
+    if(network){void network.action({type:'ritual'}).catch(console.warn);return true;}
     if(ritual || selecting || columns.some(column=>!column.card || !column.display))return false;
     ritual={startedAt:performance.now(),cards:columns.map(column=>({column,
       position:column.display.group.position.clone(),scale:column.display.group.scale.clone()}))};
@@ -74,7 +75,9 @@ export function createShowroomColumns({room,camera,renderer,bridge,resume=()=>{}
   function update(now,pointer,enabled) {
     if(ritual) {
       const pose=ritualPose((now-ritual.startedAt)/1000);
-      if(pose.done) {
+      if(pose.done && network) {
+        for(const column of columns)if(column.display)column.display.group.visible=false;
+      } else if(pose.done) {
         const keys=ritual.cards.map(({column})=>column.card.key);
         for(const {column} of ritual.cards) {
           room.remove(column.display.group);column.display.dispose();column.display=null;column.card=null;
@@ -105,6 +108,9 @@ export function createShowroomColumns({room,camera,renderer,bridge,resume=()=>{}
   function activate(column=hovered) {
     if(!column || selecting || ritual || !hand)return false;
     if(column.ritual)return startRitual();
+    if(column.card && network) {
+      void network.action({type:'grab',slot:columns.indexOf(column)}).catch(console.warn);return true;
+    }
     if(column.card) {
       hand.restore(column.card.key);room.remove(column.display.group);column.display.dispose();column.display=null;column.card=null;syncRitualButton();
       return true;
@@ -112,6 +118,10 @@ export function createShowroomColumns({room,camera,renderer,bridge,resume=()=>{}
     if(!hand.cards.length)return false;
     selecting=true;highlight.visible=shadow.visible=false;
     hand.choose(async card=>{
+      if(network){
+        await network.action({type:'place',slot:columns.indexOf(column),id:card.sharedId});
+        return {rect:null,commit(){selecting=false;},cancel(){selecting=false;}};
+      }
       const display=await bridge.createDisplayCard(card.index);
       if(display.group.userData.individualCardModelRoot) {
         display.group.traverse(object=>{
@@ -139,12 +149,44 @@ export function createShowroomColumns({room,camera,renderer,bridge,resume=()=>{}
         const distance=camera.position.distanceTo(new THREE.Vector3(column.x,1.43,column.z));
         const height=innerHeight/(2*Math.tan(THREE.MathUtils.degToRad(camera.fov/2))*distance);
         return {rect:{left:(point.x*.5+.5)*innerWidth-height*.36,top:(.5-point.y*.5)*innerHeight-height/2,width:height*.72,height},
-          commit(){display.group.visible=true;column.card=card;column.display=display;column.startedAt=performance.now();selecting=false;syncRitualButton();},
+          commit(){display.group.visible=true;column.card=card;column.display=display;column.baseScale=display.group.scale.clone();column.startedAt=performance.now();selecting=false;syncRitualButton();},
           cancel(){room.remove(display.group);display.dispose();selecting=false;}};
       } catch(error){room.remove(display.group);display.dispose();throw error;}
     },()=>{selecting=false;},resume);
     return true;
   }
-  return {columns,ritualButton,update,pick,activate,get ritualActive(){return !!ritual;},setHand(value){hand=value;},get selecting(){return selecting;},
+  async function syncShared(state,serverNow) {
+    if(state.revision===sharedRevision)return;
+    sharedRevision=state.revision;const epoch=++sharedEpoch;
+    ritual=state.ritual?{startedAt:performance.now()-(serverNow-state.ritual.startedAt),cards:[]}:null;
+    try {await Promise.all(columns.map(async(column,index)=>{
+      const card=state.cards[state.slots[index]]||null;
+      if(column.card?.id!==card?.id || (card && !column.display)){
+        if(column.display){room.remove(column.display.group);column.display.dispose();column.display=null;}
+        column.card=card;
+        if(card){
+          const display=await bridge.createSharedDisplay(card);
+          if(epoch!==sharedEpoch||column.card?.id!==card.id){display.dispose();return;}
+          if(display.group.userData.individualCardModelRoot)display.group.traverse(object=>{
+            for(const material of [].concat(object.material||[]))if(material.isMeshStandardMaterial){
+              material.envMap=room.userData.cardEnvironment;material.envMapIntensity=1;
+              material.envMapRotation.set(0,THREE.MathUtils.degToRad(121),0);
+              if(display.group.userData.modelRenderProfile==='mons-clear-resin')applyPedestalResinLighting(material,THREE);
+              material.needsUpdate=true;
+            }
+          });
+          display.group.position.set(column.x,1.43,column.z);display.group.rotation.x=-.16;
+          column.display=display;column.baseScale=display.group.scale.clone();column.startedAt=performance.now();room.add(display.group);
+        }
+      }
+      if(epoch!==sharedEpoch)return;
+      if(column.display){
+        column.display.group.visible=true;
+        if(ritual)ritual.cards.push({column,position:new THREE.Vector3(column.x,1.43,column.z),scale:(column.baseScale||column.display.group.scale).clone()});
+      }
+    }));}catch(error){if(epoch===sharedEpoch)sharedRevision=-1;throw error;}
+    syncRitualButton();
+  }
+  return {syncShared,setNetwork(value){network=value;},columns,ritualButton,update,pick,activate,get ritualActive(){return !!ritual;},setHand(value){hand=value;},get selecting(){return selecting;},
     canWalk(x,z){return !columns.some(column=>Math.abs(x-column.x)<.53&&Math.abs(z-column.z)<.53);}};
 }

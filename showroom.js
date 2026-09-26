@@ -1,6 +1,7 @@
+import { createShowroomMultiplayer } from './showroom-multiplayer.js?v=1';
 import { createShowroomSky } from './showroom-sky.js?v=5';
 import * as THREE from 'three';
-import { createShowroomColumns } from './showroom-columns.js?v=10';
+import { createShowroomColumns } from './showroom-columns.js?v=11';
 import { createShowroomPortal } from './showroom-portal.js?v=5';
 import { createShowroomSpeech } from './showroom-speech.js?v=7';
 import { mergeGeometries } from './vendor/BufferGeometryUtils.js';
@@ -350,7 +351,7 @@ export async function initShowroom(bridge) {
   hud.querySelector('#showroomTheme').onclick=()=>document.querySelector('#themeToggle').click();
   const tables=[], binders=[], addresses=new Set(), keys=new Set();
   let endZ=-8, active=null, hovered=null, busy=false, directoryLoading=false;
-  let columns=null, hoveredColumn=null;
+  let columns=null, hoveredColumn=null, sharedRowsBuilt=0;
   const portal=createShowroomPortal({renderer,scene,camera,
     canWalkOutside:(x,z)=>canWalkAt(x,z,endZ,tables),
     canWalkRoom:(x,z)=>columns?.canWalk(x,z) ?? true,
@@ -363,6 +364,7 @@ export async function initShowroom(bridge) {
     keys.clear();releaseTouchInputs();document.exitPointerLock?.();
     return columns.activate(column);
   }
+  const multiplayer=createShowroomMultiplayer({scene,room:portal.room,camera,portal,bridge,columns,onDirty:()=>{sceneDirty=true;}});
   const renderShowroom=()=>portal.render();
   let fallback=false, dragging=false, dragged=false, touchMode=false, touchLook=null;
   let suppressTouchClickUntil=0;
@@ -579,7 +581,8 @@ export async function initShowroom(bridge) {
   function addBinder(entry) {
     const side=entry.collectionId ? 1 : -1;
     const occupied=new Set(binders.filter(item=>item.side===side).map(item=>item.seatIndex));
-    let i=0;while(occupied.has(i))i++;
+    let i=entry.walletAddress?multiplayer.seats.indexOf(entry.walletAddress):-1;
+    if(i<0){i=0;while(occupied.has(i))i++;}
     const seat=seatFor(i,side);
     if (!tables.some(table=>table.x===seat.side*3 && table.z===-seat.row*5)) addTable(seat.side,seat.row);
     const group=new THREE.Group(); scene.add(group);
@@ -702,7 +705,12 @@ export async function initShowroom(bridge) {
         item.removed=true;scene.remove(item.group,item.nameplate);disposeModel(item.model);disposeModel(item.nameplate);
         warmed.delete(item);addresses.delete(item.entry.walletAddress);binders.splice(i,1);
       }
-      for(const entry of eligible.values()) {
+      await multiplayer.registerSeats([...eligible.keys()]);
+      const sharedSeats=multiplayer.seats;
+      for(const entry of [...eligible.values()].sort((a,b)=>{
+        const ai=sharedSeats.indexOf(a.walletAddress),bi=sharedSeats.indexOf(b.walletAddress);
+        return (ai<0?Infinity:ai)-(bi<0?Infinity:bi)||a.walletAddress.localeCompare(b.walletAddress);
+      })) {
         if(addresses.has(entry.walletAddress))continue;
         await scheduleModelWork(()=>{addresses.add(entry.walletAddress);addBinder(entry);sceneDirty=true;});
       }
@@ -1029,6 +1037,13 @@ export async function initShowroom(bridge) {
     }
     portal.place(tables);
     speech.update(now,camera,document.pointerLockElement===canvas || touchMode || dragging ? center : mousePoint,!active && !busy && !portal.inside);
+    multiplayer.update(now);
+    // Reserve the shared wallet-table footprint even when a visitor's private
+    // directory fetch differs. Portal position and player coordinates agree.
+    const sharedRows=Math.ceil(multiplayer.seats.length/3);
+    for(let row=sharedRowsBuilt;row<sharedRows;row++)if(!tables.some(table=>table.x===-3&&table.z===-row*5))addTable(-1,row);
+    sharedRowsBuilt=sharedRows;
+    if(sharedRows)endZ=Math.min(endZ,-sharedRows*5-3);
     hoveredColumn=columns.update(now,document.pointerLockElement===canvas || touchMode?center:mousePoint,
       portal.inside && !active && !busy);
     const oldHovered=hovered;
@@ -1132,5 +1147,5 @@ export async function initShowroom(bridge) {
     await renderer.compileAsync(scene,camera);
     renderShowroom();
   }
-  return { releaseBinderToHand, beginHandView, endHandView, setHand:hand=>columns.setHand(hand) };
+  return { releaseBinderToHand, beginHandView, endHandView, setHand:hand=>{columns.setHand(hand);multiplayer.setHand(hand);} };
 }

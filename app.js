@@ -1818,8 +1818,8 @@ async function init() {
   preloadAllConfiguredBackTextures().catch(console.error);
   if (!galleryOpen) startCardRenderLoop();
   if (IS_SHOWROOM) {
-    const { initShowroom } = await import("./showroom.js?v=showroom-resin-5");
-    const { createShowroomHand } = await import("./showroom-hand.js?v=7");
+    const { initShowroom } = await import("./showroom.js?v=showroom-multiplayer-1");
+    const { createShowroomHand } = await import("./showroom-hand.js?v=8");
     const room = await initShowroom(await createShowroomBridge());
     showroomHand = createShowroomHand({
       currentCard: () => !galleryOpen && CARDS[currentIndex] ? {
@@ -1924,6 +1924,26 @@ async function createShowroomBridge() {
       const index=COLLECTION_CONFIGS.jpegs.globalIndexes.find(index=>CARDS[index].title.toLowerCase()==="sun");
       if(index===undefined)throw new Error("Sun card is unavailable");
       return this.createDisplayCard(index);
+    },
+    resolveSharedCard: async descriptor => {
+      const collection=descriptor.stableId.split(":")[0];
+      if(!COLLECTION_CONFIGS[collection])throw Error("Unknown card collection");
+      await ensureCollectionCards(collection);
+      const index=CARDS.findIndex(card=>card.stableId===descriptor.stableId);
+      if(index<0)throw Error("Card unavailable");
+      const card=CARDS[index];
+      return {...descriptor,index,title:card.title,image:cardStillAssetUrl(card)};
+    },
+    async createSharedDisplay(descriptor) {const card=await this.resolveSharedCard(descriptor);return this.createDisplayCard(card.index);},
+    async createSharedHandCard(descriptor) {
+      const card=await this.resolveSharedCard(descriptor);
+      const image=await loadTextureImage(card.image,{fetchPriority:'low'});
+      const surface=document.createElement('canvas');surface.width=192;surface.height=269;
+      surface.getContext('2d').drawImage(image,0,0,192,269);
+      const texture=new THREE.CanvasTexture(surface);texture.colorSpace=THREE.SRGBColorSpace;
+      const geometry=new THREE.PlaneGeometry(.714,1),material=new THREE.MeshBasicMaterial({map:texture,side:THREE.DoubleSide,toneMapped:false});
+      const group=new THREE.Group();group.add(new THREE.Mesh(geometry,material));
+      return {group,dispose(){texture.dispose();geometry.dispose();material.dispose();}};
     },
     createDisplayCard: async index => {
       const card=CARDS[index],prepared=await prepareIndividualCardFor3D(card);
