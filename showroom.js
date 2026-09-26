@@ -1,5 +1,5 @@
 import {createChatInput} from './showroom-chat.js?v=2';
-import {createShowroomRitualEffects,ritualPixelRatio} from './showroom-ritual-effects.js?v=2';
+import {createShowroomRitualEffects,ritualPixelRatio} from './showroom-ritual-effects.js?v=3';
 import { createExhibitBudget } from './showroom-exhibit-lod.js?v=1';
 import { createShowroomMultiplayer } from './showroom-multiplayer.js?v=9';
 import { createShowroomSky } from './showroom-sky.js?v=5';

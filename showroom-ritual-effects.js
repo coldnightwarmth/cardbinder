@@ -23,7 +23,7 @@ export function createShowroomRitualEffects({room,renderer,onCameraChange,onDirt
   const cameraState=createRitualCameraState(onCameraChange);
   const material=new THREE.MeshBasicMaterial({toneMapped:false});
   const art=new THREE.Mesh(new THREE.PlaneGeometry(PORTAL_ROOM_SIZE*.85,PORTAL_ROOM_SIZE*.85*1327/3125),material);
-  art.name='drif-triptych-summon';art.position.set(PORTAL_ROOM_SIZE/2-.025,PORTAL_ROOM_SIZE/2,-PORTAL_ROOM_SIZE/2);art.rotation.y=-Math.PI/2;
+  art.name='drif-triptych-summon';art.position.set(PORTAL_ROOM_SIZE/2-.025,art.geometry.parameters.height/2+.45,-PORTAL_ROOM_SIZE/2);art.rotation.y=-Math.PI/2;
   art.visible=false;room.add(art);
   let wallArt=null,ready=false;
   const texture=new THREE.TextureLoader().load(new URL('./assets/showroom/rituals/drif-triptych.jpg',import.meta.url).href,

@@ -1818,7 +1818,7 @@ async function init() {
   preloadAllConfiguredBackTextures().catch(console.error);
   if (!galleryOpen) startCardRenderLoop();
   if (IS_SHOWROOM) {
-    const { initShowroom } = await import("./showroom.js?v=showroom-favorites-1");
+    const { initShowroom } = await import("./showroom.js?v=showroom-favorites-2");
     const { createShowroomHand } = await import("./showroom-hand.js?v=9");
     const room = await initShowroom(await createShowroomBridge());
     showroomHand = createShowroomHand({
