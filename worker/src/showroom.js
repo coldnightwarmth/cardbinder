@@ -43,11 +43,11 @@ export class Showroom {
   let message;try{message=JSON.parse(data);}catch{return;}
   const player=ws.deserializeAttachment(),now=Date.now();
   if(message.type==='pose') {
-    if(now-player.lastMove<65)return;
+    if(now-player.lastMove<45)return;
     const p=message.pose;
     if(!p||!['showroom','cube'].includes(p.room)||!['x','y','z','yaw','pitch'].every(k=>Number.isFinite(p[k]))||Math.abs(p.x)>100||Math.abs(p.z)>20000||p.y<0||p.y>10)return;
     player.pose={x:p.x,y:p.y,z:p.z,yaw:p.yaw,pitch:p.pitch,room:p.room};player.lastMove=now;ws.serializeAttachment(player);
-    this.broadcast({type:'pose',id:player.id,pose:player.pose});return;
+    this.broadcast({type:'pose',id:player.id,pose:player.pose,time:now});return;
   }
   if(message.type==='seats') {
     if(now-this.directoryCheckedAt>300000){

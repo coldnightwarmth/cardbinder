@@ -40,4 +40,4 @@ export function applyAction(state,player,action,now=Date.now()) {
   } else throw Error('Unknown action');
   state.revision++;return result;
 }
-export function publicPlayer(p) {return {id:p.id,pose:p.pose};}
+export function publicPlayer(p) {return {id:p.id,pose:p.pose,poseTime:p.lastMove||0};}

@@ -1818,7 +1818,7 @@ async function init() {
   preloadAllConfiguredBackTextures().catch(console.error);
   if (!galleryOpen) startCardRenderLoop();
   if (IS_SHOWROOM) {
-    const { initShowroom } = await import("./showroom.js?v=showroom-multiplayer-1");
+    const { initShowroom } = await import("./showroom.js?v=showroom-multiplayer-2");
     const { createShowroomHand } = await import("./showroom-hand.js?v=8");
     const room = await initShowroom(await createShowroomBridge());
     showroomHand = createShowroomHand({
@@ -1937,13 +1937,18 @@ async function createShowroomBridge() {
     async createSharedDisplay(descriptor) {const card=await this.resolveSharedCard(descriptor);return this.createDisplayCard(card.index);},
     async createSharedHandCard(descriptor) {
       const card=await this.resolveSharedCard(descriptor);
-      const image=await loadTextureImage(card.image,{fetchPriority:'low'});
-      const surface=document.createElement('canvas');surface.width=192;surface.height=269;
-      surface.getContext('2d').drawImage(image,0,0,192,269);
-      const texture=new THREE.CanvasTexture(surface);texture.colorSpace=THREE.SRGBColorSpace;
-      const geometry=new THREE.PlaneGeometry(.714,1),material=new THREE.MeshBasicMaterial({map:texture,side:THREE.DoubleSide,toneMapped:false});
-      const group=new THREE.Group();group.add(new THREE.Mesh(geometry,material));
-      return {group,dispose(){texture.dispose();geometry.dispose();material.dispose();}};
+      const urls=[card.image,new URL(cardBackAssetPath(CARDS[card.index]),import.meta.url).href];
+      const images=await Promise.all(urls.map(url=>loadTextureImage(url,{fetchPriority:'low'})));
+      const textures=images.map(image=>{
+        const surface=document.createElement('canvas');surface.width=192;surface.height=269;
+        surface.getContext('2d').drawImage(image,0,0,192,269);
+        const texture=new THREE.CanvasTexture(surface);texture.colorSpace=THREE.SRGBColorSpace;return texture;
+      });
+      const faces=textures.map(map=>new THREE.MeshBasicMaterial({map,toneMapped:false}));
+      const edge=new THREE.MeshBasicMaterial({color:0xd8d5ce,toneMapped:false});
+      const geometry=new THREE.BoxGeometry(.714,1,.006);
+      const group=new THREE.Group();group.add(new THREE.Mesh(geometry,[edge,edge,edge,edge,...faces]));
+      return {group,dispose(){textures.forEach(t=>t.dispose());geometry.dispose();faces.forEach(m=>m.dispose());edge.dispose();}};
     },
     createDisplayCard: async index => {
       const card=CARDS[index],prepared=await prepareIndividualCardFor3D(card);

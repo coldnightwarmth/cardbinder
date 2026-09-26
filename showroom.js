@@ -1,4 +1,4 @@
-import { createShowroomMultiplayer } from './showroom-multiplayer.js?v=1';
+import { createShowroomMultiplayer } from './showroom-multiplayer.js?v=2';
 import { createShowroomSky } from './showroom-sky.js?v=5';
 import * as THREE from 'three';
 import { createShowroomColumns } from './showroom-columns.js?v=11';
@@ -295,6 +295,8 @@ export async function initShowroom(bridge) {
     const visible=outline.visible, ghostVisible=evilTableGhost.visible;
     outline.visible=false;stars.object.visible=false;evilTableGhost.visible=false;
     const portalVisible=portal.surface.visible;portal.surface.visible=false;
+    const hiddenPlayers=[];
+    scene.traverse(object=>{if(object.userData.excludeFloorReflection&&object.visible){hiddenPlayers.push(object);object.visible=false;}});
     const stencilMaterials=[];
     scene.traverse(object=>{
       for(const material of (Array.isArray(object.material)?object.material:[object.material])) {
@@ -303,11 +305,12 @@ export async function initShowroom(bridge) {
     });
     try { reflect.apply(this,args); }
     finally {
+      for(const player of hiddenPlayers)player.visible=true;
       for(const material of stencilMaterials)material.stencilWrite=true;
       outline.visible=visible;stars.object.visible=true;evilTableGhost.visible=ghostVisible;portal.surface.visible=portalVisible;
     }
   };
-  let sceneDirty=true;
+  let sceneDirty=true, multiplayerDirty=false;
   let showroomBuffersSuspended=false;
   function suspendShowroomBuffers() {
     if(showroomBuffersSuspended)return;
@@ -364,7 +367,7 @@ export async function initShowroom(bridge) {
     keys.clear();releaseTouchInputs();document.exitPointerLock?.();
     return columns.activate(column);
   }
-  const multiplayer=createShowroomMultiplayer({scene,room:portal.room,camera,portal,bridge,columns,onDirty:()=>{sceneDirty=true;}});
+  const multiplayer=createShowroomMultiplayer({scene,room:portal.room,camera,portal,bridge,columns,onDirty:()=>{multiplayerDirty=true;}});
   const renderShowroom=()=>portal.render();
   let fallback=false, dragging=false, dragged=false, touchMode=false, touchLook=null;
   let suppressTouchClickUntil=0;
@@ -947,7 +950,7 @@ export async function initShowroom(bridge) {
   function beginHandView() {
     active={hand:true};keys.clear();releaseTouchInputs();document.exitPointerLock?.();
     leave.hidden=true;outline.visible=false;
-    renderShowroom();sceneDirty=false;
+    renderShowroom();sceneDirty=false;multiplayerDirty=false;
     document.body.classList.remove('showroom-walking');
     suspendShowroomBuffers();
   }
@@ -1063,13 +1066,13 @@ export async function initShowroom(bridge) {
       openBinderButton.setAttribute('aria-label',`Open ${hovered.entry.label || hovered.entry.walletAddress || 'binder'}`);
     }
 
-    if(!document.hidden && (!active || busy || sceneDirty)) {
+    if(!document.hidden && (!active || busy || sceneDirty || multiplayerDirty)) {
       if(!portal.inside)ripples.update(now,camera);
       floor.material.uniforms.rippleTime.value=now*.001;
       evilTableGhost.material.uniforms.time.value=now*.001;
       evilTableGhost.material.uniforms.pixelRatio.value=renderer.getPixelRatio();
       stars.update(now,portal.exteriorCamera,renderer);
-      renderShowroom();sceneDirty=false;
+      renderShowroom();sceneDirty=false;multiplayerDirty=false;
     }
     flushModelWork();
     requestAnimationFrame(frame);

@@ -5,9 +5,10 @@ using a SQLite Durable Object named `public-v1`. It is independent of wallet aut
 No wallet connection is required and no wallet holdings are mutated.
 
 - One shared room, at most 24 simultaneous visitors and 24 held cards per visitor.
-- Capsule avatars have no player collision or names. Presence uses at most ten
-  small updates per second while moving, with browser interpolation.
-- Binder selection/open pages stay local. Held card fronts are lightweight planes
+- Capsule avatars have no player collision or names. Presence uses at most fifteen
+  small updates per second while moving, with timestamped interpolation and
+  bounded prediction. Three final samples settle the avatar when movement stops.
+- Binder selection/open pages stay local. Held cards are lightweight two-sided models with collection-specific backs
   resolved from the site's catalog; no arbitrary remote image URLs are accepted.
 - Borrowed cards have server-generated IDs. Server-serialized place/grab actions
   enforce one holder or pedestal per card. Anyone may pick up any displayed card.
@@ -17,8 +18,9 @@ No wallet connection is required and no wallet holdings are mutated.
   be retrieved by another visitor. Reconnect automatically fetches a fresh state.
 - The shared wallet seating registry is append-only and checked against the public
   binder directory. Only its physical layout is shared, not binder browsing.
-- A small connection label reports reconnecting; shared actions fail safely when
-  disconnected instead of creating an incompatible local pedestal state.
+- Reconnection happens automatically without a status overlay. Shared actions
+  fail safely when disconnected instead of creating an incompatible local
+  pedestal state.
 
 ## Commands
 
