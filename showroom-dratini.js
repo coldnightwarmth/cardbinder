@@ -1,6 +1,5 @@
 import * as THREE from 'three';
-import { GLTFLoader } from './vendor/GLTFLoader.js';
-import { DRACOLoader } from './vendor/DRACOLoader.js';
+import { createExhibitLOD } from './showroom-exhibit-lod.js?v=1';
 
 const SHOWROOM_CLEAR_FRAME_TRANSMISSION = 0.97;
 
@@ -8,22 +7,23 @@ const SHOWROOM_CLEAR_FRAME_TRANSMISSION = 0.97;
 // material (transmission, IOR and clearcoat) as the individual Clear Cards.
 export async function createShowroomDratini(renderer, environment) {
   const base = new URL('./assets/models/showroom-dratini/', import.meta.url);
-  const draco = new DRACOLoader().setDecoderPath(new URL('./vendor/draco/r165/', import.meta.url).href);
-  draco.setWorkerLimit(1);
-  const loader = new GLTFLoader().setDRACOLoader(draco);
   const textures = new THREE.TextureLoader();
-  let gltf, front, back;
-  try {
-    [gltf, front, back] = await Promise.all([
-      loader.loadAsync(new URL('frame.glb', base).href),
-      textures.loadAsync(new URL('front.webp', base).href),
-      textures.loadAsync(new URL('back.jpg', base).href),
-    ]);
-  } finally { draco.dispose(); }
-  const root = new THREE.Group();
-  root.name = 'showroom-dratini-display';
-  root.add(gltf.scene);
-  gltf.scene.traverse(object => {
+  const [frame,front,back]=await Promise.all([
+    createExhibitLOD('frame',model=>{
+      model.traverse(object=>{
+        if(!object.isMesh)return;
+        for(const material of [].concat(object.material)){
+          material.envMap=environment;material.envMapIntensity=1;
+          material.envMapRotation.set(0,THREE.MathUtils.degToRad(121),0);
+          if(material.transmission>0)material.transmission=SHOWROOM_CLEAR_FRAME_TRANSMISSION;
+        }
+      });
+    }),
+    textures.loadAsync(new URL('front.webp',base).href),
+    textures.loadAsync(new URL('back.jpg',base).href),
+  ]);
+  const root=new THREE.Group();root.name='showroom-dratini-display';root.add(frame);
+  frame.traverse(object => {
     if (!object.isMesh) return;
     for (const material of [].concat(object.material)) {
       material.envMap = environment;

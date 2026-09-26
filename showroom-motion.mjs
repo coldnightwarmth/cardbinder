@@ -34,5 +34,5 @@ export function createPoseBuffer({delay=85,maxPrediction=80}={}) {
 export function remoteHandPose(index,count) {
   const row=Math.floor(index/8),column=index%8;
   const rowCount=Math.min(8,count-row*8);
-  return {x:(column-(rowCount-1)/2)*.115,y:-.57-row*.09,z:-.49-index*.008-row*.09*Math.tan(.16),rx:-.16,ry:Math.PI,rz:0};
+  return {x:(column-(rowCount-1)/2)*.115,y:-.57-row*.09,z:-.49-index*.008-row*.09*Math.tan(.16),rx:-.16,ry:0,rz:0};
 }

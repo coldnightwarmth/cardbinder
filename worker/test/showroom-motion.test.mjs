@@ -21,8 +21,8 @@ test('held cards occupy distinct parallel planes at every hand size',()=>{
  for(let count=1;count<=24;count++){
   const poses=Array.from({length:count},(_,i)=>remoteHandPose(i,count));
   for(let i=0;i<count;i++)for(let j=i+1;j<count;j++){
-   assert.equal(poses[i].rx,poses[j].rx);assert.equal(poses[i].rz,poses[j].rz);
-   const separation=Math.abs((poses[i].y-poses[j].y)*Math.sin(.16)-(poses[i].z-poses[j].z)*Math.cos(.16));
+   assert.equal(poses[i].ry,0);assert.equal(poses[i].rx,poses[j].rx);assert.equal(poses[i].rz,poses[j].rz);
+   const separation=Math.abs((poses[i].y-poses[j].y)*Math.sin(.16)+(poses[i].z-poses[j].z)*Math.cos(.16));
    assert(separation>.006*.27);
   }
  }

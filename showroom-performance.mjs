@@ -17,3 +17,18 @@ export function createResolutionBudget(maxRatio) {
     },
   };
 }
+
+// Quality changes only after sustained samples, and recovery is deliberately
+// slower than degradation to avoid visible oscillation on integrated GPUs.
+export function createShowroomQuality(initial=1) {
+ let tier=initial,total=0,count=0,elapsed=0,cooldown=0;
+ const settings=()=>({tier,reflectionSize:[256,512,1024][tier],reflectionInterval:[100,66,33][tier]});
+ return {get settings(){return settings();},sample(ms){
+  if(ms<=0||ms>150)return null;
+  total+=ms;count++;elapsed+=ms;if(elapsed<2500)return null;
+  const average=total/count;total=0;count=0;elapsed=0;
+  if(cooldown>0){cooldown--;return null;}
+  const next=average>25?Math.max(0,tier-1):average<17.5?Math.min(2,tier+1):tier;
+  if(next===tier)return null;tier=next;cooldown=next===0?3:2;return settings();
+ }};
+}

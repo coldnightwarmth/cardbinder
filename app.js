@@ -1818,7 +1818,7 @@ async function init() {
   preloadAllConfiguredBackTextures().catch(console.error);
   if (!galleryOpen) startCardRenderLoop();
   if (IS_SHOWROOM) {
-    const { initShowroom } = await import("./showroom.js?v=showroom-multiplayer-2");
+    const { initShowroom } = await import("./showroom.js?v=showroom-doorway-1");
     const { createShowroomHand } = await import("./showroom-hand.js?v=8");
     const room = await initShowroom(await createShowroomBridge());
     showroomHand = createShowroomHand({
@@ -1946,9 +1946,14 @@ async function createShowroomBridge() {
       });
       const faces=textures.map(map=>new THREE.MeshBasicMaterial({map,toneMapped:false}));
       const edge=new THREE.MeshBasicMaterial({color:0xd8d5ce,toneMapped:false});
-      const geometry=new THREE.BoxGeometry(.714,1,.006);
-      const group=new THREE.Group();group.add(new THREE.Mesh(geometry,[edge,edge,edge,edge,...faces]));
-      return {group,dispose(){textures.forEach(t=>t.dispose());geometry.dispose();faces.forEach(m=>m.dispose());edge.dispose();}};
+      const radius=.714*(CARD_RADIUS/CARD_WIDTH);
+      const geometry=createRoundedCoreGeometry(.714,1,.006,radius);
+      const faceGeometry=createRoundedPlaneGeometry(.714,1,radius);
+      const group=new THREE.Group();group.add(new THREE.Mesh(geometry,edge));
+      const front=new THREE.Mesh(faceGeometry,faces[0]);front.position.z=.0031;
+      const back=new THREE.Mesh(faceGeometry,faces[1]);back.position.z=-.0031;back.rotation.y=Math.PI;
+      group.add(front,back);
+      return {group,dispose(){textures.forEach(t=>t.dispose());geometry.dispose();faceGeometry.dispose();faces.forEach(m=>m.dispose());edge.dispose();}};
     },
     createDisplayCard: async index => {
       const card=CARDS[index],prepared=await prepareIndividualCardFor3D(card);

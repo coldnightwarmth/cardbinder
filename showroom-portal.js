@@ -2,12 +2,6 @@ import * as THREE from 'three';
 import { PORTAL_ROOM_SIZE as SIZE, PORTAL_RADIUS as RADIUS, PORTAL_SPRING_HEIGHT as SPRING,
   PORTAL_FRAME_WIDTH as FRAME, portalPositionForTables, stepThroughPortal } from './showroom-portal-layout.mjs';
 
-function archPath(path, radius = RADIUS, bottom = 0) {
-  path.moveTo(-radius, bottom); path.lineTo(radius, bottom); path.lineTo(radius, SPRING);
-  path.absarc(0, SPRING, radius, 0, Math.PI, false); path.lineTo(-radius, bottom);
-  path.closePath(); return path;
-}
-
 export function createShowroomPortal({ renderer, scene, camera, canWalkOutside, canWalkRoom=()=>true, onCross }) {
   const room = new THREE.Scene(); room.background = new THREE.Color(0xf3f3f3);
   room.userData.cardEnvironment=scene.environment;
@@ -53,16 +47,38 @@ export function createShowroomPortal({ renderer, scene, camera, canWalkOutside, 
   // scene to the arch, so its sky, floor and lighting use exactly the same
   // color pipeline as the ordinary showroom, without a texture handoff.
   const maskScene=new THREE.Scene();
+  // Ray-test the aperture per pixel instead of projecting its triangles.
+  // At the threshold, arch triangles straddle the eye/near plane and their
+  // clipped projection cannot reliably describe which half of the view crosses.
   const maskMaterial=new THREE.ShaderMaterial({
-    colorWrite:false,depthWrite:false,side:THREE.DoubleSide,
+    uniforms:{inverseProjection:{value:new THREE.Matrix4()},cameraWorld:{value:new THREE.Matrix4()},
+      viewProjection:{value:new THREE.Matrix4()},eye:{value:new THREE.Vector3()},
+      planeZ:{value:0},travelSign:{value:-1},radius:{value:RADIUS},spring:{value:SPRING}},
+    colorWrite:false,depthWrite:false,depthTest:true,
     stencilWrite:true,stencilRef:1,stencilFunc:THREE.AlwaysStencilFunc,
     stencilZPass:THREE.ReplaceStencilOp,
-    vertexShader:`void main(){gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);
-      gl_Position.z=max(gl_Position.z,-gl_Position.w+.00001);}`,
-    fragmentShader:`void main(){gl_FragColor=vec4(0.);}`,
+    vertexShader:`varying vec2 screenPosition;
+      void main(){screenPosition=position.xy;gl_Position=vec4(position.xy,0.,1.);}`,
+    fragmentShader:`varying vec2 screenPosition;
+      uniform mat4 inverseProjection,cameraWorld,viewProjection;
+      uniform vec3 eye;uniform float planeZ,travelSign,radius,spring;
+      void main(){
+        vec4 viewRay=inverseProjection*vec4(screenPosition,1.,1.);
+        vec3 ray=normalize(mat3(cameraWorld)*(viewRay.xyz/viewRay.w));
+        if(ray.z*travelSign<=0.0000001)discard;
+        float t=(planeZ-eye.z)/ray.z;
+        if(t<0.)discard;
+        vec3 hit=eye+ray*t;
+        if(abs(hit.x)>radius||hit.y<0.)discard;
+        if(hit.y>spring&&dot(vec2(hit.x,hit.y-spring),vec2(hit.x,hit.y-spring))>radius*radius)discard;
+        vec4 clip=viewProjection*vec4(hit,1.);
+        // Keep the mask at the near depth when the doorway intersects the eye.
+        gl_FragDepth=clip.w>0.000001?clamp(clip.z/clip.w*.5+.5,0.,1.):0.;
+        gl_FragColor=vec4(0.);
+      }`,
   });
-  const surface=new THREE.Mesh(new THREE.ShapeGeometry(archPath(new THREE.Shape()),48),maskMaterial);
-  surface.name='portal-opening';maskScene.add(surface);
+  const surface=new THREE.Mesh(new THREE.PlaneGeometry(2,2),maskMaterial);
+  surface.frustumCulled=false;surface.name='portal-opening';maskScene.add(surface);
   const backgroundScene=new THREE.Scene(),backgroundCamera=new THREE.Camera();
   const backgroundMaterial=new THREE.MeshBasicMaterial({depthTest:false,depthWrite:false,toneMapped:false,
     stencilWrite:true,stencilRef:1,stencilFunc:THREE.EqualStencilFunc});
@@ -88,6 +104,7 @@ export function createShowroomPortal({ renderer, scene, camera, canWalkOutside, 
     if(inside?cornerRay.z<=0:cornerRay.z>=0)return false;
     for(const x of [-1,1])for(const y of [-1,1]) {
       cornerRay.set(x,y,.5).unproject(camera).sub(camera.position).normalize();
+      if(inside?cornerRay.z<=0:cornerRay.z>=0)return false;
       const distance=(planeZ-camera.position.z)/cornerRay.z;
       if(!Number.isFinite(distance)||distance<0)return false;
       const hitX=camera.position.x+cornerRay.x*distance;
@@ -97,7 +114,7 @@ export function createShowroomPortal({ renderer, scene, camera, canWalkOutside, 
     }
     return true;
   }
-  const frustum=new THREE.Frustum(),projectionView=new THREE.Matrix4();
+  const projectionView=new THREE.Matrix4();
   const stencilStates=new Map(), guardedObjects=new WeakSet();
   function guardTransmissionPass(object) {
     if(!object.material || guardedObjects.has(object))return;
@@ -140,10 +157,13 @@ export function createShowroomPortal({ renderer, scene, camera, canWalkOutside, 
       renderer.render(inside?scene:room,inside?exteriorCamera:roomCamera);
       return;
     }
-    surface.position.z=inside?Math.max(0,camera.position.z+.00001):Math.min(portalZ,camera.position.z-.00001);surface.updateMatrixWorld(true);
+    const uniforms=maskMaterial.uniforms;
+    uniforms.inverseProjection.value.copy(camera.projectionMatrixInverse);
+    uniforms.cameraWorld.value.copy(camera.matrixWorld);uniforms.eye.value.copy(camera.position);
+    uniforms.planeZ.value=inside?0:portalZ;uniforms.travelSign.value=inside?1:-1;
     projectionView.multiplyMatrices(camera.projectionMatrix,camera.matrixWorldInverse);
-    frustum.setFromProjectionMatrix(projectionView);
-    const visible=(inside?camera.position.z<=0:camera.position.z>=portalZ) && apertureInFront() && frustum.intersectsObject(surface);
+    uniforms.viewProjection.value.copy(projectionView);
+    const visible=(inside?camera.position.z<=0:camera.position.z>=portalZ) && apertureInFront();
     renderer.render(inside?room:scene,inside?roomCamera:exteriorCamera);
     if(!visible)return;
     const destinationCamera=inside?exteriorCamera:roomCamera;

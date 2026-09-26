@@ -1,0 +1,26 @@
+[
+  {
+    "file": "gremlin-near.glb",
+    "triangles": 59984,
+    "vertices": 43679,
+    "bytes": 299228
+  },
+  {
+    "file": "gremlin-far.glb",
+    "triangles": 9600,
+    "vertices": 9144,
+    "bytes": 62192
+  },
+  {
+    "file": "frame-near.glb",
+    "triangles": 140000,
+    "vertices": 69992,
+    "bytes": 404804
+  },
+  {
+    "file": "frame-far.glb",
+    "triangles": 22400,
+    "vertices": 11192,
+    "bytes": 83184
+  }
+]

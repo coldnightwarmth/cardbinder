@@ -1,10 +1,8 @@
 import * as THREE from 'three';
-import { GLTFLoader } from './vendor/GLTFLoader.js';
+import { createExhibitLOD } from './showroom-exhibit-lod.js?v=1';
 
 export async function createShowroomGremlin() {
-  const {scene:model}=await new GLTFLoader().loadAsync(
-    new URL('./assets/models/table-display/thumbsup-grem.glb?v=table-display-1',import.meta.url).href,
-  );
+  const root=await createExhibitLOD('gremlin',model=>{
   const materials=new Map();
   const unusedTextures=new Set();
   model.traverse(object=>{
@@ -32,6 +30,7 @@ export async function createShowroomGremlin() {
   bounds=new THREE.Box3().setFromObject(model);
   const center=bounds.getCenter(new THREE.Vector3());
   model.position.sub(new THREE.Vector3(center.x,bounds.min.y,center.z));
-  const root=new THREE.Group();root.name='showroom-thumbsup-gremlin';root.add(model);
+  });
+  root.name='showroom-thumbsup-gremlin';
   return root;
 }

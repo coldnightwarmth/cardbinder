@@ -62,3 +62,26 @@ test('full-view crossings retain one render pass and the same scene camera in bo
  calls.length=0;portal.move(0,.2);portal.render();
  assert.equal(calls.length,1);assert.equal(calls[0].camera,showCamera);assert.equal(calls[0].scene,scene);
 });
+
+test('threshold rotation keeps a partial aperture mask on both sides, including exactly on the plane',async()=>{
+ const {readFile}=await import('node:fs/promises');const THREE=await import('../../vendor/three.module.js');
+ const source=(await readFile(new URL('../../showroom-portal.js',import.meta.url),'utf8'))
+  .replace("from 'three'",`from '${new URL('../../vendor/three.module.js',import.meta.url).href}'`)
+  .replace("'./showroom-portal-layout.mjs'",`'${new URL('../../showroom-portal-layout.mjs',import.meta.url).href}'`);
+ const {createShowroomPortal}=await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
+ const calls=[],scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(65,1.4,.05,600);scene.background=new THREE.Color(0x181d23);
+ const renderer={capabilities:{getMaxAnisotropy:()=>1},render:(scene,camera)=>calls.push({scene,camera}),clearDepth(){},autoClear:true};
+ const portal=createShowroomPortal({renderer,scene,camera,canWalkOutside:()=>true});
+ for(const inside of [false,true]){
+  if(inside){camera.position.set(0,1.72,portal.z+.1);portal.move(0,-.2);}
+  for(const distance of [.1,.001,0])for(const yaw of [Math.PI/2-.2,Math.PI/2,Math.PI/2+.2]){
+   camera.position.set(.65,1.72,inside?-distance:portal.z+distance);camera.rotation.set(-.18,yaw,0);calls.length=0;portal.render();
+   assert.equal(calls.length,4,'sideways view must composite both spaces, never switch the whole screen');
+   const mask=portal.surface.material;assert.equal(portal.surface.frustumCulled,false);
+   assert.equal(mask.uniforms.planeZ.value,inside?0:portal.z,'aperture plane does not move with the eye');
+   assert.equal(mask.uniforms.travelSign.value,inside?1:-1);
+   assert.ok(mask.uniforms.eye.value.equals(camera.position));
+   assert.equal(renderer.autoClear,true,'render state restored');
+  }
+ }
+});

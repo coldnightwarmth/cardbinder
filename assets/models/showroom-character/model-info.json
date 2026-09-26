@@ -1,0 +1,27 @@
+{
+  "triangles": 7756,
+  "vertices": 4004,
+  "bones": 19,
+  "clips": [
+    {
+      "name": "Neutral",
+      "seconds": 2.0
+    },
+    {
+      "name": "Walk",
+      "seconds": 1.0
+    },
+    {
+      "name": "Hold_Right",
+      "seconds": 2.0
+    },
+    {
+      "name": "Walk_Hold_Right",
+      "seconds": 1.0
+    }
+  ],
+  "cardSocket": "CardSocket.R",
+  "sourceFront": "-Y",
+  "exportUp": "+Y",
+  "maxWeightsPerVertex": 2
+}

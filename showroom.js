@@ -1,12 +1,13 @@
-import { createShowroomMultiplayer } from './showroom-multiplayer.js?v=2';
+import { createExhibitBudget } from './showroom-exhibit-lod.js?v=1';
+import { createShowroomMultiplayer } from './showroom-multiplayer.js?v=4';
 import { createShowroomSky } from './showroom-sky.js?v=5';
 import * as THREE from 'three';
 import { createShowroomColumns } from './showroom-columns.js?v=11';
-import { createShowroomPortal } from './showroom-portal.js?v=5';
+import { createShowroomPortal } from './showroom-portal.js?v=6';
 import { createShowroomSpeech } from './showroom-speech.js?v=7';
 import { mergeGeometries } from './vendor/BufferGeometryUtils.js';
-import { createResolutionBudget } from './showroom-performance.mjs';
-import { createShowroomRipples } from './showroom-ripples.js?v=soft-2';
+import { createResolutionBudget, createShowroomQuality } from './showroom-performance.mjs?v=2';
+import { createShowroomRipples } from './showroom-ripples.js?v=players-1';
 import { createShowroomNameplate } from './showroom-nameplate.js?v=compact-3';
 import { createShowroomStars } from './showroom-stars.js?v=subfloor-2';
 
@@ -59,6 +60,8 @@ export async function initShowroom(bridge) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, stencil:true });
   const showroomMaxRatio=Math.min(devicePixelRatio,2);
   const resolution=createResolutionBudget(showroomMaxRatio);
+  const quality=createShowroomQuality(1),exhibitBudget=createExhibitBudget();
+  let qualitySettings=quality.settings,lastExhibitUpdate=0;
   // A finer pixel grid retains small exhibit artwork. Keep a quality floor so
   // adaptive resolution cannot turn cards into unreadable blocks on Retina screens.
   // Nearest-neighbor presentation includes the portal without another render pass.
@@ -222,9 +225,7 @@ export async function initShowroom(bridge) {
   const speech=createShowroomSpeech(evilTableGhost);
   // Planar reflection uses the r165 Reflector bundled alongside the site's Three.js.
   const ripples=createShowroomRipples();
-  const constrainedGpu=(Number(navigator.deviceMemory)>0 && Number(navigator.deviceMemory)<=4)
-    || matchMedia('(max-width:720px)').matches;
-  const floorReflectionSize=constrainedGpu?512:1024;
+  let floorReflectionSize=qualitySettings.reflectionSize;
   const shader = THREE.UniformsUtils.clone(Reflector.ReflectorShader.uniforms);
   shader.footsteps={value:ripples.steps};
   shader.rippleTime={value:0};
@@ -289,6 +290,7 @@ export async function initShowroom(bridge) {
   let reflectionReady=false, reflectionAt=0;
   floor.onBeforeRender=function(...args) {
     const viewCamera=args[2] || camera;
+    if(reflectionReady && performance.now()-reflectionAt<qualitySettings.reflectionInterval && !busy)return;
     if(reflectionReady && performance.now()-reflectionAt<1000 && !sceneDirty && !busy && reflectedView.equals(viewCamera.matrixWorld)
       && reflectedProjection.equals(viewCamera.projectionMatrix)) return;
     reflectedView.copy(viewCamera.matrixWorld);reflectedProjection.copy(viewCamera.projectionMatrix);reflectionReady=true;reflectionAt=performance.now();
@@ -303,8 +305,10 @@ export async function initShowroom(bridge) {
         if(material?.stencilWrite) {stencilMaterials.push(material);material.stencilWrite=false;}
       }
     });
+    const restoreExhibits=exhibitBudget.reflection();
     try { reflect.apply(this,args); }
     finally {
+      restoreExhibits();
       for(const player of hiddenPlayers)player.visible=true;
       for(const material of stencilMaterials)material.stencilWrite=true;
       outline.visible=visible;stars.object.visible=true;evilTableGhost.visible=ghostVisible;portal.surface.visible=portalVisible;
@@ -367,7 +371,7 @@ export async function initShowroom(bridge) {
     keys.clear();releaseTouchInputs();document.exitPointerLock?.();
     return columns.activate(column);
   }
-  const multiplayer=createShowroomMultiplayer({scene,room:portal.room,camera,portal,bridge,columns,onDirty:()=>{multiplayerDirty=true;}});
+  const multiplayer=createShowroomMultiplayer({scene,room:portal.room,camera,portal,bridge,columns,ripples,onDirty:()=>{multiplayerDirty=true;}});
   const renderShowroom=()=>portal.render();
   let fallback=false, dragging=false, dragged=false, touchMode=false, touchLook=null;
   let suppressTouchClickUntil=0;
@@ -562,7 +566,7 @@ export async function initShowroom(bridge) {
       sunSlab.group.position.set(item.home.x+.38,.85,item.home.z-.63);
       const bounds=new THREE.Box3().setFromObject(sunSlab.group);
       sunSlab.group.position.y+=.834-bounds.min.y;
-      scene.add(sunSlab.group);sceneDirty=true;
+      scene.add(sunSlab.group);exhibitBudget.register(sunSlab.group);sceneDirty=true;
     } catch(error){display?.dispose();console.warn('Unable to load the Sun slab',error);}
     finally{sunSlabLoading=false;}
   }
@@ -577,7 +581,7 @@ export async function initShowroom(bridge) {
       if(item.removed){display.dispose();return;}
       drifellaSlab=createShowroomSlabStand(display,scene.environment);
       drifellaSlab.group.position.set(item.home.x-.12,.834,item.home.z-.67);
-      scene.add(drifellaSlab.group);sceneDirty=true;
+      scene.add(drifellaSlab.group);exhibitBudget.register(drifellaSlab.group);sceneDirty=true;
     } catch(error){display?.dispose();console.warn('Unable to load the Drifella slab stand',error);}
     finally{drifellaSlabLoading=false;}
   }
@@ -703,8 +707,8 @@ export async function initShowroom(bridge) {
       for(let i=binders.length-1;i>=0;i--) {
         const item=binders[i];
         if(item.entry.collectionId || eligible.has(item.entry.walletAddress))continue;
-        if(item.entry.walletAddress===sunSlabWallet && sunSlab){scene.remove(sunSlab.group);sunSlab.dispose();sunSlab=null;}
-        if(item.entry.walletAddress?.startsWith('7A5BtUh') && drifellaSlab){scene.remove(drifellaSlab.group);drifellaSlab.dispose();drifellaSlab=null;}
+        if(item.entry.walletAddress===sunSlabWallet && sunSlab){exhibitBudget.unregister(sunSlab.group);scene.remove(sunSlab.group);sunSlab.dispose();sunSlab=null;}
+        if(item.entry.walletAddress?.startsWith('7A5BtUh') && drifellaSlab){exhibitBudget.unregister(drifellaSlab.group);scene.remove(drifellaSlab.group);drifellaSlab.dispose();drifellaSlab=null;}
         item.removed=true;scene.remove(item.group,item.nameplate);disposeModel(item.model);disposeModel(item.nameplate);
         warmed.delete(item);addresses.delete(item.entry.walletAddress);binders.splice(i,1);
       }
@@ -1032,6 +1036,14 @@ export async function initShowroom(bridge) {
     const dt=Math.min(frameMs/1000,.04);previous=now;
     if(document.hidden || window.cardSceneTransition?.departing) {requestAnimationFrame(frame);return;}
     if(!active && !busy && !portal.crossingZone) {
+      const nextQuality=quality.sample(frameMs);
+      if(nextQuality){
+        qualitySettings=nextQuality;floorReflectionSize=nextQuality.reflectionSize;
+        if(!showroomBuffersSuspended)floor.getRenderTarget().setSize(floorReflectionSize,floorReflectionSize);
+        floor.material.uniforms.texel.value.set(1/floorReflectionSize,1/floorReflectionSize);
+        reflectionReady=false;sceneDirty=true;
+      }
+      if(now-lastExhibitUpdate>350){exhibitBudget.update(camera,qualitySettings.tier,prepareModel);lastExhibitUpdate=now;}
       const ratio=resolution.sample(frameMs);
       if(ratio!==null) {renderer.setPixelRatio(showroomPixelRatio(ratio));sceneDirty=true;}
     }
@@ -1084,7 +1096,7 @@ export async function initShowroom(bridge) {
   const clearBinder=binders.find(item=>item.entry.collectionId==='clear');
   if(clearBinder) {
     try {
-      const {createShowroomDratini}=await import('./showroom-dratini.js?v=7');
+      const {createShowroomDratini}=await import('./showroom-dratini.js?v=8');
       const display=await createShowroomDratini(renderer,scene.environment);
       display.position.set(clearBinder.home.x+.35,.803+display.userData.tableHeightOffset,clearBinder.home.z+.57);
       display.rotation.y=-Math.PI/2;
@@ -1098,19 +1110,19 @@ export async function initShowroom(bridge) {
       }
       clearBinder.home.copy(clearBinder.group.position);
       clearBinder.rotation.copy(clearBinder.group.quaternion);
-      freezeModel(display);scene.add(display);sceneDirty=true;
+      freezeModel(display);scene.add(display);exhibitBudget.register(display);sceneDirty=true;
     } catch(error) { console.warn('Unable to load the Dratini table display',error); }
   }
   const reflectionBinder=binders.find(item=>item.entry.collectionId==='reflection2');
   if(reflectionBinder) {
     try {
-      const {createShowroomGremlin}=await import('./showroom-gremlin.js?v=4');
+      const {createShowroomGremlin}=await import('./showroom-gremlin.js?v=5');
       const figure=await createShowroomGremlin();
       // Left from the aisle, with the feet on the tabletop and the face toward visitors.
       // Table top: .78 base + .046 extrusion + .006 bevel; allow .002 clearance.
       figure.position.set(reflectionBinder.home.x+.08,.834,reflectionBinder.home.z-.60);
       figure.rotation.y=-Math.PI/2+THREE.MathUtils.degToRad(25);
-      freezeModel(figure);scene.add(figure);sceneDirty=true;
+      freezeModel(figure);scene.add(figure);exhibitBudget.register(figure);sceneDirty=true;
     } catch(error) { console.warn('Unable to load the thumbs-up table figure',error); }
   }
   const valkyrieBinder=binders.find(item=>item.entry.collectionId==='godsofdestiny');
@@ -1120,7 +1132,7 @@ export async function initShowroom(bridge) {
       const figure=await createShowroomAngelgotchi();
       figure.position.set(valkyrieBinder.home.x+.38,.834,valkyrieBinder.home.z-.59);
       figure.rotation.y=-Math.PI/2-THREE.MathUtils.degToRad(12);
-      freezeModel(figure);scene.add(figure);sceneDirty=true;
+      freezeModel(figure);scene.add(figure);exhibitBudget.register(figure);sceneDirty=true;
     } catch(error) {console.warn('Unable to load the Angelgotchi table figure',error);}
   }
   const cardNft2Binder=binders.find(item=>item.entry.collectionId==='cardnft2');
