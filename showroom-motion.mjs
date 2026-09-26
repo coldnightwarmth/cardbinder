@@ -29,10 +29,11 @@ export function createPoseBuffer({delay=85,maxPrediction=80}={}) {
     },
   };
 }
-// Parallel cards in a staggered fan cannot intersect, even where their
-// silhouettes overlap. Limit row width for larger hands.
+// Cards rotate within parallel, depth-separated planes: a compact curved fan
+// with no intersections, even when the hand spans multiple rows.
 export function remoteHandPose(index,count) {
-  const row=Math.floor(index/8),column=index%8;
-  const rowCount=Math.min(8,count-row*8);
-  return {x:(column-(rowCount-1)/2)*.115,y:-.57-row*.09,z:-.49-index*.008-row*.09*Math.tan(.16),rx:-.16,ry:0,rz:0};
+  const row=Math.floor(index/8),column=index%8,rowCount=Math.min(8,count-row*8);
+  const offset=column-(rowCount-1)/2,angle=-offset*.095;
+  const y=-.57-row*.075+(Math.cos(angle)-1)*.22;
+  return {x:Math.sin(-angle)*.32,y,z:-.49-index*.006+(y+.57)*Math.tan(.16),rx:-.16,ry:0,rz:angle};
 }

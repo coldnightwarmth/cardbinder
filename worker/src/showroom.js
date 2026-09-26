@@ -1,5 +1,6 @@
 import {SHOWROOM_CARD_IDS} from './showroom-catalog.js';
 import {freshRoom,applyAction,finishRitual,RITUAL_MS,publicPlayer} from './showroom-state.js';
+export const INACTIVE_MS=5*60*1000;
 export default {
  async fetch(request,env) {
   const url=new URL(request.url);
@@ -16,13 +17,19 @@ export default {
 export class Showroom {
  constructor(ctx) {
   this.ctx=ctx;this.room=freshRoom();this.directoryCheckedAt=0;this.directory=new Set();
-  ctx.blockConcurrencyWhile(async()=>{this.room=await ctx.storage.get('room')||freshRoom();if(finishRitual(this.room,Date.now()))await ctx.storage.put('room',this.room);});
+  ctx.blockConcurrencyWhile(async()=>{this.room=await ctx.storage.get('room')||freshRoom();if(finishRitual(this.room,Date.now()))await ctx.storage.put('room',this.room);await this.scheduleAlarm();});
   ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair('ping','pong'));
  }
  sockets(){return this.ctx.getWebSockets();}
  send(ws,message){try{ws.send(JSON.stringify(message));}catch{}}
  broadcast(message){for(const ws of this.sockets())this.send(ws,message);}
- snapshot(){return {type:'state',now:Date.now(),room:this.room,players:this.sockets().map(ws=>publicPlayer(ws.deserializeAttachment()))};}
+ snapshot(){return {type:'state',now:Date.now(),room:this.room,players:this.sockets().filter(ws=>!ws.deserializeAttachment()?.inactive).map(ws=>publicPlayer(ws.deserializeAttachment()))};}
+ async scheduleAlarm(){
+  const deadlines=this.sockets().map(ws=>ws.deserializeAttachment()).filter(p=>p&&!p.inactive).map(p=>(p.lastActive??p.lastMove??Date.now())+INACTIVE_MS);
+  if(this.room.ritual)deadlines.push(this.room.ritual.startedAt+RITUAL_MS);
+  if(deadlines.length)await this.ctx.storage.setAlarm(Math.max(Date.now()+1,Math.min(...deadlines)));
+ }
+ async activate(ws,player,now){const returning=player.inactive;player.lastActive=now;player.inactive=false;ws.serializeAttachment(player);if(returning){this.broadcast(this.snapshot());await this.scheduleAlarm();}}
  async fetch(request) {
   // Public avatar IDs must not expose the token that can resume a socket.
   const session=new URL(request.url).searchParams.get('session');
@@ -33,7 +40,8 @@ export class Showroom {
   for(const ws of existing){try{ws.close(1000,'Reconnected');}catch{}}
   const pair=new WebSocketPair(),client=pair[0],server=pair[1];
   this.ctx.acceptWebSocket(server);
-  server.serializeAttachment({id,pose:{x:0,y:1.72,z:3.5,yaw:0,pitch:0,room:'showroom'},lastMove:0,lastAction:0,seen:[]});
+  server.serializeAttachment({id,pose:{x:0,y:1.72,z:3.5,yaw:0,pitch:0,room:'showroom'},lastMove:0,lastAction:0,lastActive:Date.now(),inactive:false,seen:[]});
+  await this.scheduleAlarm();
   this.send(server,{type:'welcome',id});
   this.broadcast(this.snapshot());
   return new Response(null,{status:101,webSocket:client});
@@ -42,11 +50,15 @@ export class Showroom {
   if(typeof data!=='string'||data.length>16384){ws.close(1009,'Message too large');return;}
   let message;try{message=JSON.parse(data);}catch{return;}
   const player=ws.deserializeAttachment(),now=Date.now();
+  if(message.type==='activity'){if(now-(player.lastActivityPacket||0)<1000)return;player.lastActivityPacket=now;await this.activate(ws,player,now);return;}
   if(message.type==='pose') {
     if(now-player.lastMove<45)return;
     const p=message.pose;
     if(!p||!['showroom','cube'].includes(p.room)||!['x','y','z','yaw','pitch'].every(k=>Number.isFinite(p[k]))||Math.abs(p.x)>100||Math.abs(p.z)>20000||p.y<0||p.y>10)return;
+    const changed=['x','y','z','yaw','pitch','room'].some(k=>p[k]!==player.pose[k]);
     player.pose={x:p.x,y:p.y,z:p.z,yaw:p.yaw,pitch:p.pitch,room:p.room};player.lastMove=now;ws.serializeAttachment(player);
+    if(changed)await this.activate(ws,player,now);
+    if(player.inactive)return;
     this.broadcast({type:'pose',id:player.id,pose:player.pose,time:now});return;
   }
   if(message.type==='seats') {
@@ -87,13 +99,23 @@ export class Showroom {
       if(message.action?.type==='borrow'&&!SHOWROOM_CARD_IDS.has(message.action.card?.stableId))throw Error('Unknown card');
       const result=applyAction(this.room,player.id,message.action,now);
       await this.ctx.storage.put('room',this.room);
-      if(this.room.ritual)await this.ctx.storage.setAlarm(this.room.ritual.startedAt+RITUAL_MS);
+      await this.activate(ws,player,now);await this.scheduleAlarm();
       reply={type:'ack',requestId:message.requestId,result};this.broadcast(this.snapshot());
     }catch(error){reply={type:'ack',requestId:message.requestId,error:error.message};}
     player.seen.push({id:message.requestId,reply});player.seen=player.seen.slice(-24);ws.serializeAttachment(player);this.send(ws,reply);
   });
  }
- async alarm(){if(finishRitual(this.room,Date.now())){await this.ctx.storage.put('room',this.room);this.broadcast(this.snapshot());}}
+ async alarm(){
+  const now=Date.now();let changed=finishRitual(this.room,now);
+  for(const ws of this.sockets()){
+   const player=ws.deserializeAttachment();if(!player||player.inactive||now-(player.lastActive??player.lastMove??0)<INACTIVE_MS)continue;
+   player.inactive=true;ws.serializeAttachment(player);
+   for(const [id,card] of Object.entries(this.room.cards))if(card.holder===player.id)delete this.room.cards[id];
+   this.broadcast({type:'leave',id:player.id});changed=true;
+  }
+  if(changed){this.room.revision++;await this.ctx.storage.put('room',this.room);this.broadcast(this.snapshot());}
+  await this.scheduleAlarm();
+ }
  async webSocketClose(ws){await this.depart(ws);}
  async webSocketError(ws){try{ws.close(1011,'Connection interrupted');}catch{}await this.depart(ws);}
  async depart(ws){

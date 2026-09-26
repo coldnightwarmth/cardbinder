@@ -1,7 +1,7 @@
 import {createShowroomAvatar} from './showroom-avatar.js?v=2';
-import {createPoseBuffer,remoteHandPose} from './showroom-motion.mjs?v=2';
+import {createPoseBuffer,remoteHandPose} from './showroom-motion.mjs?v=3';
 import * as THREE from 'three';
-import {connectShowroom} from './showroom-network.js?v=1';
+import {connectShowroom} from './showroom-network.js?v=2';
 export function createShowroomMultiplayer({scene,room,camera,portal,bridge,columns,ripples,onDirty}) {
  let hand=null,lastSent=0,lastPose='',settlePackets=0,state=null,epoch=0,lastSnapshot=null,retryTimer=null;
  const peers=new Map();
