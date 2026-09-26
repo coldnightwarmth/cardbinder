@@ -1,7 +1,7 @@
-import {createChatInput} from './showroom-chat.js?v=2';
+import {createChatInput} from './showroom-chat.js?v=3';
 import {createShowroomRitualEffects,ritualPixelRatio} from './showroom-ritual-effects.js?v=3';
 import { createExhibitBudget } from './showroom-exhibit-lod.js?v=1';
-import { createShowroomMultiplayer } from './showroom-multiplayer.js?v=9';
+import { createShowroomMultiplayer } from './showroom-multiplayer.js?v=10';
 import { createShowroomSky } from './showroom-sky.js?v=5';
 import * as THREE from 'three';
 import { createShowroomColumns } from './showroom-columns.js?v=11';
@@ -47,8 +47,10 @@ export async function initShowroom(bridge) {
   hud.append(leave);
   // Escape may be consumed by native pointer lock, so also watch lock loss.
   document.addEventListener('keydown',event=>{
-    if(event.code==='Escape' && !active && !busy) leave.hidden=false;
-  });
+    if(!['Escape','Tab'].includes(event.code)||active||busy||columns?.selecting)return;
+    event.preventDefault();event.stopPropagation();
+    releaseControls();
+  },true);
   document.addEventListener('pointerlockchange',()=>{
     leave.hidden=document.body.classList.contains('showroom-touch')
       || document.pointerLockElement===canvas
@@ -64,6 +66,8 @@ export async function initShowroom(bridge) {
   favoritesButton.type='button';favoritesButton.hidden=true;favoritesButton.setAttribute('aria-label','Open favorite cards binder');
   favoritesButton.title='Favorite cards';favoritesButton.innerHTML='<svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 2.78 5.63 6.22.91-4.5 4.39 1.06 6.2L12 17.2l-5.56 2.93 1.06-6.2L3 9.54l6.22-.91Z"/></svg>';
   hud.append(favoritesButton);favoritesButton.onclick=()=>void openFavorites();
+  const favoritesEmpty=document.createElement('div');favoritesEmpty.id='showroomFavoritesEmpty';favoritesEmpty.hidden=true;
+  favoritesEmpty.setAttribute('role','status');favoritesEmpty.textContent='No favorites yet. Star a card in its card view to add it to this binder.';hud.append(favoritesEmpty);
   const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, stencil:true });
   const showroomMaxRatio=Math.min(devicePixelRatio,2);
   const resolution=createResolutionBudget(showroomMaxRatio);
@@ -388,7 +392,11 @@ export async function initShowroom(bridge) {
   }});
   const multiplayer=createShowroomMultiplayer({scene,room:portal.room,camera,portal,bridge,columns,ripples,onDirty:()=>{multiplayerDirty=true;},
     onRoomState:(state,id,now)=>ritualEffects.sync(state,id,now),onOwnChat:text=>chat.record(text)});
-  const chat=createChatInput(hud,multiplayer.network);
+  const chat=createChatInput(hud,multiplayer.network,{resume:()=>lock(true)});
+  function releaseControls(){
+    lockRequest++;fallback=false;dragging=false;keys.clear();releaseTouchInputs();
+    document.exitPointerLock?.();leave.hidden=false;hud.querySelector('#showroomEnter').hidden=false;chat.focus();
+  }
   const renderShowroom=()=>portal.render();
   let fallback=false, dragging=false, dragged=false, touchMode=false, touchLook=null;
   let suppressTouchClickUntil=0;
@@ -911,6 +919,12 @@ export async function initShowroom(bridge) {
   }
   async function openFavorites() {
     if(active || busy || columns.selecting)return;
+    busy=true;
+    try {
+      if(!await bridge.hasFavorites()){favoritesEmpty.hidden=false;return;}
+    } catch(error){status.textContent='Favorites could not load. Please try again.';return;}
+    finally {busy=false;}
+    favoritesEmpty.hidden=true;
     active={favorites:true};busy=true;favoritesButton.hidden=true;openBinderButton.hidden=true;leave.hidden=true;
     keys.clear();releaseTouchInputs();document.exitPointerLock?.();outline.visible=false;
     try {
@@ -1085,10 +1099,10 @@ export async function initShowroom(bridge) {
     }
     portal.place(tables);
     speech.update(now,camera,document.pointerLockElement===canvas || touchMode || dragging ? center : mousePoint,!active && !busy && !portal.inside);
-    multiplayer.update(now);
+    multiplayer.update(now,{speechVisible:!active && !busy});
     ritualEffects.update(multiplayer.network.now());
     const escapeControls=!active && !busy && !fallback && document.pointerLockElement!==canvas && !leave.hidden;
-    chat.update(escapeControls);favoritesButton.hidden=!favoritesReady || !escapeControls || columns.selecting;
+    chat.update(escapeControls);if(!escapeControls)favoritesEmpty.hidden=true;favoritesButton.hidden=!favoritesReady || !escapeControls || columns.selecting;
     // Reserve the shared wallet-table footprint even when a visitor's private
     // directory fetch differs. Portal position and player coordinates agree.
     const sharedRows=Math.ceil(multiplayer.seats.length/3);

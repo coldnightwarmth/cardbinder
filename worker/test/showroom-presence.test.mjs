@@ -28,3 +28,10 @@ test('chat broadcasts bounded plain text, expires, rate limits, and restores pre
  const chat=messages.find(m=>m.type==='chat');assert.ok(chat);assert.equal(chat.id,player.id);assert.equal(chat.text.length,180);assert.ok(!chat.text.includes('\n'));assert.ok(chat.expiresAt>Date.now()+14000);assert.equal(player.inactive,false);
  await server.webSocketMessage(ws,JSON.stringify({type:'chat',text:'again'}));assert.equal(messages.filter(m=>m.type==='chat').length,1);
 });
+test('presentation state only accepts a card actually held by that player',async()=>{
+ const {server,player,ws,messages}=fixture();player.lastActive=Date.now();server.room.cards={mine:{holder:player.id},other:{holder:'someone-else'}};
+ await server.webSocketMessage(ws,JSON.stringify({type:'pose',pose:{...player.pose,presentedCard:'mine'}}));
+ assert.equal(player.pose.presentedCard,'mine');assert.equal(messages.at(-1).pose.presentedCard,'mine');
+ player.lastMove=0;await server.webSocketMessage(ws,JSON.stringify({type:'pose',pose:{...player.pose,presentedCard:'other'}}));assert.equal(player.pose.presentedCard,null);
+ player.lastMove=0;await server.webSocketMessage(ws,JSON.stringify({type:'pose',pose:{...player.pose,presentedCard:null}}));assert.equal(player.pose.presentedCard,null);
+});

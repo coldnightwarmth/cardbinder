@@ -1818,8 +1818,8 @@ async function init() {
   preloadAllConfiguredBackTextures().catch(console.error);
   if (!galleryOpen) startCardRenderLoop();
   if (IS_SHOWROOM) {
-    const { initShowroom } = await import("./showroom.js?v=showroom-favorites-2");
-    const { createShowroomHand } = await import("./showroom-hand.js?v=9");
+    const { initShowroom } = await import("./showroom.js?v=showroom-controls-1");
+    const { createShowroomHand } = await import("./showroom-hand.js?v=10");
     const room = await initShowroom(await createShowroomBridge());
     showroomHand = createShowroomHand({
       currentCard: () => !galleryOpen && CARDS[currentIndex] ? {
@@ -1951,7 +1951,8 @@ async function createShowroomBridge() {
       const radius=.714*(CARD_RADIUS/CARD_WIDTH);
       const geometry=createRoundedCoreGeometry(.714,1,.006,radius);
       const faceGeometry=createRoundedPlaneGeometry(.714,1,radius);
-      const group=new THREE.Group();group.add(new THREE.Mesh(geometry,edge));
+      const group=new THREE.Group(),core=new THREE.Mesh(geometry,edge);group.add(core);
+      group.userData.coreMesh=core;stabilizeShowroomDisplayCardDepth(group);
       const front=new THREE.Mesh(faceGeometry,faces[0]);front.position.z=.0031;
       const back=new THREE.Mesh(faceGeometry,faces[1]);back.position.z=-.0031;back.rotation.y=Math.PI;
       group.add(front,back);
@@ -2018,6 +2019,10 @@ async function createShowroomBridge() {
       }
       const address=entry.walletAddress;
       return Promise.all([getPrepared(address), getArtwork(address), warmCards(address)]);
+    },
+    hasFavorites: async () => {
+      await ensureFavoriteCollectionCards();
+      return CARDS.some((card,index)=>favorites.has(favoriteKey(index)));
     },
     open: async entry => {
       showroomBinderEntry = entry;

@@ -15,7 +15,7 @@ export function createShowroomHand(adapter) {
   button.id = 'showroomHandButton'; button.className = 'icon-button'; button.type = 'button';
   button.innerHTML = document.querySelector('#binderOpenCardButton').innerHTML;
   document.querySelector('#favoriteButton').after(button);
-  let busy = false, drag = null, choice = null, network = null;
+  let busy = false, drag = null, choice = null, network = null, presentedKey = null;
   const placed = new Set();
   let syncEpoch=0;
   const available = () => state.cards.filter(card => !placed.has(card.key));
@@ -48,7 +48,18 @@ export function createShowroomHand(adapter) {
   const nodes = new Map();
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 
+  document.addEventListener('keydown',event=>{
+    if(event.code!=='KeyF'||event.repeat||event.ctrlKey||event.metaKey||event.altKey||busy||choice||state.selected
+      ||!document.body.classList.contains('showroom-walking')||adapter.transitioning()
+      ||event.target.closest('input,textarea,select,[contenteditable="true"]'))return;
+    event.preventDefault();
+    const cards=available(),index=cards.findIndex(card=>card.key===presentedKey);
+    const next=event.shiftKey?(index<0?cards.length-1:index-1):index+1;
+    presentedKey=cards[next]?.key||null;refresh();
+    announcement.textContent=presentedKey?`Showing ${cards[next].title} to other players.`:'Showing your full hand again.';
+  });
   function refresh() {
+    if(!available().some(card=>card.key===presentedKey))presentedKey=null;
     button.setAttribute('aria-label', state.selected ? 'Put card back in its binder' : 'Take card into your hand');
     button.title = button.getAttribute('aria-label');
     button.disabled = busy || !adapter.currentCard() || (!state.selected && adapter.unavailable?.());
@@ -64,7 +75,7 @@ export function createShowroomHand(adapter) {
       let node = nodes.get(card.key);
       if (!node) {
         node = document.createElement('button'); node.type = 'button'; node.className = 'showroom-hand-card';
-        node.dataset.handKey = card.key;
+        node.dataset.handKey = card.key;node.tabIndex=-1;
         node.setAttribute('aria-label', `View ${card.title} from ${card.origin.label || 'binder'}`);
         const image = document.createElement('img'); image.src = card.image; image.alt = card.title;
         image.draggable = false; image.decoding = 'async'; node.append(image);
@@ -76,6 +87,7 @@ export function createShowroomHand(adapter) {
       node.style.setProperty('--hand-x', `${offset * step}px`);
       node.style.setProperty('--hand-angle', `${Math.max(-16, Math.min(16, offset * 4))}deg`);
       node.style.setProperty('--hand-order', index + 1);
+      node.classList.toggle('is-presented',card.key===presentedKey);node.setAttribute('aria-pressed',String(card.key===presentedKey));
       node.disabled = busy;
     });
   }
@@ -122,6 +134,7 @@ export function createShowroomHand(adapter) {
   }
 
   async function show(card, from = nodes.get(card.key)?.getBoundingClientRect()) {
+    presentedKey=null;
     const previous = state.selected;
     state.select(card.key);
     try {
@@ -232,11 +245,12 @@ export function createShowroomHand(adapter) {
       adapter.slotsChanged();refresh();
     },
     get viewing() { return state.selected; },
+    get presentedCardId() {return available().find(card=>card.key===presentedKey)?.sharedId||null;},
     get busy() { return busy; },
     has: (origin, stableId) => state.has(origin, stableId),
     hasCard: stableId => state.cards.some(card => card.stableId === stableId),
     get cards() { return available(); },
-    choose(place,cancel,resume){if(busy)return;announcement.textContent='Choose a card from your hand to place on the column.';choice={place,cancel,resume,resumed:false};document.body.classList.add('showroom-hand-choosing');refresh();},
+    choose(place,cancel,resume){if(busy)return;presentedKey=null;announcement.textContent='Choose a card from your hand to place on the column.';choice={place,cancel,resume,resumed:false};document.body.classList.add('showroom-hand-choosing');refresh();},
     restore(key){placed.delete(key);refresh();},
     returnToBinders(keys){
       for(const key of keys)if(placed.has(key)){placed.delete(key);state.remove(key);}
