@@ -40,7 +40,7 @@ export function createAvatarLookPose(model){
  };
 }
 export async function createShowroomAvatar(){
- const gltf=await asset(),model=cloneAvatar(gltf.scene);model.name='showroom-player-character';model.scale.setScalar(.78);model.position.y=-1.72;model.rotation.y=Math.PI;
+ const gltf=await asset(),model=cloneAvatar(gltf.scene);model.name='showroom-player-character';model.scale.setScalar(.75);model.position.y=-1.65;model.rotation.y=Math.PI;
  const mixer=new THREE.AnimationMixer(model),actions=new Map(gltf.animations.map(clip=>[clip.name,mixer.clipAction(clip)]));
  const socket=model.getObjectByName('CardSocketR')||model.getObjectByName('CardSocket.R');
  const look=createAvatarLookPose(model);

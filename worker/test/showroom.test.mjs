@@ -202,9 +202,9 @@ test('showroom background taps put down a binder but binder taps stay in the vie
   assert.equal(context.shouldPutDownShowroomBinderFromTap({clientX:40,clientY:40}),false);
 });
 
-test('showroom has the taller eye line and animated particle figure behind the evil table', () => {
+test('showroom has the adjusted eye line and animated particle figure behind the evil table', () => {
   const source=readFileSync(new URL('../../showroom.js',import.meta.url),'utf8');
-  assert.match(source,/camera\.position\.set\(0, 1\.72, 3\.5\)/);
+  assert.match(source,/camera\.position\.set\(0, 1\.65, 3\.5\)/);
   assert.match(source,/new THREE\.Points\(geometry,material\)/);
   assert.match(source,/ghost\.name='evil-biscuit-table-ghost'/);
   assert.match(source,/ghost\.position\.set\(4\.28,0,\.04\)/);

@@ -207,8 +207,8 @@ export function createShowroomPortal({ renderer, scene, camera, canWalkOutside, 
       // uploads and the reverse view, rather than on the first crossing.
       const position=camera.position.clone(),rotation=camera.quaternion.clone();
       try {
-        camera.position.set(0,1.72,portalZ+2);camera.rotation.set(0,0,0);render();
-        inside=true;camera.position.set(0,1.72,-2);camera.rotation.set(0,Math.PI,0);render();
+        camera.position.set(0,1.65,portalZ+2);camera.rotation.set(0,0,0);render();
+        inside=true;camera.position.set(0,1.65,-2);camera.rotation.set(0,Math.PI,0);render();
       } finally {
         inside=false;camera.position.copy(position);camera.quaternion.copy(rotation);render();
       }

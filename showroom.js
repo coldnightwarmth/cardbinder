@@ -2,11 +2,11 @@ import {createShowroomPointerLock} from './showroom-pointer-lock.mjs';
 import {createChatInput} from './showroom-chat.js?v=3';
 import {createShowroomRitualEffects,ritualPixelRatio} from './showroom-ritual-effects.js?v=3';
 import { createExhibitBudget } from './showroom-exhibit-lod.js?v=1';
-import { createShowroomMultiplayer } from './showroom-multiplayer.js?v=13';
+import { createShowroomMultiplayer } from './showroom-multiplayer.js?v=14';
 import { createShowroomSky } from './showroom-sky.js?v=5';
 import * as THREE from 'three';
 import { createShowroomColumns } from './showroom-columns.js?v=11';
-import { createShowroomPortal } from './showroom-portal.js?v=6';
+import { createShowroomPortal } from './showroom-portal.js?v=7';
 import { createShowroomSpeech } from './showroom-speech.js?v=7';
 import { mergeGeometries } from './vendor/BufferGeometryUtils.js';
 import { createResolutionBudget, createShowroomQuality } from './showroom-performance.mjs?v=2';
@@ -91,7 +91,7 @@ export async function initShowroom(bridge) {
   // The room itself never moves. Static descendants can keep their world
   // matrices between the main and reflection passes.
   scene.updateMatrix();scene.matrixAutoUpdate=false;
-  camera.position.set(0, 1.72, 3.5); camera.rotation.order = 'YXZ';
+  camera.position.set(0, 1.65, 3.5); camera.rotation.order = 'YXZ';
   camera.rotation.x = -.12;
   const environment = new RoomEnvironment();
   const pmrem = new THREE.PMREMGenerator(renderer);
