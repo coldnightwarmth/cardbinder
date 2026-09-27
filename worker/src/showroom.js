@@ -65,8 +65,10 @@ export class Showroom {
     if(!p||!['showroom','cube'].includes(p.room)||!['x','y','z','yaw','pitch'].every(k=>Number.isFinite(p[k]))||Math.abs(p.x)>100||Math.abs(p.z)>20000||p.y<0||p.y>10)return;
     const presentedCard=typeof p.presentedCard==='string'&&this.room.cards[p.presentedCard]?.holder===player.id?p.presentedCard:null;
     const typing=p.typing===true;
-    const changed=typing!==Boolean(player.pose.typing)||['x','y','z','yaw','pitch','room'].some(k=>p[k]!==player.pose[k])||presentedCard!==(player.pose.presentedCard||null);
-    player.pose={x:p.x,y:p.y,z:p.z,yaw:p.yaw,pitch:p.pitch,room:p.room,presentedCard,typing};player.lastMove=now;ws.serializeAttachment(player);
+    const crouch=Number.isFinite(p.crouch)?Math.max(0,Math.min(1,p.crouch)):0;
+    const jumpTime=Number.isFinite(p.jumpTime)?Math.max(-1,Math.min(1.1,p.jumpTime)):-1;
+    const changed=crouch!==(player.pose.crouch||0)||jumpTime!==(player.pose.jumpTime??-1)||typing!==Boolean(player.pose.typing)||['x','y','z','yaw','pitch','room'].some(k=>p[k]!==player.pose[k])||presentedCard!==(player.pose.presentedCard||null);
+    player.pose={x:p.x,y:p.y,z:p.z,yaw:p.yaw,pitch:p.pitch,room:p.room,presentedCard,typing,crouch,jumpTime};player.lastMove=now;ws.serializeAttachment(player);
     if(changed)await this.activate(ws,player,now);
     if(player.inactive)return;
     this.broadcast({type:'pose',id:player.id,pose:player.pose,time:now});return;

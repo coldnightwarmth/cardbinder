@@ -44,3 +44,11 @@ test('typing is synchronized as a boolean and clears when absent',async()=>{
  player.lastMove=0;const pose={...player.pose};delete pose.typing;
  await server.webSocketMessage(ws,JSON.stringify({type:'pose',pose}));assert.equal(player.pose.typing,false);
 });
+test('authored locomotion phases are bounded and included in snapshots',async()=>{
+ const {server,player,ws,messages}=fixture();player.lastActive=Date.now();
+ await server.webSocketMessage(ws,JSON.stringify({type:'pose',pose:{...player.pose,crouch:.8,jumpTime:.45}}));
+ assert.equal(player.pose.crouch,.8);assert.equal(messages.at(-1).pose.jumpTime,.45);
+ assert.equal(server.snapshot().players[0].pose.jumpTime,.45);
+ player.lastMove=0;await server.webSocketMessage(ws,JSON.stringify({type:'pose',pose:{...player.pose,crouch:200,jumpTime:200}}));
+ assert.equal(player.pose.crouch,1);assert.equal(player.pose.jumpTime,1.1);
+});

@@ -9,9 +9,9 @@ test('avatar clones share geometry but own their skeleton and pose',()=>{
  const root=new THREE.Group(),bone=new THREE.Bone();root.add(bone);const geometry=new THREE.BoxGeometry();const mesh=new THREE.SkinnedMesh(geometry,new THREE.MeshStandardMaterial());root.add(mesh);mesh.bind(new THREE.Skeleton([bone]));
  const a=context.cloneAvatar(root),b=context.cloneAvatar(root);assert.equal(a.children[1].geometry,geometry);assert.notEqual(a.children[1].skeleton,b.children[1].skeleton);assert.equal(a.children[1].skeleton.bones[0],a.children[0]);a.children[0].rotation.x=1;assert.ok(Math.abs(b.children[0].rotation.x)<1e-9);assert.equal(bone.rotation.x,0);
 });
-test('shipped character includes four skinned clips, texture, and right-hand socket',()=>{
+test('shipped character includes locomotion and holding clips, texture, and right-hand socket',()=>{
  const bytes=readFileSync(new URL('../../assets/models/showroom-character/blue-fin-character.glb',import.meta.url));const gltf=JSON.parse(bytes.subarray(20,20+bytes.readUInt32LE(12)).toString());
- assert.deepEqual(gltf.animations.map(a=>a.name).sort(),['Hold_Right','Neutral','Walk','Walk_Hold_Right']);assert.ok(gltf.skins.length);assert.ok(gltf.images.length);assert.ok(gltf.nodes.some(n=>n.name==='CardSocket.R'));for(const mesh of gltf.meshes)for(const primitive of mesh.primitives){assert.ok(primitive.attributes.JOINTS_0!==undefined);assert.ok(primitive.attributes.WEIGHTS_0!==undefined);}
+ assert.deepEqual(gltf.animations.map(a=>a.name).sort(),['Crouch','Crouch_Hold_Right','Crouch_Walk','Crouch_Walk_Hold_Right','Hold_Right','Jump','Jump_Hold_Right','Neutral','Walk','Walk_Hold_Right']);assert.ok(gltf.skins.length);assert.ok(gltf.images.length);assert.ok(gltf.nodes.some(n=>n.name==='CardSocket.R'));for(const mesh of gltf.meshes)for(const primitive of mesh.primitives){assert.ok(primitive.attributes.JOINTS_0!==undefined);assert.ok(primitive.attributes.WEIGHTS_0!==undefined);}
 });
 test('camera aim is additive, bounded, and only raises the holding arm',()=>{
  const context=vm.createContext({THREE});vm.runInContext(source.slice(source.indexOf('export function createAvatarLookPose'),source.indexOf('export async')).replaceAll('export ',''),context);
@@ -30,16 +30,4 @@ test('camera aim is additive, bounded, and only raises the holding arm',()=>{
  assert(Math.abs(head.quaternion.angleTo(restHead)-.72)<1e-6);
  for(let i=0;i<120;i++){look.restore();pitch=look.apply(1/60,-.6,false);}
  assert(Math.abs(pitch)<1e-6);assert(arm.quaternion.angleTo(restArm)<1e-6);
-});
-test('crouch and jump leg layers restore the walk pose without touching the holding arm',()=>{
- const context=vm.createContext({THREE});vm.runInContext(source.slice(source.indexOf('export function createAvatarLegPose'),source.indexOf('export async')).replaceAll('export ',''),context);
- const model=new THREE.Group(),thigh=new THREE.Bone(),shin=new THREE.Bone(),foot=new THREE.Bone(),arm=new THREE.Bone();
- thigh.name='Thigh.R';shin.name='Shin.R';foot.name='Foot.R';arm.name='UpperArm.R';
- model.add(thigh,arm);thigh.add(shin);shin.add(foot);
- thigh.rotation.z=.1;arm.rotation.x=.6;
- const rest=thigh.quaternion.clone(),held=arm.quaternion.clone(),legs=context.createAvatarLegPose(model);
- for(let i=0;i<300;i++){legs.restore();legs.apply(1,0);}
- assert(Math.abs(thigh.quaternion.angleTo(rest)-1.08)<1e-6);assert(arm.quaternion.angleTo(held)<1e-7);
- legs.restore();assert(thigh.quaternion.angleTo(rest)<1e-7);
- legs.apply(0,1);assert(Math.abs(thigh.quaternion.angleTo(rest)-.28)<1e-6);
 });

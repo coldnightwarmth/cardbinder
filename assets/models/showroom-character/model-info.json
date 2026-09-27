@@ -4,16 +4,40 @@
   "bones": 19,
   "clips": [
     {
+      "name": "Crouch",
+      "seconds": 2.0
+    },
+    {
+      "name": "Crouch_Hold_Right",
+      "seconds": 2.0
+    },
+    {
+      "name": "Crouch_Walk",
+      "seconds": 1.3333333333333333
+    },
+    {
+      "name": "Crouch_Walk_Hold_Right",
+      "seconds": 1.3333333333333333
+    },
+    {
+      "name": "Hold_Right",
+      "seconds": 2.0
+    },
+    {
+      "name": "Jump",
+      "seconds": 1.1
+    },
+    {
+      "name": "Jump_Hold_Right",
+      "seconds": 1.1
+    },
+    {
       "name": "Neutral",
       "seconds": 2.0
     },
     {
       "name": "Walk",
       "seconds": 1.0
-    },
-    {
-      "name": "Hold_Right",
-      "seconds": 2.0
     },
     {
       "name": "Walk_Hold_Right",
@@ -23,5 +47,11 @@
   "cardSocket": "CardSocket.R",
   "sourceFront": "-Y",
   "exportUp": "+Y",
-  "maxWeightsPerVertex": 2
+  "maxWeightsPerVertex": 2,
+  "locomotion": {
+    "jumpSeconds": 1.1,
+    "takeoffSeconds": 0.14,
+    "flightSeconds": 0.6666666666666666,
+    "crouchBackLeanRadians": 0.34
+  }
 }

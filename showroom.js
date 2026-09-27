@@ -1,9 +1,9 @@
-import {createVerticalMovement} from './showroom-locomotion.mjs';
+import {createVerticalMovement} from './showroom-locomotion.mjs?v=2';
 import {createShowroomPointerLock} from './showroom-pointer-lock.mjs';
 import {createChatInput} from './showroom-chat.js?v=5';
 import {createShowroomRitualEffects,ritualPixelRatio} from './showroom-ritual-effects.js?v=3';
 import { createExhibitBudget } from './showroom-exhibit-lod.js?v=1';
-import { createShowroomMultiplayer } from './showroom-multiplayer.js?v=17';
+import { createShowroomMultiplayer } from './showroom-multiplayer.js?v=18';
 import { createShowroomSky } from './showroom-sky.js?v=5';
 import * as THREE from 'three';
 import { createShowroomColumns } from './showroom-columns.js?v=11';
@@ -47,15 +47,18 @@ export async function initShowroom(bridge) {
     }
   } catch { /* Invalid return destinations go to the main page. */ }
   hud.append(leave);
+  let resumeOnEscapeRelease=false;
+  document.addEventListener('keyup',event=>{if(event.code==='Escape'&&resumeOnEscapeRelease){resumeOnEscapeRelease=false;if(!active&&!busy&&!columns?.selecting)lock();}},true);
   document.addEventListener('keydown',event=>{
     if(!['Escape','Tab','Enter'].includes(event.code)||active||busy||columns?.selecting||event.isComposing)return;
     const menuOpen=!leave.hidden;
     // Enter in the menu belongs to the focused chat input/send control.
-    if(event.code==='Enter'&&menuOpen)return;
+    if(event.code==='Enter'&&menuOpen&&hud.querySelector('#showroomChat input')?.value.trim())return;
     event.preventDefault();event.stopPropagation();if(event.repeat)return;
     // Some browsers deliver Escape after its native unlock event. Do not
     // interpret that same press as a request to capture the mouse again.
     if(event.code==='Escape'&&performance.now()-lastNativeUnlockAt<100)return;
+    if(menuOpen&&event.code==='Escape'){resumeOnEscapeRelease=true;return;}
     if(menuOpen)lock();else releaseControls();
   },true);
   const status = hud.querySelector('#showroomStatus'), count = hud.querySelector('#showroomCount');
@@ -69,7 +72,7 @@ export async function initShowroom(bridge) {
   favoritesButton.title='Favorite cards';favoritesButton.innerHTML='<svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 2.78 5.63 6.22.91-4.5 4.39 1.06 6.2L12 17.2l-5.56 2.93 1.06-6.2L3 9.54l6.22-.91Z"/></svg>';
   hud.append(favoritesButton);favoritesButton.onclick=()=>void openFavorites();
   const favoritesEmpty=document.createElement('div');favoritesEmpty.id='showroomFavoritesEmpty';favoritesEmpty.hidden=true;
-  favoritesEmpty.setAttribute('role','status');favoritesEmpty.textContent='No favorites yet. Star a card in its card view to add it to this binder.';hud.append(favoritesEmpty);
+  favoritesEmpty.setAttribute('role','status');favoritesEmpty.textContent='No favorites yet. Star a card to add it to this local binder';hud.append(favoritesEmpty);
   const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, stencil:true });
   const showroomMaxRatio=Math.min(devicePixelRatio,2);
   const resolution=createResolutionBudget(showroomMaxRatio);
@@ -1093,7 +1096,7 @@ export async function initShowroom(bridge) {
     if(!active && (document.pointerLockElement===canvas || fallback || touchMode)) {
       move(dt);
     }
-    if(!active&&!busy)camera.position.y=verticalMovement.update(dt,keys.has('ControlLeft')||keys.has('ControlRight'));
+    if(!active&&!busy){camera.position.y=verticalMovement.update(dt,keys.has('ControlLeft')||keys.has('ControlRight'));camera.userData.locomotion=verticalMovement.pose;}
     portal.place(tables);
     speech.update(now,camera,document.pointerLockElement===canvas || touchMode || dragging ? center : mousePoint,!active && !busy && !portal.inside);
     multiplayer.update(now,{speechVisible:!active && !busy,typing:chat.typing});

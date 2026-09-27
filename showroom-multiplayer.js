@@ -1,7 +1,8 @@
+import {jumpHeight} from './showroom-locomotion.mjs?v=2';
 import {chatAnchor,chatVisibleThroughDoor} from './showroom-chat-projection.mjs';
 import {createChatBubble} from './showroom-chat.js?v=5';
-import {createShowroomAvatar} from './showroom-avatar.js?v=6';
-import {createPoseBuffer,remoteHandPose} from './showroom-motion.mjs?v=3';
+import {createShowroomAvatar} from './showroom-avatar.js?v=7';
+import {createPoseBuffer,remoteHandPose} from './showroom-motion.mjs?v=4';
 import * as THREE from 'three';
 import {connectShowroom} from './showroom-network.js?v=3';
 export function createShowroomMultiplayer({scene,room,camera,portal,bridge,columns,ripples,onDirty,onRoomState,onOwnChat,onOtherChat}) {
@@ -33,7 +34,9 @@ export function createShowroomMultiplayer({scene,room,camera,portal,bridge,colum
   held.forEach((card,index)=>{const display=p.cards.get(card.id);if(!display?.group)return;
     display.group.visible=!presented||card.id===presented;
     display.group.scale.setScalar(presented ? .34 : .27);
-    if(presented){display.group.position.set(.085,.105,-.065);display.group.rotation.set(.16,Math.PI,0);}
+    if(presented){display.group.rotation.set(.16,Math.PI,0);
+      // Preserve the lower-left grip of a .27 card while growing to .34.
+      display.group.position.set(.714*(.34-.27)/2,(.34-.27)/2,0).applyEuler(display.group.rotation);}
     else layoutCard(display,index,held.length);
   });p.layoutDirty=false;
  }
@@ -60,14 +63,14 @@ export function createShowroomMultiplayer({scene,room,camera,portal,bridge,colum
  const network=connectShowroom({url:location.hostname==='localhost'&&new URLSearchParams(location.search).has('multiplayerLocal')?'ws://localhost:8788/connect':'wss://cards-art-showroom.kururuga-online-leaderboard.workers.dev/connect',onState:m=>{lastSnapshot=m;void refresh(m).catch(error=>{console.warn(error);clearTimeout(retryTimer);retryTimer=setTimeout(()=>{if(lastSnapshot)void refresh(lastSnapshot).catch(console.warn);},2000);});},onChat:m=>{if(m.id===network.id){onOwnChat?.(m.text);return;}onOtherChat?.(m.text);const p=peers.get(m.id);if(!p)return;p.bubble?.dispose();p.bubble=createChatBubble(m.text);p.bubbleExpires=m.expiresAt;onDirty();},onPose:m=>{if(m.type==='leave')remove(m.id);else pose(m.id,m.pose,m.time);onDirty();},onStatus:status=>{if(status==='Online')lastPose='';}});
  columns.setNetwork(network);
  return {network,setHand(value){hand=value;hand.setNetwork(network);if(state)void hand.syncShared(state,network.id,bridge.resolveSharedCard);},
- update(now,{speechVisible=true,typing=false}={}){if(now-lastSent>=1000/15){const p={x:+camera.position.x.toFixed(3),y:+camera.position.y.toFixed(3),z:+camera.position.z.toFixed(3),yaw:+camera.rotation.y.toFixed(3),pitch:+camera.rotation.x.toFixed(3),room:portal.inside?'cube':'showroom',typing:Boolean(typing),presentedCard:hand?.presentedCardId||null};const serialized=JSON.stringify(p);if(serialized!==lastPose)settlePackets=3;if(serialized!==lastPose||settlePackets>0){network.send({type:'pose',pose:p});if(serialized===lastPose)settlePackets--;lastPose=serialized;}lastSent=now;}
+ update(now,{speechVisible=true,typing=false}={}){if(now-lastSent>=1000/15){const p={x:+camera.position.x.toFixed(3),y:+camera.position.y.toFixed(3),z:+camera.position.z.toFixed(3),yaw:+camera.rotation.y.toFixed(3),pitch:+camera.rotation.x.toFixed(3),room:portal.inside?'cube':'showroom',crouch:+(camera.userData.locomotion?.crouch||0).toFixed(3),jumpTime:+(camera.userData.locomotion?.jumpTime??-1).toFixed(3),typing:Boolean(typing),presentedCard:hand?.presentedCardId||null};const serialized=JSON.stringify(p);if(serialized!==lastPose)settlePackets=3;if(serialized!==lastPose||settlePackets>0){network.send({type:'pose',pose:p});if(serialized===lastPose)settlePackets--;lastPose=serialized;}lastSent=now;}
  for(const [id,p] of peers){if(p.bubble&&network.now()>=p.bubbleExpires){p.bubble.dispose();p.bubble=null;}const sample=p.motion.sample(now);if(!sample)continue;
   const dt=Math.min(.1,Math.max(0,(now-(p.lastUpdate||now))/1000));p.lastUpdate=now;
   const velocity=p.previous&&dt>0?Math.hypot(sample.x-p.previous.x,sample.z-p.previous.z)/dt:0;p.previous=sample;
   p.group.position.set(sample.x,sample.y,sample.z);p.group.rotation.y=sample.yaw;
   if(p.avatar){
-   p.avatar.model.position.y=-1.65;
-   p.avatar.update(dt,velocity,p.holding,sample.pitch,sample.y);p.group.updateWorldMatrix(true,true);
+   p.avatar.model.position.y=-sample.y+jumpHeight(sample.jumpTime??-1);
+   p.avatar.update(dt,velocity,p.holding,sample.pitch,sample);p.group.updateWorldMatrix(true,true);
    if(p.avatar.socket){p.avatar.socket.getWorldPosition(socketPosition);p.group.worldToLocal(socketPosition);p.cardsRoot.position.copy(socketPosition);const tilt=p.avatar.handPitch;
     p.cardsRoot.rotation.x=tilt;
     p.cardsRoot.position.y+=.09*Math.cos(tilt)+.07*Math.sin(tilt);
@@ -76,7 +79,7 @@ export function createShowroomMultiplayer({scene,room,camera,portal,bridge,colum
   if(p.layoutDirty)layoutPeerHand(p);
   if(p.bubble||p.typingBubble){
    const anchor=chatAnchor(p.group.position,p.room,portal.inside,portal.z);
-   speechPosition.set(anchor.x,anchor.y+.35,anchor.z);camera.updateMatrixWorld();speechPosition.project(camera);
+   speechPosition.set(anchor.x,anchor.y+.27,anchor.z);camera.updateMatrixWorld();speechPosition.project(camera);
    const visible=speechVisible&&speechPosition.z>=-1&&speechPosition.z<=1&&Math.abs(speechPosition.x)<1.05&&Math.abs(speechPosition.y)<1.05
      &&chatVisibleThroughDoor(camera.position,anchor,portal.inside,portal.z);
    const x=(speechPosition.x+1)*innerWidth/2,y=(1-speechPosition.y)*innerHeight/2;
