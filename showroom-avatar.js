@@ -39,17 +39,41 @@ export function createAvatarLookPose(model){
   },
  };
 }
+// Lower-body additive pose leaves the holding clips and camera aim intact.
+export function createAvatarLegPose(model){
+ const names=['Thigh','Shin','Foot'],joints=[];
+ for(const side of ['L','R'])for(const name of names){
+  const bone=model.getObjectByName(name+side)||model.getObjectByName(name+'.'+side);
+  if(bone)joints.push({bone,name,base:bone.quaternion.clone()});
+ }
+ const axis=new THREE.Vector3(),local=new THREE.Vector3(),parent=new THREE.Quaternion(),turn=new THREE.Quaternion();
+ let applied=false;
+ return {
+  restore(){if(applied)for(const j of joints)j.bone.quaternion.copy(j.base);applied=false;},
+  apply(crouch,air){
+   model.updateWorldMatrix(true,true);model.getWorldQuaternion(parent);axis.set(1,0,0).applyQuaternion(parent);
+   const bend=1.08*crouch+.28*air;
+   for(const j of joints){
+    j.base.copy(j.bone.quaternion);j.bone.parent.getWorldQuaternion(parent).invert();local.copy(axis).applyQuaternion(parent);
+    j.bone.quaternion.premultiply(turn.setFromAxisAngle(local,bend*(j.name==='Shin'?2:-1)));
+   }
+   applied=true;
+  },
+ };
+}
 export async function createShowroomAvatar(){
  const gltf=await asset(),model=cloneAvatar(gltf.scene);model.name='showroom-player-character';model.scale.setScalar(.75);model.position.y=-1.65;model.rotation.y=Math.PI;
  const mixer=new THREE.AnimationMixer(model),actions=new Map(gltf.animations.map(clip=>[clip.name,mixer.clipAction(clip)]));
  const socket=model.getObjectByName('CardSocketR')||model.getObjectByName('CardSocket.R');
- const look=createAvatarLookPose(model);
+ const look=createAvatarLookPose(model),legs=createAvatarLegPose(model);
  let current='',moving=false,speed=0,handPitch=0;
- return {model,socket,get handPitch(){return handPitch;},update(dt,velocity,holding,pitch=0){
-  look.restore();
+ return {model,socket,get handPitch(){return handPitch;},update(dt,velocity,holding,pitch=0,eyeHeight=1.65){
+  look.restore();legs.restore();
   speed+=(Math.min(velocity,5)-speed)*(1-Math.exp(-dt*14));moving=speed>(moving?.045:.10);
   const name=moving?(holding?'Walk_Hold_Right':'Walk'):(holding?'Hold_Right':'Neutral');
   if(name!==current){const previous=actions.get(current),next=actions.get(name);next.reset().setEffectiveWeight(1).play();if(previous)next.crossFadeFrom(previous,.18,false);current=name;model.userData.animation=name;}
-  const action=actions.get(current);action.setEffectiveTimeScale(moving?THREE.MathUtils.clamp(speed/.85,.6,1.8):1);mixer.update(dt);handPitch=look.apply(dt,pitch,holding);
+  const action=actions.get(current);action.setEffectiveTimeScale(moving?THREE.MathUtils.clamp(speed/.85,.6,1.8):1);mixer.update(dt);
+  legs.apply(THREE.MathUtils.clamp((1.65-eyeHeight)/.2,0,1),THREE.MathUtils.clamp((eyeHeight-1.65)/.25,0,1));
+  handPitch=look.apply(dt,pitch,holding);
  },dispose(){mixer.stopAllAction();mixer.uncacheRoot(model);model.traverse(o=>{if(o.isSkinnedMesh)o.skeleton.dispose();});model.removeFromParent();}};
 }

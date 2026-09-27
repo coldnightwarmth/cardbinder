@@ -1,8 +1,9 @@
+import {createVerticalMovement} from './showroom-locomotion.mjs';
 import {createShowroomPointerLock} from './showroom-pointer-lock.mjs';
-import {createChatInput} from './showroom-chat.js?v=3';
+import {createChatInput} from './showroom-chat.js?v=5';
 import {createShowroomRitualEffects,ritualPixelRatio} from './showroom-ritual-effects.js?v=3';
 import { createExhibitBudget } from './showroom-exhibit-lod.js?v=1';
-import { createShowroomMultiplayer } from './showroom-multiplayer.js?v=14';
+import { createShowroomMultiplayer } from './showroom-multiplayer.js?v=17';
 import { createShowroomSky } from './showroom-sky.js?v=5';
 import * as THREE from 'three';
 import { createShowroomColumns } from './showroom-columns.js?v=11';
@@ -373,6 +374,7 @@ export async function initShowroom(bridge) {
   new MutationObserver(theme).observe(document.body,{attributes:true,attributeFilter:['class']}); theme();
 
   const tables=[], binders=[], addresses=new Set(), keys=new Set();
+  const verticalMovement=createVerticalMovement();
   let endZ=-8, active=null, hovered=null, busy=false, directoryLoading=false;
   let columns=null, hoveredColumn=null, sharedRowsBuilt=0;
   const portal=createShowroomPortal({renderer,scene,camera,
@@ -392,7 +394,7 @@ export async function initShowroom(bridge) {
     renderer.setPixelRatio(showroomPixelRatio(resolution.ratio));sceneDirty=true;
   }});
   const multiplayer=createShowroomMultiplayer({scene,room:portal.room,camera,portal,bridge,columns,ripples,onDirty:()=>{multiplayerDirty=true;},
-    onRoomState:(state,id,now)=>ritualEffects.sync(state,id,now),onOwnChat:text=>chat.record(text)});
+    onRoomState:(state,id,now)=>ritualEffects.sync(state,id,now),onOwnChat:text=>chat.record(text),onOtherChat:text=>chat.record(text,false)});
   const chat=createChatInput(hud,multiplayer.network,{resume:()=>lock(true)});
   function releaseControls(){
     fallback=false;dragging=false;keys.clear();releaseTouchInputs();
@@ -843,7 +845,8 @@ export async function initShowroom(bridge) {
   });
   document.addEventListener('keydown',e=>{
     if (active || (document.pointerLockElement!==canvas && !fallback)) return;
-    if (['ShiftLeft','ShiftRight'].includes(e.code)) {keys.add(e.code);e.preventDefault();}
+    if(e.code==='Space'){e.preventDefault();if(!e.repeat)verticalMovement.jump();}
+    if (['ShiftLeft','ShiftRight','ControlLeft','ControlRight'].includes(e.code)) {keys.add(e.code);e.preventDefault();}
     if (['KeyW','KeyA','KeyS','KeyD'].includes(e.code)) {keys.add(e.code);if(!e.repeat) move(1/60);e.preventDefault();}
   });
   document.addEventListener('keyup',e=>keys.delete(e.code)); window.addEventListener('blur',()=>{keys.clear();releaseTouchInputs();});
@@ -1043,7 +1046,7 @@ export async function initShowroom(bridge) {
       const norm=Math.hypot(forward,right);
       if(norm<.001)return;
       const amount=Math.min(1,norm);
-      const speed=dt*2.7*(keys.has('ShiftLeft') || keys.has('ShiftRight') ? 2.25 : 1)*amount/norm, yaw=camera.rotation.y;
+      const speed=dt*2.7*((keys.has('ControlLeft')||keys.has('ControlRight')) ? .45 : 1)*(keys.has('ShiftLeft') || keys.has('ShiftRight') ? 2.25 : 1)*amount/norm, yaw=camera.rotation.y;
       const dx=(right*Math.cos(yaw)-forward*Math.sin(yaw))*speed;
       const dz=(-forward*Math.cos(yaw)-right*Math.sin(yaw))*speed;
       portal.move(dx,dz);
@@ -1090,9 +1093,10 @@ export async function initShowroom(bridge) {
     if(!active && (document.pointerLockElement===canvas || fallback || touchMode)) {
       move(dt);
     }
+    if(!active&&!busy)camera.position.y=verticalMovement.update(dt,keys.has('ControlLeft')||keys.has('ControlRight'));
     portal.place(tables);
     speech.update(now,camera,document.pointerLockElement===canvas || touchMode || dragging ? center : mousePoint,!active && !busy && !portal.inside);
-    multiplayer.update(now,{speechVisible:!active && !busy});
+    multiplayer.update(now,{speechVisible:!active && !busy,typing:chat.typing});
     ritualEffects.update(multiplayer.network.now());
     const escapeControls=!active && !busy && !fallback && document.pointerLockElement!==canvas && !leave.hidden;
     chat.update(escapeControls);if(!escapeControls)favoritesEmpty.hidden=true;favoritesButton.hidden=!favoritesReady || !escapeControls || columns.selecting;
@@ -1122,7 +1126,7 @@ export async function initShowroom(bridge) {
     }
 
     if(!document.hidden && (!active || busy || sceneDirty || multiplayerDirty)) {
-      if(!portal.inside)ripples.update(now,camera);
+      if(!portal.inside&&camera.position.y<=1.67)ripples.update(now,camera);
       floor.material.uniforms.rippleTime.value=now*.001;
       evilTableGhost.material.uniforms.time.value=now*.001;
       evilTableGhost.material.uniforms.pixelRatio.value=renderer.getPixelRatio();

@@ -35,3 +35,12 @@ test('presentation state only accepts a card actually held by that player',async
  player.lastMove=0;await server.webSocketMessage(ws,JSON.stringify({type:'pose',pose:{...player.pose,presentedCard:'other'}}));assert.equal(player.pose.presentedCard,null);
  player.lastMove=0;await server.webSocketMessage(ws,JSON.stringify({type:'pose',pose:{...player.pose,presentedCard:null}}));assert.equal(player.pose.presentedCard,null);
 });
+test('typing is synchronized as a boolean and clears when absent',async()=>{
+ const {server,player,ws,messages}=fixture();player.lastActive=Date.now();
+ await server.webSocketMessage(ws,JSON.stringify({type:'pose',pose:{...player.pose,typing:true}}));
+ assert.equal(player.pose.typing,true);assert.equal(messages.at(-1).pose.typing,true);
+ player.lastMove=0;await server.webSocketMessage(ws,JSON.stringify({type:'pose',pose:{...player.pose,typing:'draft text'}}));
+ assert.equal(player.pose.typing,false);
+ player.lastMove=0;const pose={...player.pose};delete pose.typing;
+ await server.webSocketMessage(ws,JSON.stringify({type:'pose',pose}));assert.equal(player.pose.typing,false);
+});

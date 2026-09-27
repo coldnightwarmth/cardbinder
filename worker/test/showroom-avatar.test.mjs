@@ -31,3 +31,15 @@ test('camera aim is additive, bounded, and only raises the holding arm',()=>{
  for(let i=0;i<120;i++){look.restore();pitch=look.apply(1/60,-.6,false);}
  assert(Math.abs(pitch)<1e-6);assert(arm.quaternion.angleTo(restArm)<1e-6);
 });
+test('crouch and jump leg layers restore the walk pose without touching the holding arm',()=>{
+ const context=vm.createContext({THREE});vm.runInContext(source.slice(source.indexOf('export function createAvatarLegPose'),source.indexOf('export async')).replaceAll('export ',''),context);
+ const model=new THREE.Group(),thigh=new THREE.Bone(),shin=new THREE.Bone(),foot=new THREE.Bone(),arm=new THREE.Bone();
+ thigh.name='Thigh.R';shin.name='Shin.R';foot.name='Foot.R';arm.name='UpperArm.R';
+ model.add(thigh,arm);thigh.add(shin);shin.add(foot);
+ thigh.rotation.z=.1;arm.rotation.x=.6;
+ const rest=thigh.quaternion.clone(),held=arm.quaternion.clone(),legs=context.createAvatarLegPose(model);
+ for(let i=0;i<300;i++){legs.restore();legs.apply(1,0);}
+ assert(Math.abs(thigh.quaternion.angleTo(rest)-1.08)<1e-6);assert(arm.quaternion.angleTo(held)<1e-7);
+ legs.restore();assert(thigh.quaternion.angleTo(rest)<1e-7);
+ legs.apply(0,1);assert(Math.abs(thigh.quaternion.angleTo(rest)-.28)<1e-6);
+});
