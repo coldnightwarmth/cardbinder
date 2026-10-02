@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f7f7f4">
+  <title>Folder · minote</title>
+  <style>
+    * {box-sizing:border-box} html,body {margin:0;width:100%;height:100%;overflow:hidden;background:#f7f7f4}
+    canvas {display:block;width:100%;height:100%;touch-action:none;outline:none;-webkit-tap-highlight-color:transparent}
+    .accessible {position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+    button:focus-visible {clip-path:none;width:auto;height:auto;left:16px;bottom:16px;padding:12px 18px;border:1px solid #b5c5b8;border-radius:10px;background:#fff;color:#20472b;font:14px system-ui;z-index:2}
+    #notice {position:fixed;bottom:24px;left:24px;right:24px;text-align:center;color:#526458;font:14px system-ui}
+    [hidden] {display:none!important}
+  </style>
+</head>
+<body>
+  <p id="instructions" class="accessible">Drag the folder left to open it and keep dragging left to turn to the back. Drag right to reverse. From the closed front cover, drag right to flip directly to the back; drag left from the closed back cover to return. You can also click to open or close it. Click a card to lift it out, then drag to rotate it. Click outside the card or press Escape to return it. Use the arrow keys on the canvas to navigate, including left from the front cover to the back.</p>
+  <canvas aria-label="Interactive green paper folder" aria-describedby="instructions" tabindex="0"></canvas>
+  <button class="accessible" id="folderToggle">Open folder</button>
+  <button class="accessible" id="leftCard" hidden>View left card</button>
+  <button class="accessible" id="rightCard" hidden>View right card</button>
+  <button class="accessible" id="returnCard" hidden>Return card to pocket</button>
+  <div id="notice" role="status" hidden></div>
+  <script type="module" src="./folder.js?v=6"></script>
+</body>
+</html>
