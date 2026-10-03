@@ -1,7 +1,7 @@
 import {createSealHint} from './seal-hint.js?v=2';
 import {createSeal} from './seal.js?v=6';
 import * as THREE from '../vendor/three.module.min.js';
-import {PONCHO_CARDS} from '../poncho-data.js';
+import {MINOTE_CARDS} from './cards.js';
 import {spring,settle,snapToNearest,tiltSpring} from './motion.js?v=2';
 
 const canvas=document.querySelector('canvas'),notice=document.querySelector('#notice');
@@ -237,7 +237,7 @@ function poseFolder(){
 const loader=new THREE.TextureLoader();
 async function texture(url){const t=await loader.loadAsync(url);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=renderer.capabilities.getMaxAnisotropy();renderer.initTexture(t);return t;}
 async function loadCards(){
- const available=PONCHO_CARDS.filter(c=>c.status==='pulled'),first=Math.floor(Math.random()*available.length),second=(first+1+Math.floor(Math.random()*(available.length-1)))%available.length;
+ const available=MINOTE_CARDS,first=Math.floor(Math.random()*available.length),second=(first+1+Math.floor(Math.random()*(available.length-1)))%available.length;
  // Picking geometry exists immediately, independently of image/network readiness.
  const jobs=[];
  const backs=[];

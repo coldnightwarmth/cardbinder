@@ -95,7 +95,7 @@ test('a card under the release point also takes priority over closing',()=>{
 test('both cards are pickable before any texture request completes',async()=>{
  const requests=[],cards=[],left=new THREE.Group(),right=new THREE.Group();
  const c=vm.createContext({THREE,URL,Math,cards,left,right,
-  PONCHO_CARDS:[{status:'pulled',file:'a.webp',title:'A'},{status:'pulled',file:'b.webp',title:'B'}],
+  MINOTE_CARDS:[{file:'a.webp',title:'A'},{file:'b.webp',title:'B'}],
   ui:{left:{},right:{}},syncUI(){},invalidate(){},
   texture(url){return new Promise(resolve=>requests.push({url,resolve}));}});
  vm.runInContext(section('const CARD_W=', 'const fiberCanvas='),c);
