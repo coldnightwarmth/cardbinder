@@ -202,7 +202,7 @@ galleryZoom.append(zoomOut,zoomIn);viewToggle.before(galleryZoom);
 let galleryColumns=null;
 function currentColumns(){return galleryColumns??Math.max(2,Math.min(12,getComputedStyle(grid).gridTemplateColumns.split(' ').filter(Boolean).length));}
 function updateGalleryZoom(){const count=currentColumns();zoomOut.disabled=count>=12;zoomIn.disabled=count<=2;zoomOut.title=`Zoom out · ${Math.min(12,count+1)} columns`;zoomIn.title=`Zoom in · ${Math.max(2,count-1)} columns`;}
-function changeGalleryColumns(delta){galleryColumns=Math.max(2,Math.min(12,currentColumns()+delta));grid.style.setProperty('--gallery-columns',galleryColumns);grid.classList.add('custom-columns');updateGalleryZoom();queueCarouselLayout();}
+function changeGalleryColumns(delta){galleryColumns=Math.max(2,Math.min(12,currentColumns()+delta));grid.style.setProperty('--gallery-columns',galleryColumns);grid.classList.add('custom-columns');updateGalleryZoom();queueCaptionFit();queueCarouselLayout();}
 zoomOut.onclick=()=>changeGalleryColumns(1);zoomIn.onclick=()=>changeGalleryColumns(-1);
 requestAnimationFrame(updateGalleryZoom);window.addEventListener('resize',updateGalleryZoom);
 
@@ -213,7 +213,7 @@ function updateCarouselNav(){
 viewToggle.onclick=()=>{
  carousel=!carousel;document.body.classList.toggle('carousel-view',carousel);
  viewToggle.setAttribute('aria-pressed',carousel);viewToggle.setAttribute('aria-label',carousel?'Show gallery grid':'Show horizontal gallery');
- carouselNav.hidden=!carousel;galleryZoom.hidden=carousel;if(!carousel)requestAnimationFrame(updateGalleryZoom);
+ carouselNav.hidden=!carousel;galleryZoom.hidden=carousel;queueCaptionFit();if(!carousel)requestAnimationFrame(updateGalleryZoom);
  requestAnimationFrame(()=>{if(carousel&&current){const t=grid.querySelector(`[data-id="${current.id}"]`);if(t)grid.scrollLeft=t.offsetLeft-grid.offsetLeft-grid.clientWidth/2+t.clientWidth/2;}updateCarouselNav();});
 };
 function scrollCards(direction){const t=grid.querySelector('.tile');if(t)grid.scrollBy({left:direction*(t.getBoundingClientRect().width+20),behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});}
@@ -260,3 +260,19 @@ async function refreshShared(){
  finally{refreshingShared=false;if(sharedAgain){sharedAgain=false;refreshShared();}}
 }
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&collection.length)refreshShared();});
+
+// Measure with captions visible so zooming back in can restore them.
+let captionFitFrame=0,captionGridWidth=-1;
+function queueCaptionFit(){cancelAnimationFrame(captionFitFrame);captionFitFrame=requestAnimationFrame(()=>{
+ grid.classList.remove('hide-card-names');
+ if(carousel)return;
+ const labels=grid.querySelectorAll('.caption .label');
+ const tooTall=Array.from(labels).some(label=>{
+  const lineHeight=parseFloat(getComputedStyle(label).lineHeight);
+  return lineHeight>0&&label.getBoundingClientRect().height>lineHeight*4+1;
+ });
+ grid.classList.toggle('hide-card-names',tooTall);
+});}
+new ResizeObserver(entries=>{const width=entries[0].contentRect.width;if(Math.abs(width-captionGridWidth)>.5){captionGridWidth=width;queueCaptionFit();}}).observe(grid);
+new MutationObserver(queueCaptionFit).observe(grid,{childList:true});
+document.fonts.ready.then(queueCaptionFit);
