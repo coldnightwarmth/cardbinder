@@ -84,3 +84,5 @@ header{padding:12px 3.4%;gap:16px}
 .handle.se{right:1px;bottom:1px}
 
 .tools .transfer-icon{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;padding:7px;flex-shrink:0}
+
+.gallery-zoom{display:flex;gap:4px}.gallery-zoom[hidden]{display:none}.tools .gallery-zoom button{display:grid;place-items:center;width:34px;height:36px;padding:0;font-size:22px;line-height:1}body:not(.carousel-view) #grid.custom-columns{grid-template-columns:repeat(var(--gallery-columns),minmax(0,1fr))}#grid.custom-columns .caption{flex-wrap:wrap;overflow-wrap:anywhere}

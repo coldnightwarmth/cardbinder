@@ -194,6 +194,18 @@ function layerAt(event,element,item,value){
 }
 const viewToggle=$('#viewToggle'),carouselNav=$('#carouselNav');
 let carousel=false;
+const galleryZoom=document.createElement('div');galleryZoom.className='gallery-zoom';galleryZoom.setAttribute('role','group');galleryZoom.setAttribute('aria-label','Gallery zoom');
+const zoomOut=document.createElement('button'),zoomIn=document.createElement('button');
+zoomOut.textContent='−';zoomIn.textContent='+';
+zoomOut.setAttribute('aria-label','Zoom out gallery');zoomIn.setAttribute('aria-label','Zoom in gallery');
+galleryZoom.append(zoomOut,zoomIn);viewToggle.before(galleryZoom);
+let galleryColumns=null;
+function currentColumns(){return galleryColumns??Math.max(2,Math.min(12,getComputedStyle(grid).gridTemplateColumns.split(' ').filter(Boolean).length));}
+function updateGalleryZoom(){const count=currentColumns();zoomOut.disabled=count>=12;zoomIn.disabled=count<=2;zoomOut.title=`Zoom out · ${Math.min(12,count+1)} columns`;zoomIn.title=`Zoom in · ${Math.max(2,count-1)} columns`;}
+function changeGalleryColumns(delta){galleryColumns=Math.max(2,Math.min(12,currentColumns()+delta));grid.style.setProperty('--gallery-columns',galleryColumns);grid.classList.add('custom-columns');updateGalleryZoom();queueCarouselLayout();}
+zoomOut.onclick=()=>changeGalleryColumns(1);zoomIn.onclick=()=>changeGalleryColumns(-1);
+requestAnimationFrame(updateGalleryZoom);window.addEventListener('resize',updateGalleryZoom);
+
 function updateCarouselNav(){
  $('#carouselPrev').disabled=grid.scrollLeft<2;
  $('#carouselNext').disabled=grid.scrollLeft>=grid.scrollWidth-grid.clientWidth-2;
@@ -201,7 +213,7 @@ function updateCarouselNav(){
 viewToggle.onclick=()=>{
  carousel=!carousel;document.body.classList.toggle('carousel-view',carousel);
  viewToggle.setAttribute('aria-pressed',carousel);viewToggle.setAttribute('aria-label',carousel?'Show gallery grid':'Show horizontal gallery');
- carouselNav.hidden=!carousel;
+ carouselNav.hidden=!carousel;galleryZoom.hidden=carousel;if(!carousel)requestAnimationFrame(updateGalleryZoom);
  requestAnimationFrame(()=>{if(carousel&&current){const t=grid.querySelector(`[data-id="${current.id}"]`);if(t)grid.scrollLeft=t.offsetLeft-grid.offsetLeft-grid.clientWidth/2+t.clientWidth/2;}updateCarouselNav();});
 };
 function scrollCards(direction){const t=grid.querySelector('.tile');if(t)grid.scrollBy({left:direction*(t.getBoundingClientRect().width+20),behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});}
