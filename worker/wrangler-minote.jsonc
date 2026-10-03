@@ -1,0 +1,9 @@
+{
+ "$schema":"node_modules/wrangler/config-schema.json",
+ "name":"cards-art-minote",
+ "main":"src/minote.js",
+ "compatibility_date":"2026-08-04",
+ "workers_dev":true,
+ "durable_objects":{"bindings":[{"name":"CURATOR","class_name":"Curator"}]},
+ "migrations":[{"tag":"v1","new_sqlite_classes":["Curator"]}]
+}

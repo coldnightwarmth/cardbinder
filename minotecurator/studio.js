@@ -1,4 +1,4 @@
-import {studioRequest} from './storage.js?v=2';
+import {studioRequest,subscribeEdits} from './storage.js?v=3';
 const $=s=>document.querySelector(s),W=2000,H=2800,defaults=()=>({zoom:1,x:0,y:0,nameZoom:1,nameX:0,nameY:0,ink:"original",body:false,bodyZoom:1,bodyX:0,bodyY:0});let collection=[],edits={},filtered=[],current=null,crop=defaults(),history=[],future=[],timer,onlyEdited=false,onlyUnedited=false,saveChain=Promise.resolve();const grid=$('#grid'),dialog=$('#editor');let revisions={},pending=new Set(),conflicts=new Map(),editSerial={};
 function geometry(item,v){const s=Math.max(W/item.width,H/item.height)*v.zoom;return {w:item.width*s,h:item.height*s}}
 function clamp(item,v){v={...defaults(),...v,zoom:Math.max(1,Math.min(5,v.zoom))};const g=geometry(item,v);v.x=Math.max(-(g.w-W)/2,Math.min((g.w-W)/2,v.x));v.y=Math.max(-(g.h-H)/2,Math.min((g.h-H)/2,v.y));const b=nameGeometry(item,{...v,nameZoom:1});v.nameZoom=Math.max(.25,Math.min(4,W/b.w,H/b.h,v.nameZoom));const n=nameGeometry(item,v);const bg=bodyGeometry({...v,bodyZoom:1});v.bodyZoom=Math.max(.25,Math.min(4,W/bg.w,H/bg.h,v.bodyZoom));const q=bodyGeometry(v);return v}
@@ -36,7 +36,7 @@ function travelHistory(from,to){
 function undo(){travelHistory(history,future)}
 function redo(){travelHistory(future,history)}
 async function post(url,data){const r=await studioRequest(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});if(!r.ok){const result=await r.json();const e=Error(result.error||'Could not save');e.status=r.status;e.latest=result.latest;throw e}return r}
-function persist(){clearTimeout(timer);timer=null;if(!current)return Promise.resolve();const id=current.id,v={...crop},serial=editSerial[id]||0;edits[id]=v;refreshTile();if(conflicts.has(id))return Promise.reject(Error('Resolve the change from another browser tab before saving.'));if(!pending.has(id))return saveChain;$('#saveStatus').textContent='Saving locally…';saveChain=saveChain.catch(()=>{}).then(async()=>{if(conflicts.has(id))throw Error('Resolve the change from another browser tab before saving.');const r=await post('/api/save',{id,...v,_revision:revisions[id]||0}),saved=await r.json();revisions[id]=saved._revision;if((editSerial[id]||0)===serial){pending.delete(id);edits[id]=saved;if(current?.id===id){crop={...crop,...saved};$('#saveStatus').textContent='Saved locally'}}}).catch(e=>{if(e.status===409)conflicts.set(id,e.latest);if(current?.id===id){$('#saveStatus').textContent='Draft not saved';$('#error').textContent=e.message;$('#useShared').hidden=!conflicts.has(id)}throw e});saveChain.catch(()=>{});return saveChain}
+function persist(){clearTimeout(timer);timer=null;if(!current)return Promise.resolve();const id=current.id,v={...crop},serial=editSerial[id]||0;edits[id]=v;refreshTile();if(conflicts.has(id))return Promise.reject(Error('Resolve the change from another user before saving.'));if(!pending.has(id))return saveChain;$('#saveStatus').textContent='Saving for everyone…';saveChain=saveChain.catch(()=>{}).then(async()=>{if(conflicts.has(id))throw Error('Resolve the change from another user before saving.');const r=await post('/api/save',{id,...v,_revision:revisions[id]||0}),saved=await r.json();revisions[id]=saved._revision;if((editSerial[id]||0)===serial){pending.delete(id);edits[id]=saved;if(current?.id===id){crop={...crop,...saved};$('#saveStatus').textContent='Saved for everyone'}}}).catch(e=>{if(e.status===409)conflicts.set(id,e.latest);if(current?.id===id){$('#saveStatus').textContent='Draft not saved';$('#error').textContent=e.message;$('#useShared').hidden=!conflicts.has(id)}throw e});saveChain.catch(()=>{});return saveChain}
 function change(v){crop=clamp(current,{...crop,...v});pending.add(current.id);editSerial[current.id]=(editSerial[current.id]||0)+1;render();edits[current.id]={...crop};refreshTile();$('#saveStatus').textContent='Unsaved changes';clearTimeout(timer);timer=setTimeout(()=>persist().catch(()=>{}),300)}
 const stageWrap=$('#stageWrap');const parking=document.createElement('div');parking.hidden=true;document.body.append(parking);parking.append(stageWrap);
 const toolbar=document.createElement('section');toolbar.className='inline-toolbar';toolbar.hidden=true;toolbar.setAttribute('aria-label','Selected card crop controls');
@@ -59,7 +59,7 @@ async function open(id){
  if(current?.id===id)return;
  if(current){persist().catch(()=>{});const old=grid.querySelector(`[data-id="${current.id}"]`);parkEditor();if(old)old.replaceWith(tile(current))}
  current=collection.find(i=>i.id===id);if(!current?.available){current=null;return}
- crop=clamp(current,edits[id]||defaults());entryCrop={...crop};history=[];future=[];$('#number').textContent='CARD '+String(id).padStart(4,'0');$('#title').textContent=current.name;$('#art').className='art';$('#art').src=`/minotecurator/assets/thumbs/${id}.webp`;const full=new Image();full.onload=()=>{if(current?.id===id)$('#art').src=full.src};full.src=`/minotecurator/assets/originals/${id}.webp`;$('#art').alt=current.name;setSource($('#name'),nameSource(current,crop));namePosition($('#name'),current);$('#saveStatus').textContent='Saved locally';$('#error').textContent=conflicts.has(id)?'This card changed in another browser tab. Your draft is preserved.':'';$('#useShared').hidden=!conflicts.has(id);
+ crop=clamp(current,edits[id]||defaults());entryCrop={...crop};history=[];future=[];$('#number').textContent='CARD '+String(id).padStart(4,'0');$('#title').textContent=current.name;$('#art').className='art';$('#art').src=`/minotecurator/assets/thumbs/${id}.webp`;const full=new Image();full.onload=()=>{if(current?.id===id)$('#art').src=full.src};full.src=`/minotecurator/assets/originals/${id}.webp`;$('#art').alt=current.name;setSource($('#name'),nameSource(current,crop));namePosition($('#name'),current);$('#saveStatus').textContent='Saved for everyone';$('#error').textContent=conflicts.has(id)?'This card changed in another user. Your draft is preserved.':'';$('#useShared').hidden=!conflicts.has(id);
  const target=grid.querySelector(`[data-id="${id}"]`);target.classList.add('active-tile');target.querySelector('.card').replaceWith(stageWrap);toolbar.hidden=false;sidebar.hidden=false;document.body.classList.add('editing');render();requestAnimationFrame(()=>{updateCarouselLayout();if(carousel)return;const r=target.getBoundingClientRect(),top=document.querySelector('header').getBoundingClientRect().bottom+22,bottom=toolbar.getBoundingClientRect().top-22;if(r.top<top||r.bottom>bottom)window.scrollBy({top:(r.top+r.bottom-top-bottom)/2,behavior:'instant'})});
 }
 $('#close').textContent='Done';$('#close').setAttribute('aria-label','Done');$('#close').onclick=async()=>{
@@ -74,6 +74,13 @@ $('#close').textContent='Done';$('#close').setAttribute('aria-label','Done');$('
  }catch(error){$('#error').textContent=error.message;}
  finally{cancelling=false;grid.inert=sidebar.inert=toolbar.inert=document.querySelector('header').inert=false;}
 };
+// Capture before a focused gallery tile can reopen the card on Enter.
+document.addEventListener('keydown',e=>{
+ if(e.key!=='Enter'||!current||e.isComposing||e.ctrlKey||e.metaKey||e.altKey||e.shiftKey)return;
+ if(e.target.isContentEditable||e.target.matches('textarea,input:not([type=range]):not([type=checkbox])'))return;
+ e.preventDefault();e.stopImmediatePropagation();
+ if(!e.repeat&&!cancelling)$('#close').click();
+},true);
 cancelButton.onclick=async()=>{
  if(!current||!entryCrop||cancelling)return;
  const id=current.id,original={...entryCrop};
@@ -82,7 +89,7 @@ cancelButton.onclick=async()=>{
  // prevents a late autosave from restoring edits that were just cancelled.
  grid.inert=sidebar.inert=toolbar.inert=document.querySelector('header').inert=true;
  try{
-  if(conflicts.has(id))throw Error('Load the saved version before cancelling; another tab changed this card.');
+  if(conflicts.has(id))throw Error('Load the saved version before cancelling; another user changed this card.');
   const changed=Object.keys(defaults()).some(key=>crop[key]!==original[key]);
   if(changed){change(original);clearTimeout(timer);timer=null;await persist();}
   else await saveChain;
@@ -156,12 +163,12 @@ document.addEventListener('keydown',e=>{
 });
 document.addEventListener('keydown',e=>{if(!current||['INPUT','TEXTAREA','BUTTON','SELECT'].includes(e.target.tagName))return;const d=e.shiftKey?20:4;if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();remember();const [x,y]=layerKeys();change({[x]:crop[x]+(e.key==='ArrowLeft'?-d:e.key==='ArrowRight'?d:0),[y]:crop[y]+(e.key==='ArrowUp'?-d:e.key==='ArrowDown'?d:0)})}});
 window.addEventListener('beforeunload',e=>{if(pending.size){e.preventDefault();e.returnValue='Your draft has not finished saving.'}});
-const sharedButton=document.createElement('button');sharedButton.id='useShared';sharedButton.textContent='Load saved version';sharedButton.hidden=true;saveGroup.append(sharedButton);sharedButton.onclick=()=>{if(!current)return;const id=current.id,v=conflicts.get(id);if(!v)return;conflicts.delete(id);pending.delete(id);edits[id]=v;revisions[id]=v._revision||0;crop=clamp(current,v);history=[];future=[];render();refreshTile();sharedButton.hidden=true;$('#error').textContent='';$('#saveStatus').textContent='Loaded saved version'};
-const syncLabel=document.createElement('span');syncLabel.className='sync-label';syncLabel.textContent='Loading local files…';document.querySelector('.tools').prepend(syncLabel);
-Promise.all([studioRequest('/api/collection').then(r=>{if(!r.ok)throw Error();return r.json()}),studioRequest('/api/edits').then(r=>{if(!r.ok)throw Error();return r.json()})]).then(([items,saved])=>{collection=items;edits=saved;for(const [id,v] of Object.entries(saved))revisions[id]=v._revision||0;drawGrid();syncLabel.textContent='Saved in this browser'}).catch(()=>{$('#count').textContent='Unable to load the studio. Refresh to try again.';syncLabel.textContent='Connection unavailable'});
+const sharedButton=document.createElement('button');sharedButton.id='useShared';sharedButton.textContent='Load saved version';sharedButton.hidden=true;saveGroup.append(sharedButton);sharedButton.onclick=()=>{if(!current)return;const id=current.id,v=conflicts.get(id);if(!v)return;conflicts.delete(id);pending.delete(id);edits[id]=v;revisions[id]=v._revision||0;crop=clamp(current,v);entryCrop={...crop};history=[];future=[];render();refreshTile();sharedButton.hidden=true;$('#error').textContent='';$('#saveStatus').textContent='Loaded saved version'};
+const syncLabel=document.createElement('span');syncLabel.className='sync-label';syncLabel.textContent='Connecting…';document.querySelector('.tools').prepend(syncLabel);
+Promise.all([studioRequest('/api/collection').then(r=>{if(!r.ok)throw Error();return r.json()}),studioRequest('/api/edits').then(r=>{if(!r.ok)throw Error();return r.json()})]).then(([items,saved])=>{collection=items;edits=saved;for(const [id,v] of Object.entries(saved))revisions[id]=v._revision||0;drawGrid();syncLabel.textContent='Synced for everyone';subscribeEdits(refreshShared)}).catch(()=>{$('#count').textContent='Unable to load the studio. Refresh to try again.';syncLabel.textContent='Connection unavailable'});
 if(document.modelContext?.registerTool){const lifecycle=new AbortController();for(const tool of [{name:'read_card_crop',description:'Read saved artwork crop for a card number.',inputSchema:{type:'object',properties:{id:{type:'integer'}},required:['id'],additionalProperties:false},annotations:{readOnlyHint:true},execute:({id})=>{const item=collection.find(i=>i.id===id);if(!item)throw Error('Unknown card');return {id,name:item.name,available:item.available,crop:edits[id]||defaults()}}},{name:'set_card_crop',description:'Open a card and save its artwork crop. Zoom is proportional from 1 to 5; x and y are offsets in export pixels.',inputSchema:{type:'object',properties:{id:{type:'integer'},zoom:{type:'number',minimum:1,maximum:5},x:{type:'number'},y:{type:'number'}},required:['id','zoom','x','y'],additionalProperties:false},annotations:{readOnlyHint:false},execute:async({id,zoom,x,y})=>{if(!collection.find(i=>i.id===id&&i.available)||![zoom,x,y].every(Number.isFinite)||zoom<1||zoom>5)throw Error('Invalid card or crop');await open(id);remember();change({...crop,zoom,x,y});await persist();return {id,crop}}}]){try{Promise.resolve(document.modelContext.registerTool(tool,{signal:lifecycle.signal})).catch(()=>{})}catch{}}window.addEventListener('pagehide',()=>lifecycle.abort())}
 
-// Backups remain compatible with the original studio. Import is local only.
+// Backups remain compatible; imports use shared revision checks.
 $('#import').onclick=()=>$('#importFile').click();
 $('#importFile').onchange=async e=>{
  const file=e.target.files[0];if(!file)return;
@@ -169,10 +176,10 @@ $('#importFile').onchange=async e=>{
  try{
   if(pending.size){await persist();await saveChain;if(pending.size)throw Error('Save or resolve your pending edits before importing.')}
   const data=JSON.parse(await file.text());
-  const r=await post('/api/import',data);edits=await r.json();
+  const r=await post('/api/import',{...data,revisions});edits=await r.json();
   revisions={};for(const [id,v] of Object.entries(edits))revisions[id]=v._revision||0;
   conflicts.clear();pending.clear();if(current){parkEditor();current=null;toolbar.hidden=true}
-  drawGrid();syncLabel.textContent='Edits imported locally';
+  drawGrid();syncLabel.textContent='Edits shared with everyone';
  }catch(error){syncLabel.textContent=error.message}
  finally{button.disabled=false;e.target.value=''}
 };
@@ -218,3 +225,26 @@ const carouselLayoutObserver=new ResizeObserver(queueCarouselLayout);
 [grid,toolbar,document.querySelector('header')].forEach(element=>carouselLayoutObserver.observe(element));
 new MutationObserver(queueCarouselLayout).observe(document.body,{attributes:true,attributeFilter:['class']});
 window.addEventListener('resize',queueCarouselLayout);
+
+let refreshingShared=false,sharedAgain=false;
+async function refreshShared(){
+ if(refreshingShared){sharedAgain=true;return;}refreshingShared=true;
+ try{
+  await saveChain.catch(()=>{});
+  const response=await studioRequest('/api/edits');if(!response.ok)throw Error('Sync unavailable');
+  const saved=await response.json();let changed=false;
+  for(const [id,v] of Object.entries(saved)){
+   if((v._revision||0)<=(revisions[id]||0))continue;
+   if(pending.has(+id)||current?.id===+id){
+    conflicts.set(+id,v);
+    if(current?.id===+id){sharedButton.hidden=false;$('#error').textContent='Another user updated this card. Your draft is preserved; load the saved version to continue.';}
+    continue;
+   }
+   edits[id]=v;revisions[id]=v._revision||0;changed=true;
+   if(current){const old=grid.querySelector(`[data-id="${id}"]`),item=collection.find(c=>c.id===+id);if(old&&item)old.replaceWith(tile(item));}
+  }
+  if(changed&&!current)drawGrid();syncLabel.textContent='Synced for everyone';
+ }catch{syncLabel.textContent='Sync interrupted — reconnecting';setTimeout(refreshShared,5000);}
+ finally{refreshingShared=false;if(sharedAgain){sharedAgain=false;refreshShared();}}
+}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&collection.length)refreshShared();});
