@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 const root=new URL('../../minotecurator/',import.meta.url).pathname;
 globalThis.fetch=async url=>Response.json(JSON.parse(await readFile(new URL(url))));
+Object.defineProperty(globalThis,'navigator',{value:{},configurable:true});
 const mem=new Map();globalThis.localStorage={getItem:k=>mem.get(k)??null,setItem:(k,v)=>mem.set(k,v)};
 const {studioRequest:r}=await import(root+'storage.js');
 const items=await (await r('/api/collection')).json();assert.equal(items.length,1413);
@@ -13,3 +14,10 @@ assert.equal((await r('/api/import',{body:JSON.stringify({version:1,edits:{[id]:
 assert.equal((await (await r('/api/edits')).json())[id].zoom,1.3);
 assert.equal((await r('/api/import',{body:JSON.stringify({version:1,edits:{[id]:{zoom:'bad'}}})})).status,400);
 console.log('Storage: seed, save, conflict, import, invalid import passed');
+
+const offCard={nameX:-2400,nameY:3200,bodyX:2500,bodyY:-3100};
+const saved=(await (await r('/api/edits')).json())[id];
+res=await r('/api/save',{body:JSON.stringify({id,...saved,...offCard,_revision:saved._revision})});
+assert.equal(res.status,200);
+const restored=(await (await r('/api/edits')).json())[id];
+for(const [key,value] of Object.entries(offCard))assert.equal(restored[key],value);

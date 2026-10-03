@@ -16,8 +16,8 @@ export function normalize(item, v) {
   if (!['original', 'rainbow', 'prism', 'aurora', 'sunset', 'electric'].includes(ink)) throw Error('Unknown ink');
   return { zoom, x: bound(num('x', 0), -(item.width * scale - 2000) / 2, (item.width * scale - 2000) / 2),
     y: bound(num('y', 0), -(item.height * scale - 2800) / 2, (item.height * scale - 2800) / 2),
-    nameZoom, nameX: bound(num('nameX', 0), nw / 2 - 1000, 1000 - nw / 2), nameY: bound(num('nameY', 0), nh / 2 - 207, 2800 - nh / 2 - 207),
+    nameZoom, nameX: num('nameX', 0), nameY: num('nameY', 0),
     ink, body: v.body === true, bodyZoom,
-    bodyX: bound(num('bodyX', 0), bw * bodyZoom / 2 - cx, 2000 - bw * bodyZoom / 2 - cx),
-    bodyY: bound(num('bodyY', 0), bh * bodyZoom / 2 - cy, 2800 - bh * bodyZoom / 2 - cy) };
+    bodyX: num('bodyX', 0),
+    bodyY: num('bodyY', 0) };
 }

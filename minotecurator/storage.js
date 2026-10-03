@@ -1,4 +1,4 @@
-import {normalize} from './normalize.js';
+import {normalize} from './normalize.js?v=2';
 const KEY='cards.art:minote-studio:edits:v1';
 const ready=Promise.all(['collection.json','initial-edits.json'].map(file=>fetch(new URL(file,import.meta.url)).then(r=>{if(!r.ok)throw Error('Could not load studio data');return r.json();})));
 function read(seed){const text=localStorage.getItem(KEY);return text===null?structuredClone(seed):JSON.parse(text);}
