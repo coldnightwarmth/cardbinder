@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+const root=new URL('../../minotecurator/',import.meta.url).pathname;
+globalThis.fetch=async url=>Response.json(JSON.parse(await readFile(new URL(url))));
+const mem=new Map();globalThis.localStorage={getItem:k=>mem.get(k)??null,setItem:(k,v)=>mem.set(k,v)};
+const {studioRequest:r}=await import(root+'storage.js');
+const items=await (await r('/api/collection')).json();assert.equal(items.length,1413);
+const seed=await (await r('/api/edits')).json(), id=items[0].id;
+const payload={id,...seed[id],zoom:1.2,_revision:seed[id]?._revision||0};
+let res=await r('/api/save',{body:JSON.stringify(payload)});assert.equal(res.status,200);assert.equal((await res.json()).zoom,1.2);
+assert.equal((await r('/api/save',{body:JSON.stringify(payload)})).status,409);
+assert.equal((await r('/api/import',{body:JSON.stringify({version:1,edits:{[id]:{zoom:1.3}}})})).status,200);
+assert.equal((await (await r('/api/edits')).json())[id].zoom,1.3);
+assert.equal((await r('/api/import',{body:JSON.stringify({version:1,edits:{[id]:{zoom:'bad'}}})})).status,400);
+console.log('Storage: seed, save, conflict, import, invalid import passed');

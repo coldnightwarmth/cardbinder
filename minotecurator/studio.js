@@ -1,0 +1,187 @@
+import {studioRequest} from './storage.js';
+const $=s=>document.querySelector(s),W=2000,H=2800,defaults=()=>({zoom:1,x:0,y:0,nameZoom:1,nameX:0,nameY:0,ink:"original",body:false,bodyZoom:1,bodyX:0,bodyY:0});let collection=[],edits={},filtered=[],current=null,crop=defaults(),history=[],timer,onlyEdited=false,onlyUnedited=false,saveChain=Promise.resolve();const grid=$('#grid'),dialog=$('#editor');let revisions={},pending=new Set(),conflicts=new Map(),editSerial={};
+function geometry(item,v){const s=Math.max(W/item.width,H/item.height)*v.zoom;return {w:item.width*s,h:item.height*s}}
+function clamp(item,v){v={...defaults(),...v,zoom:Math.max(1,Math.min(5,v.zoom))};const g=geometry(item,v);v.x=Math.max(-(g.w-W)/2,Math.min((g.w-W)/2,v.x));v.y=Math.max(-(g.h-H)/2,Math.min((g.h-H)/2,v.y));const b=nameGeometry(item,{...v,nameZoom:1});v.nameZoom=Math.max(.25,Math.min(4,W/b.w,H/b.h,v.nameZoom));const n=nameGeometry(item,v);v.nameX=Math.max(n.w/2-W/2,Math.min(W/2-n.w/2,v.nameX));v.nameY=Math.max(n.h/2-207,Math.min(H-n.h/2-207,v.nameY));const bg=bodyGeometry({...v,bodyZoom:1});v.bodyZoom=Math.max(.25,Math.min(4,W/bg.w,H/bg.h,v.bodyZoom));const q=bodyGeometry(v);v.bodyX=Math.max(q.w/2-BODY.cx,Math.min(W-q.w/2-BODY.cx,v.bodyX));v.bodyY=Math.max(q.h/2-BODY.cy,Math.min(H-q.h/2-BODY.cy,v.bodyY));return v}
+function position(img,item,v){const g=geometry(item,v);img.style.width=g.w/W*100+'%';img.style.height=g.h/H*100+'%';img.style.left=((W-g.w)/2+v.x)/W*100+'%';img.style.top=((H-g.h)/2+v.y)/H*100+'%'}
+const BODY={w:1053/1466*W,h:386/2052*H,cx:749.5/1466*W,cy:1795/2052*H};
+function bodyGeometry(v){return {w:BODY.w*(v.bodyZoom??1),h:BODY.h*(v.bodyZoom??1),cx:BODY.cx+(v.bodyX??0),cy:BODY.cy+(v.bodyY??0)}}
+function bodyPosition(el,v){const b=bodyGeometry(v);el.style.width=b.w/W*100+'%';el.style.height=b.h/H*100+'%';el.style.left=(b.cx-b.w/2)/W*100+'%';el.style.top=(b.cy-b.h/2)/H*100+'%'}
+function layerKeys(l=layer){return l==='name'?['nameX','nameY','nameZoom']:l==='body'?['bodyX','bodyY','bodyZoom']:['x','y','zoom']}
+function maxZoom(l=layer){return l==='name'?Math.min(4,W/nameGeometry(current,{...crop,nameZoom:1}).w):l==='body'?Math.min(4,W/BODY.w,H/BODY.h):5}
+function nameGeometry(item,v){const scale=Math.min(1,1440/item.nameWidth,176/item.nameHeight)*(v.nameZoom??1);return {w:item.nameWidth*scale,h:item.nameHeight*scale,cx:W/2+(v.nameX??0),cy:207+(v.nameY??0)}}
+function namePosition(img,item,v=defaults()){const n=nameGeometry(item,v);img.style.width=n.w/W*100+'%';img.style.height=n.h/H*100+'%';img.style.left=(n.cx-n.w/2)/W*100+'%';img.style.top=(n.cy-n.h/2)/H*100+'%'}
+function nameSource(item,v){return `/api/name/${item.id}/${v.ink||'original'}.png?v=bold3`}
+const palettes={rainbow:['#d40b3f','#dd5300','#ba9000','#148438','#008cb6','#244bc9','#9521b6'],prism:['#621bb3','#084ee0','#009c95','#719500','#de7200','#df1260','#671bbe'],aurora:['#332aa8','#087cd0','#009577','#4e9835','#067da5','#7725ba'],sunset:['#6d169c','#c3137d','#e72b45','#d26d00','#ba9300','#c82b68'],electric:['#1534c7','#7e1acb','#d70e91','#194cdd','#008e9d','#1a36b5']};
+const imageCache=new Map(),tintCache=new Map();function loadImage(src){if(imageCache.size>40)imageCache.delete(imageCache.keys().next().value);if(!imageCache.has(src))imageCache.set(src,new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=()=>{imageCache.delete(src);reject(Error('Artwork could not load. Please try again.'))};im.src=src}));return imageCache.get(src)}
+async function inkImage(id,ink){if(tintCache.size>80)tintCache.delete(tintCache.keys().next().value);const key=id+'/'+ink;if(!tintCache.has(key))tintCache.set(key,(async()=>{const source=await loadImage(`/minotecurator/assets/names/${id}.webp?v=trim1`);if(ink==='original')return source;const c=document.createElement('canvas');c.width=source.width;c.height=source.height;const ctx=c.getContext('2d');ctx.drawImage(source,0,0);ctx.globalCompositeOperation='source-in';const g=ctx.createLinearGradient(0,0,c.width,0);palettes[ink].forEach((color,i)=>g.addColorStop(i/(palettes[ink].length-1),color));ctx.fillStyle=g;ctx.fillRect(0,0,c.width,c.height);return loadImage(c.toDataURL())})().catch(e=>{tintCache.delete(key);throw e}));return tintCache.get(key)}
+const nameObserver=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){nameObserver.unobserve(e.target);resolveName(e.target)}}),{rootMargin:'400px'});
+function resolveName(img){const src=img.dataset.requested;const m=src.match(/\/api\/name\/(\d+)\/(\w+)\.png/);if(!m)return;inkImage(m[1],m[2]).then(im=>{if(img.dataset.requested===src)img.src=im.src}).catch(()=>{img.alt='Name unavailable—refresh to retry'})}
+function setSource(img,src){if(img.dataset.requested===src)return;img.dataset.requested=src;if(src.startsWith('/api/name/')){if(img.id==='name')resolveName(img);else nameObserver.observe(img)}else img.src=src}
+function isEdited(id){const v=edits[id];return v&&Object.entries(defaults()).some(([key,value])=>typeof value==='number'?Math.abs((v[key]??value)-value)>.001:(v[key]??value)!==value)}
+function image(src,cls){const img=document.createElement('img');setSource(img,src);img.className=cls;img.loading='lazy';img.alt='';return img}
+function tile(item){const b=document.createElement('article');b.className='tile';b.tabIndex=0;b.setAttribute('role','button');b.dataset.id=item.id;b.setAttribute('aria-label',`Edit card ${item.id}: ${item.name}`);const c=document.createElement('div');c.className='card';if(item.available){const art=image(`/minotecurator/assets/thumbs/${item.id}.webp`,'art');position(art,item,edits[item.id]||defaults());c.append(art,image('/minotecurator/assets/strip.png','strip'));const v={...defaults(),...edits[item.id]};if(v.body){const body=image('/minotecurator/assets/body-crop.png','body-box');bodyPosition(body,v);c.append(body)}const name=image(nameSource(item,v),'name');namePosition(name,item,v);c.append(name);b.onclick=e=>{if(current?.id!==item.id){const selectedLayer=layerAt(e,c,item,{...defaults(),...edits[item.id]});open(item.id);layer=selectedLayer;render()}};b.onkeydown=e=>{if((e.key==='Enter'||e.key===' ')&&e.target===b){e.preventDefault();open(item.id)}}}else{c.classList.add('unavailable');const a=document.createElement('strong');a.textContent=String(item.id).padStart(4,'0');const s=document.createElement('span');s.textContent='Artwork unavailable';c.append(a,s);b.setAttribute('aria-disabled','true');b.tabIndex=-1}b.append(c);const cap=document.createElement('div');cap.className='caption';const id=document.createElement('span');id.className='id';id.textContent=String(item.id).padStart(4,'0');const label=document.createElement('span');label.className='label';label.textContent=item.name;const mark=document.createElement('span');mark.className='edited-mark';mark.textContent=isEdited(item.id)?'Edited':'';cap.append(id,label,mark);b.append(cap);return b}
+function drawGrid(){nameObserver.disconnect();if(current){persist().catch(()=>{});parkEditor();current=null;toolbar.hidden=true}const q=$('#search').value.trim().toLowerCase();filtered=collection.filter(i=>(!onlyEdited||isEdited(i.id))&&(!onlyUnedited||!isEdited(i.id))&&(!q||i.name.toLowerCase().includes(q)||String(i.id).includes(q)));grid.replaceChildren(...filtered.map(tile));$('#empty').hidden=filtered.length>0;const missing=collection.filter(i=>!i.available).length;$('#count').textContent=`${filtered.length.toLocaleString()} cards${missing?' · '+missing+' artworks unavailable locally':''}`;requestAnimationFrame(updateCarouselNav)}
+function refreshTile(){const tile=grid.querySelector(`[data-id="${current.id}"]`);if(tile){const img=tile.querySelector('.art');if(img)position(img,current,crop);tile.querySelector('.edited-mark').textContent=isEdited(current.id)?'Edited':''}}
+function render(){cancelButton.hidden=!entryCrop||!Object.keys(defaults()).some(key=>crop[key]!==entryCrop[key]);position($('#art'),current,crop);namePosition($('#name'),current,crop);setSource($('#name'),nameSource(current,crop));namePosition(nameFrame,current,crop);bodyPosition(bodyImage,crop);bodyPosition(bodyFrame,crop);bodyImage.hidden=!crop.body;$('#bodyToggle').checked=crop.body;const key=layerKeys()[2];$('#zoom').min=layer==='artwork'?1:.25;$('#zoom').max=maxZoom();$('#zoom').value=crop[key];$('#zoomValue').textContent=Math.round(crop[key]*100)+'%';$('#sizeLabel').textContent=layer==='name'?'Name size':layer==='body'?'Body box size':'Artwork size';$('#reset').textContent=layer==='name'?'Reset name':layer==='body'?'Reset box':'Reset crop';$('#undo').disabled=!history.length;stageWrap.classList.toggle('name-mode',layer!=='artwork');nameFrame.hidden=layer!=='name';bodyFrame.hidden=layer!=='body'||!crop.body;document.querySelectorAll('[data-layer]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.layer===layer));document.querySelectorAll('[data-ink]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.ink===crop.ink))}
+function remember(){history.push({...crop});if(history.length>40)history.shift()}
+async function post(url,data){const r=await studioRequest(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});if(!r.ok){const result=await r.json();const e=Error(result.error||'Could not save');e.status=r.status;e.latest=result.latest;throw e}return r}
+function persist(){clearTimeout(timer);timer=null;if(!current)return Promise.resolve();const id=current.id,v={...crop},serial=editSerial[id]||0;edits[id]=v;refreshTile();if(conflicts.has(id))return Promise.reject(Error('Resolve the change from another browser tab before saving.'));if(!pending.has(id))return saveChain;$('#saveStatus').textContent='Saving locally…';saveChain=saveChain.catch(()=>{}).then(async()=>{if(conflicts.has(id))throw Error('Resolve the change from another browser tab before saving.');const r=await post('/api/save',{id,...v,_revision:revisions[id]||0}),saved=await r.json();revisions[id]=saved._revision;if((editSerial[id]||0)===serial){pending.delete(id);edits[id]=saved;if(current?.id===id){crop={...crop,...saved};$('#saveStatus').textContent='Saved locally'}}}).catch(e=>{if(e.status===409)conflicts.set(id,e.latest);if(current?.id===id){$('#saveStatus').textContent='Draft not saved';$('#error').textContent=e.message;$('#useShared').hidden=!conflicts.has(id)}throw e});saveChain.catch(()=>{});return saveChain}
+function change(v){crop=clamp(current,{...crop,...v});pending.add(current.id);editSerial[current.id]=(editSerial[current.id]||0)+1;render();edits[current.id]={...crop};refreshTile();$('#saveStatus').textContent='Unsaved changes';clearTimeout(timer);timer=setTimeout(()=>persist().catch(()=>{}),300)}
+const stageWrap=$('#stageWrap');const parking=document.createElement('div');parking.hidden=true;document.body.append(parking);parking.append(stageWrap);
+const toolbar=document.createElement('section');toolbar.className='inline-toolbar';toolbar.hidden=true;toolbar.setAttribute('aria-label','Selected card crop controls');
+const selectedLabel=document.createElement('div');selectedLabel.className='selected-label';selectedLabel.append($('#number'),$('#title'));
+const zoomGroup=document.createElement('div');zoomGroup.className='inline-zoom';zoomGroup.append($('.zoom-label'),$('#zoom'));
+const saveGroup=document.createElement('div');saveGroup.className='inline-save';saveGroup.append($('#saveStatus'),$('#error'));
+const cancelButton=document.createElement('button');cancelButton.id='cancel';cancelButton.textContent='Cancel';
+const downloadIcon='<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M5 16v5h14v-5"/></svg>';
+$('#export').innerHTML=downloadIcon;$('#export').setAttribute('aria-label','Download card PNG');$('#export').title='Download card PNG';
+toolbar.append(selectedLabel,zoomGroup,$('#reset'),$('#undo'),saveGroup,cancelButton,$('#close'),$('#export'));document.body.append(toolbar);
+let layer='artwork',entryCrop=null,cancelling=false;
+const sidebar=document.createElement('section');sidebar.className='layer-sidebar';sidebar.hidden=true;sidebar.setAttribute('aria-label','Card layers');sidebar.innerHTML=`<div class="eyebrow">CARD LAYERS</div><div class="layer-switch"><button data-layer="artwork" aria-pressed="true">Artwork</button><button data-layer="name" aria-pressed="false">Pen name</button><button data-layer="body" aria-pressed="false">Body box</button></div><p class="layer-help">Choose a layer, then drag it on the card or pull its corner handles.</p><button id="centerName">Center name on strip</button><div class="ink-heading">Name ink</div><div class="ink-options"><button data-ink="original" aria-pressed="true"><i style="background:#454545"></i>Original pen</button><button data-ink="rainbow"><i class="rainbow"></i>Rainbow</button><button data-ink="prism"><i class="prism"></i>Prism</button><button data-ink="aurora"><i class="aurora"></i>Aurora</button><button data-ink="sunset"><i class="sunset"></i>Sunset</button><button data-ink="electric"><i class="electric"></i>Electric</button></div><div class="body-control"><label><input id="bodyToggle" type="checkbox"> Add notebook body box</label><img src="/minotecurator/assets/body.png" alt="Notebook body box preview"><p>A blank paper box for future text.</p></div>`;document.body.append(sidebar);
+const sizeText=$('.zoom-label');sizeText.firstChild.textContent='';const sizeLabel=document.createElement('span');sizeLabel.id='sizeLabel';sizeLabel.textContent='Artwork size';sizeText.prepend(sizeLabel);
+const bodyImage=image('/minotecurator/assets/body-crop.png','body-box');bodyImage.hidden=true;$('#stage').insertBefore(bodyImage,$('#name'));
+const nameFrame=document.createElement('div');nameFrame.className='name-frame';nameFrame.hidden=true;nameFrame.innerHTML=['nw','ne','sw','se','n','e','s','w'].map(c=>`<button class="handle ${c}" data-corner="${c}" aria-label="Resize name from ${c} corner"></button>`).join('');stageWrap.append(nameFrame);
+const bodyFrame=document.createElement('div');bodyFrame.className='body-frame';bodyFrame.hidden=true;bodyFrame.innerHTML=['nw','ne','sw','se','n','e','s','w'].map(c=>`<button class="handle ${c}" data-corner="${c}" aria-label="Resize body box from ${c} corner"></button>`).join('');stageWrap.append(bodyFrame);
+sidebar.querySelectorAll('[data-layer]').forEach(b=>b.onclick=()=>{layer=b.dataset.layer;if(layer==='body'&&!crop.body){remember();change({body:true});persist().catch(()=>{})}else render()});sidebar.querySelectorAll('[data-ink]').forEach(b=>b.onclick=()=>{remember();change({ink:b.dataset.ink});persist().catch(()=>{})});$('#centerName').onclick=()=>{remember();change({nameX:0,nameY:0});persist().catch(()=>{})};$('#bodyToggle').onchange=e=>{remember();if(e.target.checked)layer='body';else if(layer==='body')layer='artwork';change({body:e.target.checked});persist().catch(()=>{})};
+function parkEditor(){parking.append(stageWrap);document.body.classList.remove('editing');sidebar.hidden=true}
+async function open(id){
+ if(current?.id===id)return;
+ if(current){persist().catch(()=>{});const old=grid.querySelector(`[data-id="${current.id}"]`);parkEditor();if(old)old.replaceWith(tile(current))}
+ current=collection.find(i=>i.id===id);if(!current?.available){current=null;return}
+ crop=clamp(current,edits[id]||defaults());entryCrop={...crop};history=[];$('#number').textContent='CARD '+String(id).padStart(4,'0');$('#title').textContent=current.name;$('#art').className='art';$('#art').src=`/minotecurator/assets/thumbs/${id}.webp`;const full=new Image();full.onload=()=>{if(current?.id===id)$('#art').src=full.src};full.src=`/minotecurator/assets/originals/${id}.webp`;$('#art').alt=current.name;setSource($('#name'),nameSource(current,crop));namePosition($('#name'),current);$('#saveStatus').textContent='Saved locally';$('#error').textContent=conflicts.has(id)?'This card changed in another browser tab. Your draft is preserved.':'';$('#useShared').hidden=!conflicts.has(id);
+ const target=grid.querySelector(`[data-id="${id}"]`);target.classList.add('active-tile');target.querySelector('.card').replaceWith(stageWrap);toolbar.hidden=false;sidebar.hidden=false;document.body.classList.add('editing');render();requestAnimationFrame(()=>{const r=target.getBoundingClientRect(),top=document.querySelector('header').getBoundingClientRect().bottom+22,bottom=toolbar.getBoundingClientRect().top-22;if(r.top<top||r.bottom>bottom)window.scrollBy({top:r.top-top,behavior:'instant'})});
+}
+$('#close').textContent='Done';$('#close').setAttribute('aria-label','Done');$('#close').onclick=async()=>{
+ if(cancelling)return;
+ cancelling=true;grid.inert=sidebar.inert=toolbar.inert=document.querySelector('header').inert=true;
+ try{
+  if(current){
+   await persist();
+   const old=grid.querySelector(`[data-id="${current.id}"]`);parkEditor();if(old)old.replaceWith(tile(current));current=null;entryCrop=null;
+  }
+  toolbar.hidden=true;if(onlyEdited||onlyUnedited)drawGrid();
+ }catch(error){$('#error').textContent=error.message;}
+ finally{cancelling=false;grid.inert=sidebar.inert=toolbar.inert=document.querySelector('header').inert=false;}
+};
+cancelButton.onclick=async()=>{
+ if(!current||!entryCrop||cancelling)return;
+ const id=current.id,original={...entryCrop};
+ cancelling=true;clearTimeout(timer);timer=null;
+ // Freeze selection while the rollback joins the existing save queue. This
+ // prevents a late autosave from restoring edits that were just cancelled.
+ grid.inert=sidebar.inert=toolbar.inert=document.querySelector('header').inert=true;
+ try{
+  if(conflicts.has(id))throw Error('Load the saved version before cancelling; another tab changed this card.');
+  const changed=Object.keys(defaults()).some(key=>crop[key]!==original[key]);
+  if(changed){change(original);clearTimeout(timer);timer=null;await persist();}
+  else await saveChain;
+  if(current?.id===id){
+   const old=grid.querySelector(`[data-id="${id}"]`);parkEditor();if(old)old.replaceWith(tile(current));
+   current=null;entryCrop=null;history=[];toolbar.hidden=true;if(onlyEdited||onlyUnedited)drawGrid();
+  }
+ }catch(error){$('#error').textContent=error.message;}
+ finally{cancelling=false;grid.inert=sidebar.inert=toolbar.inert=document.querySelector('header').inert=false;}
+};
+$('#zoom').addEventListener('pointerdown',remember);$('#zoom').addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key))remember()});$('#zoom').oninput=e=>change({...crop,[layerKeys()[2]]:+e.target.value});$('#zoom').onchange=()=>persist().catch(()=>{});
+$('#reset').onclick=()=>{remember();change(layer==='name'?{nameZoom:1,nameX:0,nameY:0}:layer==='body'?{bodyZoom:1,bodyX:0,bodyY:0}:{zoom:1,x:0,y:0});persist().catch(()=>{})};$('#undo').onclick=()=>{if(history.length){crop=history.pop();change(crop);persist().catch(()=>{})}};
+function navigate(direction){const list=filtered.filter(i=>i.available),i=list.findIndex(c=>c.id===current.id);if(i+direction>=0&&i+direction<list.length)open(list[i+direction].id)}$('#prev').onclick=()=>navigate(-1);$('#next').onclick=()=>navigate(1);
+$('#search').oninput=drawGrid;
+function setEditFilter(kind){
+ onlyEdited=kind==='edited'?!onlyEdited:false;
+ onlyUnedited=kind==='unedited'?!onlyUnedited:false;
+ $('#editedFilter').setAttribute('aria-pressed',onlyEdited);
+ $('#uneditedFilter').setAttribute('aria-pressed',onlyUnedited);
+ drawGrid();
+}
+$('#editedFilter').onclick=()=>setEditFilter('edited');
+$('#uneditedFilter').onclick=()=>setEditFilter('unedited');
+
+function download(blob,name){const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),30000)}
+$('#backup').onclick=()=>download(new Blob([JSON.stringify({version:1,edits},null,2)],{type:'application/json'}),'mi-note-card-edits.json');
+function crc32(bytes){let c=0xffffffff;for(const b of bytes){c^=b;for(let k=0;k<8;k++)c=(c>>>1)^((c&1)?0xedb88320:0)}return (c^0xffffffff)>>>0}
+async function withDPI(blob){const data=new Uint8Array(await blob.arrayBuffer()),chunk=new Uint8Array(21),view=new DataView(chunk.buffer);view.setUint32(0,9);chunk.set([112,72,89,115],4);view.setUint32(8,31496);view.setUint32(12,31496);chunk[16]=1;view.setUint32(17,crc32(chunk.slice(4,17)));return new Blob([data.slice(0,33),chunk,data.slice(33)],{type:'image/png'})}
+async function exportCard(item,v){const art=await loadImage(`/minotecurator/assets/originals/${item.id}.webp`),strip=await loadImage('/minotecurator/assets/strip.png'),name=await inkImage(item.id,v.ink);const canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;const ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);const g=geometry(item,v);ctx.drawImage(art,(W-g.w)/2+v.x,(H-g.h)/2+v.y,g.w,g.h);ctx.drawImage(strip,0,0,W,H);if(v.body){const body=await loadImage('/minotecurator/assets/body-crop.png'),b=bodyGeometry(v);ctx.drawImage(body,b.cx-b.w/2,b.cy-b.h/2,b.w,b.h)}const n=nameGeometry(item,v);ctx.drawImage(name,n.cx-n.w/2,n.cy-n.h/2,n.w,n.h);const blob=await new Promise(r=>canvas.toBlob(r,'image/png'));if(!blob)throw Error('Export failed');return withDPI(blob)}
+$('#export').onclick=async()=>{const button=$('#export'),item=current,v={...crop};button.disabled=true;button.setAttribute('aria-busy','true');$('#error').textContent='';try{await persist();download(await exportCard(item,v),`mi-note-${String(item.id).padStart(4,'0')}.png`);$('#saveStatus').textContent='Export downloaded'}catch(e){$('#error').textContent=e.message}finally{button.disabled=false;button.innerHTML=downloadIcon;button.removeAttribute('aria-busy')}};
+let gesture=null;function point(e){const r=$('#stage').getBoundingClientRect();return {x:(e.clientX-r.left)/r.width*W,y:(e.clientY-r.top)/r.height*H}}
+function begin(e,corner){
+ if(e.button!==0)return;if(!corner){layer=layerAt(e,$('#stage'),current,crop);render();}
+ e.preventDefault();e.stopPropagation();remember();
+ const p=point(e),[xkey,ykey]=layerKeys(),cx=layer==='body'?BODY.cx:W/2,cy=layer==='body'?BODY.cy:layer==='name'?207:H/2;
+ const center={x:cx+crop[xkey],y:cy+crop[ykey]};
+ const n=layer==='body'?bodyGeometry(crop):nameGeometry(current,crop);
+ const bounds=layer==='artwork'?{cx:W/2,cy:H/2,w:W,h:H}:n;
+ const anchor=corner?{x:corner.includes('w')?bounds.cx+bounds.w/2:corner.includes('e')?bounds.cx-bounds.w/2:center.x,
+ y:corner.includes('n')?bounds.cy+bounds.h/2:corner.includes('s')?bounds.cy-bounds.h/2:center.y}:null;
+ gesture={pointer:e.pointerId,start:p,crop:{...crop},corner,anchor,center,layer};e.currentTarget.setPointerCapture(e.pointerId);
+}
+function move(e){
+ if(!gesture||gesture.pointer!==e.pointerId)return;
+ const p=point(e),g=gesture,ns=g.layer!=='artwork',[xkey,ykey,zkey]=layerKeys(g.layer);
+ if(!g.corner){change({...g.crop,[xkey]:g.crop[xkey]+p.x-g.start.x,[ykey]:g.crop[ykey]+p.y-g.start.y});return;}
+ const a=e.altKey?g.center:g.anchor,dx=g.start.x-a.x,dy=g.start.y-a.y;
+ let ratio;
+ if(g.corner==='e'||g.corner==='w')ratio=Math.abs(dx)>.001?(p.x-a.x)/dx:1;
+ else if(g.corner==='n'||g.corner==='s')ratio=Math.abs(dy)>.001?(p.y-a.y)/dy:1;
+ else ratio=((p.x-a.x)*dx+(p.y-a.y)*dy)/Math.max(.000001,dx*dx+dy*dy);
+ const z=Math.max(ns?.25:1,Math.min(maxZoom(g.layer),g.crop[zkey]*ratio));ratio=z/g.crop[zkey];
+ const cx=g.layer==='body'?BODY.cx:W/2,cy=g.layer==='body'?BODY.cy:ns?207:H/2;
+ // One zoom scalar controls both dimensions; Alt retains the original center.
+ change({...g.crop,[zkey]:z,[xkey]:e.altKey?g.crop[xkey]:a.x+(cx+g.crop[xkey]-a.x)*ratio-cx,
+ [ykey]:e.altKey?g.crop[ykey]:a.y+(cy+g.crop[ykey]-a.y)*ratio-cy});
+}
+
+function end(e){if(gesture&&e.pointerId===gesture.pointer){gesture=null;persist().catch(()=>{})}}
+for(const edge of ['n','e','s','w']){
+ const handle=document.createElement('button');handle.className='handle '+edge;handle.dataset.corner=edge;
+ handle.setAttribute('aria-label','Resize artwork from '+({n:'top',e:'right',s:'bottom',w:'left'}[edge])+' edge');stageWrap.append(handle);
+}
+bodyFrame.addEventListener('pointerdown',e=>begin(e,null));bodyFrame.addEventListener('pointermove',move);bodyFrame.addEventListener('pointerup',end);bodyFrame.addEventListener('pointercancel',end);nameFrame.addEventListener('pointerdown',e=>begin(e,null));nameFrame.addEventListener('pointermove',move);nameFrame.addEventListener('pointerup',end);nameFrame.addEventListener('pointercancel',end);const stage=$('#stage');stage.addEventListener('pointerdown',e=>begin(e,null));stage.addEventListener('pointermove',move);stage.addEventListener('pointerup',end);stage.addEventListener('pointercancel',end);document.querySelectorAll('#stageWrap > .handle, .name-frame .handle, .body-frame .handle').forEach(h=>{h.addEventListener('pointerdown',e=>begin(e,h.dataset.corner));h.addEventListener('pointermove',move);h.addEventListener('pointerup',end);h.addEventListener('pointercancel',end)});
+stage.addEventListener('wheel',e=>{e.preventDefault();remember();const key=layerKeys()[2];change({[key]:crop[key]*Math.exp(-e.deltaY*.0015)})},{passive:false});
+document.addEventListener('keydown',e=>{if(!current||['INPUT','TEXTAREA','BUTTON','SELECT'].includes(e.target.tagName))return;const d=e.shiftKey?20:4;if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();remember();const [x,y]=layerKeys();change({[x]:crop[x]+(e.key==='ArrowLeft'?-d:e.key==='ArrowRight'?d:0),[y]:crop[y]+(e.key==='ArrowUp'?-d:e.key==='ArrowDown'?d:0)})}});
+window.addEventListener('beforeunload',e=>{if(pending.size){e.preventDefault();e.returnValue='Your draft has not finished saving.'}});
+const sharedButton=document.createElement('button');sharedButton.id='useShared';sharedButton.textContent='Load saved version';sharedButton.hidden=true;saveGroup.append(sharedButton);sharedButton.onclick=()=>{if(!current)return;const id=current.id,v=conflicts.get(id);if(!v)return;conflicts.delete(id);pending.delete(id);edits[id]=v;revisions[id]=v._revision||0;crop=clamp(current,v);render();refreshTile();sharedButton.hidden=true;$('#error').textContent='';$('#saveStatus').textContent='Loaded saved version'};
+const syncLabel=document.createElement('span');syncLabel.className='sync-label';syncLabel.textContent='Loading local files…';document.querySelector('.tools').prepend(syncLabel);
+Promise.all([studioRequest('/api/collection').then(r=>{if(!r.ok)throw Error();return r.json()}),studioRequest('/api/edits').then(r=>{if(!r.ok)throw Error();return r.json()})]).then(([items,saved])=>{collection=items;edits=saved;for(const [id,v] of Object.entries(saved))revisions[id]=v._revision||0;drawGrid();syncLabel.textContent='Saved in this browser'}).catch(()=>{$('#count').textContent='Unable to load the studio. Refresh to try again.';syncLabel.textContent='Connection unavailable'});
+if(document.modelContext?.registerTool){const lifecycle=new AbortController();for(const tool of [{name:'read_card_crop',description:'Read saved artwork crop for a card number.',inputSchema:{type:'object',properties:{id:{type:'integer'}},required:['id'],additionalProperties:false},annotations:{readOnlyHint:true},execute:({id})=>{const item=collection.find(i=>i.id===id);if(!item)throw Error('Unknown card');return {id,name:item.name,available:item.available,crop:edits[id]||defaults()}}},{name:'set_card_crop',description:'Open a card and save its artwork crop. Zoom is proportional from 1 to 5; x and y are offsets in export pixels.',inputSchema:{type:'object',properties:{id:{type:'integer'},zoom:{type:'number',minimum:1,maximum:5},x:{type:'number'},y:{type:'number'}},required:['id','zoom','x','y'],additionalProperties:false},annotations:{readOnlyHint:false},execute:async({id,zoom,x,y})=>{if(!collection.find(i=>i.id===id&&i.available)||![zoom,x,y].every(Number.isFinite)||zoom<1||zoom>5)throw Error('Invalid card or crop');await open(id);remember();change({...crop,zoom,x,y});await persist();return {id,crop}}}]){try{Promise.resolve(document.modelContext.registerTool(tool,{signal:lifecycle.signal})).catch(()=>{})}catch{}}window.addEventListener('pagehide',()=>lifecycle.abort())}
+
+// Backups remain compatible with the original studio. Import is local only.
+$('#import').onclick=()=>$('#importFile').click();
+$('#importFile').onchange=async e=>{
+ const file=e.target.files[0];if(!file)return;
+ const button=$('#import');button.disabled=true;
+ try{
+  if(pending.size){await persist();await saveChain;if(pending.size)throw Error('Save or resolve your pending edits before importing.')}
+  const data=JSON.parse(await file.text());
+  const r=await post('/api/import',data);edits=await r.json();
+  revisions={};for(const [id,v] of Object.entries(edits))revisions[id]=v._revision||0;
+  conflicts.clear();pending.clear();if(current){parkEditor();current=null;toolbar.hidden=true}
+  drawGrid();syncLabel.textContent='Edits imported locally';
+ }catch(error){syncLabel.textContent=error.message}
+ finally{button.disabled=false;e.target.value=''}
+};
+
+
+function layerAt(event,element,item,value){
+ const r=element.getBoundingClientRect(),x=(event.clientX-r.left)/r.width*W,y=(event.clientY-r.top)/r.height*H;
+ const inside=b=>x>=b.cx-b.w/2&&x<=b.cx+b.w/2&&y>=b.cy-b.h/2&&y<=b.cy+b.h/2;
+ if(inside(nameGeometry(item,value)))return 'name';
+ if(value.body&&inside(bodyGeometry(value)))return 'body';
+ return 'artwork';
+}
+const viewToggle=$('#viewToggle'),carouselNav=$('#carouselNav');
+let carousel=false;
+function updateCarouselNav(){
+ $('#carouselPrev').disabled=grid.scrollLeft<2;
+ $('#carouselNext').disabled=grid.scrollLeft>=grid.scrollWidth-grid.clientWidth-2;
+}
+viewToggle.onclick=()=>{
+ carousel=!carousel;document.body.classList.toggle('carousel-view',carousel);
+ viewToggle.setAttribute('aria-pressed',carousel);viewToggle.setAttribute('aria-label',carousel?'Show gallery grid':'Show horizontal gallery');
+ carouselNav.hidden=!carousel;
+ requestAnimationFrame(()=>{if(carousel&&current){const t=grid.querySelector(`[data-id="${current.id}"]`);if(t)grid.scrollLeft=t.offsetLeft-grid.offsetLeft-grid.clientWidth/2+t.clientWidth/2;}updateCarouselNav();});
+};
+function scrollCards(direction){const t=grid.querySelector('.tile');if(t)grid.scrollBy({left:direction*(t.getBoundingClientRect().width+20),behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});}
+$('#carouselPrev').onclick=()=>scrollCards(-1);$('#carouselNext').onclick=()=>scrollCards(1);
+grid.addEventListener('scroll',updateCarouselNav,{passive:true});
+grid.addEventListener('wheel',event=>{if(!carousel||current||Math.abs(event.deltaX)>Math.abs(event.deltaY))return;event.preventDefault();grid.scrollLeft+=event.deltaY*(event.deltaMode===1?16:event.deltaMode===2?grid.clientWidth:1);},{passive:false});
+window.addEventListener('resize',updateCarouselNav);
