@@ -2,6 +2,7 @@
 export function createSealHint(element){
  let taps=0,cooldownUntil=0,started=null,fadeAt=null;
  return {
+  reset(){taps=0;cooldownUntil=0;started=null;fadeAt=null;element.style.opacity='0';},
   tap(now){
    if(now<cooldownUntil)return;
    if(++taps<2)return;
@@ -16,9 +17,10 @@ export function createSealHint(element){
    if(fade===0){started=null;fadeAt=null;element.style.opacity='0';return;}
    const bounce=reduced?0:7*(1-Math.cos(Math.min(age,1.6)/.8*Math.PI*2))/2;
    const side=back?-1:1;
+   element.textContent=back?'⟲':'☜';
    element.style.left=`${x+side*(37+bounce)}px`;
    element.style.top=`${y}px`;
-   element.style.transform=`translate(-50%,-50%) scaleX(${side})`;
+   element.style.transform=`translate(-50%,-50%) scaleX(1)`;
    element.style.opacity=String(appear*fade);
   },
   get active(){return started!==null;}

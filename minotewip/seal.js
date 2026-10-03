@@ -49,6 +49,7 @@ export function createSeal(parent,width,spine,onReady){
  }
  pose();
  return {
+  reset(){peeled=false;peeling=false;progress=0;shakeTime=0;pose();},
   get locked(){return !peeled;},
   get peeling(){return peeling;},
   shake(){if(!peeling)shakeTime=.65;},

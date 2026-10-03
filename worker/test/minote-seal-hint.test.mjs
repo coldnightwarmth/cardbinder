@@ -16,3 +16,10 @@ test('flip dismissal fades immediately and finishes within 140ms',()=>{
  hint.dismiss(400);hint.update(470,100,100,false,false);assert.equal(element.style.opacity,'0.5');
  hint.update(540,100,100,false,false);assert.equal(element.style.opacity,'0');assert.equal(hint.active,false);
 });
+
+test('back hint uses a circular return arrow, front uses pointing hand',()=>{
+ const element={style:{}},hint=createSealHint(element);
+ hint.tap(0);hint.tap(100);hint.update(300,100,100,true,false);
+ assert.equal(element.textContent,'⟲');assert.equal(element.style.transform,'translate(-50%,-50%) scaleX(1)');
+ hint.update(350,100,100,false,false);assert.equal(element.textContent,'☜');
+});

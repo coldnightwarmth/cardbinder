@@ -1,5 +1,5 @@
-import {createSealHint} from './seal-hint.js?v=2';
-import {createSeal} from './seal.js?v=6';
+import {createSealHint} from './seal-hint.js?v=4';
+import {createSeal} from './seal.js?v=7';
 import * as THREE from '../vendor/three.module.min.js';
 import {MINOTE_CARDS} from './cards.js';
 import {spring,settle,snapToNearest,tiltSpring} from './motion.js?v=2';
@@ -200,7 +200,7 @@ function updateOuterFlip(dt){
  flipRoot.rotation.y=sign*Math.PI*(f.progress-(swapped?1:0));
  if(!f.dragging&&f.progress===f.target){flipRoot.rotation.y=0;foldMotion.value=phase;foldMotion.velocity=0;outerFlip=null;syncUI();}
 }
-function toggle(){if(seal.locked){shakeSealedFolder();invalidate();return;}if(transition)return;if(selected){putBack();return;}setPhase(targetPhase===1?0:1);}
+function toggle(){if(refreshing)return;if(seal.locked){shakeSealedFolder();invalidate();return;}if(transition)return;if(selected){putBack();return;}setPhase(targetPhase===1?0:1);}
 let lastFoldPhase=NaN;
 function poseFolder(){
  if(phase===lastFoldPhase)return;lastFoldPhase=phase;
@@ -303,7 +303,7 @@ function putBack(){
 function animateCard(dt){
  if(!transition)return;
  const t=transition,model=selected.model; t.time+=dt;
- const p=Math.min(1,t.time/(reduced?.16:t.kind==='out'?.74:.7));
+ const p=Math.min(1,t.time/(reduced?.16:t.kind==='out'?.60:.56));
  if(t.kind==='out')poseOnCardPath(model,t,p);
  else if(p<.18){
   // Ease the tilted card to face forward, then retrace the extraction path.
@@ -386,7 +386,7 @@ canvas.addEventListener('pointerdown',e=>{
  const outerStart=intersection&&outerFlip?outerFlip.progress:null;
  if(outerStart!==null){outerFlip.dragging=true;outerFlip.motion.velocity=0;}
  else if(intersection&&!selected){foldMotion.value=phase;foldMotion.velocity=0;}
- drag={id:e.pointerId,x:e.clientX,y:e.clientY,lastX:e.clientX,lastY:e.clientY,lastTime:e.timeStamp,moved:false,mode:null,startPhase:phase,outerStart,outerTarget:outerFlip?.target,seal:intersection?.object.userData.seal,card:intersection?.object.userData.card,hit:!!intersection};
+ drag={id:e.pointerId,x:e.clientX,y:e.clientY,lastX:e.clientX,lastY:e.clientY,lastTime:e.timeStamp,moved:false,mode:null,startPhase:phase,outerStart,outerTarget:outerFlip?.target,seal:intersection?.object.userData.seal,sealFront:phase===0,card:intersection?.object.userData.card,leaf:intersection?.object.userData.leaf,hit:!!intersection};
  canvas.setPointerCapture(e.pointerId);
 });
 function moveDrag(e){
@@ -448,12 +448,15 @@ if(canvas.hasPointerCapture(e.pointerId))canvas.releasePointerCapture(e.pointerI
   outerFlip.motion.value=outerFlip.progress;
   if(!cancelled&&!state.moved&&state.outerTarget!==undefined){
    outerFlip.target=state.outerTarget;
-   if(seal.locked&&state.hit)shakeSealedFolder();
+   if(seal.locked&&state.hit){
+    if(state.seal&&state.sealFront)seal.peel();else shakeSealedFolder();
+    syncUI();
+   }
   }else outerFlip.target=snapToNearest(outerFlip.motion,1,13,paused||cancelled);
   invalidate();return;
  }
  if(seal.locked){
-  if(!cancelled&&!state.moved&&state.hit){if(state.seal&&phase===0)seal.peel();else shakeSealedFolder();syncUI();invalidate();}
+  if(!cancelled&&!state.moved&&state.hit){if(state.seal&&state.sealFront)seal.peel();else shakeSealedFolder();syncUI();invalidate();}
   return;
  }
  if(state.moved){
@@ -469,7 +472,11 @@ if(canvas.hasPointerCapture(e.pointerId))canvas.releasePointerCapture(e.pointerI
  if(selected){if(!state.hit)putBack();}
  else if(Number.isInteger(state.card))selectCard(state.card);
  else if(Number.isInteger(hit(e)?.object.userData.card))selectCard(hit(e).object.userData.card);
- else if(state.hit||targetPhase===1)toggle();
+ else if(state.hit||targetPhase===1){
+  // When open, each leaf closes in its natural direction: the left leaf to
+  // the front cover and the right leaf to the back cover.
+  if(targetPhase===1&&state.leaf===1)setPhase(2);else toggle();
+ }
 }
 canvas.addEventListener('pointerup',e=>finishDrag(e));canvas.addEventListener('pointercancel',e=>finishDrag(e,true));
 canvas.addEventListener('lostpointercapture',e=>finishDrag(e,true));
@@ -485,18 +492,72 @@ document.addEventListener('visibilitychange',()=>{
  if(document.hidden){cancelAnimationFrame(request);request=0;lastTime=0;}
  else invalidate();
 });
-loadCards().catch(error=>{console.error(error);notice.hidden=false;notice.textContent='Some artwork could not load. Cards can still be opened; refresh to retry the artwork.';});
+let cardsReady=loadCards().catch(error=>{console.error(error);notice.hidden=false;notice.textContent='Some artwork could not load. Cards can still be opened; refresh to retry the artwork.';});
 
-const folderPalette=[['Cobalt Blue','#3559B7'],['Honey Gold','#E6B74F'],['Emerald','#20866C'],['Berry','#A4416C']];
-function setFolderColor(hex){
+const folderPalette=[['Cobalt Blue','#3559B7'],['Marigold','#E7A62C'],['Emerald','#20866C'],['Berry','#A4416C']];
+const extraPalettes={
+ 'Rich colors':[['Cherry Red','#C9363E'],['Brick Red','#A94B3F'],['Burnt Orange','#C66B38'],['Marigold','#E7A62C'],['Golden Ochre','#B99036'],['Olive Green','#808342'],['Moss Green','#526B43'],['Forest Green','#285B47'],['Emerald','#20866C'],['Deep Teal','#246E75'],['Ocean Blue','#297BA4'],['Cobalt Blue','#3559B7'],['Ink Navy','#293951'],['Indigo','#514D89'],['Plum','#704668'],['Berry','#A4416C'],['Terracotta','#BC7962'],['Caramel','#AC7C4B'],['Chocolate','#694B3C'],['Graphite','#44494C']],
+ 'Artwork colors':[['Poppy Rose','#E26D73'],['Warm Salmon','#E98F74'],['Honey Gold','#E6B74F'],['Pear Green','#B2C166'],['Jade Green','#70B18F'],['Lagoon','#6BB4BA'],['Cornflower','#7897D7'],['Soft Iris','#948BC2'],['Orchid','#B28AC6'],['Dusty Raspberry','#C27094']],
+ 'Pastels':[['Notebook Cream','#F3EBD9'],['Butter Yellow','#F4E3A1'],['Vanilla Peach','#F2D7B5'],['Apricot Milk','#EFC3A6'],['Soft Coral','#E9B3A8'],['Ballet Pink','#EBC5D1'],['Rosewater','#DDAFBF'],['Dusty Mauve','#CBB2C8'],['Lilac Paper','#D5C6E8'],['Lavender Fog','#BDB7DA'],['Periwinkle','#B6C4E8'],['Powder Blue','#BBD5E8'],['Mist Blue','#A9C9D5'],['Sea Glass','#B7DCD5'],['Mint Milk','#C5E3D0'],['Pistachio','#D5DDB4'],['Soft Sage','#BDCDB5'],['Eucalyptus','#A8C2B5'],['Oat Paper','#DDD1BF'],['Mushroom Pink','#CDBFBC']]
+};
+const colorControls=document.querySelector('#folderColors'),colorName=document.querySelector('#folderColorName'),colorPopup=document.querySelector('#folderColorPopup');
+let activeFolderColor;
+function setFolderColor(name,hex){
+ activeFolderColor={name,hex};
  green.color.set(hex).multiplyScalar(255/239);foldGreen.color.copy(green.color);
  cutEdge.color.set(hex).lerp(new THREE.Color(0xf1eedf),.35);
- document.querySelectorAll('#folderColors button').forEach(button=>button.setAttribute('aria-pressed',button.dataset.color===hex));
- invalidate();
+ document.querySelectorAll('[data-folder-color]').forEach(button=>button.setAttribute('aria-pressed',button.dataset.folderColor===hex));
+ document.querySelector('#customFolderColor')?.classList.toggle('selected',name==='Custom');
+ colorName.textContent=name;invalidate();
 }
-for(const [name,hex] of folderPalette){
- const button=document.createElement('button');button.type='button';button.dataset.color=hex;
- button.title=name;button.setAttribute('aria-label',name);button.style.setProperty('--swatch',hex);
- button.onclick=()=>setFolderColor(hex);document.querySelector('#folderColors').append(button);
+function colorButton(name,hex){
+ const button=document.createElement('button');button.type='button';button.dataset.folderColor=hex;
+ button.title=name;button.setAttribute('aria-label',name);button.style.setProperty('--swatch',hex);button.setAttribute('aria-pressed','false');
+ button.onclick=()=>setFolderColor(name,hex);return button;
 }
-setFolderColor(folderPalette[0][1]);
+for(const color of folderPalette)colorControls.append(colorButton(...color));
+const moreColors=document.createElement('button');moreColors.type='button';moreColors.className='more-colors';moreColors.textContent='+';
+moreColors.setAttribute('aria-label','More folder colors');moreColors.setAttribute('aria-expanded','false');moreColors.setAttribute('aria-controls','folderColorPopup');colorControls.prepend(moreColors);
+function closeColors(){colorPopup.hidden=true;moreColors.setAttribute('aria-expanded','false');}
+moreColors.onclick=()=>{colorPopup.hidden=!colorPopup.hidden;moreColors.setAttribute('aria-expanded',String(!colorPopup.hidden));};
+for(const [title,colors] of Object.entries(extraPalettes)){
+ const heading=document.createElement('h2');heading.textContent=title;const grid=document.createElement('div');grid.className='color-grid';
+ for(const color of colors)grid.append(colorButton(...color));colorPopup.append(heading,grid);
+}
+const customRow=document.createElement('label');customRow.className='custom-color-row';
+const customPicker=document.createElement('input');customPicker.type='color';customPicker.id='customFolderColor';customPicker.value='#3559b7';customPicker.setAttribute('aria-label','Custom folder color');
+const customLabel=document.createElement('span');customLabel.textContent='Custom';customRow.append(customPicker,customLabel);colorPopup.append(customRow);
+customPicker.addEventListener('click',()=>setFolderColor('Custom',customPicker.value.toUpperCase()));
+customPicker.addEventListener('input',()=>setFolderColor('Custom',customPicker.value.toUpperCase()));
+customPicker.addEventListener('change',()=>setFolderColor('Custom',customPicker.value.toUpperCase()));
+document.addEventListener('pointerdown',event=>{if(!event.target.closest('#folderPalette'))closeColors();});
+document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!colorPopup.hidden){event.stopImmediatePropagation();event.preventDefault();closeColors();moreColors.focus();}},true);
+setFolderColor(...folderPalette[0]);
+let refreshing=false;
+document.querySelector('#refreshFolder').onclick=async()=>{
+ if(refreshing)return;refreshing=true;
+ const refreshButton=document.querySelector('#refreshFolder');refreshButton.disabled=true;
+ canvas.style.pointerEvents='none';
+ const fade=async(from,to)=>{const animation=canvas.animate([{opacity:from},{opacity:to}],{duration:reduced?0:180,easing:'ease-in-out',fill:'forwards'});await animation.finished;return animation;};
+ const fadeOut=await fade(1,0);
+ try{
+  await cardsReady;
+  if(drag&&canvas.hasPointerCapture(drag.id)){const id=drag.id;drag=null;canvas.releasePointerCapture(id);}
+  drag=null;selected=null;transition=null;pendingCard=null;outerFlip=null;
+  phase=targetPhase=foldMotion.value=foldMotion.velocity=0;flipRoot.rotation.y=0;lastFoldPhase=NaN;
+  cardTiltTarget.set(0,0);for(const state of Object.values(cardTilt)){state.value=state.velocity=0;}
+  seal.reset();sealHint.reset();notice.hidden=true;
+  setFolderColor(...folderPalette[Math.floor(Math.random()*folderPalette.length)]);
+  const geometries=new Set(),materials=new Set(),textures=new Set();
+  for(const card of cards){card.model.removeFromParent();card.model.traverse(o=>{if(o.geometry)geometries.add(o.geometry);if(o.material)materials.add(o.material);});}
+  for(const material of materials){if(material.map)textures.add(material.map);material.dispose();}
+  for(const geometry of geometries)geometry.dispose();for(const map of textures)map.dispose();cards.length=0;
+  poseFolder();syncUI();invalidate();
+  cardsReady=loadCards();await cardsReady;
+ }catch(error){console.error(error);notice.hidden=false;notice.textContent='Some artwork could not load. Refresh to retry.';}
+ finally{
+  syncUI();invalidate();
+  const fadeIn=await fade(0,1);fadeOut.cancel();fadeIn.cancel();
+  canvas.style.pointerEvents='';refreshButton.disabled=false;refreshing=false;
+ }
+};
