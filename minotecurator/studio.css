@@ -46,11 +46,41 @@ header{padding:12px 3.4%;gap:16px}
 .carousel-view .caption{font-size:12px}
 .carousel-view main{padding-top:20px}
 
-/* Edge hit areas resize proportionally; corners remain above their ends. */
-.handle.n,.handle.s{left:18px;right:18px;width:auto!important;height:10px!important;cursor:ns-resize;border-radius:4px;opacity:.7}
+/* Edge hit areas stay generous while a separate, thinner mark sits farther out. */
+.handle.n,.handle.s{left:18px;right:18px;width:auto!important;height:10px!important;cursor:ns-resize;border:0;border-radius:4px;background:transparent;box-shadow:none;opacity:1}
 .handle.n{top:-5px}.handle.s{bottom:-5px}
-.handle.e,.handle.w{top:18px;bottom:18px;height:auto!important;width:10px!important;cursor:ew-resize;border-radius:4px;opacity:.7}
+.handle.e,.handle.w{top:18px;bottom:18px;height:auto!important;width:10px!important;cursor:ew-resize;border:0;border-radius:4px;background:transparent;box-shadow:none;opacity:1}
 .handle.e{right:-5px}.handle.w{left:-5px}
-.handle:hover{opacity:1}
+.handle.n::before,.handle.s::before,.handle.e::before,.handle.w::before{content:"";position:absolute;border:1px solid #fff;border-radius:3px;background:#35513a;box-shadow:0 1px 4px #0005;opacity:.7;pointer-events:none}
+.handle.n::before{left:0;right:0;height:6px;bottom:2px}.handle.s::before{left:0;right:0;height:6px;top:2px}
+.handle.e::before{top:0;bottom:0;width:6px;left:2px}.handle.w::before{top:0;bottom:0;width:6px;right:2px}
+.handle:hover{opacity:1}.handle.n:hover::before,.handle.s:hover::before,.handle.e:hover::before,.handle.w:hover::before{opacity:1}
 .name-frame .handle.n,.name-frame .handle.s{height:6px!important;left:13px;right:13px}
 .name-frame .handle.e,.name-frame .handle.w{width:6px!important;top:6px;bottom:6px}
+.name-frame .handle.n::before,.name-frame .handle.s::before{height:4px;background:#7047a7}.name-frame .handle.e::before,.name-frame .handle.w::before{width:4px;background:#7047a7}
+.body-frame .handle.n::before,.body-frame .handle.s::before,.body-frame .handle.e::before,.body-frame .handle.w::before{background:#ac6b21}
+/* Keep resize controls beyond the selected layer, with a small clear gap. */
+.handle.nw{left:-4px;top:-4px;transform:translate(-100%,-100%)}
+.handle.ne{right:-4px;top:-4px;transform:translate(100%,-100%)}
+.handle.sw{left:-4px;bottom:-4px;transform:translate(-100%,100%)}
+.handle.se{right:-4px;bottom:-4px;transform:translate(100%,100%)}
+.handle.n{top:-4px;transform:translateY(-100%)}
+.handle.s{bottom:-4px;transform:translateY(100%)}
+.handle.e{right:-4px;transform:translateX(100%)}
+.handle.w{left:-4px;transform:translateX(-100%)}
+.carousel-view main{position:relative;display:flex;flex-direction:column;justify-content:center;min-height:calc(100dvh - var(--studio-header-height,70px));padding-top:0;padding-bottom:0}
+.carousel-view .collection-heading{position:absolute;top:20px;left:3.4%;margin:0}
+.carousel-view #grid{flex:none;padding-top:28px;padding-bottom:28px;align-items:center}
+.carousel-view #grid>.tile{align-self:center}
+.carousel-view main>#carouselNav{position:absolute;left:0;right:0;top:var(--carousel-nav-top);margin:0}
+.inline-toolbar>#carouselNav{position:static;flex:0 0 auto;gap:5px;margin:0}
+.inline-toolbar>#carouselNav button{width:34px;padding:5px;font-size:20px}
+
+/* Closely frame the corners without an outer selection outline. */
+.active-tile .card{outline:none}
+.handle.nw{left:1px;top:1px}
+.handle.ne{right:1px;top:1px}
+.handle.sw{left:1px;bottom:1px}
+.handle.se{right:1px;bottom:1px}
+
+.tools .transfer-icon{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;padding:7px;flex-shrink:0}
