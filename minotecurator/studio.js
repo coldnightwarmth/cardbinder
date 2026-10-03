@@ -192,6 +192,31 @@ function layerAt(event,element,item,value){
  if(value.body&&inside(bodyGeometry(value)))return 'body';
  return 'artwork';
 }
+const guideToggle=$('#guideToggle');
+const cursorGuides=document.createElement('div');
+cursorGuides.className='cursor-guides';cursorGuides.hidden=true;
+cursorGuides.setAttribute('aria-hidden','true');document.body.append(cursorGuides);
+let guidesEnabled=false,guidePosition=null;
+function updateCursorGuides(event){
+ if(event.pointerType==='touch')return;
+ guidePosition={x:event.clientX,y:event.clientY};
+ if(!guidesEnabled)return;
+ cursorGuides.style.setProperty('--guide-x',guidePosition.x+'px');
+ cursorGuides.style.setProperty('--guide-y',guidePosition.y+'px');
+ cursorGuides.hidden=false;
+}
+guideToggle.onclick=()=>{
+ guidesEnabled=!guidesEnabled;
+ guideToggle.setAttribute('aria-pressed',String(guidesEnabled));
+ cursorGuides.hidden=true;
+ if(guidesEnabled&&guidePosition)updateCursorGuides({clientX:guidePosition.x,clientY:guidePosition.y});
+};
+document.addEventListener('pointermove',updateCursorGuides,{passive:true,capture:true});
+document.addEventListener('pointerdown',updateCursorGuides,{passive:true,capture:true});
+function hideCursorGuides(){cursorGuides.hidden=true;guidePosition=null;}
+document.documentElement.addEventListener('pointerleave',hideCursorGuides);
+window.addEventListener('blur',hideCursorGuides);
+
 const viewToggle=$('#viewToggle'),carouselNav=$('#carouselNav');
 let carousel=false;
 const galleryZoom=document.createElement('div');galleryZoom.className='gallery-zoom';galleryZoom.setAttribute('role','group');galleryZoom.setAttribute('aria-label','Gallery zoom');

@@ -88,3 +88,12 @@ header{padding:12px 3.4%;gap:16px}
 .gallery-zoom{display:flex;gap:4px}.gallery-zoom[hidden]{display:none}.tools .gallery-zoom button{display:grid;place-items:center;width:34px;height:36px;padding:0;font-size:22px;line-height:1}body:not(.carousel-view) #grid.custom-columns{grid-template-columns:repeat(var(--gallery-columns),minmax(0,1fr))}#grid.custom-columns .caption{flex-wrap:wrap;overflow-wrap:anywhere}
 
 #grid.hide-card-names .caption .label{display:none}
+
+/* Viewport guides remain above the editor without intercepting its controls. */
+#guideToggle{display:grid;place-items:center;height:35px}
+#guideToggle[aria-pressed=true]{background:#354d37;color:white;border-color:#354d37}
+.cursor-guides{position:fixed;inset:0;z-index:10000;pointer-events:none;overflow:hidden}
+.cursor-guides[hidden]{display:none}
+.cursor-guides::before,.cursor-guides::after{content:"";position:absolute;filter:drop-shadow(0 0 1px white)}
+.cursor-guides::before{left:0;right:0;top:var(--guide-y);border-top:1px dotted #263c30}
+.cursor-guides::after{top:0;bottom:0;left:var(--guide-x);border-left:1px dotted #263c30}
