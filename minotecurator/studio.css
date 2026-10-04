@@ -97,3 +97,10 @@ header{padding:12px 3.4%;gap:16px}
 .cursor-guides::before,.cursor-guides::after{content:"";position:absolute;filter:drop-shadow(0 0 1px white)}
 .cursor-guides::before{left:0;right:0;top:var(--guide-y);border-top:1px dotted #263c30}
 .cursor-guides::after{top:0;bottom:0;left:var(--guide-x);border-left:1px dotted #263c30}
+
+.rosewood{background:linear-gradient(90deg,#6b2445,#b34269,#d78076,#8e3c58)}
+.ocean{background:linear-gradient(90deg,#193b80,#167a9b,#249a96,#285488)}
+.forest{background:linear-gradient(90deg,#244d3b,#537a32,#a08228,#356455)}
+.copper{background:linear-gradient(90deg,#6b3428,#b45e32,#d39545,#864335)}
+.berry{background:linear-gradient(90deg,#422466,#85428d,#bc497c,#633488)}
+.ribbon{background:linear-gradient(90deg,#275b9a,#b74479,#275b9a,#b74479,#275b9a,#b74479,#275b9a)}

@@ -13,7 +13,7 @@ export function normalize(item, v) {
   const bw = 1053 / 1466 * 2000, bh = 386 / 2052 * 2800, cx = 749.5 / 1466 * 2000, cy = 1795 / 2052 * 2800;
   const bodyZoom = bound(num('bodyZoom', 1), .25, Math.min(4, 2000 / bw, 2800 / bh));
   const ink = v.ink ?? 'original';
-  if (!['original', 'rainbow', 'prism', 'aurora', 'sunset', 'electric'].includes(ink)) throw Error('Unknown ink');
+  if (!['original', 'rainbow', 'prism', 'aurora', 'sunset', 'electric', 'rosewood', 'ocean', 'forest', 'copper', 'berry', 'ribbon'].includes(ink)) throw Error('Unknown ink');
   return { zoom, x: bound(num('x', 0), -(item.width * scale - 2000) / 2, (item.width * scale - 2000) / 2),
     y: bound(num('y', 0), -(item.height * scale - 2800) / 2, (item.height * scale - 2800) / 2),
     nameZoom, nameX: num('nameX', 0), nameY: num('nameY', 0),
