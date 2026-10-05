@@ -1,8 +1,10 @@
+import {removedTags,mergedTags} from './tag-cleanup.js';
 export function normalizeTag(value){
  if(typeof value!=='string')throw Error('Enter a tag name.');
  const tag=value.normalize('NFKC').trim().toLowerCase().replace(/\s+/g,' ');
  if(!tag||tag.length>48||!/^\p{L}[\p{L}\p{M}\p{N} -]*$/u.test(tag))throw Error('Use a tag of up to 48 letters, numbers, spaces or hyphens, starting with a letter.');
- return tag;
+ if(removedTags.has(tag))throw Error('This tag has been removed from the collection.');
+ return (Object.hasOwn(mergedTags,tag)?mergedTags[tag]:tag);
 }
 export function updateMetadata(metadata,{id,tag,selected}){
  tag=normalizeTag(tag);
@@ -22,3 +24,10 @@ export function orderedTags(tags,selected){
  const active=new Set(selected);
  return [...tags].sort((a,b)=>Number(active.has(b))-Number(active.has(a))||a.localeCompare(b));
 }
+
+export function countTags(metadata){
+ const counts=new Map(metadata.tags.map(tag=>[tag,0]));
+ for(const tags of Object.values(metadata.cards))for(const tag of new Set(tags))if(counts.has(tag))counts.set(tag,counts.get(tag)+1);
+ return counts;
+}
+export function matchesTags(cardTags,selected){return !selected.size||cardTags.some(tag=>selected.has(tag));}

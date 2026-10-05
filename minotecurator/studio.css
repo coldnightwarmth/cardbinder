@@ -121,3 +121,17 @@ header{padding:12px 3.4%;gap:16px}
 .metadata-add-form button{padding:7px 10px;font-size:12px}
 .metadata-status{font-size:12px;color:#65715c;margin:12px 0 0}
 @media(prefers-reduced-motion:reduce){.metadata-tag{transition:none}}
+
+.search input{width:190px}
+#tagFilterToggle{white-space:nowrap}
+#tagFilterToggle.is-active{background:#354d37;color:#fff;border-color:#354d37}
+#tagFilterPanel{position:fixed;z-index:9000;overflow:auto;padding:12px;background:#fafbf8;border:1px solid #cbd0c8;border-radius:12px;box-shadow:0 8px 28px #263c3026}
+#tagFilterPanel[hidden]{display:none}
+.tag-filter-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;font-size:12px;color:#65715c}
+.tag-filter-heading button{padding:5px 9px;font-size:12px}
+.tag-filter-options{display:flex;flex-direction:column;gap:2px}
+.tag-filter-option{display:flex;align-items:center;gap:8px;padding:6px;border-radius:6px;font-size:13px;cursor:pointer;overflow-wrap:anywhere}
+.tag-filter-option:hover{background:#eaf0e7}
+.tag-filter-option input{margin:0;accent-color:#354e38;flex-shrink:0}
+.tag-filter-count{color:#a0a59d;font-size:12px}
+@media(max-width:760px){.search input{width:100%}.search{min-width:160px}}

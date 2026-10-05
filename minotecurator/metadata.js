@@ -1,7 +1,7 @@
 import {studioRequest} from './storage.js?v=3';
-import {normalizeTag,orderedTags} from './metadata-model.js';
+import {normalizeTag,orderedTags} from './metadata-model.js?v=2';
 
-export function createMetadataSidebar(sidebar,getCard){
+export function createMetadataSidebar(sidebar,getCard,onChange=()=>{}){
  const textPanel=document.createElement('div');textPanel.id='textPanel';textPanel.setAttribute('role','tabpanel');textPanel.setAttribute('aria-labelledby','textTab');
  textPanel.append(...sidebar.childNodes);
  const tabs=document.createElement('div');tabs.className='sidebar-tabs';tabs.setAttribute('role','tablist');tabs.setAttribute('aria-label','Card settings');
@@ -40,6 +40,7 @@ export function createMetadataSidebar(sidebar,getCard){
   if(!changedCard&&metadata===lastMetadata&&active===lastTags&&busy===lastBusy)return;
   lastCard=id;lastMetadata=metadata;lastTags=active;lastBusy=busy;
   if(changedCard){form.hidden=true;input.value='';}
+  for(const [tag,button] of buttons)if(metadata&&!metadata.tags.includes(tag)){button.remove();buttons.delete(tag);}
   const focused=document.activeElement;
   const positions=new Map();
   if(!changedCard&&!metadataPanel.hidden)for(const [tag,button] of buttons)positions.set(tag,button.getBoundingClientRect());
@@ -65,7 +66,7 @@ export function createMetadataSidebar(sidebar,getCard){
   try{
    const response=await studioRequest('/api/metadata');if(!response.ok)throw Error('Could not load tags.');
    const next=await response.json();
-   if(!busy&&(!metadata||next.revision>metadata.revision)){metadata=next;status.textContent='';retry.hidden=true;render();}
+   if(!busy&&(!metadata||next.revision>metadata.revision)){metadata=next;status.textContent='';retry.hidden=true;render();onChange(metadata);}
   }catch(error){status.textContent=error.message;retry.hidden=false;}
   finally{loading=false;if(refreshAgain&&!busy)refresh();}
  }
@@ -85,7 +86,7 @@ export function createMetadataSidebar(sidebar,getCard){
    busy=false;
    // Remove a failed new tag from the catalog as well as its selection.
    for(const [tag,button] of buttons)if(!metadata.tags.includes(tag)){button.remove();buttons.delete(tag);}
-   render();if(refreshAgain)refresh();
+   render();onChange(metadata);if(refreshAgain)refresh();
   }
  }
  window.addEventListener('beforeunload',event=>{if(busy){event.preventDefault();event.returnValue='Tags are still saving.';}});

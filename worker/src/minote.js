@@ -1,3 +1,4 @@
+import {migrateMetadata} from '../../minotecurator/tag-cleanup.js';
 import {metadataSeed} from '../../minotecurator/metadata-seed.js';
 import {updateMetadata} from '../../minotecurator/metadata-model.js';
 import collection from '../../minotecurator/collection.json';
@@ -9,7 +10,14 @@ async function readMetadata(store){
  const count=await store.get('metadata:chunks');
  if(count===undefined)return structuredClone(metadataSeed);
  const parts=await store.get(Array.from({length:count},(_,i)=>'metadata:'+i));
- return JSON.parse(Array.from({length:count},(_,i)=>parts.get('metadata:'+i)).join(''));
+ const metadata=JSON.parse(Array.from({length:count},(_,i)=>parts.get('metadata:'+i)).join(''));
+ if(migrateMetadata(metadata)){
+  // Keep the original chunks recoverable while applying the one-time cleanup.
+  for(let i=0;i<count;i++)await store.put('metadata:before-cleanup:'+i,parts.get('metadata:'+i));
+  await store.put('metadata:before-cleanup:chunks',count);
+  await writeMetadata(store,metadata);
+ }
+ return metadata;
 }
 async function writeMetadata(store,metadata){
  const json=JSON.stringify(metadata),count=Math.ceil(json.length/48000);
