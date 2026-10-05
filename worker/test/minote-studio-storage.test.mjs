@@ -22,4 +22,20 @@ test('shared edits persist, broadcast, reject stale writes and validate imports'
  assert.equal((await call('/api/import',{version:1,edits:{[id]:{zoom:1.3}},revisions:{[id]:0}})).status,409);
  assert.equal((await call('/api/import',{version:1,edits:{[id]:{zoom:1.3}},revisions:{[id]:saved._revision}})).status,200);
  assert.equal((await (await call('/api/edits')).json())[id].zoom,1.3);
+
+ const metadata=await (await call('/api/metadata')).json();
+ assert.ok(metadata.tags.includes('pokemon'));assert.ok(metadata.cards[id].includes('angel'));
+ const add=await call('/api/tags',{id,tag:'  New Tag  ',selected:true});assert.equal(add.status,200);
+ const tagged=await add.json();assert.ok(tagged.tags.includes('new tag'));assert.ok(tagged.cards[id].includes('new tag'));
+ assert.equal((await call('/api/tags',{id:2,tag:'new tag',selected:true})).status,200);
+ await Promise.all([call('/api/tags',{id,tag:'concurrent one',selected:true}),call('/api/tags',{id,tag:'concurrent two',selected:true})]);
+ const merged=await (await call('/api/metadata')).json();
+ assert.ok(merged.cards[id].includes('concurrent one'));assert.ok(merged.cards[id].includes('concurrent two'));
+ assert.equal((await call('/api/tags',{id,tag:'angel',selected:false})).status,200);
+ const removed=await (await call('/api/metadata')).json();assert.ok(!removed.cards[id].includes('angel'));assert.ok(removed.tags.includes('angel'));
+ assert.equal((await call('/api/tags',{id:999999,tag:'invalid',selected:true})).status,400);
+ assert.equal((await call('/api/tags',{id,tag:'<script>',selected:true})).status,400);
+ assert.equal((await call('/api/tags',{id,tag:'valid',selected:'yes'})).status,400);
+ const reread=await (await call('/api/edits')).json();assert.equal(reread[id].zoom,1.3);
+ assert.ok((await (await call('/api/metadata')).json()).cards[2].includes('new tag'));
 });
