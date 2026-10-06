@@ -1,3 +1,4 @@
+import {createExportOptions} from './export-options.js';
 import {bodySource} from './body-source.js';
 import {maskName,drawMaskedName} from './title-mask.js';
 import {applySuit,startSuits,createSuitsControls,exportSuit} from './suits.js?v=3';
@@ -94,7 +95,8 @@ $('#close').textContent='Done';$('#close').setAttribute('aria-label','Done');$('
  finally{cancelling=false;grid.inert=sidebar.inert=toolbar.inert=document.querySelector('header').inert=false;}
 };
 // Capture before a focused gallery tile can reopen the card on Enter.
-document.addEventListener('keydown',e=>{
+document.addEventListener('keydown',e=>{if(document.querySelector('#exportOptions[open]'))return;
+ if(document.querySelector('#exportOptions[open]'))return;
  if(e.key!=='Enter'||!current||e.isComposing||e.ctrlKey||e.metaKey||e.altKey||e.shiftKey)return;
  if(e.target.isContentEditable||e.target.matches('textarea,input:not([type=range]):not([type=checkbox])'))return;
  e.preventDefault();e.stopImmediatePropagation();
@@ -147,8 +149,30 @@ function download(blob,name){const u=URL.createObjectURL(blob),a=document.create
 $('#backup').onclick=()=>download(new Blob([JSON.stringify({version:1,edits},null,2)],{type:'application/json'}),'mi-note-card-edits.json');
 function crc32(bytes){let c=0xffffffff;for(const b of bytes){c^=b;for(let k=0;k<8;k++)c=(c>>>1)^((c&1)?0xedb88320:0)}return (c^0xffffffff)>>>0}
 async function withDPI(blob){const data=new Uint8Array(await blob.arrayBuffer()),chunk=new Uint8Array(21),view=new DataView(chunk.buffer);view.setUint32(0,9);chunk.set([112,72,89,115],4);view.setUint32(8,31496);view.setUint32(12,31496);chunk[16]=1;view.setUint32(17,crc32(chunk.slice(4,17)));return new Blob([data.slice(0,33),chunk,data.slice(33)],{type:'image/png'})}
-async function exportCard(item,v){const art=await loadImage(`/minotecurator/assets/originals/${item.id}.webp`),strip=await loadImage('/minotecurator/assets/strip.png'),name=await inkImage(item.id,v.ink);const canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;const ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);const g=geometry(item,v);ctx.drawImage(art,(W-g.w)/2+v.x,(H-g.h)/2+v.y,g.w,g.h);ctx.drawImage(strip,0,0,W,H);if(v.body){const body=await loadImage(bodySource(item.id)),b=bodyGeometry(v);ctx.drawImage(body,b.cx-b.w/2,b.cy-b.h/2,b.w,b.h)}const n=nameGeometry(item,v);drawMaskedName(ctx,name,strip,n);await exportSuit(ctx,item.id,loadImage);const blob=await new Promise(r=>canvas.toBlob(r,'image/png'));if(!blob)throw Error('Export failed');return withDPI(blob)}
-$('#export').onclick=async()=>{const button=$('#export'),item=current,v={...crop};button.disabled=true;button.setAttribute('aria-busy','true');$('#error').textContent='';try{await persist();download(await exportCard(item,v),`mi-note-${String(item.id).padStart(4,'0')}.png`);$('#saveStatus').textContent='Export downloaded'}catch(e){$('#error').textContent=e.message}finally{button.disabled=false;button.innerHTML=downloadIcon;button.removeAttribute('aria-busy')}};
+async function exportCard(item,v,kind='full'){
+ const canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;const ctx=canvas.getContext('2d');
+ const full=kind==='full',overlays=kind==='overlays';
+ if(full){ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);}
+ if(full||kind==='art'){const art=await loadImage(`/minotecurator/assets/originals/${item.id}.webp`),g=geometry(item,v);ctx.drawImage(art,(W-g.w)/2+v.x,(H-g.h)/2+v.y,g.w,g.h);}
+ const strip=await loadImage('/minotecurator/assets/strip.png');
+ if(full||overlays||kind==='name-box'||kind==='boxes')ctx.drawImage(strip,0,0,W,H);
+ if(v.body&&(full||overlays||['body-box','boxes','body-text','texts'].includes(kind))){
+  const textOnly=kind==='body-text'||kind==='texts',paperOnly=kind==='body-box'||kind==='boxes';
+  const source=bodySource(item.id),body=await loadImage(paperOnly?'/minotecurator/assets/body-crop.png':source),b=bodyGeometry(v);
+  if(!textOnly)ctx.drawImage(body,b.cx-b.w/2,b.cy-b.h/2,b.w,b.h);
+  else if(source.includes('/body-text/')){
+   const ink=document.createElement('canvas');ink.width=body.naturalWidth;ink.height=body.naturalHeight;const pen=ink.getContext('2d',{willReadFrequently:true});pen.drawImage(body,0,0);const pixels=pen.getImageData(0,0,ink.width,ink.height),d=pixels.data;
+   // Printed ink is dark neutral/purple; exclude cyan rules and the paper's outer edge.
+   for(let y=0;y<ink.height;y++)for(let x=0;x<ink.width;x++){const i=(y*ink.width+x)*4,max=Math.max(d[i],d[i+1],d[i+2]);const interior=x>ink.width*.055&&x<ink.width*.945&&y>ink.height*.09&&y<ink.height*.92&&d[i+1]<=d[i]+18;d[i+3]=interior?Math.round(d[i+3]*Math.max(0,Math.min(1,(195-max)/55))):0;}
+   pen.putImageData(pixels,0,0);ctx.drawImage(ink,b.cx-b.w/2,b.cy-b.h/2,b.w,b.h);
+  }
+ }
+ if(full||overlays||kind==='name'||kind==='texts'){const name=await inkImage(item.id,v.ink);drawMaskedName(ctx,name,strip,nameGeometry(item,v));}
+ if(full||overlays||kind==='icons')await exportSuit(ctx,item.id,loadImage);
+ const blob=await new Promise(r=>canvas.toBlob(r,'image/png'));if(!blob)throw Error('Export failed');return withDPI(blob);
+}
+const openExportOptions=createExportOptions({render:exportCard,download});
+$('#export').onclick=()=>{if(current)openExportOptions(current,{...crop});};
 let gesture=null;function point(e){const r=$('#stage').getBoundingClientRect();return {x:(e.clientX-r.left)/r.width*W,y:(e.clientY-r.top)/r.height*H}}
 function begin(e,corner){
  if(e.button!==0)return;if(!corner){layer=layerAt(e,$('#stage'),current,crop);render();}
@@ -184,13 +208,13 @@ for(const edge of ['n','e','s','w']){
 }
 bodyFrame.addEventListener('pointerdown',e=>begin(e,null));bodyFrame.addEventListener('pointermove',move);bodyFrame.addEventListener('pointerup',end);bodyFrame.addEventListener('pointercancel',end);nameFrame.addEventListener('pointerdown',e=>begin(e,null));nameFrame.addEventListener('pointermove',move);nameFrame.addEventListener('pointerup',end);nameFrame.addEventListener('pointercancel',end);const stage=$('#stage');stage.addEventListener('pointerdown',e=>begin(e,null));stage.addEventListener('pointermove',move);stage.addEventListener('pointerup',end);stage.addEventListener('pointercancel',end);document.querySelectorAll('#stageWrap > .handle, .name-frame .handle, .body-frame .handle').forEach(h=>{h.addEventListener('pointerdown',e=>begin(e,h.dataset.corner));h.addEventListener('pointermove',move);h.addEventListener('pointerup',end);h.addEventListener('pointercancel',end)});
 stage.addEventListener('wheel',e=>{e.preventDefault();remember();const key=layerKeys()[2];change({[key]:crop[key]*Math.exp(-e.deltaY*.0015)})},{passive:false});
-document.addEventListener('keydown',e=>{
+document.addEventListener('keydown',e=>{if(document.querySelector('#exportOptions[open]'))return;
  if(!current||e.altKey||!(e.ctrlKey||e.metaKey)||e.key.toLowerCase()!=='z')return;
  const target=e.target,typing=target.isContentEditable||target.tagName==='TEXTAREA'||(target.tagName==='INPUT'&&!['range','checkbox'].includes(target.type));
  if(typing)return;
  e.preventDefault();if(e.shiftKey)redo();else undo();
 });
-document.addEventListener('keydown',e=>{if(!current||['INPUT','TEXTAREA','BUTTON','SELECT'].includes(e.target.tagName))return;const d=e.shiftKey?20:4;if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();remember();const [x,y]=layerKeys();change({[x]:crop[x]+(e.key==='ArrowLeft'?-d:e.key==='ArrowRight'?d:0),[y]:crop[y]+(e.key==='ArrowUp'?-d:e.key==='ArrowDown'?d:0)})}});
+document.addEventListener('keydown',e=>{if(document.querySelector('#exportOptions[open]'))return;if(!current||['INPUT','TEXTAREA','BUTTON','SELECT'].includes(e.target.tagName))return;const d=e.shiftKey?20:4;if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();remember();const [x,y]=layerKeys();change({[x]:crop[x]+(e.key==='ArrowLeft'?-d:e.key==='ArrowRight'?d:0),[y]:crop[y]+(e.key==='ArrowUp'?-d:e.key==='ArrowDown'?d:0)})}});
 window.addEventListener('beforeunload',e=>{if(pending.size){e.preventDefault();e.returnValue='Your draft has not finished saving.'}});
 const sharedButton=document.createElement('button');sharedButton.id='useShared';sharedButton.textContent='Load saved version';sharedButton.hidden=true;saveGroup.append(sharedButton);sharedButton.onclick=()=>{if(!current)return;const id=current.id,v=conflicts.get(id);if(!v)return;conflicts.delete(id);pending.delete(id);edits[id]=v;revisions[id]=v._revision||0;crop=clamp(current,v);entryCrop={...crop};history=[];future=[];render();refreshTile();sharedButton.hidden=true;$('#error').textContent='';$('#saveStatus').textContent='Loaded saved version'};
 const syncLabel=document.createElement('span');syncLabel.className='sync-label';syncLabel.textContent='Connecting…';document.querySelector('.tools').prepend(syncLabel);
