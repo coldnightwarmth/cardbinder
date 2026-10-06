@@ -50,7 +50,7 @@ export class Curator {
    const pair=new WebSocketPair();this.ctx.acceptWebSocket(pair[1]);return new Response(null,{status:101,webSocket:pair[0]});
   }
   if(path==='/api/edits'&&request.method==='GET')return Response.json(await this.ctx.storage.transaction(store=>readEdits(store)));
-  if(path==='/api/suits'&&request.method==='GET')return Response.json(validateSuits(await this.ctx.storage.get('suits')||{}));
+  if(path==='/api/suits'&&request.method==='GET'){const suits=validateSuits(await this.ctx.storage.get('suits')||{});return Response.json({...suits,spacing:suits.spacingY});}
   if(path==='/api/metadata'&&request.method==='GET')return Response.json(await this.ctx.storage.transaction(store=>readMetadata(store)));
   if(!['/api/save','/api/import','/api/tags','/api/suits'].includes(path)||request.method!=='POST')return new Response('Not found',{status:404});
   try{
@@ -61,7 +61,9 @@ export class Curator {
     if(path==='/api/suits'){
      const latest=await store.get('suits')||suitDefaults;
      if(value.revision!==latest.revision)return {status:409,body:{error:'Suit settings changed elsewhere. Try again.',latest}};
-     const saved={...validateSuits(value),revision:latest.revision+1};await store.put('suits',saved);return {status:200,body:saved};
+     // Older open tabs still send one spacing field; retain settings they do not know about.
+     const incoming={...latest,...value};if(value.spacingX===undefined&&value.spacing!==undefined)incoming.spacingX=value.spacing;if(value.spacingY===undefined&&value.spacing!==undefined)incoming.spacingY=value.spacing;
+     const saved={...validateSuits(incoming),revision:latest.revision+1};await store.put('suits',saved);return {status:200,body:saved};
     }
     if(path==='/api/tags'){
      const metadata=updateMetadata(await readMetadata(store),value);

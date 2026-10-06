@@ -9,6 +9,11 @@ test('shared edits persist, broadcast, reject stale writes and validate imports'
  t.after(()=>mf.dispose());
  const call=(path,body,origin='https://cards.art')=>mf.dispatchFetch('http://local'+path,{method:body?'POST':'GET',headers:{Origin:origin,'Content-Type':'application/json'},...(body?{body:JSON.stringify(body)}:{})});
  assert.equal((await call('/api/edits',null,'https://bad.example')).status,403);
+ const suits=await (await call('/api/suits')).json();assert.equal(suits.spacing,suits.spacingY);
+ const styled=await (await call('/api/suits',{...suits,stroke:true,spacingX:80,spacingY:120})).json();
+ const oldClient=await (await call('/api/suits',{visible:true,side:'left',orientation:'vertical',size:110,spacing:90,seed:1729,revision:styled.revision})).json();
+ assert.equal(oldClient.stroke,true);assert.equal(oldClient.spacingX,90);assert.equal(oldClient.spacingY,90);
+ const compatible=await (await call('/api/suits')).json();assert.equal(compatible.spacing,90);
  const seed=await (await call('/api/edits')).json();const id=1;
  const connection=await mf.dispatchFetch('http://local/connect',{headers:{Origin:'https://cards.art',Upgrade:'websocket'}});
  const ws=connection.webSocket;ws.accept();t.after(()=>ws.close());

@@ -16,4 +16,4 @@ export function suitAssignments(ids,seed){
 
 // Collection order: 166 Mi Note cards, then 1,116 Mi Note 2 cards.
 export function suitIconCount(id){return id<=166?1:id<=1282?2:3;}
-export function suitBoxes(id,settings){const count=suitIconCount(id),size=settings.size,gap=size*.18;return Array.from({length:count},(_,i)=>{const dx=settings.orientation==='horizontal'?i*(size+gap):0,dy=settings.orientation==='vertical'?i*(size+gap):0;return {x:settings.side==='left'?settings.spacingX+dx:2000-settings.spacingX-size-dx,y:2800-settings.spacingY-size-dy,size};});}
+export function suitBoxes(id,settings){settings=validateSuits(settings);const count=suitIconCount(id),size=settings.size,gap=size*.18;return Array.from({length:count},(_,i)=>{const dx=settings.orientation==='horizontal'?i*(size+gap):0,dy=settings.orientation==='vertical'?i*(size+gap):0;return {x:settings.side==='left'?settings.spacingX+dx:2000-settings.spacingX-size-dx,y:2800-settings.spacingY-size-dy,size};});}
