@@ -1,6 +1,7 @@
+import {startSuits} from '../minotecurator/suits.js';
 import {studioRequest,subscribeEdits} from '../minotecurator/storage.js?v=3';
 import {createTagFilter} from '../minotecurator/tag-filter.js?v=2';
-import {renderCard} from './card-renderer.js?v=2';
+import {renderCard} from './card-renderer.js?v=3';
 const $=s=>document.querySelector(s),grid=$('#grid'),dialog=$('#expanded');
 let collection=[],edits={},metadata,columns=innerWidth<600?2:4,horizontal=false,selected=null,refreshing=false,again=false;
 const tagFilter=createTagFilter(draw);
@@ -23,5 +24,5 @@ $('#previous').onclick=()=>scrollCards(-1);$('#next').onclick=()=>scrollCards(1)
 grid.addEventListener('wheel',e=>{if(horizontal&&Math.abs(e.deltaY)>Math.abs(e.deltaX)){e.preventDefault();grid.scrollLeft+=e.deltaY*(e.deltaMode===1?16:e.deltaMode===2?grid.clientWidth:1);}},{passive:false});
 async function read(path){const r=await studioRequest(path);if(!r.ok)throw Error('Unable to load cards');return r.json();}
 async function refresh(){if(refreshing){again=true;return;}refreshing=true;try{const [next,tags]=await Promise.all([read('/api/edits'),read('/api/metadata')]);const changed=JSON.stringify(next)!==JSON.stringify(edits)||tags.revision!==metadata?.revision;edits=next;metadata=tags;tagFilter.update(tags);if(changed){draw();if(selected)openCard(selected);}}catch{if(!grid.children.length){$('#status').hidden=false;$('#status').textContent='Unable to load cards. Please refresh to try again.';}setTimeout(refresh,5000);}finally{refreshing=false;if(again){again=false;refresh();}}}
-try{collection=await read('/api/collection');await refresh();subscribeEdits(refresh);}catch{$('#status').textContent='Unable to load cards. Please refresh to try again.';}
+try{collection=await read('/api/collection');startSuits(collection);await refresh();subscribeEdits(refresh);}catch{$('#status').textContent='Unable to load cards. Please refresh to try again.';}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();});

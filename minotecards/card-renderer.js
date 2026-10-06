@@ -1,3 +1,5 @@
+import {maskName} from '../minotecurator/title-mask.js';
+import {applySuit} from '../minotecurator/suits.js';
 const W=2000,H=2800;
 const defaults=()=>({zoom:1,x:0,y:0,nameZoom:1,nameX:0,nameY:0,ink:'original',body:false,bodyZoom:1,bodyX:0,bodyY:0});
 function geometry(item,v){const s=Math.max(W/item.width,H/item.height)*v.zoom;return {w:item.width*s,h:item.height*s}}
@@ -21,10 +23,10 @@ export function renderCard(item,edit={},full=false){
  position(image(`/minotecurator/assets/${full?'originals':'thumbs'}/${item.id}.webp`,'art'),item,value);
  image('/minotecurator/assets/strip.png','strip');
  if(value.body)bodyPosition(image('/minotecurator/assets/body-crop.png','body'),value);
- const name=image(`/minotecurator/assets/names/${item.id}.webp?v=trim3`,'name');namePosition(name,item,value);
+ const name=image(`/minotecurator/assets/names/${item.id}.webp?v=trim3`,'name');namePosition(name,item,value);maskName(name);
  if(value.ink!=='original'){
   const observer=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting)){observer.disconnect();inkImage(item.id,value.ink).then(img=>{name.src=img.src;}).catch(()=>{});}});
   observer.observe(card);card.dispose=()=>observer.disconnect();
  }
- return card;
+ applySuit(card,item.id);return card;
 }

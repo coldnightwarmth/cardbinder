@@ -1,3 +1,4 @@
+import {suitDefaults,validateSuits} from '../../minotecurator/suits-model.js';
 import {migrateMetadata} from '../../minotecurator/tag-cleanup.js';
 import {metadataSeed} from '../../minotecurator/metadata-seed.js';
 import {updateMetadata} from '../../minotecurator/metadata-model.js';
@@ -49,13 +50,19 @@ export class Curator {
    const pair=new WebSocketPair();this.ctx.acceptWebSocket(pair[1]);return new Response(null,{status:101,webSocket:pair[0]});
   }
   if(path==='/api/edits'&&request.method==='GET')return Response.json(await this.ctx.storage.transaction(store=>readEdits(store)));
+  if(path==='/api/suits'&&request.method==='GET')return Response.json(await this.ctx.storage.get('suits')||suitDefaults);
   if(path==='/api/metadata'&&request.method==='GET')return Response.json(await this.ctx.storage.transaction(store=>readMetadata(store)));
-  if(!['/api/save','/api/import','/api/tags'].includes(path)||request.method!=='POST')return new Response('Not found',{status:404});
+  if(!['/api/save','/api/import','/api/tags','/api/suits'].includes(path)||request.method!=='POST')return new Response('Not found',{status:404});
   try{
    const reader=request.body.getReader();let size=0,parts=[];
    while(true){const {done,value}=await reader.read();if(done)break;size+=value.length;if(size>2000000){await reader.cancel();return new Response('Too large',{status:413});}parts.push(value);}
    const value=JSON.parse(await new Blob(parts).text());
    const result=await this.ctx.storage.transaction(async store=>{
+    if(path==='/api/suits'){
+     const latest=await store.get('suits')||suitDefaults;
+     if(value.revision!==latest.revision)return {status:409,body:{error:'Suit settings changed elsewhere. Try again.',latest}};
+     const saved={...validateSuits(value),revision:latest.revision+1};await store.put('suits',saved);return {status:200,body:saved};
+    }
     if(path==='/api/tags'){
      const metadata=updateMetadata(await readMetadata(store),value);
      await writeMetadata(store,metadata);

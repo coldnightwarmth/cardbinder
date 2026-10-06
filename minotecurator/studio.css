@@ -142,3 +142,5 @@ header{padding:12px 3.4%;gap:16px}
 .tag-filter-option.excluded{background:#fff0ed;border-color:#b85b4e;color:#963c32;text-decoration:line-through}.metadata-divider{flex-basis:100%;height:1px;background:#d8ddd3;margin:7px 0}
 
 .quick-tag-toggle{width:100%;margin-bottom:12px}.quick-tag-toggle[aria-pressed=true]{background:#354e38;color:white}.quick-tag-selected .card{outline:3px solid #54774d;outline-offset:5px}.quick-tag-mode .tile[aria-busy=true]{opacity:.6}.inline-zoom{position:relative;padding-right:66px}.size-steps{position:absolute;right:0;bottom:0;display:flex;gap:4px}.size-steps button{width:28px;height:28px;padding:0;font-size:19px}
+
+#suitsPanel{position:fixed;z-index:9000;width:260px;max-height:75dvh;overflow:auto;background:#fafbf8;border:1px solid #cbd0c8;border-radius:12px;padding:14px;box-shadow:0 8px 28px #263c3026;display:flex;flex-direction:column;gap:12px}#suitsPanel[hidden]{display:none}.suits-row{display:flex;gap:6px}.suits-row button{flex:1}#suitsPanel button[aria-pressed=true]{background:#354e38;color:white}#suitsPanel label{font-size:13px}#suitsPanel input{margin:8px 0 0}#suitsPanel small{color:#647260}
