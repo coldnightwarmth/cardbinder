@@ -11,10 +11,13 @@ async function readMetadata(store){
  if(count===undefined)return structuredClone(metadataSeed);
  const parts=await store.get(Array.from({length:count},(_,i)=>'metadata:'+i));
  const metadata=JSON.parse(Array.from({length:count},(_,i)=>parts.get('metadata:'+i)).join(''));
+ let addedCards=false;
+ for(const [id,tags] of Object.entries(metadataSeed.cards))if(!Object.hasOwn(metadata.cards,id)){metadata.cards[id]=[...tags];addedCards=true;}
+ if(addedCards)metadata.revision++;
  const migrated=migrateMetadata(metadata);
  const additions=['cigarette','yugioh'].filter(tag=>!metadata.tags.includes(tag));
  if(additions.length){metadata.tags.push(...additions);metadata.tags.sort();metadata.revision++;}
- if(migrated||additions.length){
+ if(migrated||additions.length||addedCards){
   // Keep the original chunks recoverable while applying the one-time cleanup.
   for(let i=0;i<count;i++)await store.put('metadata:before-cleanup:'+i,parts.get('metadata:'+i));
   await store.put('metadata:before-cleanup:chunks',count);

@@ -30,4 +30,4 @@ export function countTags(metadata){
  for(const tags of Object.values(metadata.cards))for(const tag of new Set(tags))if(counts.has(tag))counts.set(tag,counts.get(tag)+1);
  return counts;
 }
-export function matchesTags(cardTags,selected){return !selected.size||cardTags.some(tag=>selected.has(tag));}
+export function matchesTags(cardTags,selected,excluded=new Set()){return !cardTags.some(tag=>excluded.has(tag))&&(!selected.size||cardTags.some(tag=>selected.has(tag)));}

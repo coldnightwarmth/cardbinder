@@ -12,3 +12,4 @@
 .tag-filter-option:has(input:focus-visible){outline:3px solid #829d53;outline-offset:2px}
 .tag-filter-option:has(input:checked) .tag-filter-count{color:#d0d8cd}
 .tag-filter-count{color:#a0a59d;font-size:12px}
+.tag-filter-option.excluded{background:#fff0ed;border-color:#b85b4e;color:#963c32;text-decoration:line-through}.metadata-divider{flex-basis:100%;height:1px;background:#d8ddd3;margin:7px 0}

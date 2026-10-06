@@ -42,9 +42,10 @@ export function createMetadataSidebar(sidebar,getCard,onChange=()=>{}){
   if(changedCard){form.hidden=true;input.value='';}
   for(const [tag,button] of buttons)if(metadata&&!metadata.tags.includes(tag)){button.remove();buttons.delete(tag);}
   const focused=document.activeElement;
-  const positions=new Map();
+  const positions=new Map();list.querySelector('.metadata-divider')?.remove();let separated=false;
   if(!changedCard&&!metadataPanel.hidden)for(const [tag,button] of buttons)positions.set(tag,button.getBoundingClientRect());
   for(const tag of orderedTags(metadata?.tags??[],active)){
+   if(active.length&&!active.includes(tag)&&!separated){const divider=document.createElement('div');divider.className='metadata-divider';divider.setAttribute('role','separator');list.append(divider);separated=true;}
    let button=buttons.get(tag);
    if(!button){button=document.createElement('button');button.type='button';button.className='metadata-tag';button.textContent=tag;button.onclick=()=>save(tag,!(metadata?.cards[getCard()?.id]??[]).includes(tag));buttons.set(tag,button);}
    button.setAttribute('aria-pressed',String(active.includes(tag)));button.disabled=busy||id===undefined;

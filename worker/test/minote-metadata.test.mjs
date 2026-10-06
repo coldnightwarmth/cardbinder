@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {metadataSeed} from '../../minotecurator/metadata-seed.js';
 import {normalizeTag,orderedTags,updateMetadata} from '../../minotecurator/metadata-model.js';
 test('starter catalog excludes filler and restores recurring Pokemon names and initializes every card',()=>{
- assert.equal(Object.keys(metadataSeed.cards).length,1413);
+ assert.equal(Object.keys(metadataSeed.cards).length,1430);
  for(const word of ['milady','lady','mi','note','minote','the','of','notebook'])assert.ok(!metadataSeed.tags.includes(word));
  assert.ok(metadataSeed.tags.includes('pokemon'));
  for(const id of [25,66,841])assert.ok(metadataSeed.cards[id].includes('pokemon'));
@@ -53,4 +53,12 @@ test('recurring Pokemon are assigned and sad becomes crying without losing custo
  assert.ok(migrateMetadata(state));assert.ok(state.cards[25].includes('pikachu'));assert.ok(state.cards[66].includes('meowth'));
  assert.deepEqual(state.cards[1],['crying']);assert.ok(state.cards[25].includes('custom'));assert.ok(!state.tags.includes('sad'));
  assert.equal(migrateMetadata(state),false);assert.equal(state.revision,8);
+});
+
+test('exclusions veto included tags and work without any inclusion',async()=>{
+ const {matchesTags}=await import('../../minotecurator/metadata-model.js');
+ assert.equal(matchesTags(['angel','cat'],new Set(['angel']),new Set(['cat'])),false);
+ assert.equal(matchesTags(['angel'],new Set(),new Set(['cat'])),true);
+ assert.equal(matchesTags(['cat'],new Set(),new Set(['cat'])),false);
+ assert.equal(matchesTags([],new Set(),new Set()),true);
 });

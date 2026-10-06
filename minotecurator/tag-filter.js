@@ -1,4 +1,4 @@
-import {countTags,matchesTags} from './metadata-model.js?v=2';
+import {countTags,matchesTags} from './metadata-model.js?v=3';
 
 export function createTagFilter(onChange){
  const button=document.createElement('button');button.type='button';button.id='tagFilterToggle';button.textContent='Tags';button.disabled=true;
@@ -6,10 +6,10 @@ export function createTagFilter(onChange){
  document.querySelector('.search').after(button);
  const panel=document.createElement('div');panel.id='tagFilterPanel';panel.hidden=true;panel.setAttribute('role','dialog');panel.setAttribute('aria-label','Filter cards by tags');
  const heading=document.createElement('div');heading.className='tag-filter-heading';
- const title=document.createElement('span');title.textContent='Match any selected tag';
- const clear=document.createElement('button');clear.type='button';clear.textContent='Clear';clear.onclick=()=>{selected.clear();render();onChange();};heading.append(title,clear);
+ const title=document.createElement('span');title.textContent='Click: include → exclude → clear';
+ const clear=document.createElement('button');clear.type='button';clear.textContent='Clear';clear.onclick=()=>{selected.clear();excluded.clear();render();onChange();};heading.append(title,clear);
  const list=document.createElement('div');list.className='tag-filter-options';panel.append(heading,list);document.body.append(panel);
- const selected=new Set();let metadata=null;
+ const selected=new Set(),excluded=new Set();let metadata=null;
  function position(){
   const rect=button.getBoundingClientRect(),width=Math.min(320,window.innerWidth-24);
   panel.style.width=width+'px';panel.style.left=Math.max(12,Math.min(rect.left,window.innerWidth-width-12))+'px';
@@ -23,7 +23,7 @@ export function createTagFilter(onChange){
  window.addEventListener('resize',()=>{if(!panel.hidden)position();});
  const options=new Map();
  function render(){
-  button.disabled=!metadata;button.textContent=selected.size?`Tags (${selected.size})`:'Tags';button.classList.toggle('is-active',selected.size>0);clear.disabled=!selected.size;
+  button.disabled=!metadata;button.textContent=(selected.size+excluded.size)?`Tags (${selected.size+excluded.size})`:'Tags';button.classList.toggle('is-active',selected.size+excluded.size>0);clear.disabled=!(selected.size+excluded.size);
   const counts=metadata?countTags(metadata):new Map();
   for(const [tag,option] of options)if(!counts.has(tag)){option.row.remove();options.delete(tag);}
   const sorted=[...counts.keys()].sort((a,b)=>a.localeCompare(b));
@@ -32,18 +32,18 @@ export function createTagFilter(onChange){
    if(!option){
     const row=document.createElement('label'),input=document.createElement('input'),name=document.createElement('span'),count=document.createElement('span');
     row.className='tag-filter-option';input.type='checkbox';name.textContent=tag;count.className='tag-filter-count';
-    input.onchange=()=>{if(input.checked)selected.add(tag);else selected.delete(tag);render();onChange();};
+    input.onchange=()=>{if(selected.has(tag)){selected.delete(tag);excluded.add(tag);}else if(excluded.has(tag))excluded.delete(tag);else selected.add(tag);render();onChange();};
     row.append(input,name,count);option={row,input,count};options.set(tag,option);
    }
-   option.input.checked=selected.has(tag);option.count.textContent=`(${counts.get(tag).toLocaleString()})`;
+   option.input.checked=selected.has(tag);option.input.indeterminate=excluded.has(tag);option.row.classList.toggle('excluded',excluded.has(tag));option.row.title=excluded.has(tag)?'Exclude '+tag:selected.has(tag)?'Include '+tag:'No filter';option.count.textContent=`(${counts.get(tag).toLocaleString()})`;
    // Preserve keyboard focus while counts or selections change.
    const previous=list.children[index];
    if(previous!==option.row)list.insertBefore(option.row,previous??null);
   }
  }
  return {
-  get active(){return selected.size>0;},
-  matches(id){return matchesTags(metadata?.cards[id]??[],selected);},
-  update(next){metadata=next;for(const tag of selected)if(!next.tags.includes(tag))selected.delete(tag);render();}
+  get active(){return selected.size+excluded.size>0;},
+  matches(id){return matchesTags(metadata?.cards[id]??[],selected,excluded);},
+  update(next){metadata=next;for(const tag of excluded)if(!next.tags.includes(tag))excluded.delete(tag);for(const tag of selected)if(!next.tags.includes(tag))selected.delete(tag);render();}
  };
 }
