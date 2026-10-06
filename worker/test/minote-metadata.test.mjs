@@ -2,9 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {metadataSeed} from '../../minotecurator/metadata-seed.js';
 import {normalizeTag,orderedTags,updateMetadata} from '../../minotecurator/metadata-model.js';
-test('starter catalog excludes filler and Pokemon names and initializes every card',()=>{
+test('starter catalog excludes filler and restores recurring Pokemon names and initializes every card',()=>{
  assert.equal(Object.keys(metadataSeed.cards).length,1413);
- for(const word of ['milady','lady','mi','note','minote','the','of','notebook','pikachu','dratini','gengar'])assert.ok(!metadataSeed.tags.includes(word));
+ for(const word of ['milady','lady','mi','note','minote','the','of','notebook'])assert.ok(!metadataSeed.tags.includes(word));
  assert.ok(metadataSeed.tags.includes('pokemon'));
  for(const id of [25,66,841])assert.ok(metadataSeed.cards[id].includes('pokemon'));
  for(const tag of metadataSeed.tags)assert.match(tag,/^[\p{L}-]+$/u);
@@ -43,4 +43,14 @@ test('tag counts and multiple-tag matching use the whole collection without doub
  assert.equal(matchesTags(['cat'],new Set(['cat','baby'])),true);
  assert.equal(matchesTags(['baby'],new Set(['cat','baby'])),true);
  assert.equal(matchesTags(['frog'],new Set(['cat','baby'])),false);
+});
+
+test('recurring Pokemon are assigned and sad becomes crying without losing custom tags',async()=>{
+ const {pokemonTags}=await import('../../minotecurator/pokemon-tags.js');
+ const {migrateMetadata}=await import('../../minotecurator/tag-cleanup.js');
+ for(const [tag,ids] of Object.entries(pokemonTags)){assert.ok(ids.length>=2);for(const id of ids)assert.ok(metadataSeed.cards[id].includes(tag));}
+ const state={schemaVersion:1,revision:7,tags:['sad','custom'],cards:{25:['sad','custom'],66:[],1:['sad','crying']}};
+ assert.ok(migrateMetadata(state));assert.ok(state.cards[25].includes('pikachu'));assert.ok(state.cards[66].includes('meowth'));
+ assert.deepEqual(state.cards[1],['crying']);assert.ok(state.cards[25].includes('custom'));assert.ok(!state.tags.includes('sad'));
+ assert.equal(migrateMetadata(state),false);assert.equal(state.revision,8);
 });
