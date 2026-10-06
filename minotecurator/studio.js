@@ -1,5 +1,5 @@
 import {createMetadataSidebar} from './metadata.js?v=3';
-import {createTagFilter} from './tag-filter.js?v=2';
+import {createTagFilter} from './tag-filter.js?v=3';
 import {studioRequest,subscribeEdits} from './storage.js?v=3';
 const $=s=>document.querySelector(s),W=2000,H=2800,defaults=()=>({zoom:1,x:0,y:0,nameZoom:1,nameX:0,nameY:0,ink:"original",body:false,bodyZoom:1,bodyX:0,bodyY:0});let collection=[],edits={},filtered=[],current=null,crop=defaults(),history=[],future=[],timer,bodyFilter=0,inkFilter=0,saveChain=Promise.resolve();const grid=$('#grid'),dialog=$('#editor');let revisions={},pending=new Set(),conflicts=new Map(),editSerial={};
 function geometry(item,v){const s=Math.max(W/item.width,H/item.height)*v.zoom;return {w:item.width*s,h:item.height*s}}
@@ -27,7 +27,7 @@ grid.addEventListener('load',event=>{if(event.target instanceof HTMLImageElement
 function isEdited(id){const v=edits[id];return v&&Object.entries(defaults()).some(([key,value])=>typeof value==='number'?Math.abs((v[key]??value)-value)>.001:(v[key]??value)!==value)}
 function image(src,cls){const img=document.createElement('img');img.className=cls;img.loading='lazy';img.decoding='async';img.alt='';setSource(img,src);return img}
 function tile(item){const b=document.createElement('article');b.className='tile';b.tabIndex=0;b.setAttribute('role','button');b.dataset.id=item.id;b.setAttribute('aria-label',`Edit card ${item.id}: ${item.name}`);const c=document.createElement('div');c.className='card';if(item.available){const art=image(`/minotecurator/assets/thumbs/${item.id}.webp`,'art');position(art,item,edits[item.id]||defaults());c.append(art,image('/minotecurator/assets/strip.png','strip'));const v={...defaults(),...edits[item.id]};if(v.body){const body=image('/minotecurator/assets/body-crop.png','body-box');bodyPosition(body,v);c.append(body)}const name=image(nameSource(item,v),'name');namePosition(name,item,v);c.append(name);b.onclick=e=>{if(current?.id!==item.id){const selectedLayer=layerAt(e,c,item,{...defaults(),...edits[item.id]});open(item.id);layer=selectedLayer;render()}else if(carousel)centerCarouselCard(item.id)};b.onkeydown=e=>{if((e.key==='Enter'||e.key===' ')&&e.target===b){e.preventDefault();open(item.id)}}}else{c.classList.add('unavailable');const a=document.createElement('strong');a.textContent=String(item.id).padStart(4,'0');const s=document.createElement('span');s.textContent='Artwork unavailable';c.append(a,s);b.setAttribute('aria-disabled','true');b.tabIndex=-1}b.append(c);const cap=document.createElement('div');cap.className='caption';const id=document.createElement('span');id.className='id';id.textContent=String(item.id).padStart(4,'0');const label=document.createElement('span');label.className='label';label.textContent=item.name;const mark=document.createElement('span');mark.className='edited-mark';mark.textContent=isEdited(item.id)?'Edited':'';cap.append(id,label,mark);b.append(cap);return b}
-function drawGrid(){nameObserver.disconnect();if(current){persist().catch(()=>{});parkEditor();current=null;toolbar.hidden=true}const q=$('#search').value.trim().toLowerCase();filtered=collection.filter(i=>matchesAppearanceFilters(edits[i.id])&&tagFilter.matches(i.id)&&(!q||i.name.toLowerCase().includes(q)||String(i.id).includes(q)));grid.replaceChildren(...filtered.map(tile));$('#empty').hidden=filtered.length>0;const missing=collection.filter(i=>!i.available).length;$('#count').textContent=`${filtered.length.toLocaleString()} cards${missing?' · '+missing+' artworks unavailable locally':''}`;requestAnimationFrame(updateCarouselNav)}
+function drawGrid(){nameObserver.disconnect();if(current){persist().catch(()=>{});parkEditor();current=null;toolbar.hidden=true}const q=$('#search').value.trim().toLowerCase();filtered=collection.filter(i=>tagFilter.quick||matchesAppearanceFilters(edits[i.id])&&tagFilter.matches(i.id)&&(!q||i.name.toLowerCase().includes(q)||String(i.id).includes(q)));grid.replaceChildren(...filtered.map(tile));$('#empty').hidden=filtered.length>0;const missing=collection.filter(i=>!i.available).length;$('#count').textContent=`${filtered.length.toLocaleString()} cards${missing?' · '+missing+' artworks unavailable locally':''}`;requestAnimationFrame(()=>{updateCarouselNav();updateQuickTags();})}
 function refreshTile(){const tile=grid.querySelector(`[data-id="${current.id}"]`);if(tile){const img=tile.querySelector('.art');if(img)position(img,current,crop);tile.querySelector('.edited-mark').textContent=isEdited(current.id)?'Edited':''}}
 function render(){metadataSidebar.render();cancelButton.hidden=!entryCrop||!Object.keys(defaults()).some(key=>crop[key]!==entryCrop[key]);position($('#art'),current,crop);namePosition($('#name'),current,crop);setSource($('#name'),nameSource(current,crop));namePosition(nameFrame,current,crop);bodyPosition(bodyImage,crop);bodyPosition(bodyFrame,crop);bodyImage.hidden=!crop.body;$('#bodyToggle').checked=crop.body;const key=layerKeys()[2];$('#zoom').min=layer==='artwork'?1:.25;$('#zoom').max=maxZoom();$('#zoom').value=crop[key];$('#zoomValue').textContent=Math.round(crop[key]*100)+'%';$('#sizeLabel').textContent=layer==='name'?'Name size':layer==='body'?'Body box size':'Artwork size';$('#reset').textContent=layer==='name'?'Reset name':layer==='body'?'Reset box':'Reset crop';$('#undo').disabled=!history.length;stageWrap.classList.toggle('name-mode',layer!=='artwork');nameFrame.hidden=layer!=='name';bodyFrame.hidden=layer!=='body'||!crop.body;document.querySelectorAll('[data-layer]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.layer===layer));document.querySelectorAll('[data-ink]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.ink===crop.ink))}
 function remember(){history.push({...crop});if(history.length>40)history.shift();future=[]}
@@ -45,6 +45,10 @@ const stageWrap=$('#stageWrap');const parking=document.createElement('div');park
 const toolbar=document.createElement('section');toolbar.className='inline-toolbar';toolbar.hidden=true;toolbar.setAttribute('aria-label','Selected card crop controls');
 const selectedLabel=document.createElement('div');selectedLabel.className='selected-label';selectedLabel.append($('#number'),$('#title'));
 const zoomGroup=document.createElement('div');zoomGroup.className='inline-zoom';zoomGroup.append($('.zoom-label'),$('#zoom'));
+const sizeSteps=document.createElement('span');sizeSteps.className='size-steps';
+for(const [text,delta,label] of [['−',-.01,'Decrease size'],['+',.01,'Increase size']]){const button=document.createElement('button');button.type='button';button.textContent=text;button.setAttribute('aria-label',label);button.onclick=()=>{if(!current)return;remember();const key=layerKeys()[2];change({[key]:Math.max(Number($('#zoom').min),Math.min(Number($('#zoom').max),Math.round((crop[key]+delta)*1000)/1000))});persist().catch(()=>{});};sizeSteps.append(button);}
+zoomGroup.querySelector('#zoom').after(sizeSteps);
+
 const saveGroup=document.createElement('div');saveGroup.className='inline-save';saveGroup.append($('#saveStatus'),$('#error'));
 const cancelButton=document.createElement('button');cancelButton.id='cancel';cancelButton.textContent='Cancel';
 const downloadIcon='<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M5 16v5h14v-5"/></svg>';
@@ -57,9 +61,9 @@ const bodyImage=image('/minotecurator/assets/body-crop.png','body-box');bodyImag
 const nameFrame=document.createElement('div');nameFrame.className='name-frame';nameFrame.hidden=true;nameFrame.innerHTML=['nw','ne','sw','se','n','e','s','w'].map(c=>`<button class="handle ${c}" data-corner="${c}" aria-label="Resize name from ${c} corner"></button>`).join('');stageWrap.append(nameFrame);
 const bodyFrame=document.createElement('div');bodyFrame.className='body-frame';bodyFrame.hidden=true;bodyFrame.innerHTML=['nw','ne','sw','se','n','e','s','w'].map(c=>`<button class="handle ${c}" data-corner="${c}" aria-label="Resize body box from ${c} corner"></button>`).join('');stageWrap.append(bodyFrame);
 sidebar.querySelectorAll('[data-ink]').forEach(b=>b.onclick=()=>{remember();change({ink:b.dataset.ink});persist().catch(()=>{})});$('#centerName').onclick=()=>{remember();change({nameX:0,nameY:0});persist().catch(()=>{})};$('#bodyToggle').onchange=e=>{remember();if(e.target.checked)layer='body';else if(layer==='body')layer='artwork';change({body:e.target.checked});persist().catch(()=>{})};
-const tagFilter=createTagFilter(()=>drawGrid());
+const tagFilter=createTagFilter(()=>{drawGrid();updateQuickTags();},{allowQuick:true});
 const metadataSidebar=createMetadataSidebar(sidebar,()=>current,metadata=>{
- const wasActive=tagFilter.active;tagFilter.update(metadata);
+ const wasActive=tagFilter.active;tagFilter.update(metadata);updateQuickTags();
  if(wasActive){
   const q=$('#search').value.trim().toLowerCase();
   const next=collection.filter(i=>matchesAppearanceFilters(edits[i.id])&&tagFilter.matches(i.id)&&(!q||i.name.toLowerCase().includes(q)||String(i.id).includes(q)));
@@ -361,3 +365,19 @@ function queueCaptionFit(){cancelAnimationFrame(captionFitFrame);captionFitFrame
 new ResizeObserver(entries=>{const width=entries[0].contentRect.width;if(Math.abs(width-captionGridWidth)>.5){captionGridWidth=width;queueCaptionFit();}}).observe(grid);
 new MutationObserver(queueCaptionFit).observe(grid,{childList:true});
 document.fonts.ready.then(queueCaptionFit);
+
+const quickPending=new Set();
+function updateQuickTags(){
+ document.body.classList.toggle('quick-tag-mode',tagFilter.quick);
+ for(const tile of grid.children){const id=Number(tile.dataset.id);tile.classList.toggle('quick-tag-selected',tagFilter.quick&&!!tagFilter.quickTag&&tagFilter.hasTag(id));tile.setAttribute('aria-busy',String(quickPending.has(id)));if(tagFilter.quick)tile.setAttribute('aria-pressed',String(tagFilter.hasTag(id)));else tile.removeAttribute('aria-pressed');}
+}
+async function quickToggle(tile){
+ const id=Number(tile.dataset.id),tag=tagFilter.quickTag;if(!tag){syncLabel.textContent='Choose a tag in Quick tag mode';return;}if(quickPending.has(id))return;
+ const selected=!tagFilter.hasTag(id);quickPending.add(id);updateQuickTags();
+ try{const response=await post('/api/tags',{id,tag,selected});tagFilter.update(await response.json());syncLabel.textContent='Tag saved for everyone';metadataSidebar.refresh();}
+ catch(error){syncLabel.textContent='Tag not saved: '+error.message;}
+ finally{quickPending.delete(id);updateQuickTags();}
+}
+grid.addEventListener('click',event=>{if(!tagFilter.quick)return;const tile=event.target.closest('.tile');if(!tile)return;event.preventDefault();event.stopImmediatePropagation();quickToggle(tile);},true);
+grid.addEventListener('keydown',event=>{if(!tagFilter.quick||!['Enter',' '].includes(event.key))return;const tile=event.target.closest('.tile');if(!tile)return;event.preventDefault();event.stopImmediatePropagation();if(!event.repeat)quickToggle(tile);},true);
+window.addEventListener('beforeunload',event=>{if(quickPending.size){event.preventDefault();event.returnValue='Tags are still saving.';}});
