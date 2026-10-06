@@ -1,0 +1,14 @@
+#tagFilterToggle{white-space:nowrap}
+#tagFilterToggle.is-active{background:#354d37;color:#fff;border-color:#354d37}
+#tagFilterPanel{position:fixed;z-index:9000;overflow:auto;padding:12px;background:#fafbf8;border:1px solid #cbd0c8;border-radius:12px;box-shadow:0 8px 28px #263c3026}
+#tagFilterPanel[hidden]{display:none}
+.tag-filter-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;font-size:12px;color:#65715c}
+.tag-filter-heading button{padding:5px 9px;font-size:12px}
+.tag-filter-options{display:flex;flex-wrap:wrap;align-items:center;gap:7px}
+.tag-filter-option{position:relative;display:inline-flex;align-items:center;gap:5px;max-width:100%;padding:6px 10px;border:1px solid #cbd0c8;border-radius:999px;background:#fff;font-size:12px;cursor:pointer;overflow-wrap:anywhere}
+.tag-filter-option:hover{background:#eaf0e7}
+.tag-filter-option input{position:absolute;width:1px;height:1px;opacity:0;margin:0}
+.tag-filter-option:has(input:checked){background:#354e38;border-color:#354e38;color:#fff}
+.tag-filter-option:has(input:focus-visible){outline:3px solid #829d53;outline-offset:2px}
+.tag-filter-option:has(input:checked) .tag-filter-count{color:#d0d8cd}
+.tag-filter-count{color:#a0a59d;font-size:12px}
