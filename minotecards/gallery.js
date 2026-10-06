@@ -1,7 +1,7 @@
-import {startSuits} from '../minotecurator/suits.js';
+import {startSuits} from '../minotecurator/suits.js?v=2';
 import {studioRequest,subscribeEdits} from '../minotecurator/storage.js?v=3';
 import {createTagFilter} from '../minotecurator/tag-filter.js?v=2';
-import {renderCard} from './card-renderer.js?v=4';
+import {renderCard} from './card-renderer.js?v=5';
 const $=s=>document.querySelector(s),grid=$('#grid'),dialog=$('#expanded');
 let collection=[],edits={},metadata,columns=innerWidth<600?2:4,horizontal=false,selected=null,refreshing=false,again=false;
 const tagFilter=createTagFilter(draw);

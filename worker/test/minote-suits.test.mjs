@@ -3,3 +3,10 @@ test('suits are deterministic, balanced and rerollable',()=>{const ids=Array.fro
 test('settings reject invalid geometry',()=>{assert.deepEqual(validateSuits(suitDefaults),suitDefaults);assert.throws(()=>validateSuits({size:Infinity}));assert.throws(()=>validateSuits({side:'top'}));});
 
 test('collection counts arrange upright icons inside either bottom corner',async()=>{const {suitIconCount,suitBoxes}=await import('../../minotecurator/suits-model.js');assert.deepEqual([166,167,1282,1283,1430].map(suitIconCount),[1,2,2,3,3]);for(const side of ['left','right'])for(const orientation of ['vertical','horizontal']){const boxes=suitBoxes(1430,{...suitDefaults,side,orientation,size:400,spacing:300});assert.equal(boxes.length,3);for(const b of boxes){assert.ok(b.x>=0&&b.y>=0&&b.x+b.size<=2000&&b.y+b.size<=2800);}}});
+
+test('effect settings default safely for older saves and reject invalid values',()=>{
+ const legacy=validateSuits({visible:true,size:110});assert.equal(legacy.stroke,false);assert.equal(legacy.shadow,false);
+ const effects={stroke:true,strokeColor:'black',strokeWidth:10,shadow:true,shadowColor:'white',shadowSize:20,shadowOpacity:75};
+ for(const [k,v] of Object.entries(effects))assert.equal(validateSuits(effects)[k],v);
+ for(const bad of [{stroke:'yes'},{shadowColor:'red'},{strokeWidth:11},{shadowSize:-1},{shadowOpacity:101}])assert.throws(()=>validateSuits(bad));
+});

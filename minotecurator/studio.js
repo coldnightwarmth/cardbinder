@@ -1,6 +1,6 @@
 import {bodySource} from './body-source.js';
 import {maskName,drawMaskedName} from './title-mask.js';
-import {applySuit,startSuits,createSuitsControls,exportSuit} from './suits.js';
+import {applySuit,startSuits,createSuitsControls,exportSuit} from './suits.js?v=2';
 import {createMetadataSidebar} from './metadata.js?v=3';
 import {createTagFilter} from './tag-filter.js?v=3';
 import {studioRequest,subscribeEdits} from './storage.js?v=3';

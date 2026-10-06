@@ -1,8 +1,10 @@
-export const suitDefaults={visible:true,side:'right',orientation:'vertical',size:110,spacing:60,seed:1729,revision:0};
+export const suitDefaults={visible:true,side:'right',orientation:'vertical',size:110,spacing:60,seed:1729,stroke:false,strokeColor:"white",strokeWidth:2,shadow:false,shadowColor:"black",shadowSize:5,shadowOpacity:40,revision:0};
 export function validateSuits(value){
  const out={...suitDefaults,...value};
  if(typeof out.visible!=='boolean'||!['left','right'].includes(out.side)||!['vertical','horizontal'].includes(out.orientation))throw Error('Invalid suit settings');
- for(const [k,min,max] of [['size',40,400],['spacing',0,300],['seed',0,4294967295]])if(!Number.isInteger(out[k])||out[k]<min||out[k]>max)throw Error('Invalid '+k);
+ for(const key of ['stroke','shadow'])if(typeof out[key]!=='boolean')throw Error('Invalid '+key);
+ for(const key of ['strokeColor','shadowColor'])if(!['white','black'].includes(out[key]))throw Error('Invalid '+key);
+ for(const [k,min,max] of [['strokeWidth',0,10],['shadowSize',0,20],['shadowOpacity',0,100],['size',40,400],['spacing',0,300],['seed',0,4294967295]])if(!Number.isInteger(out[k])||out[k]<min||out[k]>max)throw Error('Invalid '+k);
  return Object.fromEntries(Object.keys(suitDefaults).map(k=>[k,out[k]]));
 }
 export function suitAssignments(ids,seed){

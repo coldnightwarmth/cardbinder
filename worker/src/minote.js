@@ -50,7 +50,7 @@ export class Curator {
    const pair=new WebSocketPair();this.ctx.acceptWebSocket(pair[1]);return new Response(null,{status:101,webSocket:pair[0]});
   }
   if(path==='/api/edits'&&request.method==='GET')return Response.json(await this.ctx.storage.transaction(store=>readEdits(store)));
-  if(path==='/api/suits'&&request.method==='GET')return Response.json(await this.ctx.storage.get('suits')||suitDefaults);
+  if(path==='/api/suits'&&request.method==='GET')return Response.json({...suitDefaults,...await this.ctx.storage.get('suits')});
   if(path==='/api/metadata'&&request.method==='GET')return Response.json(await this.ctx.storage.transaction(store=>readMetadata(store)));
   if(!['/api/save','/api/import','/api/tags','/api/suits'].includes(path)||request.method!=='POST')return new Response('Not found',{status:404});
   try{
