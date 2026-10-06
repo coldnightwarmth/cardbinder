@@ -1,3 +1,4 @@
+import {bodySource} from '../minotecurator/body-source.js';
 import {maskName} from '../minotecurator/title-mask.js';
 import {applySuit} from '../minotecurator/suits.js';
 const W=2000,H=2800;
@@ -22,7 +23,7 @@ export function renderCard(item,edit={},full=false){
  function image(src,cls){const img=new Image();img.className=cls;img.alt='';img.loading=full?'eager':'lazy';img.decoding='async';img.draggable=false;img.src=src;card.append(img);return img;}
  position(image(`/minotecurator/assets/${full?'originals':'thumbs'}/${item.id}.webp`,'art'),item,value);
  image('/minotecurator/assets/strip.png','strip');
- if(value.body)bodyPosition(image('/minotecurator/assets/body-crop.png','body'),value);
+ if(value.body)bodyPosition(image(bodySource(item.id),'body'),value);
  const name=image(`/minotecurator/assets/names/${item.id}.webp?v=trim3`,'name');namePosition(name,item,value);maskName(name);
  if(value.ink!=='original'){
   const observer=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting)){observer.disconnect();inkImage(item.id,value.ink).then(img=>{name.src=img.src;}).catch(()=>{});}});
