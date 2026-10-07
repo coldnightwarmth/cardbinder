@@ -1,8 +1,8 @@
-import {createExportOptions} from './export-options.js';
+import {createExportOptions,createCollectionDownload} from './export-options.js?v=2';
 import {bodySource} from './body-source.js';
 import {maskName,drawMaskedName} from './title-mask.js';
-import {applySuit,startSuits,createSuitsControls,exportSuit} from './suits.js?v=8';
-import {createMetadataSidebar} from './metadata.js?v=6';
+import {applySuit,startSuits,createSuitsControls,exportSuit,captureSuitExport} from './suits.js?v=9';
+import {createMetadataSidebar} from './metadata.js?v=7';
 import {createTagFilter} from './tag-filter.js?v=5';
 import {studioRequest,subscribeEdits,pauseSync,syncingPaused} from './storage.js?v=5';
 const $=s=>document.querySelector(s),W=2000,H=2800,defaults=()=>({zoom:1,x:0,y:0,nameZoom:1,nameX:0,nameY:0,ink:"original",body:false,bodyZoom:1,bodyX:0,bodyY:0});let collection=[],edits={},filtered=[],current=null,crop=defaults(),history=[],future=[],timer,bodyFilter=0,inkFilter=0,saveChain=Promise.resolve();const grid=$('#grid'),dialog=$('#editor');let revisions={},pending=new Set(),conflicts=new Map(),editSerial={};
@@ -95,8 +95,8 @@ $('#close').textContent='Done';$('#close').setAttribute('aria-label','Done');$('
  finally{cancelling=false;grid.inert=sidebar.inert=toolbar.inert=document.querySelector('header').inert=false;}
 };
 // Capture before a focused gallery tile can reopen the card on Enter.
-document.addEventListener('keydown',e=>{if(document.querySelector('#exportOptions[open]'))return;
- if(document.querySelector('#exportOptions[open]'))return;
+document.addEventListener('keydown',e=>{if(document.querySelector('#exportOptions[open],#collectionDownload[open]'))return;
+ if(document.querySelector('#exportOptions[open],#collectionDownload[open]'))return;
  if(e.key!=='Enter'||!current||e.isComposing||e.ctrlKey||e.metaKey||e.altKey||e.shiftKey)return;
  if(e.target.isContentEditable||e.target.matches('textarea,input:not([type=range]):not([type=checkbox])'))return;
  e.preventDefault();e.stopImmediatePropagation();
@@ -128,10 +128,11 @@ $('#search').oninput=drawGrid;
 // 0 = all, 1 = include, 2 = exclude. Both filters can be combined.
 function matchesAppearanceFilters(){return true;}
 function download(blob,name){const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),30000)}
-$('#backup').onclick=async()=>{const backup={version:1,edits};if(syncingPaused()){backup.suits=await (await studioRequest('/api/suits')).json();backup.metadata=await (await studioRequest('/api/metadata')).json();}download(new Blob([JSON.stringify(backup,null,2)],{type:'application/json'}),'mi-note-card-edits.json');};
+const downloadEdits=async()=>{const backup={version:1,edits};if(syncingPaused()){backup.suits=await (await studioRequest('/api/suits')).json();backup.metadata=await (await studioRequest('/api/metadata')).json();}download(new Blob([JSON.stringify(backup,null,2)],{type:'application/json'}),'mi-note-card-edits.json');};
 function crc32(bytes){let c=0xffffffff;for(const b of bytes){c^=b;for(let k=0;k<8;k++)c=(c>>>1)^((c&1)?0xedb88320:0)}return (c^0xffffffff)>>>0}
 async function withDPI(blob){const data=new Uint8Array(await blob.arrayBuffer()),chunk=new Uint8Array(21),view=new DataView(chunk.buffer);view.setUint32(0,9);chunk.set([112,72,89,115],4);view.setUint32(8,31496);view.setUint32(12,31496);chunk[16]=1;view.setUint32(17,crc32(chunk.slice(4,17)));return new Blob([data.slice(0,33),chunk,data.slice(33)],{type:'image/png'})}
-async function exportCard(item,v,kind='full'){
+async function exportCard(item,v,kind='full',suitState){
+ v={...defaults(),...v};
  const canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;const ctx=canvas.getContext('2d');
  const full=kind==='full',overlays=kind==='overlays';
  if(full){ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);}
@@ -150,10 +151,11 @@ async function exportCard(item,v,kind='full'){
   }
  }
  if(full||overlays||kind==='name'||kind==='texts'){const name=await inkImage(item.id,v.ink);drawMaskedName(ctx,name,strip,nameGeometry(item,v));}
- if(full||overlays||kind==='icons')await exportSuit(ctx,item.id,loadImage);
+ if(full||overlays||kind==='icons')await exportSuit(ctx,item.id,loadImage,suitState);
  const blob=await new Promise(r=>canvas.toBlob(r,'image/png'));if(!blob)throw Error('Export failed');return withDPI(blob);
 }
-const openExportOptions=createExportOptions({render:exportCard,download});
+const openExportOptions=createExportOptions({render:exportCard,download,prepare:captureSuitExport});
+$('#backup').onclick=createCollectionDownload({art:()=>openExportOptions(collection,edits),edits:downloadEdits});$('#backup').setAttribute('aria-label','Download collection or edits');$('#backup').title='Download collection or edits';
 $('#export').onclick=()=>{if(current)openExportOptions(current,{...crop});};
 let gesture=null;function point(e){const r=$('#stage').getBoundingClientRect();return {x:(e.clientX-r.left)/r.width*W,y:(e.clientY-r.top)/r.height*H}}
 function begin(e,corner){
@@ -190,13 +192,13 @@ for(const edge of ['n','e','s','w']){
 }
 bodyFrame.addEventListener('pointerdown',e=>begin(e,null));bodyFrame.addEventListener('pointermove',move);bodyFrame.addEventListener('pointerup',end);bodyFrame.addEventListener('pointercancel',end);nameFrame.addEventListener('pointerdown',e=>begin(e,null));nameFrame.addEventListener('pointermove',move);nameFrame.addEventListener('pointerup',end);nameFrame.addEventListener('pointercancel',end);const stage=$('#stage');stage.addEventListener('pointerdown',e=>begin(e,null));stage.addEventListener('pointermove',move);stage.addEventListener('pointerup',end);stage.addEventListener('pointercancel',end);document.querySelectorAll('#stageWrap > .handle, .name-frame .handle, .body-frame .handle').forEach(h=>{h.addEventListener('pointerdown',e=>begin(e,h.dataset.corner));h.addEventListener('pointermove',move);h.addEventListener('pointerup',end);h.addEventListener('pointercancel',end)});
 stage.addEventListener('wheel',e=>{e.preventDefault();remember();const key=layerKeys()[2];change({[key]:crop[key]*Math.exp(-e.deltaY*.0015)})},{passive:false});
-document.addEventListener('keydown',e=>{if(document.querySelector('#exportOptions[open]'))return;
+document.addEventListener('keydown',e=>{if(document.querySelector('#exportOptions[open],#collectionDownload[open]'))return;
  if(!current||e.altKey||!(e.ctrlKey||e.metaKey)||e.key.toLowerCase()!=='z')return;
  const target=e.target,typing=target.isContentEditable||target.tagName==='TEXTAREA'||(target.tagName==='INPUT'&&!['range','checkbox'].includes(target.type));
  if(typing)return;
  e.preventDefault();if(e.shiftKey)redo();else undo();
 });
-document.addEventListener('keydown',e=>{if(document.querySelector('#exportOptions[open]'))return;if(!current||['INPUT','TEXTAREA','BUTTON','SELECT'].includes(e.target.tagName))return;const d=e.shiftKey?20:4;if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();remember();const [x,y]=layerKeys();change({[x]:crop[x]+(e.key==='ArrowLeft'?-d:e.key==='ArrowRight'?d:0),[y]:crop[y]+(e.key==='ArrowUp'?-d:e.key==='ArrowDown'?d:0)})}});
+document.addEventListener('keydown',e=>{if(document.querySelector('#exportOptions[open],#collectionDownload[open]'))return;if(!current||['INPUT','TEXTAREA','BUTTON','SELECT'].includes(e.target.tagName))return;const d=e.shiftKey?20:4;if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();remember();const [x,y]=layerKeys();change({[x]:crop[x]+(e.key==='ArrowLeft'?-d:e.key==='ArrowRight'?d:0),[y]:crop[y]+(e.key==='ArrowUp'?-d:e.key==='ArrowDown'?d:0)})}});
 window.addEventListener('beforeunload',e=>{if(pending.size){e.preventDefault();e.returnValue='Your draft has not finished saving.'}});
 const sharedButton=document.createElement('button');sharedButton.id='useShared';sharedButton.textContent='Load saved version';sharedButton.hidden=true;saveGroup.append(sharedButton);sharedButton.onclick=()=>{if(!current)return;const id=current.id,v=conflicts.get(id);if(!v)return;conflicts.delete(id);pending.delete(id);edits[id]=v;revisions[id]=v._revision||0;crop=clamp(current,v);entryCrop={...crop};history=[];future=[];render();refreshTile();sharedButton.hidden=true;$('#error').textContent='';$('#saveStatus').textContent='Loaded saved version'};
 const syncLabel=document.createElement('span');syncLabel.className='sync-label';syncLabel.textContent='Connecting…';document.querySelector('.tools').prepend(syncLabel);

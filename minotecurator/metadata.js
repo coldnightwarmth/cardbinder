@@ -1,5 +1,5 @@
 import {iconTypes,iconColors,iconAsset} from './icon-options.js?v=2';
-import {updateCardIcons} from './suits.js?v=8';
+import {updateCardIcons} from './suits.js?v=9';
 import {studioRequest,syncingPaused} from './storage.js?v=5';
 import {normalizeTag,orderedTags} from './metadata-model.js?v=2';
 
