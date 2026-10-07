@@ -1,4 +1,5 @@
-import {suitDefaults,validateSuits} from '../../minotecurator/suits-model.js';
+import {iconTags,iconTypes,iconColors,splitIcon,validateIcon} from '../../minotecurator/icon-options.js';
+import {suitDefaults,validateSuits,suitAssignments} from '../../minotecurator/suits-model.js';
 import {migrateMetadata} from '../../minotecurator/tag-cleanup.js';
 import {metadataSeed} from '../../minotecurator/metadata-seed.js';
 import {updateMetadata} from '../../minotecurator/metadata-model.js';
@@ -7,7 +8,7 @@ import seed from '../../minotecurator/initial-edits.json';
 import {normalize} from '../../minotecurator/normalize.js';
 async function readEdits(store){const count=await store.get('chunks');if(count===undefined)return structuredClone(seed);const parts=await store.get(Array.from({length:count},(_,i)=>'edits:'+i));return JSON.parse(Array.from({length:count},(_,i)=>parts.get('edits:'+i)).join(''));}
 async function writeEdits(store,edits){const json=JSON.stringify(edits),chunks=Math.ceil(json.length/48000);for(let i=0;i<chunks;i++)await store.put('edits:'+i,json.slice(i*48000,(i+1)*48000));await store.put('chunks',chunks);}
-async function readMetadata(store){
+async function readRawMetadata(store){
  const count=await store.get('metadata:chunks');
  if(count===undefined)return structuredClone(metadataSeed);
  const parts=await store.get(Array.from({length:count},(_,i)=>'metadata:'+i));
@@ -24,6 +25,12 @@ async function readMetadata(store){
   await store.put('metadata:before-cleanup:chunks',count);
   await writeMetadata(store,metadata);
  }
+ return metadata;
+}
+async function readMetadata(store){
+ const metadata=await readRawMetadata(store),suits=validateSuits(await store.get('suits')||{}),assignments=suitAssignments(collection.map(c=>c.id),suits.seed);
+ metadata.icons={};metadata.tags=[...new Set([...metadata.tags,...iconTags])];
+ for(const [id,asset] of assignments){const icon=metadata.iconOverrides?.[id]||splitIcon(asset);metadata.icons[id]=icon;metadata.cards[id]=[...(metadata.cards[id]||[]).filter(t=>!iconTags.includes(t)),icon.type,icon.color.replaceAll('-',' ')+' icon'];}
  return metadata;
 }
 async function writeMetadata(store,metadata){
@@ -52,7 +59,7 @@ export class Curator {
   if(path==='/api/edits'&&request.method==='GET')return Response.json(await this.ctx.storage.transaction(store=>readEdits(store)));
   if(path==='/api/suits'&&request.method==='GET'){const suits=validateSuits(await this.ctx.storage.get('suits')||{});return Response.json({...suits,spacing:suits.spacingY});}
   if(path==='/api/metadata'&&request.method==='GET')return Response.json(await this.ctx.storage.transaction(store=>readMetadata(store)));
-  if(!['/api/save','/api/import','/api/tags','/api/suits'].includes(path)||request.method!=='POST')return new Response('Not found',{status:404});
+  if(!['/api/save','/api/import','/api/tags','/api/suits','/api/icon'].includes(path)||request.method!=='POST')return new Response('Not found',{status:404});
   try{
    const reader=request.body.getReader();let size=0,parts=[];
    while(true){const {done,value}=await reader.read();if(done)break;size+=value.length;if(size>2000000){await reader.cancel();return new Response('Too large',{status:413});}parts.push(value);}
@@ -63,12 +70,19 @@ export class Curator {
      if(value.revision!==latest.revision)return {status:409,body:{error:'Suit settings changed elsewhere. Try again.',latest}};
      // Older open tabs still send one spacing field; retain settings they do not know about.
      const incoming={...latest,...value};if(value.spacingX===undefined&&value.spacing!==undefined)incoming.spacingX=value.spacing;if(value.spacingY===undefined&&value.spacing!==undefined)incoming.spacingY=value.spacing;
-     const saved={...validateSuits(incoming),revision:latest.revision+1};await store.put('suits',saved);return {status:200,body:saved};
+     const saved={...validateSuits(incoming),revision:latest.revision+1};await store.put('suits',saved);const metadata=await readMetadata(store);metadata.revision++;await writeMetadata(store,metadata);return {status:200,body:saved};
     }
-    if(path==='/api/tags'){
-     const metadata=updateMetadata(await readMetadata(store),value);
+    if(path==='/api/icon'||path==='/api/tags'){
+     let metadata=await readMetadata(store);
+     if(path==='/api/icon'||iconTags.includes(value.tag)){
+      if(!cards.has(+value.id))throw Error('Invalid card');
+      let icon=metadata.icons[value.id];
+      if(path==='/api/icon')icon=validateIcon({...icon,...value.icon});
+      else if(value.selected){if(iconTypes.includes(value.tag))icon={...icon,type:value.tag};else icon={...icon,color:iconColors.find(c=>c.replaceAll('-',' ')+' icon'===value.tag)};}
+      metadata.iconOverrides={...metadata.iconOverrides,[value.id]:icon};metadata.revision++;
+     }else metadata=updateMetadata(metadata,value);
      await writeMetadata(store,metadata);
-     return {status:200,body:metadata};
+     return {status:200,body:await readMetadata(store)};
     }
     const edits=await readEdits(store);
     const entries=path==='/api/save'?{[value.id]:value}:value.edits;

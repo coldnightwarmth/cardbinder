@@ -14,6 +14,10 @@ test('shared edits persist, broadcast, reject stale writes and validate imports'
  const oldClient=await (await call('/api/suits',{visible:true,side:'left',orientation:'vertical',size:110,spacing:90,seed:1729,revision:styled.revision})).json();
  assert.equal(oldClient.stroke,true);assert.equal(oldClient.spacingX,90);assert.equal(oldClient.spacingY,90);
  const compatible=await (await call('/api/suits')).json();assert.equal(compatible.spacing,90);
+ const iconResult=await call('/api/icon',{id:95,icon:{type:'tear',color:'emerald'}});assert.equal(iconResult.status,200);
+ const iconMeta=await iconResult.json();assert.equal(iconMeta.icons[95].type,'tear');assert.ok(iconMeta.cards[95].includes('tear'));assert.ok(iconMeta.cards[95].includes('emerald icon'));
+ const nextIcon=await (await call('/api/icon',{id:95,icon:{type:'bell'}})).json();assert.equal(nextIcon.icons[95].color,'emerald');assert.ok(!nextIcon.cards[95].includes('tear'));assert.ok(nextIcon.cards[95].includes('bell'));
+ assert.equal((await call('/api/icon',{id:95,icon:{type:'invalid'}})).status,400);
  const seed=await (await call('/api/edits')).json();const id=1;
  const connection=await mf.dispatchFetch('http://local/connect',{headers:{Origin:'https://cards.art',Upgrade:'websocket'}});
  const ws=connection.webSocket;ws.accept();t.after(()=>ws.close());

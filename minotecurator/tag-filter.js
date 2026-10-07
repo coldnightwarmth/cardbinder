@@ -1,3 +1,4 @@
+import {iconTags} from './icon-options.js';
 import {countTags,matchesTags} from './metadata-model.js?v=3';
 
 export function createTagFilter(onChange,{allowQuick=false}={}){
@@ -30,7 +31,7 @@ export function createTagFilter(onChange,{allowQuick=false}={}){
   button.disabled=!metadata;button.textContent=(selected.size+excluded.size)?`Tags (${selected.size+excluded.size})`:'Tags';button.classList.toggle('is-active',selected.size+excluded.size>0);clear.disabled=!(selected.size+excluded.size||quickTag);title.textContent=quick?(quickTag?'Click cards to toggle '+quickTag:'Choose one tag, then click cards'):'Click: include → exclude → clear';
   const counts=metadata?countTags(metadata):new Map();
   for(const [tag,option] of options)if(!counts.has(tag)){option.row.remove();options.delete(tag);}
-  const sorted=[...counts.keys()].sort((a,b)=>a.localeCompare(b));
+  const sorted=[...counts.keys()].sort((a,b)=>(iconTags.includes(a)?0:1)-(iconTags.includes(b)?0:1)||a.localeCompare(b));
   for(const [index,tag] of sorted.entries()){
    let option=options.get(tag);
    if(!option){

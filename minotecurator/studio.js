@@ -1,9 +1,9 @@
 import {createExportOptions} from './export-options.js';
 import {bodySource} from './body-source.js';
 import {maskName,drawMaskedName} from './title-mask.js';
-import {applySuit,startSuits,createSuitsControls,exportSuit} from './suits.js?v=5';
-import {createMetadataSidebar} from './metadata.js?v=3';
-import {createTagFilter} from './tag-filter.js?v=3';
+import {applySuit,startSuits,createSuitsControls,exportSuit} from './suits.js?v=6';
+import {createMetadataSidebar} from './metadata.js?v=4';
+import {createTagFilter} from './tag-filter.js?v=4';
 import {studioRequest,subscribeEdits} from './storage.js?v=3';
 const $=s=>document.querySelector(s),W=2000,H=2800,defaults=()=>({zoom:1,x:0,y:0,nameZoom:1,nameX:0,nameY:0,ink:"original",body:false,bodyZoom:1,bodyX:0,bodyY:0});let collection=[],edits={},filtered=[],current=null,crop=defaults(),history=[],future=[],timer,bodyFilter=0,inkFilter=0,saveChain=Promise.resolve();const grid=$('#grid'),dialog=$('#editor');let revisions={},pending=new Set(),conflicts=new Map(),editSerial={};
 function geometry(item,v){const s=Math.max(W/item.width,H/item.height)*v.zoom;return {w:item.width*s,h:item.height*s}}
