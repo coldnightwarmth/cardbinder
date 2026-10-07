@@ -18,6 +18,16 @@ test('shared edits persist, broadcast, reject stale writes and validate imports'
  const iconMeta=await iconResult.json();assert.equal(iconMeta.icons[95].type,'tear');assert.ok(iconMeta.cards[95].includes('tear'));assert.ok(iconMeta.cards[95].includes('emerald icon'));
  const nextIcon=await (await call('/api/icon',{id:95,icon:{type:'bell'}})).json();assert.equal(nextIcon.icons[95].color,'emerald');assert.ok(!nextIcon.cards[95].includes('tear'));assert.ok(nextIcon.cards[95].includes('bell'));
  assert.equal((await call('/api/icon',{id:95,icon:{type:'invalid'}})).status,400);
+ const beforeBatch=await (await call('/api/metadata')).json(),suitBatch=await (await call('/api/suits')).json();
+ const batch={revision:beforeBatch.revision,suitsRevision:suitBatch.revision,colors:{95:'marigold',96:'emerald'}};
+ assert.equal((await call('/api/icon-colors',{...batch,revision:-1})).status,409);
+ assert.equal((await call('/api/icon-colors',{...batch,colors:{95:'bad'}})).status,400);
+ assert.equal((await call('/api/icon-colors',batch)).status,200);
+ const afterBatch=await (await call('/api/metadata')).json();assert.equal(afterBatch.icons[95].type,'bell');assert.equal(afterBatch.icons[95].color,'marigold');assert.ok(afterBatch.cards[95].includes('marigold icon'));assert.ok(!afterBatch.cards[95].includes('emerald icon'));
+ await call('/api/tags',{id:95,tag:'emerald',selected:true});
+ const hidden=await (await call('/api/icon',{id:95,icon:{hidden:true}})).json();
+ assert.equal(hidden.icons[95].hidden,true);assert.ok(hidden.cards[95].includes('special'));assert.ok(hidden.cards[95].includes('so special'));assert.ok(hidden.cards[95].includes('emerald'));assert.ok(!hidden.cards[95].includes('marigold icon'));assert.ok(!hidden.cards[95].includes('bell'));
+ const shown=await (await call('/api/icon',{id:95,icon:{hidden:false}})).json();assert.ok(shown.cards[95].includes('bell'));assert.ok(shown.cards[95].includes('marigold icon'));assert.ok(shown.cards[95].includes('emerald'));assert.ok(!shown.cards[95].includes('so special'));
  const seed=await (await call('/api/edits')).json();const id=1;
  const connection=await mf.dispatchFetch('http://local/connect',{headers:{Origin:'https://cards.art',Upgrade:'websocket'}});
  const ws=connection.webSocket;ws.accept();t.after(()=>ws.close());

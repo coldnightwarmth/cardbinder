@@ -1,6 +1,6 @@
-import {iconTypes,iconColors,iconAsset} from './icon-options.js';
-import {updateCardIcons} from './suits.js?v=7';
-import {studioRequest,syncingPaused} from './storage.js?v=4';
+import {iconTypes,iconColors,iconAsset} from './icon-options.js?v=2';
+import {updateCardIcons} from './suits.js?v=8';
+import {studioRequest,syncingPaused} from './storage.js?v=5';
 import {normalizeTag,orderedTags} from './metadata-model.js?v=2';
 
 export function createMetadataSidebar(sidebar,getCard,onChange=()=>{}){
@@ -36,6 +36,7 @@ export function createMetadataSidebar(sidebar,getCard,onChange=()=>{}){
  let metadata=null,busy=false,loading=false,refreshAgain=false,lastCard=null;
  let search='';
  const iconControls=document.createElement('div');iconControls.className='card-icon-controls';
+ const noIconLabel=document.createElement('label');const noIcon=document.createElement('input');noIcon.type='checkbox';noIcon.onchange=()=>saveIcon({hidden:noIcon.checked});noIconLabel.append(noIcon,document.createTextNode(' No icon'));iconControls.append(noIconLabel);
  for(const [key,title,values] of [['type','Icon',iconTypes],['color','Icon color',iconColors]]){const heading=document.createElement('div');heading.className='ink-heading';heading.textContent=title;const row=document.createElement('div');row.className='ink-options';for(const value of values){const button=document.createElement('button');button.dataset.iconKey=key;button.dataset.iconValue=value;button.textContent=value.replaceAll('-',' ');const preview=document.createElement('img');preview.alt='';preview.width=24;preview.height=24;preview.src='/minotecurator/assets/suits/'+iconAsset({type:key==='type'?value:'star',color:key==='color'?value:'cobalt-blue'})+'.svg';button.prepend(preview);button.onclick=()=>saveIcon({[key]:value});row.append(button);}iconControls.append(heading,row);}
  textPanel.querySelector('.ink-options').after(iconControls);
  function filterTags(){for(const [tag,button] of buttons)button.hidden=!!search&&!tag.includes(search);list.querySelectorAll('.metadata-divider').forEach(d=>d.hidden=!!search);}
@@ -50,7 +51,8 @@ export function createMetadataSidebar(sidebar,getCard,onChange=()=>{}){
   if(!changedCard&&metadata===lastMetadata&&active===lastTags&&busy===lastBusy)return;
   lastCard=id;lastMetadata=metadata;lastTags=active;lastBusy=busy;
   if(changedCard){form.hidden=true;input.value='';search='';}
-  for(const button of iconControls.querySelectorAll('button')){button.disabled=busy||!metadata;button.setAttribute('aria-pressed',String(metadata?.icons?.[id]?.[button.dataset.iconKey]===button.dataset.iconValue));}
+  noIcon.checked=metadata?.icons?.[id]?.hidden===true;noIcon.disabled=busy||!metadata;
+  for(const button of iconControls.querySelectorAll('button')){button.disabled=busy||!metadata||noIcon.checked;button.setAttribute('aria-pressed',String(metadata?.icons?.[id]?.[button.dataset.iconKey]===button.dataset.iconValue));}
   for(const [tag,button] of buttons)if(metadata&&!metadata.tags.includes(tag)){button.remove();buttons.delete(tag);}
   const focused=document.activeElement;
   const positions=new Map();list.querySelector('.metadata-divider')?.remove();let separated=false;

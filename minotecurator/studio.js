@@ -1,10 +1,10 @@
 import {createExportOptions} from './export-options.js';
 import {bodySource} from './body-source.js';
 import {maskName,drawMaskedName} from './title-mask.js';
-import {applySuit,startSuits,createSuitsControls,exportSuit} from './suits.js?v=7';
-import {createMetadataSidebar} from './metadata.js?v=5';
-import {createTagFilter} from './tag-filter.js?v=4';
-import {studioRequest,subscribeEdits,pauseSync,syncingPaused} from './storage.js?v=4';
+import {applySuit,startSuits,createSuitsControls,exportSuit} from './suits.js?v=8';
+import {createMetadataSidebar} from './metadata.js?v=6';
+import {createTagFilter} from './tag-filter.js?v=5';
+import {studioRequest,subscribeEdits,pauseSync,syncingPaused} from './storage.js?v=5';
 const $=s=>document.querySelector(s),W=2000,H=2800,defaults=()=>({zoom:1,x:0,y:0,nameZoom:1,nameX:0,nameY:0,ink:"original",body:false,bodyZoom:1,bodyX:0,bodyY:0});let collection=[],edits={},filtered=[],current=null,crop=defaults(),history=[],future=[],timer,bodyFilter=0,inkFilter=0,saveChain=Promise.resolve();const grid=$('#grid'),dialog=$('#editor');let revisions={},pending=new Set(),conflicts=new Map(),editSerial={};
 function geometry(item,v){const s=Math.max(W/item.width,H/item.height)*v.zoom;return {w:item.width*s,h:item.height*s}}
 function clamp(item,v){v={...defaults(),...v,zoom:Math.max(1,Math.min(5,v.zoom))};const g=geometry(item,v);v.x=Math.max(-(g.w-W)/2,Math.min((g.w-W)/2,v.x));v.y=Math.max(-(g.h-H)/2,Math.min((g.h-H)/2,v.y));const b=nameGeometry(item,{...v,nameZoom:1});v.nameZoom=Math.max(.25,Math.min(4,W/b.w,H/b.h,v.nameZoom));const n=nameGeometry(item,v);const bg=bodyGeometry({...v,bodyZoom:1});v.bodyZoom=Math.max(.25,Math.min(4,W/bg.w,H/bg.h,v.bodyZoom));const q=bodyGeometry(v);return v}

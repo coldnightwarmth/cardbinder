@@ -1,5 +1,5 @@
 import {applyAppearanceTags,appearanceTags} from '../../minotecurator/appearance-tags.js';
-import {iconTags,iconTypes,iconColors,splitIcon,validateIcon} from '../../minotecurator/icon-options.js';
+import {iconTags,iconTypes,iconColors,splitIcon,validateIcon,tagsForIcon,selectIconTag} from '../../minotecurator/icon-options.js';
 import {suitDefaults,validateSuits,suitAssignments} from '../../minotecurator/suits-model.js';
 import {migrateMetadata} from '../../minotecurator/tag-cleanup.js';
 import {metadataSeed} from '../../minotecurator/metadata-seed.js';
@@ -31,7 +31,7 @@ async function readRawMetadata(store){
 async function readMetadata(store){
  const metadata=await readRawMetadata(store),suits=validateSuits(await store.get('suits')||{}),assignments=suitAssignments(collection.map(c=>c.id),suits.seed);
  metadata.icons={};metadata.tags=[...new Set([...metadata.tags,...iconTags])];
- for(const [id,asset] of assignments){const icon=metadata.iconOverrides?.[id]||splitIcon(asset);metadata.icons[id]=icon;metadata.cards[id]=[...(metadata.cards[id]||[]).filter(t=>!iconTags.includes(t)),icon.type,icon.color.replaceAll('-',' ')+' icon'];}
+ for(const [id,asset] of assignments){const icon=metadata.iconOverrides?.[id]||splitIcon(asset);metadata.icons[id]=icon;metadata.cards[id]=[...(metadata.cards[id]||[]).filter(t=>!iconTags.includes(t)),...tagsForIcon(icon)];}
  return applyAppearanceTags(metadata,await readEdits(store));
 }
 async function writeMetadata(store,metadata){
@@ -60,7 +60,7 @@ export class Curator {
   if(path==='/api/edits'&&request.method==='GET')return Response.json(await this.ctx.storage.transaction(store=>readEdits(store)));
   if(path==='/api/suits'&&request.method==='GET'){const suits=validateSuits(await this.ctx.storage.get('suits')||{});return Response.json({...suits,spacing:suits.spacingY});}
   if(path==='/api/metadata'&&request.method==='GET')return Response.json(await this.ctx.storage.transaction(store=>readMetadata(store)));
-  if(!['/api/save','/api/import','/api/tags','/api/suits','/api/icon'].includes(path)||request.method!=='POST')return new Response('Not found',{status:404});
+  if(!['/api/save','/api/import','/api/tags','/api/suits','/api/icon','/api/icon-colors'].includes(path)||request.method!=='POST')return new Response('Not found',{status:404});
   try{
    const reader=request.body.getReader();let size=0,parts=[];
    while(true){const {done,value}=await reader.read();if(done)break;size+=value.length;if(size>2000000){await reader.cancel();return new Response('Too large',{status:413});}parts.push(value);}
@@ -73,6 +73,16 @@ export class Curator {
      const incoming={...latest,...value};if(value.spacingX===undefined&&value.spacing!==undefined)incoming.spacingX=value.spacing;if(value.spacingY===undefined&&value.spacing!==undefined)incoming.spacingY=value.spacing;
      const saved={...validateSuits(incoming),revision:latest.revision+1};await store.put('suits',saved);const metadata=await readMetadata(store);metadata.revision++;await writeMetadata(store,metadata);return {status:200,body:saved};
     }
+    if(path==='/api/icon-colors'){
+     const metadata=await readMetadata(store),suits=validateSuits(await store.get('suits')||{});
+     if(value.revision!==metadata.revision||value.suitsRevision!==suits.revision)return {status:409,body:{error:'Cards or suits changed since analysis. Analyze again.'}};
+     if(!value.colors||typeof value.colors!=='object'||Array.isArray(value.colors))throw Error('Invalid icon colors');
+     for(const [id,color] of Object.entries(value.colors)){if(!cards.has(+id)||!iconColors.includes(color))throw Error('Invalid card color');}
+     await store.put('icon-colors:previous',metadata.iconOverrides||{});
+     metadata.iconOverrides={...metadata.iconOverrides};for(const [id,color] of Object.entries(value.colors))metadata.iconOverrides[id]={...metadata.icons[id],color};
+     metadata.revision++;await writeMetadata(store,metadata);
+     return {status:200,body:{revision:metadata.revision,updated:Object.keys(value.colors).length}};
+    }
     if(path==='/api/icon'||path==='/api/tags'){
      if(path==='/api/tags'&&appearanceTags.includes(value.tag))throw Error('This tag follows the card appearance. Change it in the Text sidebar.');
      let metadata=await readMetadata(store);
@@ -80,7 +90,7 @@ export class Curator {
       if(!cards.has(+value.id))throw Error('Invalid card');
       let icon=metadata.icons[value.id];
       if(path==='/api/icon')icon=validateIcon({...icon,...value.icon});
-      else if(value.selected){if(iconTypes.includes(value.tag))icon={...icon,type:value.tag};else icon={...icon,color:iconColors.find(c=>c.replaceAll('-',' ')+' icon'===value.tag)};}
+      else if(value.selected)icon=selectIconTag(icon,value.tag);
       metadata.iconOverrides={...metadata.iconOverrides,[value.id]:icon};metadata.revision++;
      }else metadata=updateMetadata(metadata,value);
      await writeMetadata(store,metadata);

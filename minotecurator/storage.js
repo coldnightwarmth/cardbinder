@@ -1,4 +1,4 @@
-import {previewStore} from './preview-sync.js';
+import {previewStore} from './preview-sync.js?v=2';
 const API='https://cards-art-minote.kururuga-online-leaderboard.workers.dev';
 let paused=false,ready,local;const inFlight=new Set(),listeners=new Set();
 export const syncingPaused=()=>paused;

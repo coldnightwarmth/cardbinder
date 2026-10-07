@@ -1,5 +1,5 @@
-import {iconAsset} from './icon-options.js';
-import {studioRequest,subscribeEdits,syncingPaused} from './storage.js?v=4';
+import {iconAsset} from './icon-options.js?v=2';
+import {studioRequest,subscribeEdits,syncingPaused} from './storage.js?v=5';
 import {suitDefaults,suitAssignments,suitBoxes,validateSuits} from './suits-model.js?v=4';
 let settings={...suitDefaults},assignments=new Map(),ids=[],started=false,dirty=false,saving=false,panel,status,actions;
 let synced={...suitDefaults},iconOverrides={};
@@ -9,7 +9,7 @@ const differs=(a,b)=>Object.keys(suitDefaults).some(key=>key!=='revision'&&a[key
 function updateControls(){if(!panel)return;actions.hidden=!dirty;for(const input of panel.querySelectorAll('input'))input.value=settings[input.name];for(const control of panel.querySelectorAll('button,input'))control.disabled=saving||control.dataset.full==='true';}
 export function applySuit(card,id){
  card.dataset.suitId=id;card.querySelectorAll('.suit-icon').forEach(icon=>icon.remove());
- if(!settings.visible||!assignments.has(+id))return;
+ if(!settings.visible||iconOverrides[id]?.hidden||!assignments.has(+id))return;
  for(const box of suitBoxes(+id,settings)){
   const styleSettings={...settings};const icon=new Image();icon.className='suit-icon';icon.alt='';icon.draggable=false;icon.src='/minotecurator/assets/suits/'+assignments.get(+id)+'.svg';
   Object.assign(icon.style,{position:'absolute',zIndex:3,pointerEvents:'none',width:box.size/20+'%',height:box.size/28+'%',left:box.x/20+'%',top:box.y/28+'%'});card.append(icon);
@@ -48,7 +48,7 @@ export function createSuitsControls(){
  button.onclick=()=>{panel.hidden=!panel.hidden;button.setAttribute('aria-expanded',String(!panel.hidden));const r=button.getBoundingClientRect();panel.style.top=r.bottom+8+'px';panel.style.left=Math.max(8,Math.min(innerWidth-268,r.left))+'px';};
  document.addEventListener('pointerdown',e=>{if(!panel.contains(e.target)&&!button.contains(e.target))close();});document.addEventListener('keydown',e=>{if(e.key==='Escape')close();});window.addEventListener('resize',close);window.addEventListener('beforeunload',e=>{if(dirty||saving){e.preventDefault();e.returnValue='Suit changes have not been confirmed.';}});paint();
 }
-export async function exportSuit(ctx,id,loadImage){if(!settings.visible)return;const asset=assignments.get(id);if(!asset)return;const snapshot={...settings};const styled=snapshot.stroke||snapshot.shadow;const image=await loadImage(styled?await styledSuit(asset,snapshot):'/minotecurator/assets/suits/'+asset+'.svg');for(const box of suitBoxes(id,snapshot)){const pad=styled?effectPadding(snapshot)/100*box.size:0;ctx.drawImage(image,box.x-pad,box.y-pad,box.size+2*pad,box.size+2*pad);}}
+export async function exportSuit(ctx,id,loadImage){if(!settings.visible||iconOverrides[id]?.hidden)return;const asset=assignments.get(id);if(!asset)return;const snapshot={...settings};const styled=snapshot.stroke||snapshot.shadow;const image=await loadImage(styled?await styledSuit(asset,snapshot):'/minotecurator/assets/suits/'+asset+'.svg');for(const box of suitBoxes(id,snapshot)){const pad=styled?effectPadding(snapshot)/100*box.size:0;ctx.drawImage(image,box.x-pad,box.y-pad,box.size+2*pad,box.size+2*pad);}}
 
 // Use the same padded SVG filter in the DOM and canvas exports so effects scale with icons.
 const sources=new Map();
