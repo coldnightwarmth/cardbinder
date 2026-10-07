@@ -1,0 +1,2 @@
+export const appearanceTags=['body box','colored name'];
+export function applyAppearanceTags(metadata,edits){for(const [id,tags] of Object.entries(metadata.cards)){metadata.cards[id]=tags.filter(t=>!appearanceTags.includes(t));if(edits[id]?.body)metadata.cards[id].push('body box');if(edits[id]?.ink&&edits[id].ink!=='original')metadata.cards[id].push('colored name');}metadata.tags=[...new Set([...metadata.tags,...appearanceTags])];return metadata;}

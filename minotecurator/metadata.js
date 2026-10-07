@@ -1,6 +1,6 @@
 import {iconTypes,iconColors,iconAsset} from './icon-options.js';
-import {updateCardIcons} from './suits.js?v=6';
-import {studioRequest} from './storage.js?v=3';
+import {updateCardIcons} from './suits.js?v=7';
+import {studioRequest,syncingPaused} from './storage.js?v=4';
 import {normalizeTag,orderedTags} from './metadata-model.js?v=2';
 
 export function createMetadataSidebar(sidebar,getCard,onChange=()=>{}){
@@ -41,7 +41,7 @@ export function createMetadataSidebar(sidebar,getCard,onChange=()=>{}){
  function filterTags(){for(const [tag,button] of buttons)button.hidden=!!search&&!tag.includes(search);list.querySelectorAll('.metadata-divider').forEach(d=>d.hidden=!!search);}
  document.addEventListener('click',()=>{search='';filterTags();});
  document.addEventListener('keydown',event=>{if(sidebar.hidden||metadataPanel.hidden||!getCard()||event.ctrlKey||event.metaKey||event.altKey||event.isComposing||event.target.isContentEditable||event.target.matches('input,textarea,select')||document.querySelector('dialog[open]'))return;if(event.key==='Backspace'||event.key.length===1&&/[a-z ]/i.test(event.key)){event.preventDefault();event.stopImmediatePropagation();search=event.key==='Backspace'?search.slice(0,-1):search+event.key.toLowerCase();filterTags();}},true);
- async function saveIcon(icon){const id=getCard()?.id;if(busy||!metadata||id===undefined)return;busy=true;render();status.textContent='Saving icon…';try{const response=await studioRequest('/api/icon',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,icon})});const result=await response.json();if(!response.ok)throw Error(result.error||'Could not save icon');metadata=result;updateCardIcons(metadata);onChange(metadata);status.textContent='Saved';}catch(error){status.textContent=error.message;}finally{busy=false;render();}}
+ async function saveIcon(icon){const id=getCard()?.id;if(busy||!metadata||id===undefined)return;busy=true;render();status.textContent='Saving icon…';try{const response=await studioRequest('/api/icon',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,icon})});const result=await response.json();if(!response.ok)throw Error(result.error||'Could not save icon');metadata=result;updateCardIcons(metadata);onChange(metadata);status.textContent=syncingPaused()?'Preview only — not saved':'Saved';}catch(error){status.textContent=error.message;}finally{busy=false;render();}}
  const emptyTags=[];let lastMetadata,lastTags,lastBusy;
  const buttons=new Map();
  function render(){
@@ -93,7 +93,7 @@ export function createMetadataSidebar(sidebar,getCard,onChange=()=>{}){
   try{
    const response=await studioRequest('/api/tags',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,tag,selected})});
    const result=await response.json();if(!response.ok)throw Error(result.error||'Could not save tag.');
-   metadata=result;status.textContent='Saved';form.hidden=true;input.value='';
+   metadata=result;status.textContent=syncingPaused()?'Preview only — not saved':'Saved';form.hidden=true;input.value='';
   }catch(error){metadata=previous;status.textContent=error.message+' Try again.';}
   finally{
    busy=false;

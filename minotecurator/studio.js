@@ -1,10 +1,10 @@
 import {createExportOptions} from './export-options.js';
 import {bodySource} from './body-source.js';
 import {maskName,drawMaskedName} from './title-mask.js';
-import {applySuit,startSuits,createSuitsControls,exportSuit} from './suits.js?v=6';
-import {createMetadataSidebar} from './metadata.js?v=4';
+import {applySuit,startSuits,createSuitsControls,exportSuit} from './suits.js?v=7';
+import {createMetadataSidebar} from './metadata.js?v=5';
 import {createTagFilter} from './tag-filter.js?v=4';
-import {studioRequest,subscribeEdits} from './storage.js?v=3';
+import {studioRequest,subscribeEdits,pauseSync,syncingPaused} from './storage.js?v=4';
 const $=s=>document.querySelector(s),W=2000,H=2800,defaults=()=>({zoom:1,x:0,y:0,nameZoom:1,nameX:0,nameY:0,ink:"original",body:false,bodyZoom:1,bodyX:0,bodyY:0});let collection=[],edits={},filtered=[],current=null,crop=defaults(),history=[],future=[],timer,bodyFilter=0,inkFilter=0,saveChain=Promise.resolve();const grid=$('#grid'),dialog=$('#editor');let revisions={},pending=new Set(),conflicts=new Map(),editSerial={};
 function geometry(item,v){const s=Math.max(W/item.width,H/item.height)*v.zoom;return {w:item.width*s,h:item.height*s}}
 function clamp(item,v){v={...defaults(),...v,zoom:Math.max(1,Math.min(5,v.zoom))};const g=geometry(item,v);v.x=Math.max(-(g.w-W)/2,Math.min((g.w-W)/2,v.x));v.y=Math.max(-(g.h-H)/2,Math.min((g.h-H)/2,v.y));const b=nameGeometry(item,{...v,nameZoom:1});v.nameZoom=Math.max(.25,Math.min(4,W/b.w,H/b.h,v.nameZoom));const n=nameGeometry(item,v);const bg=bodyGeometry({...v,bodyZoom:1});v.bodyZoom=Math.max(.25,Math.min(4,W/bg.w,H/bg.h,v.bodyZoom));const q=bodyGeometry(v);return v}
@@ -43,7 +43,7 @@ function travelHistory(from,to){
 function undo(){travelHistory(history,future)}
 function redo(){travelHistory(future,history)}
 async function post(url,data){const r=await studioRequest(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});if(!r.ok){const result=await r.json();const e=Error(result.error||'Could not save');e.status=r.status;e.latest=result.latest;throw e}return r}
-function persist(){clearTimeout(timer);timer=null;if(!current)return Promise.resolve();const id=current.id,v={...crop},serial=editSerial[id]||0;edits[id]=v;refreshTile();if(conflicts.has(id))return Promise.reject(Error('Resolve the change from another user before saving.'));if(!pending.has(id))return saveChain;$('#saveStatus').textContent='Saving for everyone…';saveChain=saveChain.catch(()=>{}).then(async()=>{if(conflicts.has(id))throw Error('Resolve the change from another user before saving.');const r=await post('/api/save',{id,...v,_revision:revisions[id]||0}),saved=await r.json();revisions[id]=saved._revision;if((editSerial[id]||0)===serial){pending.delete(id);edits[id]=saved;if(current?.id===id){crop={...crop,...saved};$('#saveStatus').textContent='Saved for everyone'}}}).catch(e=>{if(e.status===409)conflicts.set(id,e.latest);if(current?.id===id){$('#saveStatus').textContent='Draft not saved';$('#error').textContent=e.message;$('#useShared').hidden=!conflicts.has(id)}throw e});saveChain.catch(()=>{});return saveChain}
+function persist(){clearTimeout(timer);timer=null;if(!current)return Promise.resolve();const id=current.id,v={...crop},serial=editSerial[id]||0;edits[id]=v;refreshTile();if(conflicts.has(id))return Promise.reject(Error('Resolve the change from another user before saving.'));if(!pending.has(id))return saveChain;$('#saveStatus').textContent='Saving for everyone…';saveChain=saveChain.catch(()=>{}).then(async()=>{if(conflicts.has(id))throw Error('Resolve the change from another user before saving.');const r=await post('/api/save',{id,...v,_revision:revisions[id]||0}),saved=await r.json();revisions[id]=saved._revision;if((editSerial[id]||0)===serial){pending.delete(id);edits[id]=saved;if(current?.id===id){crop={...crop,...saved};$('#saveStatus').textContent=syncingPaused()?'Preview only — not saved':'Saved for everyone'}}}).catch(e=>{if(e.status===409)conflicts.set(id,e.latest);if(current?.id===id){$('#saveStatus').textContent='Draft not saved';$('#error').textContent=e.message;$('#useShared').hidden=!conflicts.has(id)}throw e});saveChain.catch(()=>{});return saveChain}
 function change(v){crop=clamp(current,{...crop,...v});pending.add(current.id);editSerial[current.id]=(editSerial[current.id]||0)+1;render();edits[current.id]={...crop};refreshTile();$('#saveStatus').textContent='Unsaved changes';clearTimeout(timer);timer=setTimeout(()=>persist().catch(()=>{}),300)}
 const stageWrap=$('#stageWrap');const parking=document.createElement('div');parking.hidden=true;document.body.append(parking);parking.append(stageWrap);
 const toolbar=document.createElement('section');toolbar.className='inline-toolbar';toolbar.hidden=true;toolbar.setAttribute('aria-label','Selected card crop controls');
@@ -79,7 +79,7 @@ async function open(id){
  if(current?.id===id){if(carousel)centerCarouselCard(id);return;}
  if(current){persist().catch(()=>{});const old=grid.querySelector(`[data-id="${current.id}"]`);parkEditor();if(old)old.replaceWith(tile(current))}
  current=collection.find(i=>i.id===id);if(!current?.available){current=null;return}
- crop=clamp(current,edits[id]||defaults());entryCrop={...crop};history=[];future=[];$('#number').textContent='CARD '+String(id).padStart(4,'0');$('#title').textContent=current.name;$('#art').className='art';$('#art').src=`/minotecurator/assets/thumbs/${id}.webp`;const full=new Image();full.onload=()=>{if(current?.id===id)$('#art').src=full.src};full.src=`/minotecurator/assets/originals/${id}.webp`;$('#art').alt=current.name;setSource($('#name'),nameSource(current,crop));namePosition($('#name'),current);$('#saveStatus').textContent='Saved for everyone';$('#error').textContent=conflicts.has(id)?'This card changed in another user. Your draft is preserved.':'';$('#useShared').hidden=!conflicts.has(id);
+ crop=clamp(current,edits[id]||defaults());entryCrop={...crop};history=[];future=[];$('#number').textContent='CARD '+String(id).padStart(4,'0');$('#title').textContent=current.name;$('#art').className='art';$('#art').src=`/minotecurator/assets/thumbs/${id}.webp`;const full=new Image();full.onload=()=>{if(current?.id===id)$('#art').src=full.src};full.src=`/minotecurator/assets/originals/${id}.webp`;$('#art').alt=current.name;setSource($('#name'),nameSource(current,crop));namePosition($('#name'),current);$('#saveStatus').textContent=syncingPaused()?'Preview only — not saved':'Saved for everyone';$('#error').textContent=conflicts.has(id)?'This card changed in another user. Your draft is preserved.':'';$('#useShared').hidden=!conflicts.has(id);
  const target=grid.querySelector(`[data-id="${id}"]`);target.classList.add('active-tile');target.querySelector('.card').replaceWith(stageWrap);toolbar.hidden=false;sidebar.hidden=false;document.body.classList.add('editing');render();requestAnimationFrame(()=>{updateCarouselLayout();if(carousel){if(current?.id===id)centerCarouselCard(id);return;}const r=target.getBoundingClientRect(),top=document.querySelector('header').getBoundingClientRect().bottom+22,bottom=toolbar.getBoundingClientRect().top-22;if(r.top<top||r.bottom>bottom)window.scrollBy({top:(r.top+r.bottom-top-bottom)/2,behavior:'instant'})});
 }
 $('#close').textContent='Done';$('#close').setAttribute('aria-label','Done');$('#close').onclick=async()=>{
@@ -126,27 +126,9 @@ $('#reset').onclick=()=>{remember();change(layer==='name'?{nameZoom:1,nameX:0,na
 function navigate(direction){const list=filtered.filter(i=>i.available),i=list.findIndex(c=>c.id===current.id);if(i+direction>=0&&i+direction<list.length)open(list[i+direction].id)}$('#prev').onclick=()=>navigate(-1);$('#next').onclick=()=>navigate(1);
 $('#search').oninput=drawGrid;
 // 0 = all, 1 = include, 2 = exclude. Both filters can be combined.
-function matchesAppearanceFilters(value={}){
- const hasBody=value.body===true,hasColor=(value.ink??'original')!=='original';
- return (!bodyFilter||(bodyFilter===1?hasBody:!hasBody))&&(!inkFilter||(inkFilter===1?hasColor:!hasColor));
-}
-function cycleAppearanceFilter(kind){
- const isBody=kind==='body';
- if(isBody)bodyFilter=(bodyFilter+1)%3;else inkFilter=(inkFilter+1)%3;
- const state=isBody?bodyFilter:inkFilter,button=$(isBody?'#bodyFilter':'#inkFilter');
- const label=isBody?'Body box':'Colored names';
- button.textContent=state===1?label+' only':state===2?'Exclude '+label.toLowerCase():label;
- button.dataset.state=String(state);
- button.setAttribute('aria-pressed',String(state!==0));
- button.setAttribute('aria-label',`${label}: ${['all cards','matching cards only','matching cards excluded'][state]}`);
- button.title=['Show matching cards','Exclude matching cards','Show all cards'][state];
- drawGrid();
-}
-$('#bodyFilter').onclick=()=>cycleAppearanceFilter('body');
-$('#inkFilter').onclick=()=>cycleAppearanceFilter('ink');
-
+function matchesAppearanceFilters(){return true;}
 function download(blob,name){const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),30000)}
-$('#backup').onclick=()=>download(new Blob([JSON.stringify({version:1,edits},null,2)],{type:'application/json'}),'mi-note-card-edits.json');
+$('#backup').onclick=async()=>{const backup={version:1,edits};if(syncingPaused()){backup.suits=await (await studioRequest('/api/suits')).json();backup.metadata=await (await studioRequest('/api/metadata')).json();}download(new Blob([JSON.stringify(backup,null,2)],{type:'application/json'}),'mi-note-card-edits.json');};
 function crc32(bytes){let c=0xffffffff;for(const b of bytes){c^=b;for(let k=0;k<8;k++)c=(c>>>1)^((c&1)?0xedb88320:0)}return (c^0xffffffff)>>>0}
 async function withDPI(blob){const data=new Uint8Array(await blob.arrayBuffer()),chunk=new Uint8Array(21),view=new DataView(chunk.buffer);view.setUint32(0,9);chunk.set([112,72,89,115],4);view.setUint32(8,31496);view.setUint32(12,31496);chunk[16]=1;view.setUint32(17,crc32(chunk.slice(4,17)));return new Blob([data.slice(0,33),chunk,data.slice(33)],{type:'image/png'})}
 async function exportCard(item,v,kind='full'){
@@ -410,3 +392,6 @@ grid.addEventListener('keydown',event=>{if(!tagFilter.quick||!['Enter',' '].incl
 window.addEventListener('beforeunload',event=>{if(quickPending.size){event.preventDefault();event.returnValue='Tags are still saving.';}});
 
 createSuitsControls();
+
+const pauseButton=document.createElement('button');pauseButton.id='pauseSync';pauseButton.textContent='Pause sync';pauseButton.setAttribute('aria-pressed','false');pauseButton.title='Preview changes without saving them';document.querySelector('.tools').append(pauseButton);
+pauseButton.onclick=async()=>{if(syncingPaused()){window.addEventListener('beforeunload',e=>{e.stopImmediatePropagation();},{capture:true,once:true});location.reload();return;}pauseButton.disabled=true;try{await pauseSync();pauseButton.textContent='Return to live';pauseButton.setAttribute('aria-pressed','true');document.body.classList.add('sync-paused');}catch(e){$('#error').textContent=e.message;}finally{pauseButton.disabled=false;}};

@@ -1,3 +1,4 @@
+import {applyAppearanceTags,appearanceTags} from '../../minotecurator/appearance-tags.js';
 import {iconTags,iconTypes,iconColors,splitIcon,validateIcon} from '../../minotecurator/icon-options.js';
 import {suitDefaults,validateSuits,suitAssignments} from '../../minotecurator/suits-model.js';
 import {migrateMetadata} from '../../minotecurator/tag-cleanup.js';
@@ -31,7 +32,7 @@ async function readMetadata(store){
  const metadata=await readRawMetadata(store),suits=validateSuits(await store.get('suits')||{}),assignments=suitAssignments(collection.map(c=>c.id),suits.seed);
  metadata.icons={};metadata.tags=[...new Set([...metadata.tags,...iconTags])];
  for(const [id,asset] of assignments){const icon=metadata.iconOverrides?.[id]||splitIcon(asset);metadata.icons[id]=icon;metadata.cards[id]=[...(metadata.cards[id]||[]).filter(t=>!iconTags.includes(t)),icon.type,icon.color.replaceAll('-',' ')+' icon'];}
- return metadata;
+ return applyAppearanceTags(metadata,await readEdits(store));
 }
 async function writeMetadata(store,metadata){
  const json=JSON.stringify(metadata),count=Math.ceil(json.length/48000);
@@ -73,6 +74,7 @@ export class Curator {
      const saved={...validateSuits(incoming),revision:latest.revision+1};await store.put('suits',saved);const metadata=await readMetadata(store);metadata.revision++;await writeMetadata(store,metadata);return {status:200,body:saved};
     }
     if(path==='/api/icon'||path==='/api/tags'){
+     if(path==='/api/tags'&&appearanceTags.includes(value.tag))throw Error('This tag follows the card appearance. Change it in the Text sidebar.');
      let metadata=await readMetadata(store);
      if(path==='/api/icon'||iconTags.includes(value.tag)){
       if(!cards.has(+value.id))throw Error('Invalid card');
@@ -95,7 +97,7 @@ export class Curator {
      if(expected!==(latest._revision||0))return {status:409,body:{error:'Another user changed this card. Load the saved version first.',latest,id:+id}};
      next[id]={...normalize(item,v),_revision:(latest._revision||0)+1};
     }
-    for(const id of Object.keys(entries))await store.put('previous:'+id,edits[id]||null);await writeEdits(store,next);
+    for(const id of Object.keys(entries))await store.put('previous:'+id,edits[id]||null);await writeEdits(store,next);const metadata=await readMetadata(store);metadata.revision++;await writeMetadata(store,metadata);
     return {status:200,body:path==='/api/save'?next[value.id]:next};
    });
    if(result.status===200)for(const ws of this.ctx.getWebSockets()){try{ws.send('changed');}catch{}}
