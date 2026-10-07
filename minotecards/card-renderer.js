@@ -1,6 +1,6 @@
 import {bodySource} from '../minotecurator/body-source.js';
 import {maskName} from '../minotecurator/title-mask.js';
-import {applySuit} from '../minotecurator/suits.js?v=3';
+import {applySuit} from '../minotecurator/suits.js?v=4';
 const W=2000,H=2800;
 const defaults=()=>({zoom:1,x:0,y:0,nameZoom:1,nameX:0,nameY:0,ink:'original',body:false,bodyZoom:1,bodyX:0,bodyY:0});
 function geometry(item,v){const s=Math.max(W/item.width,H/item.height)*v.zoom;return {w:item.width*s,h:item.height*s}}

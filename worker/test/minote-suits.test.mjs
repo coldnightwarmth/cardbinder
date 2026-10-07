@@ -20,3 +20,14 @@ test('separate edge spacing preserves legacy values and moves only the selected 
  }
  assert.throws(()=>validateSuits({spacingX:-1}));assert.throws(()=>validateSuits({spacingY:301}));
 });
+
+test('icon spacing adjusts two and three icons without moving the corner anchor',async()=>{
+ const {suitBoxes}=await import('../../minotecurator/suits-model.js');
+ assert.equal(validateSuits({}).iconSpacing,18);
+ for(const id of [167,1430])for(const side of ['left','right'])for(const orientation of ['vertical','horizontal']){
+ const options={...suitDefaults,size:100,side,orientation};const tight=suitBoxes(id,{...options,iconSpacing:0}),wide=suitBoxes(id,{...options,iconSpacing:60});
+ assert.deepEqual(tight[0],wide[0]);for(let i=1;i<tight.length;i++){assert.equal(Math.abs(wide[i][orientation==='vertical'?'y':'x']-tight[i][orientation==='vertical'?'y':'x']),60*i);}
+ }
+ assert.deepEqual(suitBoxes(1,{...suitDefaults,iconSpacing:0}),suitBoxes(1,{...suitDefaults,iconSpacing:60}));
+ assert.throws(()=>validateSuits({iconSpacing:-1}));assert.throws(()=>validateSuits({iconSpacing:61}));
+});
