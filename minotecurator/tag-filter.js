@@ -28,6 +28,7 @@ export function createTagFilter(onChange,{allowQuick=false}={}){
  window.addEventListener('resize',()=>{if(!panel.hidden)position();});
  const options=new Map();
  function render(){
+  list.querySelector('.icon-tag-divider')?.remove();
   button.disabled=!metadata;button.textContent=(selected.size+excluded.size)?`Tags (${selected.size+excluded.size})`:'Tags';button.classList.toggle('is-active',selected.size+excluded.size>0);clear.disabled=!(selected.size+excluded.size||quickTag);title.textContent=quick?(quickTag?'Click cards to toggle '+quickTag:'Choose one tag, then click cards'):'Click: include → exclude → clear';
   const counts=metadata?countTags(metadata):new Map();
   for(const [tag,option] of options)if(!counts.has(tag)){option.row.remove();options.delete(tag);}
@@ -45,6 +46,7 @@ export function createTagFilter(onChange,{allowQuick=false}={}){
    const previous=list.children[index];
    if(previous!==option.row)list.insertBefore(option.row,previous??null);
   }
+  const firstOther=sorted.find(tag=>!iconTags.includes(tag));if(firstOther&&sorted.some(tag=>iconTags.includes(tag))){const divider=document.createElement('div');divider.className='icon-tag-divider';divider.setAttribute('role','separator');list.insertBefore(divider,options.get(firstOther).row);}
  }
  return {
   get active(){return selected.size+excluded.size>0;},

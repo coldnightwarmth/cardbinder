@@ -1,4 +1,4 @@
-import {iconTypes,iconColors,iconAsset} from './icon-options.js?v=2';
+import {iconTypes,iconColors,iconAsset,iconTags} from './icon-options.js?v=2';
 import {updateCardIcons} from './suits.js?v=9';
 import {studioRequest,syncingPaused} from './storage.js?v=5';
 import {normalizeTag,orderedTags} from './metadata-model.js?v=2';
@@ -55,10 +55,11 @@ export function createMetadataSidebar(sidebar,getCard,onChange=()=>{}){
   for(const button of iconControls.querySelectorAll('button')){button.disabled=busy||!metadata||noIcon.checked;button.setAttribute('aria-pressed',String(metadata?.icons?.[id]?.[button.dataset.iconKey]===button.dataset.iconValue));}
   for(const [tag,button] of buttons)if(metadata&&!metadata.tags.includes(tag)){button.remove();buttons.delete(tag);}
   const focused=document.activeElement;
-  const positions=new Map();list.querySelector('.metadata-divider')?.remove();let separated=false;
+  const positions=new Map();list.querySelectorAll('.metadata-divider').forEach(d=>d.remove());let separated=false,iconSeparated=false;
   if(!changedCard&&!metadataPanel.hidden)for(const [tag,button] of buttons)positions.set(tag,button.getBoundingClientRect());
-  for(const tag of orderedTags(metadata?.tags??[],active)){
-   if(active.length&&!active.includes(tag)&&!separated){const divider=document.createElement('div');divider.className='metadata-divider';divider.setAttribute('role','separator');list.append(divider);separated=true;}
+  for(const tag of orderedTags(metadata?.tags??[],active).sort((a,b)=>Number(iconTags.includes(b))-Number(iconTags.includes(a)))){
+   if(!iconTags.includes(tag)&&!iconSeparated&&(metadata?.tags??[]).some(t=>iconTags.includes(t))){const divider=document.createElement('div');divider.className='metadata-divider';divider.setAttribute('role','separator');list.append(divider);iconSeparated=true;}
+   if(active.some(t=>!iconTags.includes(t))&&!iconTags.includes(tag)&&!active.includes(tag)&&!separated){const divider=document.createElement('div');divider.className='metadata-divider';divider.setAttribute('role','separator');list.append(divider);separated=true;}
    let button=buttons.get(tag);
    if(!button){button=document.createElement('button');button.type='button';button.className='metadata-tag';button.textContent=tag;button.onclick=()=>save(tag,!(metadata?.cards[getCard()?.id]??[]).includes(tag));buttons.set(tag,button);}
    button.setAttribute('aria-pressed',String(active.includes(tag)));button.disabled=busy||id===undefined;
