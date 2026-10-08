@@ -22,4 +22,24 @@ export function createExportOptions({render,download,prepare=()=>undefined}){
  }catch(e){await zip?.abort().catch(()=>{});status.textContent=e.name==='AbortError'?'Export cancelled.':'Download failed: '+e.message;}finally{busy=false;confirm.disabled=false;cancel.disabled=false;choices.querySelectorAll('input').forEach(i=>i.disabled=false);dialog.removeAttribute('aria-busy');}};
  return (item,edits)=>{const collection=Array.isArray(item);current={collection,items:collection?item.map(i=>({item:i,edits:{...edits[i.id]}})):[{item,edits:{...edits}}]};dialog.querySelector('h2').textContent=collection?`Download collection · ${item.length} cards`:'Download card layers';progress.hidden=true;progress.value=0;status.textContent='';cancel.textContent='Cancel';dialog.showModal();};
 }
-export function createCollectionDownload({art,edits}){const dialog=document.createElement('dialog');dialog.id='collectionDownload';dialog.setAttribute('aria-label','Download collection');dialog.innerHTML='<h2>Download collection</h2><div class="export-actions"><button type="button" data-art>Full collection art</button><button type="button" data-edits>Edits</button></div><button type="button" data-close>Cancel</button>';document.body.append(dialog);dialog.querySelector('[data-art]').onclick=()=>{dialog.close();art();};dialog.querySelector('[data-edits]').onclick=()=>{dialog.close();edits();};dialog.querySelector('[data-close]').onclick=()=>dialog.close();return ()=>dialog.showModal();}
+export function createCollectionDownload({art,edits,metadata}){
+ const dialog=document.createElement('dialog');dialog.id='collectionDownload';dialog.setAttribute('aria-label','Download collection');
+ dialog.innerHTML='<h2>Download collection</h2><div class="export-actions"><button type="button" data-art>Full collection art</button><button type="button" data-edits>Edits</button><button type="button" data-metadata>Metadata (.json ZIP)</button></div><p class="export-status" role="status" aria-live="polite"></p><button type="button" data-close>Cancel</button>';
+ document.body.append(dialog);let busy=false;
+ const status=dialog.querySelector('.export-status'),close=dialog.querySelector('[data-close]');
+ dialog.querySelector('[data-art]').onclick=()=>{dialog.close();art();};
+ dialog.querySelector('[data-edits]').onclick=()=>{dialog.close();edits();};
+ dialog.querySelector('[data-metadata]').onclick=async()=>{
+  if(busy)return;busy=true;dialog.setAttribute('aria-busy','true');status.textContent='Preparing metadata for all cards…';
+  dialog.querySelectorAll('button').forEach(button=>button.disabled=true);
+  try{
+   const result=await metadata();
+   status.textContent=`Downloaded ${result.count} metadata JSON files in one ZIP.`;
+   if(result.unmappedTags.length)status.textContent+=` Tags outside the export categories: ${result.unmappedTags.join(', ')}.`;
+   close.textContent='Close';
+  }catch(error){status.textContent='Download failed: '+error.message;}
+  finally{busy=false;dialog.removeAttribute('aria-busy');dialog.querySelectorAll('button').forEach(button=>button.disabled=false);}
+ };
+ close.onclick=()=>dialog.close();dialog.addEventListener('cancel',event=>{if(busy)event.preventDefault();});
+ return ()=>{status.textContent='';close.textContent='Cancel';dialog.showModal();};
+}

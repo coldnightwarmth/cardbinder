@@ -1,4 +1,5 @@
-import {createExportOptions,createCollectionDownload} from './export-options.js?v=2';
+import {createExportOptions,createCollectionDownload} from './export-options.js?v=3';
+import {createMetadataArchive,loadMetadataSnapshot} from './metadata-export.js';
 import {bodySource} from './body-source.js';
 import {maskName,drawMaskedName} from './title-mask.js';
 import {applySuit,startSuits,createSuitsControls,exportSuit,captureSuitExport} from './suits.js?v=12';
@@ -129,6 +130,14 @@ $('#search').oninput=drawGrid;
 function matchesAppearanceFilters(){return true;}
 function download(blob,name){const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),30000)}
 const downloadEdits=async()=>{const backup={version:1,edits};if(syncingPaused()){backup.suits=await (await studioRequest('/api/suits')).json();backup.metadata=await (await studioRequest('/api/metadata')).json();}download(new Blob([JSON.stringify(backup,null,2)],{type:'application/json'}),'mi-note-card-edits.json');};
+async function downloadMetadata(){
+ await persist();await saveChain;
+ if(pending.size)throw Error('Save or resolve pending card edits before exporting metadata.');
+ const snapshot=await loadMetadataSnapshot(studioRequest);
+ const result=await createMetadataArchive(collection,snapshot);
+ download(result.blob,'mi-note-cards-metadata.zip');
+ return result;
+}
 function crc32(bytes){let c=0xffffffff;for(const b of bytes){c^=b;for(let k=0;k<8;k++)c=(c>>>1)^((c&1)?0xedb88320:0)}return (c^0xffffffff)>>>0}
 async function withDPI(blob){const data=new Uint8Array(await blob.arrayBuffer()),chunk=new Uint8Array(21),view=new DataView(chunk.buffer);view.setUint32(0,9);chunk.set([112,72,89,115],4);view.setUint32(8,31496);view.setUint32(12,31496);chunk[16]=1;view.setUint32(17,crc32(chunk.slice(4,17)));return new Blob([data.slice(0,33),chunk,data.slice(33)],{type:'image/png'})}
 async function exportCard(item,v,kind='full',suitState){
@@ -155,7 +164,7 @@ async function exportCard(item,v,kind='full',suitState){
  const blob=await new Promise(r=>canvas.toBlob(r,'image/png'));if(!blob)throw Error('Export failed');return withDPI(blob);
 }
 const openExportOptions=createExportOptions({render:exportCard,download,prepare:captureSuitExport});
-$('#backup').onclick=createCollectionDownload({art:()=>openExportOptions(collection,edits),edits:downloadEdits});$('#backup').setAttribute('aria-label','Download collection or edits');$('#backup').title='Download collection or edits';
+$('#backup').onclick=createCollectionDownload({art:()=>openExportOptions(collection,edits),edits:downloadEdits,metadata:downloadMetadata});$('#backup').setAttribute('aria-label','Download collection, edits, or metadata');$('#backup').title='Download collection, edits, or metadata';
 $('#export').onclick=()=>{if(current)openExportOptions(current,{...crop});};
 let gesture=null;function point(e){const r=$('#stage').getBoundingClientRect();return {x:(e.clientX-r.left)/r.width*W,y:(e.clientY-r.top)/r.height*H}}
 function begin(e,corner){
