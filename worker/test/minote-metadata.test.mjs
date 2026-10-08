@@ -69,6 +69,16 @@ test('exclusions veto included tags and work without any inclusion',async()=>{
  assert.equal(migrateMetadata(state),true);
  assert.deepEqual(state.cards[25],['crown','custom']);
  assert.deepEqual(state.tags,['crown','custom']);
- assert.equal(state.schemaVersion,3);assert.equal(state.revision,10);
+ assert.equal(state.schemaVersion,4);assert.equal(state.revision,10);
  assert.equal(migrateMetadata(state),false);
  });
+
+test('schema 4 removes requested tags from existing live metadata and preserves other traits',async()=>{
+ const {migrateMetadata}=await import('../../minotecurator/tag-cleanup.js');
+ const removed=['secret','god','fallen','little','boy','emo','holy','light'];
+ const state={schemaVersion:3,revision:14,tags:[...removed,'crown','custom'],cards:{25:[...removed,'custom'],26:['crown']}};
+ assert.equal(migrateMetadata(state),true);
+ assert.deepEqual(state.tags,['crown','custom']);assert.deepEqual(state.cards[25],['custom']);assert.deepEqual(state.cards[26],['crown']);
+ assert.equal(state.schemaVersion,4);assert.equal(state.revision,15);assert.equal(migrateMetadata(state),false);
+ for(const tag of removed)assert.throws(()=>normalizeTag(tag));
+});
