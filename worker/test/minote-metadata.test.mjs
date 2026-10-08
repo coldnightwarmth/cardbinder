@@ -69,7 +69,7 @@ test('exclusions veto included tags and work without any inclusion',async()=>{
  assert.equal(migrateMetadata(state),true);
  assert.deepEqual(state.cards[25],['crown','custom']);
  assert.deepEqual(state.tags,['crown','custom']);
- assert.equal(state.schemaVersion,4);assert.equal(state.revision,10);
+ assert.equal(state.schemaVersion,6);assert.equal(state.revision,10);
  assert.equal(migrateMetadata(state),false);
  });
 
@@ -79,6 +79,26 @@ test('schema 4 removes requested tags from existing live metadata and preserves 
  const state={schemaVersion:3,revision:14,tags:[...removed,'crown','custom'],cards:{25:[...removed,'custom'],26:['crown']}};
  assert.equal(migrateMetadata(state),true);
  assert.deepEqual(state.tags,['crown','custom']);assert.deepEqual(state.cards[25],['custom']);assert.deepEqual(state.cards[26],['crown']);
- assert.equal(state.schemaVersion,4);assert.equal(state.revision,15);assert.equal(migrateMetadata(state),false);
+ assert.equal(state.schemaVersion,6);assert.equal(state.revision,15);assert.equal(migrateMetadata(state),false);
  for(const tag of removed)assert.throws(()=>normalizeTag(tag));
+});
+
+test('computer merge retains every affected card and deduplicates overlapping tags',async()=>{
+ const {migrateMetadata}=await import('../../minotecurator/tag-cleanup.js');
+ const state={schemaVersion:4,revision:15,tags:['network','online','desktop','internet','computer','custom'],cards:{1:['network'],2:['online'],3:['desktop'],4:['internet'],5:['network','online','desktop','internet','computer','custom'],6:['custom']}};
+ assert.equal(migrateMetadata(state),true);
+ assert.deepEqual(state.tags,['computer','custom']);
+ for(const id of [1,2,3,4])assert.deepEqual(state.cards[id],['computer']);
+ assert.deepEqual(state.cards[5],['computer','custom']);assert.deepEqual(state.cards[6],['custom']);
+ assert.equal(state.schemaVersion,6);assert.equal(state.revision,16);assert.equal(migrateMetadata(state),false);
+ for(const tag of ['network','online','desktop','internet'])assert.equal(normalizeTag(tag),'computer');
+});
+
+test('standalone colors are removed while icon colors and colored-name traits remain',async()=>{
+ const {migrateMetadata}=await import('../../minotecurator/tag-cleanup.js');
+ const colors=['azure','black','blue','brown','green','orange','pink','purple','rainbow','red','sepia','white','yellow'];
+ const keep=['cherry red icon','marigold icon','cobalt blue icon','emerald icon','colored name'];
+ const state={schemaVersion:5,revision:16,tags:[...colors,...keep],cards:{1:[...colors,...keep]}};
+ assert.equal(migrateMetadata(state),true);assert.deepEqual(state.cards[1],[...keep].sort());assert.deepEqual(state.tags,[...keep].sort());
+ assert.equal(migrateMetadata(state),false);
 });

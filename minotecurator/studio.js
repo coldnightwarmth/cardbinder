@@ -2,7 +2,7 @@ import {createExportOptions,createCollectionDownload} from './export-options.js?
 import {bodySource} from './body-source.js';
 import {maskName,drawMaskedName} from './title-mask.js';
 import {applySuit,startSuits,createSuitsControls,exportSuit,captureSuitExport} from './suits.js?v=9';
-import {createMetadataSidebar} from './metadata.js?v=10';
+import {createMetadataSidebar} from './metadata.js?v=11';
 import {createTagFilter} from './tag-filter.js?v=6';
 import {studioRequest,subscribeEdits,pauseSync,syncingPaused} from './storage.js?v=5';
 const $=s=>document.querySelector(s),W=2000,H=2800,defaults=()=>({zoom:1,x:0,y:0,nameZoom:1,nameX:0,nameY:0,ink:"original",body:false,bodyZoom:1,bodyX:0,bodyY:0});let collection=[],edits={},filtered=[],current=null,crop=defaults(),history=[],future=[],timer,bodyFilter=0,inkFilter=0,saveChain=Promise.resolve();const grid=$('#grid'),dialog=$('#editor');let revisions={},pending=new Set(),conflicts=new Map(),editSerial={};
