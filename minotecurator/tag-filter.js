@@ -1,4 +1,4 @@
-import {iconTags} from './icon-options.js?v=2';
+import {iconTags} from './icon-options.js?v=3';
 import {countTags,matchesTags} from './metadata-model.js?v=3';
 
 export function createTagFilter(onChange,{allowQuick=false}={}){

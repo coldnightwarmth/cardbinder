@@ -109,3 +109,10 @@ test('part-time and its legacy time alias are removed without affecting other ta
  assert.equal(migrateMetadata(state),true);assert.deepEqual(state.tags,['computer']);assert.deepEqual(state.cards[1],['computer']);assert.deepEqual(state.cards[2],[]);
  assert.equal(migrateMetadata(state),false);assert.throws(()=>normalizeTag('part-time'));assert.throws(()=>normalizeTag('time'));
 });
+
+test('subject restoration uses historical assignments rather than generated icon labels and runs once',async()=>{
+ const {restoreSubjectTags}=await import('../../minotecurator/subject-tags.js');
+ const state={revision:1,tags:['star','bell'],icons:{1:{type:'star'}},cards:{1:['star','custom'],119:['bell'],105:['heart']}};
+ assert.ok(restoreSubjectTags(state));assert.deepEqual(state.cards[1],['custom']);assert.deepEqual(state.cards[119],['star']);assert.deepEqual(state.cards[105],['mushroom']);
+ state.cards[119]=[];assert.equal(restoreSubjectTags(state),false);assert.deepEqual(state.cards[119],[]);
+});
