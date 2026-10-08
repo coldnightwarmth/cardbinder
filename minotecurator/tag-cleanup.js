@@ -4,7 +4,7 @@ export const mergedTags={network:'computer',online:'computer',desktop:'computer'
 export function cleanTags(tags){return [...new Set(tags.filter(tag=>!removedTags.has(tag)).map(tag=>(Object.hasOwn(mergedTags,tag)?mergedTags[tag]:tag)))].sort();}
 export function migrateMetadata(metadata){
  const version=metadata.schemaVersion??0;
- if(version>=11)return false;
+ if(version>=12)return false;
  // Do not repeat old removals after users have manually restored those traits.
  if(version<9){
   metadata.tags=cleanTags(metadata.tags);
@@ -18,8 +18,12 @@ export function migrateMetadata(metadata){
   metadata.tags=metadata.tags.filter(tag=>tag!=='child'&&tag!=='bera');
   for(const id of Object.keys(metadata.cards))metadata.cards[id]=metadata.cards[id].filter(tag=>tag!=='child'&&tag!=='bera');
  }
- metadata.tags=metadata.tags.filter(tag=>tag!=='inu'&&tag!=='neko'&&tag!=='nekomimi'&&tag!=='occult');
- for(const id of Object.keys(metadata.cards))metadata.cards[id]=metadata.cards[id].filter(tag=>tag!=='inu'&&tag!=='neko'&&tag!=='nekomimi'&&tag!=='occult');
- metadata.tags.sort();
- metadata.schemaVersion=11;metadata.revision++;return true;
+ if(version<11){
+  metadata.tags=metadata.tags.filter(tag=>tag!=='inu'&&tag!=='neko'&&tag!=='nekomimi'&&tag!=='occult');
+  for(const id of Object.keys(metadata.cards))metadata.cards[id]=metadata.cards[id].filter(tag=>tag!=='inu'&&tag!=='neko'&&tag!=='nekomimi'&&tag!=='occult');
+ }
+ const rename=tags=>[...new Set(tags.map(tag=>tag==='star'?'stars':tag==='kigurumi'?'hoodie':tag))].sort();
+ metadata.tags=rename(metadata.tags);
+ for(const id of Object.keys(metadata.cards))metadata.cards[id]=rename(metadata.cards[id]);
+ metadata.schemaVersion=12;metadata.revision++;return true;
 }

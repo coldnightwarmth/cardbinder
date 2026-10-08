@@ -69,7 +69,7 @@ test('exclusions veto included tags and work without any inclusion',async()=>{
  assert.equal(migrateMetadata(state),true);
  assert.deepEqual(state.cards[25],['crown','custom']);
  assert.deepEqual(state.tags,['crown','custom']);
- assert.equal(state.schemaVersion,11);assert.equal(state.revision,10);
+ assert.equal(state.schemaVersion,12);assert.equal(state.revision,10);
  assert.equal(migrateMetadata(state),false);
  });
 
@@ -79,7 +79,7 @@ test('schema 4 removes requested tags from existing live metadata and preserves 
  const state={schemaVersion:3,revision:14,tags:[...removed,'crown','custom'],cards:{25:[...removed,'custom'],26:['crown']}};
  assert.equal(migrateMetadata(state),true);
  assert.deepEqual(state.tags,['crown','custom']);assert.deepEqual(state.cards[25],['custom']);assert.deepEqual(state.cards[26],['crown']);
- assert.equal(state.schemaVersion,11);assert.equal(state.revision,15);assert.equal(migrateMetadata(state),false);
+ assert.equal(state.schemaVersion,12);assert.equal(state.revision,15);assert.equal(migrateMetadata(state),false);
  for(const tag of removed)assert.equal(normalizeTag(tag),tag);
 });
 
@@ -90,7 +90,7 @@ test('computer merge retains every affected card and deduplicates overlapping ta
  assert.deepEqual(state.tags,['computer','custom']);
  for(const id of [1,2,3,4])assert.deepEqual(state.cards[id],['computer']);
  assert.deepEqual(state.cards[5],['computer','custom']);assert.deepEqual(state.cards[6],['custom']);
- assert.equal(state.schemaVersion,11);assert.equal(state.revision,16);assert.equal(migrateMetadata(state),false);
+ assert.equal(state.schemaVersion,12);assert.equal(state.revision,16);assert.equal(migrateMetadata(state),false);
  for(const tag of ['network','online','desktop','internet'])assert.equal(normalizeTag(tag),'computer');
 });
 
@@ -113,7 +113,7 @@ test('part-time and its legacy time alias are removed without affecting other ta
 test('subject restoration uses historical assignments rather than generated icon labels and runs once',async()=>{
  const {restoreSubjectTags}=await import('../../minotecurator/subject-tags.js');
  const state={revision:1,tags:['star','bell'],icons:{1:{type:'star'}},cards:{1:['star','custom'],119:['bell'],105:['heart']}};
- assert.ok(restoreSubjectTags(state));assert.deepEqual(state.cards[1],['custom']);assert.deepEqual(state.cards[119],['star']);assert.deepEqual(state.cards[105],['mushroom']);
+ assert.ok(restoreSubjectTags(state));assert.deepEqual(state.cards[1],['custom']);assert.deepEqual(state.cards[119],['stars']);assert.deepEqual(state.cards[105],['mushroom']);
  state.cards[119]=[];assert.equal(restoreSubjectTags(state),false);assert.deepEqual(state.cards[119],[]);
 });
 
@@ -125,7 +125,7 @@ test('chan and error are removed from the catalog and cards without changing ico
  assert.deepEqual(state.tags,['custom','emerald icon','heart','heart icon']);
  assert.deepEqual(state.cards,{1:['emerald icon','heart','heart icon'],2:['custom'],3:[],4:['custom']});
  assert.deepEqual(state.iconOverrides,icons);
- assert.equal(state.schemaVersion,11);assert.equal(state.revision,22);
+ assert.equal(state.schemaVersion,12);assert.equal(state.revision,22);
  assert.equal(migrateMetadata(state),false);assert.equal(state.revision,22);
  for(const tag of ['chan','error'])assert.equal(normalizeTag(tag),tag);
 });
@@ -140,7 +140,7 @@ test('schema 9 removes favorite, remilio and invader while preserving audited ta
  assert.deepEqual(state.tags,[...keep].sort());
  assert.deepEqual(state.cards,{1:[...keep].sort(),2:[],3:['gun','kirby']});
  assert.deepEqual(state.iconOverrides,icons);assert.equal(state.subjectTagsVersion,1);
- assert.equal(state.schemaVersion,11);assert.equal(state.revision,3128);
+ assert.equal(state.schemaVersion,12);assert.equal(state.revision,3128);
  assert.equal(migrateMetadata(state),false);assert.equal(state.revision,3128);
  for(const tag of removed)assert.equal(normalizeTag(tag),tag);
 });
@@ -168,7 +168,7 @@ test('schema 10 removes only child and bera and preserves manually restored trai
  assert.equal(migrateMetadata(state),true);
  assert.deepEqual(state.tags,keep);assert.deepEqual(state.cards,{1:keep,2:[],3:['kirby']});
  assert.deepEqual(state.iconOverrides,icons);assert.equal(state.subjectTagsVersion,1);
- assert.equal(state.schemaVersion,11);assert.equal(state.revision,51);
+ assert.equal(state.schemaVersion,12);assert.equal(state.revision,51);
  for(const tag of ['child','bera'])updateMetadata(state,{id:2,tag,selected:true});
  const reloaded=JSON.parse(JSON.stringify(state));
  assert.equal(migrateMetadata(reloaded),false);assert.equal(reloaded.revision,53);
@@ -178,16 +178,39 @@ test('schema 10 removes only child and bera and preserves manually restored trai
 
 test('schema 11 removes inu, neko, nekomimi and occult once while retaining restored traits and audited metadata',async()=>{
  const {removedTags,migrateMetadata}=await import('../../minotecurator/tag-cleanup.js');
- const keep=[...removedTags].filter(tag=>tag!=='inu'&&tag!=='neko'&&tag!=='nekomimi'&&tag!=='occult').concat(['bandage','eyepatch','kigurumi','cat','heart','heart icon','emerald icon']).sort();
+ const keep=[...removedTags].filter(tag=>tag!=='inu'&&tag!=='neko'&&tag!=='nekomimi'&&tag!=='occult').concat(['bandage','eyepatch','cat','heart','heart icon','emerald icon']).sort();
  const state={schemaVersion:10,subjectTagsVersion:1,revision:60,tags:['inu','neko','nekomimi','occult',...keep],cards:{1:['inu','neko','nekomimi','occult',...keep],2:['inu','neko','nekomimi','occult'],3:['cat','kigurumi']},iconOverrides:{1:{type:'heart',color:'emerald'}}};
  const icons=structuredClone(state.iconOverrides);
  assert.equal(migrateMetadata(state),true);
- assert.deepEqual(state.tags,keep);assert.deepEqual(state.cards,{1:keep,2:[],3:['cat','kigurumi']});
+ assert.deepEqual(state.tags,keep);assert.deepEqual(state.cards,{1:keep,2:[],3:['cat','hoodie']});
  assert.deepEqual(state.iconOverrides,icons);assert.equal(state.subjectTagsVersion,1);
- assert.equal(state.schemaVersion,11);assert.equal(state.revision,61);
+ assert.equal(state.schemaVersion,12);assert.equal(state.revision,61);
  for(const tag of ['inu','neko','nekomimi','occult'])updateMetadata(state,{id:2,tag,selected:true});
  const reloaded=JSON.parse(JSON.stringify(state));
  assert.equal(migrateMetadata(reloaded),false);assert.equal(reloaded.revision,65);
  for(const tag of ['inu','neko','nekomimi','occult'])assert.ok(reloaded.tags.includes(tag));
  assert.deepEqual(reloaded.cards[2],['inu','neko','nekomimi','occult']);
+});
+
+
+test('schema 12 renames subject star and kigurumi while preserving icon tags and restored traits',async()=>{
+ const {migrateMetadata}=await import('../../minotecurator/tag-cleanup.js');
+ const state={schemaVersion:11,subjectTagsVersion:1,revision:80,tags:['star','stars','star icon','kigurumi','hoodie','inu','bandage','cross'],cards:{1:['star','star icon'],2:['kigurumi','hoodie','bandage'],3:['stars','star','inu'],4:['cross']},iconOverrides:{1:{type:'star',color:'emerald'}}};
+ const icons=structuredClone(state.iconOverrides);
+ assert.equal(migrateMetadata(state),true);
+ assert.deepEqual(state.tags,['bandage','cross','hoodie','inu','star icon','stars']);
+ assert.deepEqual(state.cards,{1:['star icon','stars'],2:['bandage','hoodie'],3:['inu','stars'],4:['cross']});
+ assert.deepEqual(state.iconOverrides,icons);assert.equal(state.subjectTagsVersion,1);
+ assert.equal(state.schemaVersion,12);assert.equal(state.revision,81);
+ assert.equal(migrateMetadata(state),false);assert.equal(state.revision,81);
+});
+
+test('historical subject restoration after migration uses the renamed stars tag',async()=>{
+ const {migrateMetadata}=await import('../../minotecurator/tag-cleanup.js');
+ const {restoreSubjectTags}=await import('../../minotecurator/subject-tags.js');
+ const state={revision:1,tags:['star'],icons:{1:{type:'star'}},cards:{1:['star','custom'],119:['bell'],105:['heart']}};
+ migrateMetadata(state);restoreSubjectTags(state);
+ assert.deepEqual(state.cards[1],['custom']);assert.deepEqual(state.cards[119],['stars']);
+ assert.ok(state.tags.includes('stars'));assert.ok(!state.tags.includes('star'));
+ assert.equal(migrateMetadata(state),false);assert.equal(restoreSubjectTags(state),false);
 });
