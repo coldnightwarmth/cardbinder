@@ -62,3 +62,13 @@ test('exclusions veto included tags and work without any inclusion',async()=>{
  assert.equal(matchesTags(['cat'],new Set(),new Set(['cat'])),false);
  assert.equal(matchesTags([],new Set(),new Set()),true);
 });
+
+ test('schema 3 removes clothing tags and renames king without restoring removed Pokemon',async()=>{
+ const {migrateMetadata}=await import('../../minotecurator/tag-cleanup.js');
+ const state={schemaVersion:2,revision:9,tags:['hoodie','beanie','king','crown','custom'],cards:{25:['hoodie','beanie','king','crown','custom']}};
+ assert.equal(migrateMetadata(state),true);
+ assert.deepEqual(state.cards[25],['crown','custom']);
+ assert.deepEqual(state.tags,['crown','custom']);
+ assert.equal(state.schemaVersion,3);assert.equal(state.revision,10);
+ assert.equal(migrateMetadata(state),false);
+ });

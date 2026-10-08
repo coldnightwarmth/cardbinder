@@ -1,4 +1,4 @@
-import {removedTags,mergedTags} from './tag-cleanup.js';
+import {removedTags,mergedTags} from './tag-cleanup.js?v=3';
 export function normalizeTag(value){
  if(typeof value!=='string')throw Error('Enter a tag name.');
  const tag=value.normalize('NFKC').trim().toLowerCase().replace(/\s+/g,' ');

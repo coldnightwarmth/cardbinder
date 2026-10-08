@@ -11,7 +11,7 @@ async function readEdits(store){const count=await store.get('chunks');if(count==
 async function writeEdits(store,edits){const json=JSON.stringify(edits),chunks=Math.ceil(json.length/48000);for(let i=0;i<chunks;i++)await store.put('edits:'+i,json.slice(i*48000,(i+1)*48000));await store.put('chunks',chunks);}
 async function readRawMetadata(store){
  const count=await store.get('metadata:chunks');
- if(count===undefined)return structuredClone(metadataSeed);
+ if(count===undefined){const metadata=structuredClone(metadataSeed);migrateMetadata(metadata);return metadata;}
  const parts=await store.get(Array.from({length:count},(_,i)=>'metadata:'+i));
  const metadata=JSON.parse(Array.from({length:count},(_,i)=>parts.get('metadata:'+i)).join(''));
  let addedCards=false;
