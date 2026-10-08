@@ -1,5 +1,5 @@
 import {applyAppearanceTags} from './appearance-tags.js';
-import {updateMetadata} from './metadata-model.js?v=3';
+import {updateMetadata} from './metadata-model.js?v=10';
 import {iconTags,iconTypes,iconColors,splitIcon,validateIcon,tagsForIcon,selectIconTag} from './icon-options.js?v=3';
 import {suitAssignments,validateSuits} from './suits-model.js?v=4';
 export function previewStore(edits,metadata,suits){

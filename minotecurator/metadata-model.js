@@ -1,9 +1,9 @@
-import {removedTags,mergedTags} from './tag-cleanup.js?v=8';
+import {mergedTags} from './tag-cleanup.js?v=8';
 export function normalizeTag(value){
  if(typeof value!=='string')throw Error('Enter a tag name.');
  const tag=value.normalize('NFKC').trim().toLowerCase().replace(/\s+/g,' ');
  if(!tag||tag.length>48||!/^\p{L}[\p{L}\p{M}\p{N} -]*$/u.test(tag))throw Error('Use a tag of up to 48 letters, numbers, spaces or hyphens, starting with a letter.');
- if(removedTags.has(tag))throw Error('This tag has been removed from the collection.');
+ // Historical cleanup is a one-time migration, not a restriction on manual tags.
  return (Object.hasOwn(mergedTags,tag)?mergedTags[tag]:tag);
 }
 export function updateMetadata(metadata,{id,tag,selected}){

@@ -1,5 +1,5 @@
 import {iconAsset} from './icon-options.js?v=3';
-import {studioRequest,subscribeEdits,syncingPaused} from './storage.js?v=6';
+import {studioRequest,subscribeEdits,syncingPaused} from './storage.js?v=7';
 import {suitDefaults,suitAssignments,suitBoxes,validateSuits} from './suits-model.js?v=4';
 let settings={...suitDefaults},assignments=new Map(),ids=[],started=false,dirty=false,saving=false,panel,status,actions;
 let synced={...suitDefaults},iconOverrides={};

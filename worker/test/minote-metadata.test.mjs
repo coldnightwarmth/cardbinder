@@ -31,7 +31,7 @@ test('cleanup merges and renames tags without losing unrelated user metadata and
  for(const replacement of Object.values(mergedTags)){assert.ok(data.tags.includes(replacement));assert.ok(data.cards[1].includes(replacement));}
  assert.deepEqual(data.cards[2],['cat']);assert.ok(data.cards[1].includes('custom'));
  assert.equal(migrateMetadata(data),false);assert.equal(data.revision,13);
- for(const tag of removedTags)assert.throws(()=>normalizeTag(tag));
+ for(const tag of removedTags)assert.equal(normalizeTag(tag),tag);
  for(const [old,next] of Object.entries(mergedTags))assert.equal(normalizeTag(old),next);
  assert.equal(normalizeTag('constructor'),'constructor');
 });
@@ -80,7 +80,7 @@ test('schema 4 removes requested tags from existing live metadata and preserves 
  assert.equal(migrateMetadata(state),true);
  assert.deepEqual(state.tags,['crown','custom']);assert.deepEqual(state.cards[25],['custom']);assert.deepEqual(state.cards[26],['crown']);
  assert.equal(state.schemaVersion,9);assert.equal(state.revision,15);assert.equal(migrateMetadata(state),false);
- for(const tag of removed)assert.throws(()=>normalizeTag(tag));
+ for(const tag of removed)assert.equal(normalizeTag(tag),tag);
 });
 
 test('computer merge retains every affected card and deduplicates overlapping tags',async()=>{
@@ -107,7 +107,7 @@ test('part-time and its legacy time alias are removed without affecting other ta
  const {migrateMetadata}=await import('../../minotecurator/tag-cleanup.js');
  const state={schemaVersion:6,revision:20,tags:['part-time','time','computer'],cards:{1:['part-time','computer'],2:['time']}};
  assert.equal(migrateMetadata(state),true);assert.deepEqual(state.tags,['computer']);assert.deepEqual(state.cards[1],['computer']);assert.deepEqual(state.cards[2],[]);
- assert.equal(migrateMetadata(state),false);assert.throws(()=>normalizeTag('part-time'));assert.throws(()=>normalizeTag('time'));
+ assert.equal(migrateMetadata(state),false);assert.equal(normalizeTag('part-time'),'part-time');assert.equal(normalizeTag('time'),'time');
 });
 
 test('subject restoration uses historical assignments rather than generated icon labels and runs once',async()=>{
@@ -127,7 +127,7 @@ test('chan and error are removed from the catalog and cards without changing ico
  assert.deepEqual(state.iconOverrides,icons);
  assert.equal(state.schemaVersion,9);assert.equal(state.revision,22);
  assert.equal(migrateMetadata(state),false);assert.equal(state.revision,22);
- for(const tag of ['chan','error'])assert.throws(()=>normalizeTag(tag));
+ for(const tag of ['chan','error'])assert.equal(normalizeTag(tag),tag);
 });
 
 test('schema 9 removes favorite, remilio and invader while preserving audited tags and icons',async()=>{
@@ -142,8 +142,20 @@ test('schema 9 removes favorite, remilio and invader while preserving audited ta
  assert.deepEqual(state.iconOverrides,icons);assert.equal(state.subjectTagsVersion,1);
  assert.equal(state.schemaVersion,9);assert.equal(state.revision,3128);
  assert.equal(migrateMetadata(state),false);assert.equal(state.revision,3128);
- for(const tag of removed){
-  assert.throws(()=>normalizeTag(tag));
-  assert.throws(()=>updateMetadata(state,{id:1,tag,selected:true}));
- }
+ for(const tag of removed)assert.equal(normalizeTag(tag),tag);
+});
+
+test('previously removed tags can be added manually and survive subsequent metadata reads',async()=>{
+ const {removedTags,migrateMetadata}=await import('../../minotecurator/tag-cleanup.js');
+ const state={schemaVersion:8,revision:1,tags:['favorite','kirby'],cards:{1:['favorite','kirby'],2:[]}};
+ migrateMetadata(state);
+ assert.ok(!state.tags.includes('favorite'));
+ for(const tag of removedTags)updateMetadata(state,{id:1,tag,selected:true});
+ const reloaded=JSON.parse(JSON.stringify(state));
+ assert.equal(migrateMetadata(reloaded),false);
+ for(const tag of removedTags){assert.ok(reloaded.tags.includes(tag));assert.ok(reloaded.cards[1].includes(tag));}
+ assert.ok(reloaded.cards[1].includes('kirby'));assert.deepEqual(reloaded.cards[2],[]);
+ updateMetadata(reloaded,{id:2,tag:'favorite',selected:true});
+ updateMetadata(reloaded,{id:1,tag:'favorite',selected:false});
+ assert.ok(reloaded.tags.includes('favorite'));assert.ok(reloaded.cards[2].includes('favorite'));assert.ok(!reloaded.cards[1].includes('favorite'));
 });

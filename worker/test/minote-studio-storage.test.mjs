@@ -49,6 +49,16 @@ test('shared edits persist, broadcast, reject stale writes and validate imports'
 
  const metadata=await (await call('/api/metadata')).json();
  assert.ok(metadata.tags.includes('pokemon'));assert.ok(metadata.cards[id].includes('angel'));
+ for(const tag of ['favorite','remilio','invader']){
+  assert.ok(!metadata.tags.includes(tag));
+  assert.equal((await call('/api/tags',{id,tag,selected:true})).status,200);
+ }
+ const restored=await (await call('/api/metadata')).json();
+ for(const tag of ['favorite','remilio','invader']){assert.ok(restored.tags.includes(tag));assert.ok(restored.cards[id].includes(tag));}
+ assert.deepEqual(restored.icons,metadata.icons);assert.deepEqual(restored.iconOverrides,metadata.iconOverrides);
+ assert.deepEqual(restored.cards[2],metadata.cards[2]);
+ assert.equal((await call('/api/tags',{id,tag:'favorite',selected:false})).status,200);
+ const removedAgain=await (await call('/api/metadata')).json();assert.ok(!removedAgain.cards[id].includes('favorite'));assert.ok(removedAgain.tags.includes('favorite'));
  const add=await call('/api/tags',{id,tag:'  New Tag  ',selected:true});assert.equal(add.status,200);
  const tagged=await add.json();assert.ok(tagged.tags.includes('new tag'));assert.ok(tagged.cards[id].includes('new tag'));
  assert.equal((await call('/api/tags',{id:2,tag:'new tag',selected:true})).status,200);

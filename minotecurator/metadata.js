@@ -1,8 +1,8 @@
 import {appearanceTags} from './appearance-tags.js';
 import {iconTypes,iconColors,iconAsset,iconTags} from './icon-options.js?v=3';
-import {updateCardIcons} from './suits.js?v=10';
-import {studioRequest,syncingPaused} from './storage.js?v=6';
-import {normalizeTag,orderedTags} from './metadata-model.js?v=9';
+import {updateCardIcons} from './suits.js?v=11';
+import {studioRequest,syncingPaused} from './storage.js?v=7';
+import {normalizeTag,orderedTags} from './metadata-model.js?v=10';
 
 const pinnedTags=[...iconTags,...appearanceTags];
 
