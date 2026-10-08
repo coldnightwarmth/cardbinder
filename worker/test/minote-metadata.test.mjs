@@ -69,7 +69,7 @@ test('exclusions veto included tags and work without any inclusion',async()=>{
  assert.equal(migrateMetadata(state),true);
  assert.deepEqual(state.cards[25],['crown','custom']);
  assert.deepEqual(state.tags,['crown','custom']);
- assert.equal(state.schemaVersion,9);assert.equal(state.revision,10);
+ assert.equal(state.schemaVersion,10);assert.equal(state.revision,10);
  assert.equal(migrateMetadata(state),false);
  });
 
@@ -79,7 +79,7 @@ test('schema 4 removes requested tags from existing live metadata and preserves 
  const state={schemaVersion:3,revision:14,tags:[...removed,'crown','custom'],cards:{25:[...removed,'custom'],26:['crown']}};
  assert.equal(migrateMetadata(state),true);
  assert.deepEqual(state.tags,['crown','custom']);assert.deepEqual(state.cards[25],['custom']);assert.deepEqual(state.cards[26],['crown']);
- assert.equal(state.schemaVersion,9);assert.equal(state.revision,15);assert.equal(migrateMetadata(state),false);
+ assert.equal(state.schemaVersion,10);assert.equal(state.revision,15);assert.equal(migrateMetadata(state),false);
  for(const tag of removed)assert.equal(normalizeTag(tag),tag);
 });
 
@@ -90,7 +90,7 @@ test('computer merge retains every affected card and deduplicates overlapping ta
  assert.deepEqual(state.tags,['computer','custom']);
  for(const id of [1,2,3,4])assert.deepEqual(state.cards[id],['computer']);
  assert.deepEqual(state.cards[5],['computer','custom']);assert.deepEqual(state.cards[6],['custom']);
- assert.equal(state.schemaVersion,9);assert.equal(state.revision,16);assert.equal(migrateMetadata(state),false);
+ assert.equal(state.schemaVersion,10);assert.equal(state.revision,16);assert.equal(migrateMetadata(state),false);
  for(const tag of ['network','online','desktop','internet'])assert.equal(normalizeTag(tag),'computer');
 });
 
@@ -125,7 +125,7 @@ test('chan and error are removed from the catalog and cards without changing ico
  assert.deepEqual(state.tags,['custom','emerald icon','heart','heart icon']);
  assert.deepEqual(state.cards,{1:['emerald icon','heart','heart icon'],2:['custom'],3:[],4:['custom']});
  assert.deepEqual(state.iconOverrides,icons);
- assert.equal(state.schemaVersion,9);assert.equal(state.revision,22);
+ assert.equal(state.schemaVersion,10);assert.equal(state.revision,22);
  assert.equal(migrateMetadata(state),false);assert.equal(state.revision,22);
  for(const tag of ['chan','error'])assert.equal(normalizeTag(tag),tag);
 });
@@ -140,7 +140,7 @@ test('schema 9 removes favorite, remilio and invader while preserving audited ta
  assert.deepEqual(state.tags,[...keep].sort());
  assert.deepEqual(state.cards,{1:[...keep].sort(),2:[],3:['gun','kirby']});
  assert.deepEqual(state.iconOverrides,icons);assert.equal(state.subjectTagsVersion,1);
- assert.equal(state.schemaVersion,9);assert.equal(state.revision,3128);
+ assert.equal(state.schemaVersion,10);assert.equal(state.revision,3128);
  assert.equal(migrateMetadata(state),false);assert.equal(state.revision,3128);
  for(const tag of removed)assert.equal(normalizeTag(tag),tag);
 });
@@ -158,4 +158,19 @@ test('previously removed tags can be added manually and survive subsequent metad
  updateMetadata(reloaded,{id:2,tag:'favorite',selected:true});
  updateMetadata(reloaded,{id:1,tag:'favorite',selected:false});
  assert.ok(reloaded.tags.includes('favorite'));assert.ok(reloaded.cards[2].includes('favorite'));assert.ok(!reloaded.cards[1].includes('favorite'));
+});
+
+test('schema 10 removes only child and bera and preserves manually restored traits',async()=>{
+ const {removedTags,migrateMetadata}=await import('../../minotecurator/tag-cleanup.js');
+ const keep=[...removedTags].filter(tag=>tag!=='child'&&tag!=='bera').concat(['kirby','heart','heart icon','emerald icon']).sort();
+ const state={schemaVersion:9,subjectTagsVersion:1,revision:50,tags:['child','bera',...keep],cards:{1:['child','bera',...keep],2:['child','bera'],3:['kirby']},iconOverrides:{1:{type:'heart',color:'emerald'}}};
+ const icons=structuredClone(state.iconOverrides);
+ assert.equal(migrateMetadata(state),true);
+ assert.deepEqual(state.tags,keep);assert.deepEqual(state.cards,{1:keep,2:[],3:['kirby']});
+ assert.deepEqual(state.iconOverrides,icons);assert.equal(state.subjectTagsVersion,1);
+ assert.equal(state.schemaVersion,10);assert.equal(state.revision,51);
+ for(const tag of ['child','bera'])updateMetadata(state,{id:2,tag,selected:true});
+ const reloaded=JSON.parse(JSON.stringify(state));
+ assert.equal(migrateMetadata(reloaded),false);assert.equal(reloaded.revision,53);
+ for(const tag of ['child','bera'])assert.ok(reloaded.tags.includes(tag));assert.deepEqual(reloaded.cards[2],['bera','child']);
 });
