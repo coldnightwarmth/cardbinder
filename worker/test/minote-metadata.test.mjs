@@ -69,7 +69,7 @@ test('exclusions veto included tags and work without any inclusion',async()=>{
  assert.equal(migrateMetadata(state),true);
  assert.deepEqual(state.cards[25],['crown','custom']);
  assert.deepEqual(state.tags,['crown','custom']);
- assert.equal(state.schemaVersion,7);assert.equal(state.revision,10);
+ assert.equal(state.schemaVersion,8);assert.equal(state.revision,10);
  assert.equal(migrateMetadata(state),false);
  });
 
@@ -79,7 +79,7 @@ test('schema 4 removes requested tags from existing live metadata and preserves 
  const state={schemaVersion:3,revision:14,tags:[...removed,'crown','custom'],cards:{25:[...removed,'custom'],26:['crown']}};
  assert.equal(migrateMetadata(state),true);
  assert.deepEqual(state.tags,['crown','custom']);assert.deepEqual(state.cards[25],['custom']);assert.deepEqual(state.cards[26],['crown']);
- assert.equal(state.schemaVersion,7);assert.equal(state.revision,15);assert.equal(migrateMetadata(state),false);
+ assert.equal(state.schemaVersion,8);assert.equal(state.revision,15);assert.equal(migrateMetadata(state),false);
  for(const tag of removed)assert.throws(()=>normalizeTag(tag));
 });
 
@@ -90,7 +90,7 @@ test('computer merge retains every affected card and deduplicates overlapping ta
  assert.deepEqual(state.tags,['computer','custom']);
  for(const id of [1,2,3,4])assert.deepEqual(state.cards[id],['computer']);
  assert.deepEqual(state.cards[5],['computer','custom']);assert.deepEqual(state.cards[6],['custom']);
- assert.equal(state.schemaVersion,7);assert.equal(state.revision,16);assert.equal(migrateMetadata(state),false);
+ assert.equal(state.schemaVersion,8);assert.equal(state.revision,16);assert.equal(migrateMetadata(state),false);
  for(const tag of ['network','online','desktop','internet'])assert.equal(normalizeTag(tag),'computer');
 });
 
@@ -115,4 +115,17 @@ test('subject restoration uses historical assignments rather than generated icon
  const state={revision:1,tags:['star','bell'],icons:{1:{type:'star'}},cards:{1:['star','custom'],119:['bell'],105:['heart']}};
  assert.ok(restoreSubjectTags(state));assert.deepEqual(state.cards[1],['custom']);assert.deepEqual(state.cards[119],['star']);assert.deepEqual(state.cards[105],['mushroom']);
  state.cards[119]=[];assert.equal(restoreSubjectTags(state),false);assert.deepEqual(state.cards[119],[]);
+});
+
+test('chan and error are removed from the catalog and cards without changing icon or subject tags',async()=>{
+ const {migrateMetadata}=await import('../../minotecurator/tag-cleanup.js');
+ const state={schemaVersion:7,revision:21,tags:['chan','error','heart','heart icon','emerald icon','custom'],cards:{1:['chan','heart','heart icon','emerald icon'],2:['error','custom'],3:['chan','error'],4:['custom']},iconOverrides:{1:{type:'heart',color:'emerald'}}};
+ const icons=structuredClone(state.iconOverrides);
+ assert.equal(migrateMetadata(state),true);
+ assert.deepEqual(state.tags,['custom','emerald icon','heart','heart icon']);
+ assert.deepEqual(state.cards,{1:['emerald icon','heart','heart icon'],2:['custom'],3:[],4:['custom']});
+ assert.deepEqual(state.iconOverrides,icons);
+ assert.equal(state.schemaVersion,8);assert.equal(state.revision,22);
+ assert.equal(migrateMetadata(state),false);assert.equal(state.revision,22);
+ for(const tag of ['chan','error'])assert.throws(()=>normalizeTag(tag));
 });
