@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {metadataSeed} from '../../minotecurator/metadata-seed.js';
-import {normalizeTag,orderedTags,updateMetadata} from '../../minotecurator/metadata-model.js';
+import {normalizeTag,orderedTags,updateMetadata,pruneUnusedTags} from '../../minotecurator/metadata-model.js';
 test('starter catalog excludes filler and restores recurring Pokemon names and initializes every card',()=>{
  assert.equal(Object.keys(metadataSeed.cards).length,1430);
  for(const word of ['milady','lady','mi','note','minote','the','of','notebook'])assert.ok(!metadataSeed.tags.includes(word));
@@ -10,15 +10,28 @@ test('starter catalog excludes filler and restores recurring Pokemon names and i
  for(const tag of metadataSeed.tags)assert.match(tag,/^[\p{L}-]+$/u);
  for(const tags of Object.values(metadataSeed.cards))for(const tag of tags)assert.ok(metadataSeed.tags.includes(tag));
 });
-test('new tags normalize, remain globally available after removal, and selected tags sort first',()=>{
+test('tags disappear after their last assignment and can be manually restored',()=>{
  const state=structuredClone(metadataSeed);
  updateMetadata(state,{id:1,tag:'  New   Tag ',selected:true});
  assert.ok(state.tags.includes('new tag'));assert.ok(state.cards[1].includes('new tag'));
+ updateMetadata(state,{id:2,tag:'new tag',selected:true});
  updateMetadata(state,{id:1,tag:'new tag',selected:false});
  assert.ok(state.tags.includes('new tag'));assert.ok(!state.cards[1].includes('new tag'));
+ updateMetadata(state,{id:2,tag:'new tag',selected:false});
+ assert.ok(!state.tags.includes('new tag'));
+ updateMetadata(state,{id:1,tag:'new tag',selected:true});
+ assert.ok(state.tags.includes('new tag'));assert.ok(state.cards[1].includes('new tag'));
  assert.deepEqual(orderedTags(['cat','angel','pokemon','hat'],['hat','cat']),['cat','hat','angel','pokemon']);
  assert.equal(normalizeTag('Café'),'café');
  assert.throws(()=>normalizeTag('<script>'));assert.throws(()=>normalizeTag(''));
+});
+
+test('catalog cleanup retains every used subject and derived tag without changing assignments',()=>{
+ const state={tags:['unused','cat','star icon','colored name'],cards:{1:['cat','star icon'],2:['cat','body box','restored']},iconOverrides:{1:{type:'star',color:'emerald'}},revision:7};
+ const before=structuredClone(state);
+ pruneUnusedTags(state);
+ assert.deepEqual(state.tags,['body box','cat','restored','star icon']);
+ assert.deepEqual(state.cards,before.cards);assert.deepEqual(state.iconOverrides,before.iconOverrides);assert.equal(state.revision,7);
 });
 
 // These are the explicit cleanup rules, including removal from every card.

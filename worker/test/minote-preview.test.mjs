@@ -9,5 +9,9 @@ test('preview edits, tags and suits stay in the isolated snapshot',()=>{
  post('/api/icon',{id:1,icon:{type:'tear',color:'emerald'}});assert.equal(request('/api/metadata').icons[1].type,'tear');
  post('/api/suits',{...suitDefaults,size:250});assert.equal(request('/api/suits').size,250);
  post('/api/save',{id:1,body:false,ink:'original'});assert.ok(!request('/api/metadata').cards[1].includes('body box'));assert.ok(!request('/api/metadata').cards[1].includes('colored name'));
+ assert.ok(!request('/api/metadata').tags.includes('body box'));assert.ok(!request('/api/metadata').tags.includes('colored name'));
+ post('/api/tags',{id:1,tag:'favorite',selected:false});assert.ok(!request('/api/metadata').tags.includes('favorite'));
+ post('/api/tags',{id:1,tag:'favorite',selected:true});assert.ok(request('/api/metadata').tags.includes('favorite'));
+ post('/api/icon',{id:1,icon:{type:'bell'}});assert.ok(!request('/api/metadata').tags.includes('tear'));assert.ok(request('/api/metadata').tags.includes('bell icon'));
  assert.equal(original.edits[1]._revision,1);assert.deepEqual(original.metadata.cards[1],[]);assert.equal(original.suits.size,110);
 });

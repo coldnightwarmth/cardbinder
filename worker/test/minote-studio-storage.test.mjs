@@ -48,6 +48,9 @@ test('shared edits persist, broadcast, reject stale writes and validate imports'
  assert.equal((await (await call('/api/edits')).json())[id].zoom,1.3);
 
  const metadata=await (await call('/api/metadata')).json();
+ const used=new Set(Object.values(metadata.cards).flat());
+ assert.deepEqual(metadata.tags,[...used].sort());
+ assert.equal((await (await call('/api/metadata')).json()).revision,metadata.revision);
  assert.ok(metadata.tags.includes('pokemon'));assert.ok(metadata.cards[id].includes('angel'));
  for(const tag of ['favorite','remilio','invader']){
   assert.ok(!metadata.tags.includes(tag));
@@ -58,9 +61,16 @@ test('shared edits persist, broadcast, reject stale writes and validate imports'
  assert.deepEqual(restored.icons,metadata.icons);assert.deepEqual(restored.iconOverrides,metadata.iconOverrides);
  assert.deepEqual(restored.cards[2],metadata.cards[2]);
  assert.equal((await call('/api/tags',{id,tag:'favorite',selected:false})).status,200);
- const removedAgain=await (await call('/api/metadata')).json();assert.ok(!removedAgain.cards[id].includes('favorite'));assert.ok(removedAgain.tags.includes('favorite'));
+ const removedAgain=await (await call('/api/metadata')).json();assert.ok(!removedAgain.cards[id].includes('favorite'));assert.ok(!removedAgain.tags.includes('favorite'));
+ const restoredAgain=await (await call('/api/tags',{id,tag:'favorite',selected:true})).json();
+ assert.ok(restoredAgain.tags.includes('favorite'));assert.ok(restoredAgain.cards[id].includes('favorite'));
  const add=await call('/api/tags',{id,tag:'  New Tag  ',selected:true});assert.equal(add.status,200);
  const tagged=await add.json();assert.ok(tagged.tags.includes('new tag'));assert.ok(tagged.cards[id].includes('new tag'));
+ assert.equal((await call('/api/tags',{id:2,tag:'new tag',selected:true})).status,200);
+ const stillUsed=await (await call('/api/tags',{id,tag:'new tag',selected:false})).json();assert.ok(stillUsed.tags.includes('new tag'));
+ const unused=await (await call('/api/tags',{id:2,tag:'new tag',selected:false})).json();assert.ok(!unused.tags.includes('new tag'));
+ const cleanupRevision=unused.revision;
+ const cleanedRead=await (await call('/api/metadata')).json();assert.ok(!cleanedRead.tags.includes('new tag'));assert.equal(cleanedRead.revision,cleanupRevision);
  assert.equal((await call('/api/tags',{id:2,tag:'new tag',selected:true})).status,200);
  await Promise.all([call('/api/tags',{id,tag:'concurrent one',selected:true}),call('/api/tags',{id,tag:'concurrent two',selected:true})]);
  const merged=await (await call('/api/metadata')).json();

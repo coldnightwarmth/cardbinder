@@ -18,6 +18,10 @@ export function updateMetadata(metadata,{id,tag,selected}){
  const tags=new Set(metadata.cards[id]);
  if(selected)tags.add(tag);else tags.delete(tag);
  metadata.cards[id]=[...tags].sort();metadata.revision++;
+ return pruneUnusedTags(metadata);
+}
+export function pruneUnusedTags(metadata){
+ metadata.tags=[...new Set(Object.values(metadata.cards).flat())].sort();
  return metadata;
 }
 export function orderedTags(tags,selected){

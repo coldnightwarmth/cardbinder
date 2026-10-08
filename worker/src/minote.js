@@ -4,7 +4,7 @@ import {iconTags,iconTypes,iconColors,splitIcon,validateIcon,tagsForIcon,selectI
 import {suitDefaults,validateSuits,suitAssignments} from '../../minotecurator/suits-model.js';
 import {migrateMetadata} from '../../minotecurator/tag-cleanup.js';
 import {metadataSeed} from '../../minotecurator/metadata-seed.js';
-import {updateMetadata} from '../../minotecurator/metadata-model.js';
+import {updateMetadata,pruneUnusedTags} from '../../minotecurator/metadata-model.js';
 import collection from '../../minotecurator/collection.json';
 import seed from '../../minotecurator/initial-edits.json';
 import {normalize} from '../../minotecurator/normalize.js';
@@ -20,9 +20,7 @@ async function readRawMetadata(store){
  if(addedCards)metadata.revision++;
  const migrated=migrateMetadata(metadata);
  const restored=restoreSubjectTags(metadata);
- const additions=['cigarette','yugioh'].filter(tag=>!metadata.tags.includes(tag));
- if(additions.length){metadata.tags.push(...additions);metadata.tags.sort();metadata.revision++;}
- if(migrated||restored||additions.length||addedCards){
+ if(migrated||restored||addedCards){
   // Keep the original chunks recoverable while applying the one-time cleanup.
   for(let i=0;i<count;i++)await store.put('metadata:before-cleanup:'+i,parts.get('metadata:'+i));
   await store.put('metadata:before-cleanup:chunks',count);
@@ -32,9 +30,14 @@ async function readRawMetadata(store){
 }
 async function readMetadata(store){
  const metadata=await readRawMetadata(store),suits=validateSuits(await store.get('suits')||{}),assignments=suitAssignments(collection.map(c=>c.id),suits.seed);
+ const previousTags=JSON.stringify(metadata.tags);
  metadata.icons={};metadata.tags=[...new Set([...metadata.tags,...iconTags])];
  for(const [id,asset] of assignments){const icon=metadata.iconOverrides?.[id]||splitIcon(asset);metadata.icons[id]=icon;metadata.cards[id]=[...(metadata.cards[id]||[]).filter(t=>!iconTags.includes(t)),...tagsForIcon(icon)];}
- return applyAppearanceTags(metadata,await readEdits(store));
+ pruneUnusedTags(applyAppearanceTags(metadata,await readEdits(store)));
+ // Derive the catalog after icon and appearance tags so only used tags remain.
+ // Persist cleanup once and advance the revision for already-open curators.
+ if(JSON.stringify(metadata.tags)!==previousTags){metadata.revision++;await writeMetadata(store,metadata);}
+ return metadata;
 }
 async function writeMetadata(store,metadata){
  const json=JSON.stringify(metadata),count=Math.ceil(json.length/48000);
