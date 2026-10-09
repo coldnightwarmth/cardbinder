@@ -6,7 +6,53 @@ import {applySuit,startSuits,createSuitsControls,exportSuit,captureSuitExport} f
 import {createMetadataSidebar} from './metadata.js?v=17';
 import {createTagFilter} from './tag-filter.js?v=7';
 import {studioRequest,subscribeEdits,pauseSync,syncingPaused} from './storage.js?v=8';
+import {calculateRarities,sortGalleryCards} from './rarity.js';
 const $=s=>document.querySelector(s),W=2000,H=2800,defaults=()=>({zoom:1,x:0,y:0,nameZoom:1,nameX:0,nameY:0,ink:"original",body:false,bodyZoom:1,bodyX:0,bodyY:0});let collection=[],edits={},filtered=[],current=null,crop=defaults(),history=[],future=[],timer,bodyFilter=0,inkFilter=0,saveChain=Promise.resolve();const grid=$('#grid'),dialog=$('#editor');let revisions={},pending=new Set(),conflicts=new Map(),editSerial={};
+let rarityMetadata=null,rarities=new Map(),rarestFirst=false;
+const sortToggle=document.createElement('button');sortToggle.id='sortToggle';sortToggle.type='button';sortToggle.disabled=true;sortToggle.textContent='Sequence';sortToggle.setAttribute('aria-label','Sort by rarity, rarest first');sortToggle.setAttribute('aria-pressed','false');sortToggle.title='Loading collection traits…';$('#viewToggle').before(sortToggle);
+function showRarity(element,id){
+ const rating=rarities.get(id);element.textContent=rating?`Rarity #${rating.rank.toLocaleString()} · ${rating.score.toFixed(3)}`:'Rarity loading…';
+ element.title=rating?`OpenRarity simulation: rank ${rating.rank} of ${collection.length}; score ${rating.score.toFixed(6)}; ${rating.uniqueTraits} unique traits. Ranked by unique traits, then information score. Based on the entire collection.`:'Waiting for collection traits';
+}
+function updateRarities(){
+ if(!rarityMetadata||!collection.length)return;
+ try{rarities=calculateRarities(collection,rarityMetadata,edits);}
+ catch(error){sortToggle.disabled=true;sortToggle.title='Could not calculate rarity. Retry loading tags in Metadata.';console.warn('Rarity unavailable',error);return;}
+ sortToggle.disabled=false;sortToggle.title=rarestFirst?'Switch to sequence order':'Switch to rarest first · OpenRarity simulation';
+ for(const tile of grid.children){const label=tile.querySelector('.rarity-rating');if(label)showRarity(label,Number(tile.dataset.id));}
+ if(current)showRarity(selectedRarity,current.id);
+ if(rarestFirst)applyGallerySort();
+}
+function applyGallerySort(reset=false){
+ const selected=current?grid.querySelector(`[data-id="${current.id}"]`):null;
+ const before=selected?.getBoundingClientRect();
+ filtered=sortGalleryCards(filtered,collection,rarities,rarestFirst);
+ const nodes=new Map([...grid.children].map(node=>[Number(node.dataset.id),node]));
+ const ordered=filtered.map(item=>nodes.get(item.id)).filter(Boolean);
+ if(ordered.some((node,index)=>node!==grid.children[index])){
+  const focus=document.activeElement;
+  // Move the existing tiles so the selected editor, crop history, and draft survive.
+  grid.append(...ordered);
+  if(grid.contains(focus))focus.focus({preventScroll:true});
+ }
+ requestAnimationFrame(()=>{
+  fitCaptions();updateCarouselLayout();
+  if(selected&&selected.isConnected){
+   if(carousel)centerCarouselCard(current.id,'instant');
+   else window.scrollBy({top:selected.getBoundingClientRect().top-before.top,behavior:'instant'});
+  }else if(reset){
+   if(carousel)grid.scrollTo({left:0,behavior:'instant'});
+   else window.scrollTo({top:Math.max(0,window.scrollY+grid.getBoundingClientRect().top-galleryVisibleBounds().top),behavior:'instant'});
+  }
+  updateCarouselNav();
+ });
+}
+sortToggle.onclick=()=>{
+ rarestFirst=!rarestFirst;sortToggle.textContent=rarestFirst?'Rarest first':'Sequence';
+ sortToggle.setAttribute('aria-pressed',String(rarestFirst));sortToggle.setAttribute('aria-label',rarestFirst?'Sort by sequence order':'Sort by rarity, rarest first');
+ sortToggle.title=rarestFirst?'Switch to sequence order':'Switch to rarest first · OpenRarity simulation';
+ applyGallerySort(true);
+};
 function geometry(item,v){const s=Math.max(W/item.width,H/item.height)*v.zoom;return {w:item.width*s,h:item.height*s}}
 function clamp(item,v){v={...defaults(),...v,zoom:Math.max(1,Math.min(5,v.zoom))};const g=geometry(item,v);v.x=Math.max(-(g.w-W)/2,Math.min((g.w-W)/2,v.x));v.y=Math.max(-(g.h-H)/2,Math.min((g.h-H)/2,v.y));const b=nameGeometry(item,{...v,nameZoom:1});v.nameZoom=Math.max(.25,Math.min(4,W/b.w,H/b.h,v.nameZoom));const n=nameGeometry(item,v);const bg=bodyGeometry({...v,bodyZoom:1});v.bodyZoom=Math.max(.25,Math.min(4,W/bg.w,H/bg.h,v.bodyZoom));const q=bodyGeometry(v);return v}
 function position(img,item,v){const g=geometry(item,v);img.style.width=g.w/W*100+'%';img.style.height=g.h/H*100+'%';img.style.left=((W-g.w)/2+v.x)/W*100+'%';img.style.top=((H-g.h)/2+v.y)/H*100+'%'}
@@ -31,24 +77,25 @@ grid.addEventListener('error',event=>{const img=event.target;if(!(img instanceof
 grid.addEventListener('load',event=>{if(event.target instanceof HTMLImageElement)delete event.target.dataset.assetRetry},true);
 function isEdited(id){const v=edits[id];return v&&Object.entries(defaults()).some(([key,value])=>typeof value==='number'?Math.abs((v[key]??value)-value)>.001:(v[key]??value)!==value)}
 function image(src,cls){const img=document.createElement('img');img.className=cls;img.loading='lazy';img.decoding='async';img.alt='';setSource(img,src);return img}
-function tile(item){const b=document.createElement('article');b.className='tile';b.tabIndex=0;b.setAttribute('role','button');b.dataset.id=item.id;b.setAttribute('aria-label',`Edit card ${item.id}: ${item.name}`);const c=document.createElement('div');c.className='card';if(item.available){const art=image(`/minotecurator/assets/thumbs/${item.id}.webp`,'art');position(art,item,edits[item.id]||defaults());c.append(art,image('/minotecurator/assets/strip.png','strip'));const v={...defaults(),...edits[item.id]};if(v.body){const body=image(bodySource(item.id),'body-box');bodyPosition(body,v);c.append(body)}const name=image(nameSource(item,v),'name');namePosition(name,item,v);c.append(name);maskName(name);b.onclick=e=>{if(current?.id!==item.id){const selectedLayer=layerAt(e,c,item,{...defaults(),...edits[item.id]});open(item.id);layer=selectedLayer;render()}else if(carousel)centerCarouselCard(item.id)};b.onkeydown=e=>{if((e.key==='Enter'||e.key===' ')&&e.target===b){e.preventDefault();open(item.id)}}}else{c.classList.add('unavailable');const a=document.createElement('strong');a.textContent=String(item.id).padStart(4,'0');const s=document.createElement('span');s.textContent='Artwork unavailable';c.append(a,s);b.setAttribute('aria-disabled','true');b.tabIndex=-1}applySuit(c,item.id);b.append(c);const cap=document.createElement('div');cap.className='caption';const id=document.createElement('span');id.className='id';id.textContent=String(item.id).padStart(4,'0');const label=document.createElement('span');label.className='label';label.textContent=item.name;const mark=document.createElement('span');mark.className='edited-mark';mark.textContent=isEdited(item.id)?'Edited':'';cap.append(id,label,mark);b.append(cap);return b}
-function drawGrid(){nameObserver.disconnect();if(current){persist().catch(()=>{});parkEditor();current=null;toolbar.hidden=true}const q=$('#search').value.trim().toLowerCase();filtered=collection.filter(i=>tagFilter.quick||matchesAppearanceFilters(edits[i.id])&&tagFilter.matches(i.id)&&(!q||i.name.toLowerCase().includes(q)||String(i.id).includes(q)));grid.replaceChildren(...filtered.map(tile));$('#empty').hidden=filtered.length>0;const missing=collection.filter(i=>!i.available).length;$('#count').textContent=`${filtered.length.toLocaleString()} cards${missing?' · '+missing+' artworks unavailable locally':''}`;requestAnimationFrame(()=>{updateCarouselNav();updateQuickTags();})}
+function tile(item){const b=document.createElement('article');b.className='tile';b.tabIndex=0;b.setAttribute('role','button');b.dataset.id=item.id;b.setAttribute('aria-label',`Edit card ${item.id}: ${item.name}`);const c=document.createElement('div');c.className='card';if(item.available){const art=image(`/minotecurator/assets/thumbs/${item.id}.webp`,'art');position(art,item,edits[item.id]||defaults());c.append(art,image('/minotecurator/assets/strip.png','strip'));const v={...defaults(),...edits[item.id]};if(v.body){const body=image(bodySource(item.id),'body-box');bodyPosition(body,v);c.append(body)}const name=image(nameSource(item,v),'name');namePosition(name,item,v);c.append(name);maskName(name);b.onclick=e=>{if(current?.id!==item.id){const selectedLayer=layerAt(e,c,item,{...defaults(),...edits[item.id]});open(item.id);layer=selectedLayer;render()}else if(carousel)centerCarouselCard(item.id)};b.onkeydown=e=>{if((e.key==='Enter'||e.key===' ')&&e.target===b){e.preventDefault();open(item.id)}}}else{c.classList.add('unavailable');const a=document.createElement('strong');a.textContent=String(item.id).padStart(4,'0');const s=document.createElement('span');s.textContent='Artwork unavailable';c.append(a,s);b.setAttribute('aria-disabled','true');b.tabIndex=-1}applySuit(c,item.id);b.append(c);const cap=document.createElement('div');cap.className='caption';const id=document.createElement('span');id.className='id';id.textContent=String(item.id).padStart(4,'0');const label=document.createElement('span');label.className='label';label.textContent=item.name;const mark=document.createElement('span');mark.className='edited-mark';mark.textContent=isEdited(item.id)?'Edited':'';cap.append(id,label,mark);const rating=document.createElement('div');rating.className='rarity-rating';showRarity(rating,item.id);b.append(cap,rating);return b}
+function drawGrid(){nameObserver.disconnect();if(current){persist().catch(()=>{});parkEditor();current=null;toolbar.hidden=true}const q=$('#search').value.trim().toLowerCase();filtered=collection.filter(i=>tagFilter.quick||matchesAppearanceFilters(edits[i.id])&&tagFilter.matches(i.id)&&(!q||i.name.toLowerCase().includes(q)||String(i.id).includes(q)));filtered=sortGalleryCards(filtered,collection,rarities,rarestFirst);grid.replaceChildren(...filtered.map(tile));$('#empty').hidden=filtered.length>0;const missing=collection.filter(i=>!i.available).length;$('#count').textContent=`${filtered.length.toLocaleString()} cards${missing?' · '+missing+' artworks unavailable locally':''}`;requestAnimationFrame(()=>{updateCarouselNav();updateQuickTags();})}
 function refreshTile(){const tile=grid.querySelector(`[data-id="${current.id}"]`);if(tile){const img=tile.querySelector('.art');if(img)position(img,current,crop);tile.querySelector('.edited-mark').textContent=isEdited(current.id)?'Edited':''}}
-function render(){maskName($('#name'));applySuit($('#stage'),current.id);metadataSidebar.render();cancelButton.hidden=!entryCrop||!Object.keys(defaults()).some(key=>crop[key]!==entryCrop[key]);position($('#art'),current,crop);namePosition($('#name'),current,crop);setSource($('#name'),nameSource(current,crop));namePosition(nameFrame,current,crop);setSource(bodyImage,bodySource(current.id));bodyPosition(bodyImage,crop);bodyPosition(bodyFrame,crop);bodyImage.hidden=!crop.body;$('#bodyToggle').checked=crop.body;const key=layerKeys()[2];$('#zoom').min=layer==='artwork'?1:.25;$('#zoom').max=maxZoom();$('#zoom').value=crop[key];$('#zoomValue').textContent=Math.round(crop[key]*100)+'%';$('#sizeLabel').textContent=layer==='name'?'Name size':layer==='body'?'Body box size':'Artwork size';$('#reset').textContent=layer==='name'?'Reset name':layer==='body'?'Reset box':'Reset crop';$('#undo').disabled=!history.length;stageWrap.classList.toggle('name-mode',layer!=='artwork');nameFrame.hidden=layer!=='name';bodyFrame.hidden=layer!=='body'||!crop.body;document.querySelectorAll('[data-layer]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.layer===layer));document.querySelectorAll('[data-ink]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.ink===crop.ink))}
+function render(){showRarity(selectedRarity,current.id);maskName($('#name'));applySuit($('#stage'),current.id);metadataSidebar.render();cancelButton.hidden=!entryCrop||!Object.keys(defaults()).some(key=>crop[key]!==entryCrop[key]);position($('#art'),current,crop);namePosition($('#name'),current,crop);setSource($('#name'),nameSource(current,crop));namePosition(nameFrame,current,crop);setSource(bodyImage,bodySource(current.id));bodyPosition(bodyImage,crop);bodyPosition(bodyFrame,crop);bodyImage.hidden=!crop.body;$('#bodyToggle').checked=crop.body;const key=layerKeys()[2];$('#zoom').min=layer==='artwork'?1:.25;$('#zoom').max=maxZoom();$('#zoom').value=crop[key];$('#zoomValue').textContent=Math.round(crop[key]*100)+'%';$('#sizeLabel').textContent=layer==='name'?'Name size':layer==='body'?'Body box size':'Artwork size';$('#reset').textContent=layer==='name'?'Reset name':layer==='body'?'Reset box':'Reset crop';$('#undo').disabled=!history.length;stageWrap.classList.toggle('name-mode',layer!=='artwork');nameFrame.hidden=layer!=='name';bodyFrame.hidden=layer!=='body'||!crop.body;document.querySelectorAll('[data-layer]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.layer===layer));document.querySelectorAll('[data-ink]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.ink===crop.ink))}
 function remember(){history.push({...crop});if(history.length>40)history.shift();future=[]}
 function travelHistory(from,to){
  if(!current||!from.length)return;
  to.push({...crop});if(to.length>40)to.shift();
- crop=from.pop();change(crop);persist().catch(()=>{});
+ change(from.pop());persist().catch(()=>{});
 }
 function undo(){travelHistory(history,future)}
 function redo(){travelHistory(future,history)}
 async function post(url,data){const r=await studioRequest(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});if(!r.ok){const result=await r.json();const e=Error(result.error||'Could not save');e.status=r.status;e.latest=result.latest;throw e}return r}
 function persist(){clearTimeout(timer);timer=null;if(!current)return Promise.resolve();const id=current.id,v={...crop},serial=editSerial[id]||0;edits[id]=v;refreshTile();if(conflicts.has(id))return Promise.reject(Error('Resolve the change from another user before saving.'));if(!pending.has(id))return saveChain;$('#saveStatus').textContent='Saving for everyone…';saveChain=saveChain.catch(()=>{}).then(async()=>{if(conflicts.has(id))throw Error('Resolve the change from another user before saving.');const r=await post('/api/save',{id,...v,_revision:revisions[id]||0}),saved=await r.json();revisions[id]=saved._revision;if((editSerial[id]||0)===serial){pending.delete(id);edits[id]=saved;if(current?.id===id){crop={...crop,...saved};$('#saveStatus').textContent=syncingPaused()?'Preview only — not saved':'Saved for everyone'}}}).catch(e=>{if(e.status===409)conflicts.set(id,e.latest);if(current?.id===id){$('#saveStatus').textContent='Draft not saved';$('#error').textContent=e.message;$('#useShared').hidden=!conflicts.has(id)}throw e});saveChain.catch(()=>{});return saveChain}
-function change(v){crop=clamp(current,{...crop,...v});pending.add(current.id);editSerial[current.id]=(editSerial[current.id]||0)+1;render();edits[current.id]={...crop};refreshTile();$('#saveStatus').textContent='Unsaved changes';clearTimeout(timer);timer=setTimeout(()=>persist().catch(()=>{}),300)}
+function change(v){const previous=crop;crop=clamp(current,{...crop,...v});pending.add(current.id);editSerial[current.id]=(editSerial[current.id]||0)+1;render();edits[current.id]={...crop};refreshTile();if(previous.ink!==crop.ink||previous.body!==crop.body)updateRarities();$('#saveStatus').textContent='Unsaved changes';clearTimeout(timer);timer=setTimeout(()=>persist().catch(()=>{}),300)}
 const stageWrap=$('#stageWrap');const parking=document.createElement('div');parking.hidden=true;document.body.append(parking);parking.append(stageWrap);
 const toolbar=document.createElement('section');toolbar.className='inline-toolbar';toolbar.hidden=true;toolbar.setAttribute('aria-label','Selected card crop controls');
 const selectedLabel=document.createElement('div');selectedLabel.className='selected-label';selectedLabel.append($('#number'),$('#title'));
+const selectedRarity=document.createElement('div');selectedRarity.className='rarity-rating';selectedLabel.append(selectedRarity);
 const zoomGroup=document.createElement('div');zoomGroup.className='inline-zoom';zoomGroup.append($('.zoom-label'),$('#zoom'));
 const sizeSteps=document.createElement('span');sizeSteps.className='size-steps';
 for(const [text,delta,label] of [['−',-.01,'Decrease size'],['+',.01,'Increase size']]){const button=document.createElement('button');button.type='button';button.textContent=text;button.setAttribute('aria-label',label);button.onclick=()=>{if(!current)return;remember();const key=layerKeys()[2];change({[key]:Math.max(Number($('#zoom').min),Math.min(Number($('#zoom').max),Math.round((crop[key]+delta)*1000)/1000))});persist().catch(()=>{});};sizeSteps.append(button);}
@@ -68,10 +115,11 @@ const bodyFrame=document.createElement('div');bodyFrame.className='body-frame';b
 sidebar.querySelectorAll('[data-ink]').forEach(b=>b.onclick=()=>{remember();change({ink:b.dataset.ink});persist().catch(()=>{})});$('#centerName').onclick=()=>{remember();change({nameX:0,nameY:0});persist().catch(()=>{})};$('#bodyToggle').onchange=e=>{remember();if(e.target.checked)layer='body';else if(layer==='body')layer='artwork';change({body:e.target.checked});persist().catch(()=>{})};
 const tagFilter=createTagFilter(()=>{drawGrid();updateQuickTags();},{allowQuick:true});
 const metadataSidebar=createMetadataSidebar(sidebar,()=>current,metadata=>{
+ rarityMetadata=structuredClone(metadata);updateRarities();
  const wasActive=tagFilter.active;tagFilter.update(metadata);updateQuickTags();
  if(wasActive){
   const q=$('#search').value.trim().toLowerCase();
-  const next=collection.filter(i=>matchesAppearanceFilters(edits[i.id])&&tagFilter.matches(i.id)&&(!q||i.name.toLowerCase().includes(q)||String(i.id).includes(q)));
+  const next=sortGalleryCards(collection.filter(i=>matchesAppearanceFilters(edits[i.id])&&tagFilter.matches(i.id)&&(!q||i.name.toLowerCase().includes(q)||String(i.id).includes(q))),collection,rarities,rarestFirst);
   if(next.length!==filtered.length||next.some((item,i)=>item.id!==filtered[i]?.id))drawGrid();
  }
 });
@@ -209,9 +257,9 @@ document.addEventListener('keydown',e=>{if(document.querySelector('#exportOption
 });
 document.addEventListener('keydown',e=>{if(document.querySelector('#exportOptions[open],#collectionDownload[open]'))return;if(!current||['INPUT','TEXTAREA','BUTTON','SELECT'].includes(e.target.tagName))return;const d=e.shiftKey?20:4;if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();remember();const [x,y]=layerKeys();change({[x]:crop[x]+(e.key==='ArrowLeft'?-d:e.key==='ArrowRight'?d:0),[y]:crop[y]+(e.key==='ArrowUp'?-d:e.key==='ArrowDown'?d:0)})}});
 window.addEventListener('beforeunload',e=>{if(pending.size){e.preventDefault();e.returnValue='Your draft has not finished saving.'}});
-const sharedButton=document.createElement('button');sharedButton.id='useShared';sharedButton.textContent='Load saved version';sharedButton.hidden=true;saveGroup.append(sharedButton);sharedButton.onclick=()=>{if(!current)return;const id=current.id,v=conflicts.get(id);if(!v)return;conflicts.delete(id);pending.delete(id);edits[id]=v;revisions[id]=v._revision||0;crop=clamp(current,v);entryCrop={...crop};history=[];future=[];render();refreshTile();sharedButton.hidden=true;$('#error').textContent='';$('#saveStatus').textContent='Loaded saved version'};
+const sharedButton=document.createElement('button');sharedButton.id='useShared';sharedButton.textContent='Load saved version';sharedButton.hidden=true;saveGroup.append(sharedButton);sharedButton.onclick=()=>{if(!current)return;const id=current.id,v=conflicts.get(id);if(!v)return;conflicts.delete(id);pending.delete(id);edits[id]=v;revisions[id]=v._revision||0;crop=clamp(current,v);entryCrop={...crop};history=[];future=[];render();refreshTile();updateRarities();sharedButton.hidden=true;$('#error').textContent='';$('#saveStatus').textContent='Loaded saved version'};
 const syncLabel=document.createElement('span');syncLabel.className='sync-label';syncLabel.textContent='Connecting…';document.querySelector('.tools').prepend(syncLabel);
-Promise.all([studioRequest('/api/collection').then(r=>{if(!r.ok)throw Error();return r.json()}),studioRequest('/api/edits').then(r=>{if(!r.ok)throw Error();return r.json()})]).then(([items,saved])=>{collection=items;startSuits(items);edits=saved;for(const [id,v] of Object.entries(saved))revisions[id]=v._revision||0;drawGrid();syncLabel.textContent='Synced for everyone';subscribeEdits(refreshShared)}).catch(()=>{$('#count').textContent='Unable to load the studio. Refresh to try again.';syncLabel.textContent='Connection unavailable'});
+Promise.all([studioRequest('/api/collection').then(r=>{if(!r.ok)throw Error();return r.json()}),studioRequest('/api/edits').then(r=>{if(!r.ok)throw Error();return r.json()})]).then(([items,saved])=>{collection=items;startSuits(items);edits=saved;updateRarities();for(const [id,v] of Object.entries(saved))revisions[id]=v._revision||0;drawGrid();syncLabel.textContent='Synced for everyone';subscribeEdits(refreshShared)}).catch(()=>{$('#count').textContent='Unable to load the studio. Refresh to try again.';syncLabel.textContent='Connection unavailable'});
 if(document.modelContext?.registerTool){const lifecycle=new AbortController();for(const tool of [{name:'read_card_crop',description:'Read saved artwork crop for a card number.',inputSchema:{type:'object',properties:{id:{type:'integer'}},required:['id'],additionalProperties:false},annotations:{readOnlyHint:true},execute:({id})=>{const item=collection.find(i=>i.id===id);if(!item)throw Error('Unknown card');return {id,name:item.name,available:item.available,crop:edits[id]||defaults()}}},{name:'set_card_crop',description:'Open a card and save its artwork crop. Zoom is proportional from 1 to 5; x and y are offsets in export pixels.',inputSchema:{type:'object',properties:{id:{type:'integer'},zoom:{type:'number',minimum:1,maximum:5},x:{type:'number'},y:{type:'number'}},required:['id','zoom','x','y'],additionalProperties:false},annotations:{readOnlyHint:false},execute:async({id,zoom,x,y})=>{if(!collection.find(i=>i.id===id&&i.available)||![zoom,x,y].every(Number.isFinite)||zoom<1||zoom>5)throw Error('Invalid card or crop');await open(id);remember();change({...crop,zoom,x,y});await persist();return {id,crop}}}]){try{Promise.resolve(document.modelContext.registerTool(tool,{signal:lifecycle.signal})).catch(()=>{})}catch{}}window.addEventListener('pagehide',()=>lifecycle.abort())}
 
 // Backups remain compatible; imports use shared revision checks.
@@ -225,7 +273,7 @@ $('#importFile').onchange=async e=>{
   const r=await post('/api/import',{...data,revisions});edits=await r.json();
   revisions={};for(const [id,v] of Object.entries(edits))revisions[id]=v._revision||0;
   conflicts.clear();pending.clear();if(current){parkEditor();current=null;toolbar.hidden=true}
-  drawGrid();syncLabel.textContent='Edits shared with everyone';
+  updateRarities();drawGrid();syncLabel.textContent='Edits shared with everyone';
  }catch(error){syncLabel.textContent=error.message}
  finally{button.disabled=false;e.target.value=''}
 };
@@ -363,7 +411,7 @@ async function refreshShared(){
    edits[id]=v;revisions[id]=v._revision||0;changed=true;
    if(current){const old=grid.querySelector(`[data-id="${id}"]`),item=collection.find(c=>c.id===+id);if(old&&item)old.replaceWith(tile(item));}
   }
-  if(changed&&!current)drawGrid();syncLabel.textContent='Synced for everyone';
+  if(changed){updateRarities();if(!current)drawGrid();}syncLabel.textContent='Synced for everyone';
  }catch{syncLabel.textContent='Sync interrupted — reconnecting';setTimeout(refreshShared,5000);}
  finally{refreshingShared=false;if(sharedAgain){sharedAgain=false;refreshShared();}}
 }
