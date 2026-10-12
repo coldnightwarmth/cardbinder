@@ -1,0 +1,14 @@
+{
+  "name": "cards-art-preview-builder",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "check": "node build.mjs --check",
+    "test": "node --test test.mjs",
+    "avatar": "node optimize-avatar.mjs"
+  },
+  "dependencies": {
+    "sharp": "0.35.5"
+  }
+}

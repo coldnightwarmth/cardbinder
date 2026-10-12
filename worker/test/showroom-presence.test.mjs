@@ -52,3 +52,14 @@ test('authored locomotion phases are bounded and included in snapshots',async()=
  player.lastMove=0;await server.webSocketMessage(ws,JSON.stringify({type:'pose',pose:{...player.pose,crouch:200,jumpTime:200}}));
  assert.equal(player.pose.crouch,1);assert.equal(player.pose.jumpTime,1.1);
 });
+test('room broadcasts serialize once and still reach other players if one socket fails',()=>{
+ const server=Object.create(Showroom.prototype),received=[];let serializations=0;
+ const message={type:'pose',toJSON(){serializations++;return {type:'pose',id:'player'};}};
+ server.ctx={getWebSockets:()=>[
+  {send:()=>{throw Error('closed');}},
+  {send:data=>received.push(data)},
+  {send:data=>received.push(data)},
+ ]};
+ server.broadcast(message);
+ assert.equal(serializations,1);assert.deepEqual(received,['{"type":"pose","id":"player"}','{"type":"pose","id":"player"}']);
+});

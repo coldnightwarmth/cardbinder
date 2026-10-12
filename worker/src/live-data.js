@@ -1,6 +1,8 @@
 import {
   SUPPORTED_CARD_MINT_INDEX,
   SUPPORTED_CARD_REFERENCE_INDEX,
+  SUPPORTED_CARD_COLLECTION_RANGES,
+  SUPPORTED_WALLET_CATALOG_VERSION,
 } from "./supported-card-index.js";
 
 const LIVE_STATUS_REFRESH_MS = 12 * 60 * 60 * 1000;
@@ -128,12 +130,16 @@ export async function refreshLiveCardStatuses(env) {
 }
 
 export async function fetchLiveWalletHoldings(address, env) {
-  const dasHoldings = await fetchWalletDasHoldings(address, env);
-  const supplementalResults = await Promise.allSettled([
-    ...SOLANA_TOKEN_PROGRAM_IDS.map((programId) => (
-      fetchWalletTokenProgramMints(address, programId, env)
-    )),
-    fetchCardNft2WalletMints(address, env),
+  // These independent sources can run alongside the paginated DAS lookup.
+  // DAS remains required; supplemental RPC/indexer failures are still tolerated.
+  const [dasHoldings, supplementalResults] = await Promise.all([
+    fetchWalletDasHoldings(address, env),
+    Promise.allSettled([
+      ...SOLANA_TOKEN_PROGRAM_IDS.map((programId) => (
+        fetchWalletTokenProgramMints(address, programId, env)
+      )),
+      fetchCardNft2WalletMints(address, env),
+    ]),
   ]);
   const mints = new Set(dasHoldings.mints);
   for (const result of supplementalResults) {
@@ -147,11 +153,39 @@ export async function fetchLiveWalletHoldings(address, env) {
     cardRefs: dasHoldings.cardRefs,
     swagPackAssets: dasHoldings.swagPackAssets,
   };
-  holdings.supportedCardCount = countSupportedWalletCards(holdings);
+  Object.assign(holdings, summarizeSupportedWalletCards(holdings));
+  const cardNft2Result = supplementalResults.at(-1);
+  // A newly ripped Card NFT 2 card can precede the generated mint index. The
+  // collection-specific endpoint can still tell the client to load that catalog.
+  holdings.supportedCollectionsComplete = cardNft2Result?.status === "fulfilled";
+  if (holdings.supportedCollectionsComplete && cardNft2Result.value.size > 0) {
+    const ids = new Set([...holdings.supportedCollectionIds, "cardnft2"]);
+    holdings.supportedCollectionIds = SUPPORTED_CARD_COLLECTION_RANGES
+      .map(([collectionId]) => collectionId).filter(collectionId => ids.has(collectionId));
+  }
   return holdings;
 }
 
 export function countSupportedWalletCards(holdings) {
+  return supportedWalletCardIndexes(holdings).size;
+}
+
+export function summarizeSupportedWalletCards(holdings) {
+  const indexes = supportedWalletCardIndexes(holdings);
+  const ids = new Set();
+  for (const index of indexes) {
+    const range = SUPPORTED_CARD_COLLECTION_RANGES.find(([, start, end]) => index >= start && index < end);
+    if (range) ids.add(range[0]);
+  }
+  return {
+    supportedCardCount: indexes.size,
+    supportedCollectionIds: SUPPORTED_CARD_COLLECTION_RANGES
+      .map(([collectionId]) => collectionId).filter(collectionId => ids.has(collectionId)),
+    supportedCatalogVersion: SUPPORTED_WALLET_CATALOG_VERSION,
+  };
+}
+
+function supportedWalletCardIndexes(holdings) {
   const cardIndexes = new Set();
   for (const mint of Array.isArray(holdings?.mints) ? holdings.mints : []) {
     const cardIndex = SUPPORTED_CARD_BY_MINT.get(String(mint || "").trim());
@@ -164,7 +198,7 @@ export function countSupportedWalletCards(holdings) {
     const cardIndex = SUPPORTED_CARD_BY_REFERENCE.get(`${collectionId}:${number}`);
     if (Number.isInteger(cardIndex)) cardIndexes.add(cardIndex);
   }
-  return cardIndexes.size;
+  return cardIndexes;
 }
 
 function buildFlatIndex(values) {
@@ -429,7 +463,8 @@ async function fetchCardNft2WalletMints(address, env) {
       ? payload.assets
       : Array.isArray(payload)
         ? payload
-        : [];
+        : null;
+  if (!candidates) throw new Error("Card NFT 2 wallet response is missing its mint list");
   return new Set(candidates.map(getCandidateMint).filter(Boolean));
 }
 

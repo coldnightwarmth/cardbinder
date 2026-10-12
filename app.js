@@ -1,4 +1,7 @@
 import * as THREE from "three";
+import { loadCardPreviewImage } from "./card-preview-loader.mjs";
+import { SUPPORTED_WALLET_CATALOG_VERSION } from "./supported-wallet-catalog.mjs";
+import { COLLECTION_CARD_COUNTS } from "./collection-card-counts.mjs";
 import { BROWSER_TRAIT_CATALOG } from "./browser-traits-catalog.js?v=browser-traits-13";
 import { CARD_NFT_ANIMATED } from "./cardnft-animated.js";
 import { CARD_NFT_ANIMATED_SPRITES } from "./cardnft-animated-sprites.js";
@@ -49,12 +52,13 @@ const COLLECTION_DATA_SPECS = {
     exportName: "REFLECTION2_CARDS",
   },
 };
+const IS_SHOWROOM = /^\/show\/?$/.test(window.location.pathname);
 const REQUESTED_COLLECTION_ID = COLLECTION_DATA_SPECS[document.documentElement.dataset.collectionId]
   ? document.documentElement.dataset.collectionId
   : "cardnft2";
 const INITIAL_COLLECTION_DATA_SPEC = COLLECTION_DATA_SPECS[REQUESTED_COLLECTION_ID];
-const INITIAL_COLLECTION_DATA_MODULE = await import(INITIAL_COLLECTION_DATA_SPEC.module);
-const INITIAL_COLLECTION_CARDS = INITIAL_COLLECTION_DATA_MODULE[INITIAL_COLLECTION_DATA_SPEC.exportName];
+const INITIAL_COLLECTION_DATA_MODULE = IS_SHOWROOM ? null : await import(INITIAL_COLLECTION_DATA_SPEC.module);
+const INITIAL_COLLECTION_CARDS = IS_SHOWROOM ? [] : INITIAL_COLLECTION_DATA_MODULE[INITIAL_COLLECTION_DATA_SPEC.exportName];
 if (!Array.isArray(INITIAL_COLLECTION_CARDS)) {
   throw new Error(`Unable to load ${REQUESTED_COLLECTION_ID} card data`);
 }
@@ -421,7 +425,7 @@ function registerCollectionCards(collectionId, cards) {
   return collection.cards;
 }
 
-registerCollectionCards(ACTIVE_COLLECTION_ID, INITIAL_COLLECTION_CARDS);
+if (!IS_SHOWROOM) registerCollectionCards(ACTIVE_COLLECTION_ID, INITIAL_COLLECTION_CARDS);
 
 async function ensureCollectionCards(collectionId) {
   const collection = COLLECTION_CONFIGS[collectionId];
@@ -686,7 +690,6 @@ const GALLERY_TRAIT_COLLECTION_QUERY_PARAM = "trait-collection";
 let showroomHand = null;
 const showroomDisplayGroups = new Set();
 let showroomBinderEntry = null;
-const IS_SHOWROOM = /^\/show\/?$/.test(window.location.pathname);
 let WALLET_ROUTE_ADDRESS = getWalletAddressFromPathname(window.location.pathname);
 const WALLET_AUTH_API_BASE_URL = IS_SHOWROOM ? WALLET_PUBLIC_API_BASE_URL : getWalletAuthApiBaseUrl();
 const WALLET_BINDER_DIRECTORY_ARRIVAL = readWalletBinderDirectoryArrival(WALLET_ROUTE_ADDRESS);
@@ -1149,8 +1152,8 @@ let SESSION_VIEW_STATE_KEY = WALLET_ROUTE_ADDRESS
   : `cardnft:${ACTIVE_COLLECTION_ID}:sessionView:v1`;
 const TENSOR_ITEM_URL_BASE = "https://www.tensor.trade/item/";
 const SOLSCAN_TOKEN_URL_BASE = "https://solscan.io/token/";
-const restoredEvilBinderTableSwap = consumeEvilBinderTableSwapArrival();
-const restoredSessionViewState = WALLET_ROUTE_ADDRESS ? null : loadSessionViewState();
+const restoredEvilBinderTableSwap = IS_SHOWROOM ? null : consumeEvilBinderTableSwapArrival();
+const restoredSessionViewState = IS_SHOWROOM || WALLET_ROUTE_ADDRESS ? null : loadSessionViewState();
 
 const els = {
   body: document.body,
@@ -1650,6 +1653,10 @@ let binderTableSurfaceTexturesPromise = null;
 const binderTableSurfaceTextures = new Map();
 let binderTableDisplayModelRoot = null;
 let binderTableDisplayModelPromise = null;
+const binderTableDisplayModelLoads = new Map();
+let binderTableDisplayRequestedIndex = 0;
+let binderTableDisplaySelectionToken = 0;
+let binderTableDisplayWarmup = Promise.resolve();
 let binderTableDisplayModelEntries = [];
 let binderTableDisplayModelIndex = 0;
 let binderTableDisplayModelLoadedAt = 0;
@@ -1771,6 +1778,22 @@ init().then(() => window.cardSceneTransition?.ready()).catch((error) => {
 });
 
 async function init() {
+  if (IS_SHOWROOM) {
+    // Closed exhibits need only cover metadata. Prepare interactive binders
+    // when one is approached/opened, not an invisible default binder at spawn.
+    updateAppViewportVars();
+    applyTheme(false);
+    updateGalleryViewModeButton();
+    populateTraitSortOptions();
+    initCardScene();
+    initEvents();
+    galleryOpen = true;
+    els.body.classList.add("is-gallery");
+    await initShowroomExperience();
+    initializeLiveDataRefresh();
+    initializeWalletAuth().catch(updateWalletAuthUi);
+    return;
+  }
   installWalletBinderDirectoryArrivalBridge();
   const initialGalleryUrlState = readGalleryUrlState();
   await Promise.all([
@@ -1817,53 +1840,75 @@ async function init() {
   });
   preloadAllConfiguredBackTextures().catch(console.error);
   if (!galleryOpen) startCardRenderLoop();
-  if (IS_SHOWROOM) {
-    const { initShowroom } = await import("./showroom.js?v=showroom-controls-9");
-    const { createShowroomHand } = await import("./showroom-hand.js?v=10");
-    const room = await initShowroom(await createShowroomBridge());
-    showroomHand = createShowroomHand({
-      currentCard: () => !galleryOpen && CARDS[currentIndex] ? {
-        index: currentIndex, stableId: CARDS[currentIndex].stableId,
-        title: CARDS[currentIndex].title, image: cardStillAssetUrl(CARDS[currentIndex]),
-      } : null,
-      binder: () => showroomBinderEntry?.favorites
-        ? { collectionId: CARDS[currentIndex]?.collection } : showroomBinderEntry,
-      unavailable: () => isShowroomCardHeld(currentIndex),
-      transitioning: () => cardSwapAnimating || cardShuffleSpinAnimating || binderCardViewTransitionActive,
-      controlsDisabled: setIndividualCardControlsDisabled,
-      cardRect: () => getIndividualCardScreenRect() || getCenteredFallbackRect(),
-      take: async () => {
-        await room.releaseBinderToHand();
-        stopBinderRenderLoop();
-      },
-      open: async card => {
-        const prepared = await prepareIndividualCardFor3D(CARDS[card.index]);
-        room.beginHandView();
-        resetIndividualCardZoom();
-        setCard(card.index, prepared);
-        setGalleryOpen(false);
-      },
-      close: () => {
-        setGalleryOpen(true);
-        stopBinderRenderLoop();
-        room.endHandView();
-      },
-      slotsChanged: () => {
-        if (!showroomBinderEntry) return;
-        updateBinderPageTransforms();
-        requestBinderRenderOnce();
-      },
-    });
-    room.setHand(showroomHand);
-  } else if(window.cardSceneTransition?.arriving && galleryOpen) {
+  if(window.cardSceneTransition?.arriving && galleryOpen) {
     await Promise.allSettled(binderVisibleIndexes.slice(0,BINDER_SIDE_SLOTS).map(index=>getBinderTexture(CARDS[index])));
     renderBinderSceneOnce({includePreload:false,immediateCamera:true});
   }
 }
 
+async function initShowroomExperience() {
+  const [{ initShowroom }, { createShowroomHand }, bridge] = await Promise.all([
+    import("./showroom.js?v=showroom-controls-10"),
+    import("./showroom-hand.js?v=10"),
+    createShowroomBridge(),
+  ]);
+  const room = await initShowroom(bridge);
+  showroomHand = createShowroomHand({
+    currentCard: () => !galleryOpen && CARDS[currentIndex] ? {
+      index: currentIndex, stableId: CARDS[currentIndex].stableId,
+      title: CARDS[currentIndex].title, image: cardStillAssetUrl(CARDS[currentIndex]),
+    } : null,
+    binder: () => showroomBinderEntry?.favorites
+      ? { collectionId: CARDS[currentIndex]?.collection } : showroomBinderEntry,
+    unavailable: () => isShowroomCardHeld(currentIndex),
+    transitioning: () => cardSwapAnimating || cardShuffleSpinAnimating || binderCardViewTransitionActive,
+    controlsDisabled: setIndividualCardControlsDisabled,
+    cardRect: () => getIndividualCardScreenRect() || getCenteredFallbackRect(),
+    take: async () => {
+      await room.releaseBinderToHand();
+      stopBinderRenderLoop();
+    },
+    open: async card => {
+      const prepared = await prepareIndividualCardFor3D(CARDS[card.index]);
+      room.beginHandView();
+      resetIndividualCardZoom();
+      setCard(card.index, prepared);
+      setGalleryOpen(false);
+    },
+    close: () => {
+      setGalleryOpen(true);
+      stopBinderRenderLoop();
+      room.endHandView();
+    },
+    slotsChanged: () => {
+      if (!showroomBinderEntry) return;
+      updateBinderPageTransforms();
+      requestBinderRenderOnce();
+    },
+  });
+  room.setHand(showroomHand);
+}
+
 // Showroom prefetching is deliberately detached from active wallet/render state.
 async function createShowroomBridge() {
-  const { createShowroomCache } = await import("./showroom-cache.mjs");
+  const [{ createShowroomCache }, { createSharedResourceCache }] = await Promise.all([
+    import("./showroom-cache.mjs"), import("./showroom-resource-cache.mjs"),
+  ]);
+  const acquireHandTextures = createSharedResourceCache(async key => {
+    const images = await Promise.all(JSON.parse(key).map(url => loadCardPreviewImage(
+      url, source => loadTextureImage(source, { fetchPriority: "low" }), { width: 192 },
+    )));
+    return images.map(image => {
+      const surface = document.createElement("canvas"); surface.width = 192; surface.height = 269;
+      surface.getContext("2d").drawImage(image, 0, 0, 192, 269);
+      const texture = new THREE.CanvasTexture(surface);
+      texture.colorSpace = THREE.SRGBColorSpace;
+      return texture;
+    });
+  }, { dispose: textures => textures.forEach(texture => texture.dispose()) });
+  const handRadius = .714 * (CARD_RADIUS / CARD_WIDTH);
+  const handCoreGeometry = createRoundedCoreGeometry(.714, 1, .006, handRadius);
+  const handFaceGeometry = createRoundedPlaneGeometry(.714, 1, handRadius);
   const width = BINDER_COVER_OUTER_X - BINDER_COVER_SPINE_WIDTH / 2;
   const height = BINDER_PAGE_HEIGHT + BINDER_COVER_VERTICAL_OVERHANG;
   const getProfile = createShowroomCache(address => getPublicWalletBinder(
@@ -1898,8 +1943,18 @@ async function createShowroomBridge() {
   } });
   const getPrepared = createShowroomCache(async address => {
     const [profile, holdings] = await Promise.all([
-      getProfile(address), getHoldings(address), ensureAllCollectionCards(),
+      getProfile(address), getHoldings(address),
     ]);
+    const selective = holdings.supportedCollectionsComplete === true
+      && holdings.supportedCatalogVersion === SUPPORTED_WALLET_CATALOG_VERSION
+      && Array.isArray(holdings.supportedCollectionIds)
+      && holdings.supportedCollectionIds.every(id => Object.hasOwn(COLLECTION_CONFIGS, id));
+    if (selective) {
+      // These two small collections can gain new mint addresses between index
+      // builds. Keep their live mint matching available even without a DAS hint.
+      await Promise.all([...new Set([...holdings.supportedCollectionIds, "clear", "poncho"])]
+        .map(ensureCollectionCards));
+    } else await ensureAllCollectionCards();
     const indexes = new Set(), matchedMints = new Map();
     addWalletCardMatches(indexes, matchedMints, [
       ...getCardMatchesForMints(holdings.mints),
@@ -1913,7 +1968,6 @@ async function createShowroomBridge() {
     // Just the opening spread; the existing bounded texture cache handles later pages.
     await Promise.allSettled(result.indexes.slice(0, BINDER_SIDE_SLOTS).map(index => getBinderTexture(CARDS[index])));
   });
-  void ensureAllCollectionCards().catch(() => {});
   return {
     async createDrifellaSlabCard() {
       await ensureCollectionCards("limited");
@@ -1931,8 +1985,8 @@ async function createShowroomBridge() {
       const collection=descriptor.stableId.split(":")[0];
       if(!COLLECTION_CONFIGS[collection])throw Error("Unknown card collection");
       await ensureCollectionCards(collection);
-      const index=CARDS.findIndex(card=>card.stableId===descriptor.stableId);
-      if(index<0)throw Error("Card unavailable");
+      const index=CARD_STABLE_ID_TO_INDEX.get(descriptor.stableId);
+      if(index===undefined)throw Error("Card unavailable");
       const card=CARDS[index];
       return {...descriptor,index,title:card.title,image:cardStillAssetUrl(card)};
     },
@@ -1940,23 +1994,17 @@ async function createShowroomBridge() {
     async createSharedHandCard(descriptor) {
       const card=await this.resolveSharedCard(descriptor);
       const urls=[card.image,new URL(cardBackAssetPath(CARDS[card.index]),import.meta.url).href];
-      const images=await Promise.all(urls.map(url=>loadTextureImage(url,{fetchPriority:'low'})));
-      const textures=images.map(image=>{
-        const surface=document.createElement('canvas');surface.width=192;surface.height=269;
-        surface.getContext('2d').drawImage(image,0,0,192,269);
-        const texture=new THREE.CanvasTexture(surface);texture.colorSpace=THREE.SRGBColorSpace;return texture;
-      });
+      const resources=await acquireHandTextures(JSON.stringify(urls));
+      const textures=resources.value;
       const faces=textures.map(map=>new THREE.MeshBasicMaterial({map,toneMapped:false}));
       const edge=new THREE.MeshBasicMaterial({color:0xd8d5ce,toneMapped:false});
-      const radius=.714*(CARD_RADIUS/CARD_WIDTH);
-      const geometry=createRoundedCoreGeometry(.714,1,.006,radius);
-      const faceGeometry=createRoundedPlaneGeometry(.714,1,radius);
+      const geometry=handCoreGeometry,faceGeometry=handFaceGeometry;
       const group=new THREE.Group(),core=new THREE.Mesh(geometry,edge);group.add(core);
       group.userData.coreMesh=core;stabilizeShowroomDisplayCardDepth(group);
       const front=new THREE.Mesh(faceGeometry,faces[0]);front.position.z=.0031;
       const back=new THREE.Mesh(faceGeometry,faces[1]);back.position.z=-.0031;back.rotation.y=Math.PI;
       group.add(front,back);
-      return {group,dispose(){textures.forEach(t=>t.dispose());geometry.dispose();faceGeometry.dispose();faces.forEach(m=>m.dispose());edge.dispose();}};
+      return {group,dispose(){resources.release();faces.forEach(m=>m.dispose());edge.dispose();}};
     },
     createDisplayCard: async index => {
       const card=CARDS[index],prepared=await prepareIndividualCardFor3D(card);
@@ -1989,16 +2037,15 @@ async function createShowroomBridge() {
       return { ...payload, binders: await getNonemptyWalletBinderDirectoryEntries(payload.binders || []) };
     },
     placeholder: entry => entry.collectionId
-      ? createShowroomBinderModel(null, COLLECTION_CONFIGS[entry.collectionId].cards.length, entry.collectionId)
+      ? createShowroomBinderModel(null, (COLLECTION_CARD_COUNTS[entry.collectionId] || COLLECTION_CONFIGS[entry.collectionId].cards.length), entry.collectionId)
       : createShowroomBinderModel({ settings: normalizeBinderCoverSettings(entry.cover), front: null, back: null }, entry.supportedCardCount || entry.savedCardCount || 1),
     model: async (entry, schedule = task => task()) => {
       if(entry.collectionId) {
-        await ensureCollectionCards(entry.collectionId);
         if(COLLECTION_CONFIGS[entry.collectionId].introGroup === "evil"
           || COLLECTION_CONFIGS[entry.collectionId].coverEmblem) {
           await getBinderFrontCoverEmblemTexture(entry.collectionId);
         }
-        return schedule(() => createShowroomBinderModel(null, COLLECTION_CONFIGS[entry.collectionId].cards.length, entry.collectionId));
+        return schedule(() => createShowroomBinderModel(null, (COLLECTION_CARD_COUNTS[entry.collectionId] || COLLECTION_CONFIGS[entry.collectionId].cards.length), entry.collectionId));
       }
       const artwork = await getCoverArtwork(entry.walletAddress);
       return schedule(() => {
@@ -13789,6 +13836,7 @@ function titleNumber(title) {
 }
 
 function renderGallery() {
+  if (IS_SHOWROOM && !showroomBinderEntry) return;
   updateTraitSearchState();
   updateGalleryViewModeButton();
   syncBinderIntroNoteModeTarget();
@@ -14967,46 +15015,56 @@ function updateBinderTableSurfaceTheme(
   requestBinderRenderOnce();
 }
 
-function ensureBinderTableDisplayModel() {
-  if (binderTableDisplayModelPromise) return binderTableDisplayModelPromise;
-  if (!binderTableDisplayModelRoot) return Promise.resolve(null);
-
-  binderTableDisplayModelPromise = Promise.all([
+function loadBinderTableDisplayModelEntry(index) {
+  if (binderTableDisplayModelLoads.has(index)) return binderTableDisplayModelLoads.get(index);
+  const spec = BINDER_TABLE_DISPLAY_MODEL_SPECS[index];
+  const promise = Promise.all([
     import("./vendor/GLTFLoader.js?v=three-r165-gltf-1"),
     import("./vendor/DRACOLoader.js?v=three-r165-draco-1"),
-  ]).then(([{ GLTFLoader }, { DRACOLoader }]) => {
+  ]).then(async ([{ GLTFLoader }, { DRACOLoader }]) => {
     const dracoLoader = new DRACOLoader();
     dracoLoader.setDecoderPath(INDIVIDUAL_CARD_DRACO_DECODER_PATH);
     dracoLoader.setWorkerLimit(1);
     const loader = new GLTFLoader();
     loader.setDRACOLoader(dracoLoader);
-    return Promise.all(BINDER_TABLE_DISPLAY_MODEL_SPECS.map((spec) => (
-      new Promise((resolve, reject) => {
-        loader.load(spec.url, resolve, undefined, reject);
-      }).then((gltf) => createBinderTableDisplayModelEntry(gltf, spec))
-    ))).finally(() => dracoLoader.dispose());
-  }).then(async (entries) => {
-    if (!binderTableDisplayModelRoot) return null;
-    binderTableDisplayModelEntries = entries.filter(Boolean);
-    if (!binderTableDisplayModelEntries.length) return null;
-    for (const entry of binderTableDisplayModelEntries) {
+    try {
+      const gltf = await loader.loadAsync(spec.url);
+      const entry = createBinderTableDisplayModelEntry(gltf, spec);
+      if (!entry) throw new Error(`Invalid display model: ${spec.id}`);
+      entry.root.visible = false;
       binderTableDisplayModelRoot.add(entry.root);
-    }
-    await warmBinderTableDisplayModelEntries(binderTableDisplayModelEntries);
-    binderTableDisplayModelIndex = 0;
+      const warmup = binderTableDisplayWarmup.catch(() => {}).then(() => warmBinderTableDisplayModelEntries([entry]));
+      binderTableDisplayWarmup = warmup;
+      await warmup;
+      binderTableDisplayModelEntries[index] = entry;
+      return entry;
+    } finally { dracoLoader.dispose(); }
+  }).catch(error => {
+    binderTableDisplayModelLoads.delete(index);
+    throw error;
+  });
+  binderTableDisplayModelLoads.set(index, promise);
+  return promise;
+}
+
+function ensureBinderTableDisplayModel() {
+  if (binderTableDisplayModelPromise) return binderTableDisplayModelPromise;
+  if (!binderTableDisplayModelRoot) return Promise.resolve(null);
+  // The other three ornaments are fetched only when selected. Their original
+  // meshes stay available without delaying the first table view by tens of MB.
+  binderTableDisplayModelPromise = loadBinderTableDisplayModelEntry(0).then(() => {
+    binderTableDisplayModelIndex = binderTableDisplayRequestedIndex = 0;
     applyBinderTableDisplayModelSelection();
     binderTableDisplayModelLoadedAt = performance.now();
     applyBinderTableViewProgress();
     markBinderInteractionActive(BINDER_TABLE_DISPLAY_MODEL_REVEAL_DURATION_MS + 120);
     startBinderRenderLoop();
     return binderTableDisplayModelRoot;
-    })
-    .catch((error) => {
-      binderTableDisplayModelPromise = null;
-      console.warn("Unable to load the binder table display model", error);
-      return null;
-    });
-
+  }).catch(error => {
+    binderTableDisplayModelPromise = null;
+    console.warn("Unable to load the binder table display model", error);
+    return null;
+  });
   return binderTableDisplayModelPromise;
 }
 
@@ -15170,7 +15228,6 @@ async function warmBinderTableDisplayModelEntries(entries) {
     binderRenderer.render(binderScene, binderCamera);
     await nextAnimationFrame();
     binderRenderer.render(binderScene, binderCamera);
-    binderRenderer.getContext()?.finish?.();
   } catch {
     // Normal rendering remains available if eager GPU preparation is unsupported.
   } finally {
@@ -15191,9 +15248,8 @@ async function warmBinderTableDisplayModelEntries(entries) {
 function applyBinderTableDisplayModelSelection() {
   binderTableDisplayModelEntries.forEach((entry, index) => {
     const selected = index === binderTableDisplayModelIndex;
-    // Keep every model in the render pass at zero opacity so its embedded maps
-    // remain decoded, uploaded, and shader-ready between clicks.
-    entry.root.visible = true;
+    // Hiding a model retains its buffers and programs without drawing it.
+    entry.root.visible = selected;
     if (selected) return;
     for (const material of entry.materials) {
       material.opacity = 0;
@@ -15203,20 +15259,28 @@ function applyBinderTableDisplayModelSelection() {
 }
 
 function cycleBinderTableDisplayModel() {
-  if (binderTableDisplayModelEntries.length < 2) return false;
-  binderTableDisplayModelIndex = modulo(
-    binderTableDisplayModelIndex + 1,
-    binderTableDisplayModelEntries.length,
+  if (!binderTableDisplayModelEntries[binderTableDisplayModelIndex]) return false;
+  binderTableDisplayRequestedIndex = modulo(
+    binderTableDisplayRequestedIndex + 1, BINDER_TABLE_DISPLAY_MODEL_SPECS.length,
   );
-  applyBinderTableDisplayModelSelection();
-  const entry = binderTableDisplayModelEntries[binderTableDisplayModelIndex];
-  for (const material of entry.materials) {
-    material.opacity = 0;
-    material.depthWrite = !entry.usesResinMaterial;
-  }
-  binderTableDisplayModelLoadedAt = performance.now();
-  markBinderInteractionActive(BINDER_TABLE_DISPLAY_MODEL_REVEAL_DURATION_MS + 120);
-  startBinderRenderLoop();
+  const index = binderTableDisplayRequestedIndex;
+  const token = ++binderTableDisplaySelectionToken;
+  // Retain the current ornament until the next has decoded and compiled.
+  loadBinderTableDisplayModelEntry(index).then(entry => {
+    if (token !== binderTableDisplaySelectionToken) return;
+    binderTableDisplayModelIndex = index;
+    applyBinderTableDisplayModelSelection();
+    for (const material of entry.materials) {
+      material.opacity = 0;
+      material.depthWrite = !entry.usesResinMaterial;
+    }
+    binderTableDisplayModelLoadedAt = performance.now();
+    markBinderInteractionActive(BINDER_TABLE_DISPLAY_MODEL_REVEAL_DURATION_MS + 120);
+    startBinderRenderLoop();
+  }).catch(error => {
+    if (token === binderTableDisplaySelectionToken) binderTableDisplayRequestedIndex = binderTableDisplayModelIndex;
+    console.warn("Unable to load the next table display model", error);
+  });
   return true;
 }
 
@@ -22553,6 +22617,7 @@ function renderBinderScene() {
 }
 
 function startBinderRenderLoop() {
+  if (IS_SHOWROOM && !showroomBinderEntry) return;
   if (
     !galleryOpen
     || !isBinderMode
@@ -24838,7 +24903,7 @@ async function loadBinderDisplayTexture(card) {
   const sourceUrl = sprite
     ? new URL(sprite.file, import.meta.url).href
     : cardAssetUrl(card);
-  const image = await loadTextureImage(sourceUrl);
+  const image = await loadCardPreviewImage(sourceUrl, loadTextureImage, { width: BINDER_TEXTURE_FRAME_WIDTH });
   const columns = Math.max(1, Number(sprite?.columns) || 1);
   const rows = Math.max(1, Number(sprite?.rows) || 1);
   const sourceFrameWidth = Math.max(1, image.naturalWidth / columns);

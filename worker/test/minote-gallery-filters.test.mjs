@@ -1,31 +1,21 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {readFileSync} from 'node:fs';
-import vm from 'node:vm';
-const source=readFileSync(new URL('../../minotecurator/studio.js',import.meta.url),'utf8');
-function setup(){
- const buttons=Object.fromEntries(['#bodyFilter','#inkFilter'].map(id=>[id,{dataset:{},attributes:{},setAttribute(k,v){this.attributes[k]=v;}}]));
- const context=vm.createContext({bodyFilter:0,inkFilter:0,$:id=>buttons[id],drawGrid(){}});
- vm.runInContext(source.slice(source.indexOf('function matchesAppearanceFilters('),source.indexOf('function download(')),context);
- return {context,buttons};
-}
-test('each filter cycles include, exclude, all independently with visible state labels',()=>{
- const {context:c,buttons}=setup();
- for(const [id,key,label] of [['#bodyFilter','bodyFilter','Body box'],['#inkFilter','inkFilter','Colored names']]){
-  const b=buttons[id];
-  b.onclick();assert.equal(c[key],1);assert.equal(b.textContent,label+' only');assert.equal(b.attributes['aria-pressed'],'true');
-  b.onclick();assert.equal(c[key],2);assert.equal(b.textContent,'Exclude '+label.toLowerCase());
-  b.onclick();assert.equal(c[key],0);assert.equal(b.textContent,label);assert.equal(b.attributes['aria-pressed'],'false');
- }
+import {applyAppearanceTags,appearanceTags} from '../../minotecurator/appearance-tags.js';
+import {matchesTags} from '../../minotecurator/metadata-model.js';
+
+test('body-box and colored-name filters derive from current edits without disturbing other traits',()=>{
+ const metadata={tags:['cat'],cards:{1:['cat'],2:['cat'],3:[],4:[]}};
+ applyAppearanceTags(metadata,{2:{body:true},3:{ink:'rosewood'},4:{body:true,ink:'ribbon'}});
+ assert.deepEqual(metadata.cards,{1:['cat'],2:['cat','body box'],3:['colored name'],4:['body box','colored name']});
+ for(const tag of appearanceTags)assert.ok(metadata.tags.includes(tag));
+ assert.deepEqual(Object.keys(metadata.cards).filter(id=>matchesTags(metadata.cards[id],new Set(['body box']))),['2','4']);
+ assert.deepEqual(Object.keys(metadata.cards).filter(id=>matchesTags(metadata.cards[id],new Set(),new Set(['colored name']))),['1','2']);
 });
-test('all nine filter combinations match body and ink values, including unedited defaults',()=>{
- const {context:c}=setup();
- for(const bodyState of [0,1,2])for(const inkState of [0,1,2]){
-  c.bodyFilter=bodyState;c.inkFilter=inkState;
-  for(const value of [undefined,{}, {body:true}, {ink:'rosewood'}, {body:true,ink:'ribbon'}, {body:false,ink:'original'}]){
-   const body=value?.body===true,color=(value?.ink??'original')!=='original';
-   const expected=(bodyState===0||body===(bodyState===1))&&(inkState===0||color===(inkState===1));
-   assert.equal(c.matchesAppearanceFilters(value),expected);
-  }
- }
+test('appearance traits refresh from edited state, clear reverted values, and never accumulate duplicates',()=>{
+ const metadata={tags:['cat','body box','colored name'],cards:{1:['cat','body box','colored name'],2:[]}};
+ const edits={1:{body:false,ink:'original'},2:{body:true,ink:'rainbow'}};
+ applyAppearanceTags(metadata,edits);applyAppearanceTags(metadata,edits);
+ assert.deepEqual(metadata.cards[1],['cat']);assert.deepEqual(metadata.cards[2],['body box','colored name']);
+ delete edits[2];applyAppearanceTags(metadata,edits);assert.deepEqual(metadata.cards[2],[]);
+ assert.ok(matchesTags(metadata.cards[1],new Set(['cat']),new Set(['body box','colored name'])));
 });

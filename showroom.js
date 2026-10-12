@@ -2,12 +2,13 @@ import {createVerticalMovement} from './showroom-locomotion.mjs?v=2';
 import {createShowroomPointerLock} from './showroom-pointer-lock.mjs';
 import {createChatInput} from './showroom-chat.js?v=5';
 import {createShowroomRitualEffects,ritualPixelRatio} from './showroom-ritual-effects.js?v=3';
-import { createExhibitBudget } from './showroom-exhibit-lod.js?v=1';
-import { createShowroomMultiplayer } from './showroom-multiplayer.js?v=18';
+import { createExhibitBudget } from './showroom-exhibit-lod.js?v=2';
+import { createSceneIndex } from './showroom-scene-index.mjs';
+import { createShowroomMultiplayer } from './showroom-multiplayer.js?v=19';
 import { createShowroomSky } from './showroom-sky.js?v=5';
 import * as THREE from 'three';
-import { createShowroomColumns } from './showroom-columns.js?v=11';
-import { createShowroomPortal } from './showroom-portal.js?v=7';
+import { createShowroomColumns } from './showroom-columns.js?v=12';
+import { createShowroomPortal } from './showroom-portal.js?v=8';
 import { createShowroomSpeech } from './showroom-speech.js?v=7';
 import { mergeGeometries } from './vendor/BufferGeometryUtils.js';
 import { createResolutionBudget, createShowroomQuality } from './showroom-performance.mjs?v=2';
@@ -21,6 +22,8 @@ import { RoomEnvironment } from './vendor/RoomEnvironment.js';
 import { seatFor, canWalkAt, facingStart } from './showroom-layout.mjs?v=collection-rows-1';
 
 export async function initShowroom(bridge) {
+  // Capture before normalizing /show's URL; diagnostics never affect ordinary visits.
+  const diagnosticsRequested=new URLSearchParams(location.search).has('perf');
   const canvas = document.createElement('canvas');
   canvas.id = 'showroomCanvas'; canvas.setAttribute('aria-label', 'First person card show floor');
   document.body.prepend(canvas);
@@ -74,6 +77,8 @@ export async function initShowroom(bridge) {
   const favoritesEmpty=document.createElement('div');favoritesEmpty.id='showroomFavoritesEmpty';favoritesEmpty.hidden=true;
   favoritesEmpty.setAttribute('role','status');favoritesEmpty.textContent='No favorites yet. Star a card to add it to this local binder';hud.append(favoritesEmpty);
   const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, stencil:true });
+  const diagnostics=diagnosticsRequested
+    ? (await import('./showroom-diagnostics.mjs')).createShowroomDiagnostics({renderer,canvas}) : null;
   const showroomMaxRatio=Math.min(devicePixelRatio,2);
   const resolution=createResolutionBudget(showroomMaxRatio);
   const quality=createShowroomQuality(1),exhibitBudget=createExhibitBudget();
@@ -91,6 +96,7 @@ export async function initShowroom(bridge) {
   // The reflective floor supplies grounding without unstable shadow-map passes.
   renderer.shadowMap.enabled = false;
   const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(65, 1, .05, 600);
+  const sceneIndex=createSceneIndex(scene);
   const sky=createShowroomSky();scene.add(sky.object);
   // The room itself never moves. Static descendants can keep their world
   // matrices between the main and reflection passes.
@@ -318,13 +324,13 @@ export async function initShowroom(bridge) {
     outline.visible=false;stars.object.visible=false;evilTableGhost.visible=false;
     const portalVisible=portal.surface.visible;portal.surface.visible=false;
     const hiddenPlayers=[];
-    scene.traverse(object=>{if(object.userData.excludeFloorReflection&&object.visible){hiddenPlayers.push(object);object.visible=false;}});
+    for(const object of sceneIndex.reflectionExcluded)if(object.visible){hiddenPlayers.push(object);object.visible=false;}
     const stencilMaterials=[];
-    scene.traverse(object=>{
+    for(const object of sceneIndex.renderables) {
       for(const material of (Array.isArray(object.material)?object.material:[object.material])) {
         if(material?.stencilWrite) {stencilMaterials.push(material);material.stencilWrite=false;}
       }
-    });
+    }
     const restoreExhibits=exhibitBudget.reflection();
     try { reflect.apply(this,args); }
     finally {
@@ -352,9 +358,10 @@ export async function initShowroom(bridge) {
     floor.getRenderTarget().setSize(floorReflectionSize,floorReflectionSize);
     reflectionReady=false;sceneDirty=true;
   }
-  const textures = await Promise.all(['table-wood-seamless.png','table-wood-light-seamless.png'].map(async name => {
-    try { const t = await new THREE.TextureLoader().loadAsync(`/assets/ui/${name}`); t.colorSpace=THREE.SRGBColorSpace; t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(1,2); return t; } catch { return null; }
-  }));
+  // The showroom has only a dark theme; don't fetch/decode the unused light map.
+  const woodTexture=await new THREE.TextureLoader().loadAsync('/assets/ui/table-wood-seamless.png').then(t=>{
+    t.colorSpace=THREE.SRGBColorSpace;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(1,2);return t;
+  }).catch(()=>null);
   let currentTheme;
   function theme() {
     const light=false;
@@ -368,7 +375,7 @@ export async function initShowroom(bridge) {
     floor.material.uniforms.color.value.set(light?0xb7b6b3:0x15191f);
     floor.material.uniforms.strength.value=light?.23:.34;
     metal.color.set(light?0x73787c:0x555d66);
-    wood.map=textures[light?1:0]; wood.color.set(light?0xf2e5d2:0xb09376); wood.needsUpdate=true;
+    wood.map=woodTexture; wood.color.set(light?0xf2e5d2:0xb09376); wood.needsUpdate=true;
     evilTableGhost.material.uniforms.coreColor.value.set(light?0x161b24:0xf1f7ff);
     evilTableGhost.material.uniforms.edgeColor.value.set(light?0x505b70:0xa6c7ed);
     hemi.intensity=light?2.8:2.1;
@@ -403,7 +410,11 @@ export async function initShowroom(bridge) {
     fallback=false;dragging=false;keys.clear();releaseTouchInputs();
     pointerControls.release();leave.hidden=false;hud.querySelector('#showroomEnter').hidden=false;chat.focus();
   }
-  const renderShowroom=()=>portal.render();
+  const renderShowroom=()=>{
+    if(!diagnostics)return portal.render();
+    diagnostics.begin();
+    try{return portal.render();}finally{diagnostics.end({inside:portal.inside});}
+  };
   let fallback=false, dragging=false, dragged=false, touchMode=false, touchLook=null;
   let suppressTouchClickUntil=0;
   let touchJoystickPointerId=null;
@@ -442,16 +453,30 @@ export async function initShowroom(bridge) {
     const mesh=new THREE.Mesh(geometry,material);mesh.rotation.x=-Math.PI/2;mesh.position.set(x,y,z);
     mesh.castShadow=true;mesh.receiveShadow=true;scene.add(mesh);return mesh;
   }
-  const tableTemplates=[];
-  function addTable(side,row) {
-    const tableX=side*3, tableZ=-row*5;
-    if(tableTemplates.length) {
-      for(const template of tableTemplates) {
-        const mesh=template.clone();
-        mesh.position.set(tableX,0,tableZ);mesh.updateMatrix();scene.add(mesh);
-      }
-      tables.push({x:tableX,z:tableZ});return;
+  const tableTemplates=[],tableChunks=new Map(),tableInstanceMatrix=new THREE.Matrix4();
+  const tableChunkRows=4;
+  function instanceTable(side,row) {
+    const chunkRow=Math.floor(row/tableChunkRows)*tableChunkRows,key=`${side}:${chunkRow}`;
+    let chunk=tableChunks.get(key);
+    if(!chunk) {
+      chunk=tableTemplates.map(template=>{
+        const mesh=new THREE.InstancedMesh(template.geometry,template.material,tableChunkRows);
+        mesh.count=0;mesh.position.set(side*3,0,-chunkRow*5);mesh.updateMatrix();mesh.matrixAutoUpdate=false;
+        mesh.castShadow=true;mesh.receiveShadow=true;scene.add(mesh);return mesh;
+      });
+      tableChunks.set(key,chunk);
     }
+    tableInstanceMatrix.makeTranslation(0,0,-(row-chunkRow)*5);
+    for(const mesh of chunk) {
+      mesh.setMatrixAt(mesh.count++,tableInstanceMatrix);mesh.instanceMatrix.needsUpdate=true;
+      // Each four-row chunk keeps tight, updated bounds in both normal and
+      // mirrored views; distant table rows can still be frustum-culled.
+      mesh.computeBoundingBox();mesh.computeBoundingSphere();
+    }
+    tables.push({x:side*3,z:-row*5});
+  }
+  function addTable(side,row) {
+    if(tableTemplates.length) {instanceTable(side,row);return;}
     const firstMesh=scene.children.length;
     const x=0, z=0;
     roundedSlab(1.7,4.5,.046,.13,wood,x,.78,z);
@@ -477,7 +502,7 @@ export async function initShowroom(bridge) {
     box(.038,.055,3.65,metal,x-.57,.714,z);
     box(.038,.055,3.65,metal,x+.57,.714,z);
     // Bake static components by material: 18 meshes become four per table.
-    // Each table retains its own bounds for normal camera/reflection culling.
+    // Four-row instance chunks retain spatial camera/reflection culling.
     const batches=new Map();
     for(const mesh of scene.children.slice(firstMesh)) {
       mesh.updateMatrix();
@@ -492,10 +517,9 @@ export async function initShowroom(bridge) {
       parts.forEach(part=>part.dispose());
       const mesh=new THREE.Mesh(geometry,material);
       geometry.computeBoundingSphere();
-      mesh.position.set(tableX,0,tableZ);mesh.updateMatrix();
-      mesh.matrixAutoUpdate=false;tableTemplates.push(mesh);scene.add(mesh);
+      mesh.matrixAutoUpdate=false;tableTemplates.push(mesh);
     }
-    tables.push({x:tableX,z:tableZ});
+    instanceTable(side,row);
   }
   const modelQueue=[];let modelWorkers=0;
   const modelTasks=[];
@@ -1146,7 +1170,7 @@ export async function initShowroom(bridge) {
   const clearBinder=binders.find(item=>item.entry.collectionId==='clear');
   if(clearBinder) {
     try {
-      const {createShowroomDratini}=await import('./showroom-dratini.js?v=8');
+      const {createShowroomDratini}=await import('./showroom-dratini.js?v=9');
       const display=await createShowroomDratini(renderer,scene.environment);
       display.position.set(clearBinder.home.x+.35,.803+display.userData.tableHeightOffset,clearBinder.home.z+.57);
       display.rotation.y=-Math.PI/2;
@@ -1166,7 +1190,7 @@ export async function initShowroom(bridge) {
   const reflectionBinder=binders.find(item=>item.entry.collectionId==='reflection2');
   if(reflectionBinder) {
     try {
-      const {createShowroomGremlin}=await import('./showroom-gremlin.js?v=5');
+      const {createShowroomGremlin}=await import('./showroom-gremlin.js?v=6');
       const figure=await createShowroomGremlin();
       // Left from the aisle, with the feet on the tabletop and the face toward visitors.
       // Table top: .78 base + .046 extrusion + .006 bevel; allow .002 clearance.

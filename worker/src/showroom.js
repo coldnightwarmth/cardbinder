@@ -23,7 +23,7 @@ export class Showroom {
  sockets(){return this.ctx.getWebSockets();}
  participants(){return this.sockets().map(ws=>ws.deserializeAttachment()).filter(Boolean);}
  send(ws,message){try{ws.send(JSON.stringify(message));}catch{}}
- broadcast(message){for(const ws of this.sockets())this.send(ws,message);}
+ broadcast(message){const data=JSON.stringify(message);for(const ws of this.sockets()){try{ws.send(data);}catch{}}}
  snapshot(){return {type:'state',now:Date.now(),room:this.room,players:this.sockets().filter(ws=>!ws.deserializeAttachment()?.inactive).map(ws=>publicPlayer(ws.deserializeAttachment()))};}
  async scheduleAlarm(){
   const deadlines=this.sockets().map(ws=>ws.deserializeAttachment()).filter(p=>p&&!p.inactive).map(p=>(p.lastActive??p.lastMove??Date.now())+INACTIVE_MS);

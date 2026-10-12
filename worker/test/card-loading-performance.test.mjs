@@ -5,6 +5,7 @@ import vm from "node:vm";
 
 import * as THREE from "../../vendor/three.module.min.js";
 import { createShowroomCache } from "../../showroom-cache.mjs";
+import { createSharedResourceCache } from "../../showroom-resource-cache.mjs";
 
 const source = readFileSync(new URL("../../app.js", import.meta.url), "utf8");
 
@@ -161,6 +162,7 @@ test("binder uploads are budgeted before hidden-page display and retain the rend
       requestBinderTextureApplyFlush: delay => scheduled.push(delay),
       startBinderRenderLoop() {}, pumpBinderTextureQueue() {},
       getBinderPageOpacityForPosition: () => 0, getBinderUnloadedCardOpacity: () => 0,
+      getBinderLoadingCardOpacity: () => 0, setBinderCardStickerOpacity() {},
       prepareTextureForImmediateDisplay() {}, applyBinderCardAspectFit() {},
       clamp: (value, min, max) => Math.max(min, Math.min(max, value)),
     });
@@ -231,7 +233,8 @@ test("instanced showroom pages retain every page transform, bounds, shadows, and
   }
 });
 
-async function createArtworkBridgeHarness({ artworkEnabled = true, compositionGate = null } = {}) {
+async function createArtworkBridgeHarness({ artworkEnabled = true, compositionGate = null, holdings = null } = {}) {
+  const catalogs=[];
   const composed = new Map();
   const disposed = new Set();
   const createTexture = (address, surface) => {
@@ -244,13 +247,18 @@ async function createArtworkBridgeHarness({ artworkEnabled = true, compositionGa
     return texture;
   };
   const context = vm.createContext({
-    createShowroomCache,
+    createShowroomCache, createSharedResourceCache, THREE, URL,
+    CARD_RADIUS: .15, CARD_WIDTH: 5,
+    createRoundedCoreGeometry: () => new THREE.BoxGeometry(1,1,.01),
+    createRoundedPlaneGeometry: () => new THREE.PlaneGeometry(),
     BINDER_COVER_OUTER_X: 4, BINDER_COVER_SPINE_WIDTH: 0.2,
     BINDER_PAGE_HEIGHT: 6, BINDER_COVER_VERTICAL_OVERHANG: 0.2,
     BINDER_SIDE_SLOTS: 9, COMMUNITY_COVER_COLLECTION_ORDER: [],
     WALLET_PUBLIC_API_BASE_URL: "https://example.test/api", CARDS: [],
     getPublicWalletBinder: async (base, address) => ({ cover: { address, artworkEnabled }, cardOrder: [], tradeCardIds: [] }),
-    fetchLiveWalletHoldingsPayload: async () => ({ mints: [], cardRefs: [], swagPackAssets: [] }),
+    fetchLiveWalletHoldingsPayload: async () => ({ mints: [], cardRefs: [], swagPackAssets: [], ...holdings }),
+    SUPPORTED_WALLET_CATALOG_VERSION: "matching-version",
+    COLLECTION_CONFIGS: { cardnft1:{}, cardnft2:{}, clear:{}, poncho:{}, limited:{} },
     normalizeBinderCoverSettings: settings => settings,
     getBinderCoverSurfaceTextureKey: (settings, surface) => settings.artworkEnabled ? `${settings.address}:${surface}` : "",
     createBinderCoverSurfaceTexture: async (settings, surface) => {
@@ -259,7 +267,8 @@ async function createArtworkBridgeHarness({ artworkEnabled = true, compositionGa
     },
     createShowroomInsideTexture: async settings => createTexture(settings.address, "inside"),
     createShowroomBinderModel: artwork => ({ artwork, userData: {} }),
-    ensureAllCollectionCards: async () => [],
+    ensureAllCollectionCards: async () => {catalogs.push("all");return [];},
+    ensureCollectionCards: async id => {catalogs.push(id);return [];},
     addWalletCardMatches() {}, getCardMatchesForMints: () => [], getCardMatchesForReferences: () => [],
     orderWalletCardIndexes: indexes => indexes,
     primeWalletBinderRoute() {}, refreshWalletBinderCoverRendering() {},
@@ -268,8 +277,9 @@ async function createArtworkBridgeHarness({ artworkEnabled = true, compositionGa
   });
   // Use the real cache; only replace the module import in this isolated VM.
   vm.runInContext(section("async function createShowroomBridge(", "async function createShowroomInsideTexture(")
-    .replace('  const { createShowroomCache } = await import("./showroom-cache.mjs");', ""), context);
-  return { bridge: await context.createShowroomBridge(), context, composed, disposed };
+    .replace(/  const \[\{ createShowroomCache \}, \{ createSharedResourceCache \}\] = await Promise.all\(\[[\s\S]*?\]\);/, "")
+    .replaceAll('import.meta.url', JSON.stringify(new URL('../../app.js',import.meta.url).href)), context);
+  return { bridge: await context.createShowroomBridge(), context, composed, disposed, catalogs };
 }
 
 test("simultaneous showroom model and prefetch share cover composition while owning independent texture handles", async () => {
@@ -334,4 +344,18 @@ test("blank showroom covers stay blank on the floor and create valid textures fo
   assert.equal(context.binderWalletBackCoverArtworkSource, "");
   assert.equal(composed.get("blank:front").length, 1);
   assert.equal(composed.get("blank:back").length, 1);
+});
+
+
+test("wallet catalog loading trusts only complete matching catalogs and preserves the full-catalog fallback", async () => {
+  const valid={supportedCollectionsComplete:true,supportedCatalogVersion:'matching-version',supportedCollectionIds:['cardnft1','limited','clear']};
+  for(const [holdings,expected] of [[valid,['cardnft1','limited','clear','poncho']],
+    [{...valid,supportedCollectionsComplete:false},['all']],
+    [{...valid,supportedCatalogVersion:'old-version'},['all']],
+    [{...valid,supportedCollectionIds:['unknown']},['all']],
+    [null,['all']]]) {
+    const {bridge,catalogs}=await createArtworkBridgeHarness({holdings});
+    assert.deepEqual(catalogs,[],'creating a showroom bridge never eagerly imports the full catalog');
+    await bridge.prefetch({walletAddress:'wallet'});assert.deepEqual(catalogs,expected);
+  }
 });

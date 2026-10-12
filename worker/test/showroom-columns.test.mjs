@@ -5,6 +5,7 @@ import * as THREE from '../../vendor/three.module.js';
 const source=(await readFile(new URL('../../showroom-columns.js',import.meta.url),'utf8'))
   .replace("'./showroom-resin.mjs?v=5'",`'${new URL('../../showroom-resin.mjs',import.meta.url).href}'`)
   .replace("'./showroom-ritual.mjs?v=2'",`'${new URL('../../showroom-ritual.mjs',import.meta.url).href}'`)
+  .replace("'./showroom-display-preparation.mjs'",`'${new URL('../../showroom-display-preparation.mjs',import.meta.url).href}'`)
   .replace("from 'three'",`from '${new URL('../../vendor/three.module.js',import.meta.url).href}'`);
 const {createShowroomColumns}=await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
 test('three table-height columns block walking and only offer empty slots with a held card',()=>{
@@ -65,4 +66,33 @@ test('network snapshots replace pedestals and late ritual join uses the shared c
  columns.update(before+10,new THREE.Vector2(),false);assert(columns.columns[1].display.group.position.y>3.9);
  await columns.syncShared({revision:3,cards:{},slots:[null,null,null],ritual:null},8000);
  assert.equal(disposed,1);assert.equal(columns.columns[1].display,null);assert.equal(columns.ritualActive,false);
+});
+
+test('shared pedestal reveals only after warmup, keeps resin lighting and cancels stale displays safely',async()=>{
+ const room=new THREE.Scene(),camera=new THREE.PerspectiveCamera();room.userData.cardEnvironment=new THREE.Texture();
+ const compiled=[],textures=[],displays=[];let finishCompile;
+ const renderer={initTexture:t=>textures.push(t),compileAsync:(group,view,target)=>{
+  assert.equal(group.visible,false);assert.equal(view,camera);assert.equal(target,room);compiled.push(group);
+  return new Promise(resolve=>finishCompile=resolve);
+ }};
+ const bridge={async createSharedDisplay(card){
+  const group=new THREE.Group(),material=new THREE.MeshPhysicalMaterial({map:new THREE.Texture(),transmission:1});
+  group.userData.individualCardModelRoot=true;group.userData.modelRenderProfile='mons-clear-resin';
+  group.add(new THREE.Mesh(new THREE.PlaneGeometry(),material));
+  const display={group,material,disposed:0,updates:0,update(){this.updates++;},dispose(){this.disposed++;}};displays.push(display);return display;
+ }};
+ const columns=createShowroomColumns({room,camera,renderer,bridge});columns.setNetwork({action:async()=>{}});
+ const state={revision:1,cards:{a:{id:'a'}},slots:[null,'a',null],ritual:null};
+ const first=columns.syncShared(state,1000);await new Promise(resolve=>setImmediate(resolve));
+ const model=displays[0];assert.equal(columns.columns[1].display,null);assert.equal(model.group.visible,false);
+ assert.equal(compiled.length,1);assert.ok(textures.includes(model.material.map));
+ assert.equal(model.material.envMap,room.userData.cardEnvironment);assert.equal(model.material.envMapIntensity,1);
+ assert.equal(model.material.envMapRotation.y,THREE.MathUtils.degToRad(121));assert.equal(model.group.matrixAutoUpdate,true);
+ finishCompile();await first;assert.equal(columns.columns[1].display,model);assert.equal(model.group.visible,true);
+ columns.update(performance.now(),new THREE.Vector2(),false);assert.equal(model.updates,1);
+ const replacement=columns.syncShared({revision:2,cards:{b:{id:'b'}},slots:[null,'b',null],ritual:null},2000);
+ await new Promise(resolve=>setImmediate(resolve));assert.equal(model.disposed,1);assert.equal(displays[1].group.visible,false);
+ await columns.syncShared({revision:3,cards:{},slots:[null,null,null],ritual:null},2100);
+ finishCompile();await replacement;
+ assert.equal(displays[1].disposed,1);assert.equal(displays[1].group.parent,null);assert.equal(columns.columns[1].display,null);
 });

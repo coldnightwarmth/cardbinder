@@ -1,9 +1,11 @@
 import { applyPedestalResinLighting } from './showroom-resin.mjs?v=5';
 import * as THREE from 'three';
+import { createDisplayPreparer } from './showroom-display-preparation.mjs';
 import { ritualPose } from './showroom-ritual.mjs?v=2';
 
 export function createShowroomColumns({room,camera,renderer,bridge,resume=()=>{}}) {
   const columns=[],ray=new THREE.Raycaster();
+  const prepareDisplay=createDisplayPreparer({renderer,camera,scene:room});
   const marble=new THREE.MeshStandardMaterial({color:0xf4f2ed,roughness:.55,metalness:.02});
   // Low classical plinths: square foot and abacus, rounded base and capital.
   const profile=[[.29,0],[.29,.045],[.255,.055],[.255,.085],[.235,.105],[.21,.12],
@@ -105,6 +107,22 @@ export function createShowroomColumns({room,camera,renderer,bridge,resume=()=>{}
     }
     return hovered;
   }
+  function configureDisplay(display,column) {
+    if(display.group.userData.individualCardModelRoot) {
+      display.group.traverse(object=>{
+        for(const material of (Array.isArray(object.material)?object.material:[object.material])) {
+          if(!material?.isMeshStandardMaterial)continue;
+          material.envMap=room.userData.cardEnvironment;
+          material.envMapIntensity=1;
+          if(display.group.userData.modelRenderProfile==='mons-clear-resin')applyPedestalResinLighting(material, THREE);
+          material.envMapRotation.set(0,THREE.MathUtils.degToRad(121),0);
+          material.needsUpdate=true;
+        }
+      });
+    }
+    display.group.position.set(column.x,1.43,column.z);display.group.rotation.x=-.16;
+    display.group.visible=false;room.add(display.group);
+  }
   function activate(column=hovered) {
     if(!column || selecting || ritual || !hand)return false;
     if(column.ritual)return startRitual();
@@ -123,27 +141,9 @@ export function createShowroomColumns({room,camera,renderer,bridge,resume=()=>{}
         return {rect:null,commit(){selecting=false;},cancel(){selecting=false;}};
       }
       const display=await bridge.createDisplayCard(card.index);
-      if(display.group.userData.individualCardModelRoot) {
-        display.group.traverse(object=>{
-          for(const material of (Array.isArray(object.material)?object.material:[object.material])) {
-            if(!material?.isMeshStandardMaterial)continue;
-            material.envMap=room.userData.cardEnvironment;
-            material.envMapIntensity=1;
-            if(display.group.userData.modelRenderProfile==='mons-clear-resin')applyPedestalResinLighting(material, THREE);
-            material.envMapRotation.set(0,THREE.MathUtils.degToRad(121),0);
-            material.needsUpdate=true;
-          }
-        });
-      }
-      display.group.position.set(column.x,1.43,column.z);display.group.rotation.x=-.16;
-      display.group.visible=false;room.add(display.group);
+      configureDisplay(display,column);
       try {
-        await renderer.compileAsync(room,camera);
-        // Upload textures before the flight so the reveal is ready.
-        display.group.traverse(object=>{for(const mat of (Array.isArray(object.material)?object.material:[object.material])) {
-          if(!mat)continue;for(const value of Object.values(mat))if(value?.isTexture)renderer.initTexture(value);
-          for(const uniform of Object.values(mat.uniforms || {}))if(uniform.value?.isTexture)renderer.initTexture(uniform.value);
-        }});
+        await prepareDisplay(display);
         display.group.visible=false;
         const point=new THREE.Vector3(column.x,1.43,column.z).project(camera);
         const distance=camera.position.distanceTo(new THREE.Vector3(column.x,1.43,column.z));
@@ -167,16 +167,12 @@ export function createShowroomColumns({room,camera,renderer,bridge,resume=()=>{}
         if(card){
           const display=await bridge.createSharedDisplay(card);
           if(epoch!==sharedEpoch||column.card?.id!==card.id){display.dispose();return;}
-          if(display.group.userData.individualCardModelRoot)display.group.traverse(object=>{
-            for(const material of [].concat(object.material||[]))if(material.isMeshStandardMaterial){
-              material.envMap=room.userData.cardEnvironment;material.envMapIntensity=1;
-              material.envMapRotation.set(0,THREE.MathUtils.degToRad(121),0);
-              if(display.group.userData.modelRenderProfile==='mons-clear-resin')applyPedestalResinLighting(material,THREE);
-              material.needsUpdate=true;
-            }
-          });
-          display.group.position.set(column.x,1.43,column.z);display.group.rotation.x=-.16;
-          column.display=display;column.baseScale=display.group.scale.clone();column.startedAt=performance.now();room.add(display.group);
+          configureDisplay(display,column);
+          try {
+            const ready=await prepareDisplay(display,()=>epoch===sharedEpoch&&column.card?.id===card.id);
+            if(!ready){room.remove(display.group);display.dispose();return;}
+            column.display=display;column.baseScale=display.group.scale.clone();column.startedAt=performance.now();
+          } catch(error){room.remove(display.group);display.dispose();throw error;}
         }
       }
       if(epoch!==sharedEpoch)return;

@@ -1,5 +1,6 @@
-import { readFile, stat } from "node:fs/promises";
+import { readFile, stat as diskStat } from "node:fs/promises";
 import path from "node:path";
+import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 import { BROWSER_TRAIT_CATALOG } from "../browser-traits-catalog.js";
@@ -15,7 +16,19 @@ import { COMMUNITY_COLLECTIONS } from "./community-collections.mjs";
 import { SWAG_PACK_TRANSPARENT_STICKER_FILES } from "../swag-pack-stickers.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const APP_VERSION = "cardnft-491";
+// Sparse artwork checkouts retain excluded files in the Git index. Verify their
+// actual blob size without restoring the multi-gigabyte artwork archive.
+async function stat(filename) {
+  try { return await diskStat(filename); }
+  catch (error) {
+    const relative = path.relative(ROOT, filename).split(path.sep).join("/");
+    if (error.code !== "ENOENT" || relative.startsWith("../")) throw error;
+    const entry = execFileSync("git", ["ls-files", "-v", "--", relative], { cwd: ROOT, encoding: "utf8" });
+    if (!entry.startsWith("S ")) throw error;
+    return { size: Number(execFileSync("git", ["cat-file", "-s", `HEAD:${relative}`], { cwd: ROOT, encoding: "utf8" })) };
+  }
+}
+const APP_VERSION = "cardnft-492";
 const STYLE_VERSION = "cardnft-170";
 const THREE_VERSION = "three-r165-min-1";
 
@@ -569,7 +582,7 @@ assert(
   "app does not lazy-load packed browser traits",
 );
 assert(
-  app.includes('./showroom.js?v=showroom-controls-9'),
+  app.includes('./showroom.js?v=showroom-controls-10'),
   "showroom runtime cache key is stale",
 );
 assert(
@@ -1140,7 +1153,9 @@ assert(
     && app.includes("async function warmBinderTableDisplayModelEntries(entries)")
     && app.includes('typeof binderRenderer.initTexture !== "function"')
     && app.includes("await binderRenderer.compileAsync(binderScene, binderCamera)")
-    && app.includes("binderRenderer.getContext()?.finish?.()")
+    && !app.includes("binderRenderer.getContext()?.finish?.()")
+    && app.includes("entry.root.visible = selected")
+    && app.includes("function loadBinderTableDisplayModelEntry(index)")
     && app.includes("entry.root.visible = true")
     && app.includes("material.transparent = true")
     && app.includes("material.depthWrite = true")

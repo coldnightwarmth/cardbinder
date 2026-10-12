@@ -58,3 +58,14 @@ test('reflection throttling never reuses a stale moving camera projection',()=>{
  camera.position.x=0;camera.rotation.y=.001;camera.updateMatrixWorld();assert.equal(context.shouldRender(),true,'rotation updates immediately');
  camera.rotation.y=0;camera.updateMatrixWorld();camera.fov=61;camera.updateProjectionMatrix();assert.equal(context.shouldRender(),true,'projection change updates immediately');
 });
+
+test('exhibit LOD controllers are registered once and do not traverse on recurring updates or reflections',()=>{
+ const manager=budget(),group=new THREE.Group(),child=new THREE.Group();group.add(child);
+ let updates=0,reflections=0,restores=0;
+ child.userData.exhibitLOD={update(){updates++;},reflection(){reflections++;return ()=>restores++;}};
+ manager.register(group);group.traverse=()=>{throw new Error('recurring tree traversal');};
+ const camera=new THREE.PerspectiveCamera();
+ for(let i=0;i<3;i++){manager.update(camera,1,async()=>{});const restore=manager.reflection();restore();}
+ assert.equal(updates,3);assert.equal(reflections,3);assert.equal(restores,3);
+ manager.unregister(group);manager.update(camera,1,async()=>{});manager.reflection()();assert.equal(updates,3);
+});

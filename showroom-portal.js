@@ -1,6 +1,7 @@
 import * as THREE from 'three';
+import { createSceneIndex } from './showroom-scene-index.mjs';
 import { PORTAL_ROOM_SIZE as SIZE, PORTAL_RADIUS as RADIUS, PORTAL_SPRING_HEIGHT as SPRING,
-  PORTAL_FRAME_WIDTH as FRAME, portalPositionForTables, stepThroughPortal } from './showroom-portal-layout.mjs';
+  PORTAL_FRAME_WIDTH as FRAME, portalPositionForTables, stepThroughPortal, apertureMayBeVisible } from './showroom-portal-layout.mjs?v=2';
 
 export function createShowroomPortal({ renderer, scene, camera, canWalkOutside, canWalkRoom=()=>true, onCross }) {
   const room = new THREE.Scene(); room.background = new THREE.Color(0xf3f3f3);
@@ -134,6 +135,7 @@ export function createShowroomPortal({ renderer, scene, camera, canWalkOutside, 
     };
   }
   let inside=false,portalZ=-5,lastTableCount=-1,pendingZ=null;
+  const sceneIndex=createSceneIndex(scene,guardTransmissionPass),roomIndex=createSceneIndex(room,guardTransmissionPass);
   entrance.position.z=portalZ;
 
   function place(tables) {
@@ -163,21 +165,21 @@ export function createShowroomPortal({ renderer, scene, camera, canWalkOutside, 
     uniforms.planeZ.value=inside?0:portalZ;uniforms.travelSign.value=inside?1:-1;
     projectionView.multiplyMatrices(camera.projectionMatrix,camera.matrixWorldInverse);
     uniforms.viewProjection.value.copy(projectionView);
-    const visible=(inside?camera.position.z<=0:camera.position.z>=portalZ) && apertureInFront();
+    const visible=(inside?camera.position.z<=0:camera.position.z>=portalZ) && apertureInFront()
+      && apertureMayBeVisible(projectionView.elements,inside?0:portalZ);
     renderer.render(inside?room:scene,inside?roomCamera:exteriorCamera);
     if(!visible)return;
     const destinationCamera=inside?exteriorCamera:roomCamera;
     const destination=inside?scene:room;
     const background=destination.background,autoClear=renderer.autoClear,entranceVisible=entrance.visible;
     stencilStates.clear();
-    destination.traverse(object=>{
-      guardTransmissionPass(object);
+    for(const object of (inside?sceneIndex:roomIndex).renderables) {
       for(const material of (Array.isArray(object.material)?object.material:[object.material])) {
         if(!material || stencilStates.has(material))continue;
         stencilStates.set(material,[material.stencilWrite,material.stencilRef,material.stencilFunc]);
         material.stencilWrite=true;material.stencilRef=1;material.stencilFunc=THREE.EqualStencilFunc;
       }
-    });
+    }
     try {
       renderer.autoClear=false;
       renderer.render(maskScene,camera);

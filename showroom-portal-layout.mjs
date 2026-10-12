@@ -33,3 +33,23 @@ export function stepThroughPortal(position, delta, inside, portalZ, canWalkOutsi
   }
   return canWalkOutside(x, z) ? { x, z, inside: false } : null;
 }
+
+// A conservative aperture/frustum test. Test the arch's enclosing rectangle
+// against only the four side planes in homogeneous clip space: projecting
+// through w (or testing the near plane) incorrectly rejects an opening when
+// the eye is crossing it. Extra pixels may render, but visible portal rays
+// must never be culled. The small tolerance also retains exact-plane views.
+export function apertureMayBeVisible(elements, planeZ) {
+  let left=true, right=true, bottom=true, top=true;
+  const epsilon=1e-6;
+  for(const x of [-PORTAL_RADIUS,PORTAL_RADIUS])for(const y of [0,PORTAL_SPRING_HEIGHT+PORTAL_RADIUS]) {
+    const clipX=elements[0]*x+elements[4]*y+elements[8]*planeZ+elements[12];
+    const clipY=elements[1]*x+elements[5]*y+elements[9]*planeZ+elements[13];
+    const clipW=elements[3]*x+elements[7]*y+elements[11]*planeZ+elements[15];
+    left &&= clipX+clipW < -epsilon;
+    right &&= clipW-clipX < -epsilon;
+    bottom &&= clipY+clipW < -epsilon;
+    top &&= clipW-clipY < -epsilon;
+  }
+  return !(left || right || bottom || top);
+}

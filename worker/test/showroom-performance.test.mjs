@@ -82,47 +82,43 @@ test('frozen showroom descendants retain their local pose throughout pickup and 
   for (const [object, matrix] of localMatrices) assert.deepEqual(object.matrix.elements, matrix.elements);
 });
 
-test('table templates share buffers and retain every vertex at each table position', () => {
+test('table instance chunks preserve every vertex and exact per-chunk culling bounds', () => {
   const utils = readFileSync(new URL('../../vendor/BufferGeometryUtils.js', import.meta.url), 'utf8');
   const merger = vm.createContext({ ...THREE, console });
   vm.runInContext(utils.slice(utils.indexOf('function mergeGeometries('), utils.indexOf('export function deepCloneAttribute(')), merger);
-  const scene = new THREE.Scene();
-  const tables = [];
-  const context = vm.createContext({
-    THREE, scene, tables, mergeGeometries: merger.mergeGeometries,
-    wood: new THREE.MeshStandardMaterial(),
-    metal: new THREE.MeshStandardMaterial(),
-    trim: new THREE.MeshStandardMaterial(),
-  });
+  const scene = new THREE.Scene(),tables = [];
+  const context = vm.createContext({ THREE, scene, tables, mergeGeometries: merger.mergeGeometries,
+    wood: new THREE.MeshStandardMaterial(),metal: new THREE.MeshStandardMaterial(),trim: new THREE.MeshStandardMaterial() });
   vm.runInContext(implementation('  function box(', '  function createEvilTableGhost('), context);
   vm.runInContext(implementation('  function roundedSlab(', '  const modelQueue='), context);
-  const seats = [[-1, 0], [1, 0], [-1, 12], [1, 39]];
-  for (const [side, row] of seats) context.addTable(side, row);
+  const seats = [[-1,0],[-1,1],[-1,2],[-1,3],[1,0],[-1,12],[1,39],[1,36]];
+  for (const [side,row] of seats) context.addTable(side,row);
   scene.updateMatrixWorld();
-  assert.equal(scene.children.length, seats.length * 4);
-  const templates = scene.children.slice(0, 4);
-  for (let table = 0; table < seats.length; table++) {
-    const [side, row] = seats[table];
-    assert.deepEqual({ ...tables[table] }, { x: side * 3, z: -row * 5 });
-    for (let part = 0; part < 4; part++) {
-      const mesh = scene.children[table * 4 + part];
-      const template = templates[part];
-      assert.equal(mesh.geometry, template.geometry, 'identical table parts reuse one geometry');
-      assert.equal(mesh.material, template.material, 'theme materials remain shared');
-      assert.equal(mesh.matrixAutoUpdate, false);
-      assert.ok(mesh.geometry.boundingSphere, 'culling bounds are ready before first render');
-      const positions = template.geometry.attributes.position;
-      for (let vertex = 0; vertex < positions.count; vertex++) {
-        const local = new THREE.Vector3().fromBufferAttribute(positions, vertex);
-        const actual = local.clone().applyMatrix4(mesh.matrixWorld);
-        const expected = local.add(new THREE.Vector3(side * 3, 0, -row * 5));
-        assertVector(actual, expected, 'template vertices retain world placement');
+  assert.equal(scene.children.length,4*4,'four parts per occupied four-row side chunk');
+  const templates=scene.children.slice(0,4),observed=new Set(),instance=new THREE.Matrix4();
+  for(let part=0;part<4;part++)for(const mesh of scene.children.filter((_,i)=>i%4===part)) {
+    assert.equal(mesh.isInstancedMesh,true);assert.equal(mesh.geometry,templates[part].geometry);
+    assert.equal(mesh.material,templates[part].material);assert.equal(mesh.matrixAutoUpdate,false);
+    assert.ok(mesh.boundingBox);assert.ok(mesh.boundingSphere);
+    const expectedBounds=new THREE.Box3();
+    for(let i=0;i<mesh.count;i++) {
+      mesh.getMatrixAt(i,instance);
+      const world=mesh.matrixWorld.clone().multiply(instance),offset=new THREE.Vector3().setFromMatrixPosition(world);
+      observed.add(`${offset.x},${offset.z}`);
+      const positions=mesh.geometry.attributes.position;
+      for(let vertex=0;vertex<positions.count;vertex++) {
+        const local=new THREE.Vector3().fromBufferAttribute(positions,vertex),actual=local.clone().applyMatrix4(world);
+        assertVector(actual,local.clone().add(offset),'instance retains every table vertex');
+        expectedBounds.expandByPoint(actual);
       }
     }
+    const actualBounds=mesh.boundingBox.clone().applyMatrix4(mesh.matrixWorld);
+    assertVector(actualBounds.min,expectedBounds.min,'tight chunk minimum');assertVector(actualBounds.max,expectedBounds.max,'tight chunk maximum');
   }
-  const woodBounds = new THREE.Box3().setFromObject(templates[0]);
-  assert.ok(Math.abs(woodBounds.min.x - (-3 - .85 - .006)) < 1e-6);
-  assert.ok(Math.abs(woodBounds.max.z - (2.25 + .006)) < 1e-6);
+  assert.deepEqual([...observed].sort(),seats.map(([side,row])=>`${side*3},${-row*5}`).sort());
+  assert.deepEqual(tables.map(t=>[t.x,t.z]),seats.map(([side,row])=>[side*3,-row*5]));
+  const woodBounds=new THREE.Box3().setFromObject(templates[0]);
+  assert.ok(Math.abs(woodBounds.min.x-(-3-.85-.006))<1e-6);assert.ok(Math.abs(woodBounds.max.z-(2.25+.006))<1e-6);
 });
 
 function createPicker(binders) {

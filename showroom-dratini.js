@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { createExhibitLOD } from './showroom-exhibit-lod.js?v=1';
+import { createExhibitLOD } from './showroom-exhibit-lod.js?v=2';
 
 const SHOWROOM_CLEAR_FRAME_TRANSMISSION = 0.97;
 

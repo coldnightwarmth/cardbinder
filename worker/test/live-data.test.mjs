@@ -143,6 +143,9 @@ test("wallet holdings include Clear references and owned Swag Pack sticker asset
     ]);
     assert.deepEqual(holdings.cardRefs, [["clear", 192, "new-clear-card-mint"]]);
     assert.equal(holdings.supportedCardCount, 1);
+    assert.deepEqual(holdings.supportedCollectionIds, ["clear"]);
+    assert.equal(holdings.supportedCollectionsComplete, false);
+    assert.match(holdings.supportedCatalogVersion, /^[a-f0-9]{64}$/);
     assert.deepEqual(holdings.swagPackAssets, [{
       mint: "12FHUPi4u9sGyXwVvbJ1QcMNteSVKL4sUE8BJFjdcmta",
       name: "Golem",
@@ -214,6 +217,76 @@ test("wallet holdings continue past a misleading full-page total and include Pon
       ["poncho", 113, "poncho-card-113-mint"],
     ]);
     assert.equal(holdings.supportedCardCount, 2);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("wallet supplemental sources begin before DAS completes and retain all successful mints", async () => {
+  const originalFetch = globalThis.fetch;
+  const started = [];
+  let releaseDas;
+  globalThis.fetch = async (_url, options = {}) => {
+    const request = options.body ? JSON.parse(options.body) : null;
+    started.push(request?.method ?? "card-nft-2");
+    if (request?.method === "getAssetsByOwner") {
+      return await new Promise(resolve => {
+        releaseDas = () => resolve(Response.json({ result: { items: [{ id: "das-mint" }], total: 1 } }));
+      });
+    }
+    if (request?.method === "getTokenAccountsByOwner") {
+      return Response.json({ result: { value: [{ account: { data: { parsed: { info: {
+        mint: "token-mint", tokenAmount: { amount: "1", decimals: 0 },
+      } } } } }] } });
+    }
+    return Response.json({ mints: ["indexer-mint", "das-mint"] });
+  };
+  try {
+    const pending = fetchLiveWalletHoldings("wallet-address", { HELIUS_RPC_URL: "https://helius.test" });
+    // No source depends on a different provider's latency or paginated response.
+    assert.equal(started.filter(method => method === "getAssetsByOwner").length, 1);
+    assert.equal(started.filter(method => method === "getTokenAccountsByOwner").length, 2);
+    assert.ok(started.includes("card-nft-2"));
+    releaseDas();
+    const holdings = await pending;
+    assert.deepEqual(holdings.mints, ["das-mint", "indexer-mint", "token-mint"]);
+    assert.deepEqual(holdings.supportedCollectionIds, ["cardnft2"]);
+    assert.equal(holdings.supportedCollectionsComplete, true);
+    assert.equal(holdings.supportedCardCount, 0); // New mints can precede the static index.
+  } finally {
+    releaseDas?.();
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("DAS remains required even if optional wallet providers succeed", async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async (_url, options = {}) => {
+    const request = options.body ? JSON.parse(options.body) : null;
+    if (request?.method === "getAssetsByOwner") {
+      return Response.json({ error: { message: "DAS unavailable" } }, { status: 503 });
+    }
+    return Response.json(request ? { result: { value: [] } } : { mints: ["partial-mint"] });
+  };
+  try {
+    await assert.rejects(fetchLiveWalletHoldings("wallet-address", { HELIUS_RPC_URL: "https://helius.test" }), /DAS unavailable/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("an invalid optional wallet response cannot certify selective collection hints", async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async (_url, options = {}) => {
+    const request = options.body ? JSON.parse(options.body) : null;
+    if (request?.method === "getAssetsByOwner") return Response.json({ result: { items: [], total: 0 } });
+    if (request) return Response.json({ result: { value: [] } });
+    return Response.json({ temporaryError: "index rebuilding" });
+  };
+  try {
+    const holdings = await fetchLiveWalletHoldings("wallet-address", { HELIUS_RPC_URL: "https://helius.test" });
+    assert.equal(holdings.supportedCollectionsComplete, false);
+    assert.deepEqual(holdings.supportedCollectionIds, []);
   } finally {
     globalThis.fetch = originalFetch;
   }

@@ -1,10 +1,10 @@
 import {jumpHeight} from './showroom-locomotion.mjs?v=2';
 import {chatAnchor,chatVisibleThroughDoor} from './showroom-chat-projection.mjs';
 import {createChatBubble} from './showroom-chat.js?v=5';
-import {createShowroomAvatar} from './showroom-avatar.js?v=7';
+import {createShowroomAvatar} from './showroom-avatar.js?v=8';
 import {createPoseBuffer,remoteHandPose} from './showroom-motion.mjs?v=4';
 import * as THREE from 'three';
-import {connectShowroom} from './showroom-network.js?v=3';
+import {connectShowroom} from './showroom-network.js?v=4';
 export function createShowroomMultiplayer({scene,room,camera,portal,bridge,columns,ripples,onDirty,onRoomState,onOwnChat,onOtherChat}) {
  let hand=null,lastSent=0,lastPose='',settlePackets=0,state=null,epoch=0,lastSnapshot=null,retryTimer=null;
  const peers=new Map();

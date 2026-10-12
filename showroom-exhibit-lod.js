@@ -39,7 +39,8 @@ export function createExhibitBudget() {
  const exhibits=[],position=new THREE.Vector3();
  function register(group){
   if(exhibits.some(exhibit=>exhibit.group===group))return group;
-  const entries=[],seen=new Set();group.traverse(object=>{
+  const entries=[],lods=[],seen=new Set();group.traverse(object=>{
+   if(object.userData.exhibitLOD)lods.push(object.userData.exhibitLOD);
    if(!object.isMesh)return;
    const originals=[].concat(object.material),cheap=originals.map(material=>{
     if(!(material.transmission>0))return material;
@@ -48,7 +49,7 @@ export function createExhibitBudget() {
    if(cheap.some((m,i)=>m!==originals[i]))entries.push({object,original:object.material,cheap:Array.isArray(object.material)?cheap:cheap[0]});
   });
   // Near geometry can arrive later, so register its materials when prepared.
-  exhibits.push({group,entries,owned:seen,distant:false});return group;
+  exhibits.push({group,entries,lods,owned:seen,distant:false});return group;
  }
  function unregister(group){
   for(let i=exhibits.length-1;i>=0;i--){
@@ -61,13 +62,13 @@ export function createExhibitBudget() {
  return {register,unregister,
   update(camera,tier,prepare){for(const exhibit of exhibits){
    exhibit.group.getWorldPosition(position);const distance=position.distanceTo(camera.position);
-   exhibit.group.traverse(o=>{o.userData.exhibitLOD?.update(distance,tier,async model=>{register(model);await prepare(model);});});
+   for(const lod of exhibit.lods)lod.update(distance,tier,async model=>{register(model);await prepare(model);});
    const threshold=tier===0?2.8:tier===1?4.5:7;
    exhibit.distant=distance>threshold+(exhibit.distant?-.5:0);
    for(const entry of exhibit.entries)entry.object.material=exhibit.distant?entry.cheap:entry.original;
   }},
   reflection(){const restores=[];for(const exhibit of exhibits){
-   exhibit.group.traverse(o=>{if(o.userData.exhibitLOD)restores.push(o.userData.exhibitLOD.reflection());});
+   for(const lod of exhibit.lods)restores.push(lod.reflection());
    for(const entry of exhibit.entries){const previous=entry.object.material;entry.object.material=entry.cheap;restores.push(()=>{entry.object.material=previous;});}
   }return ()=>{for(let i=restores.length-1;i>=0;i--)restores[i]();};},
  };

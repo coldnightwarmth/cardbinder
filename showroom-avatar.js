@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import {GLTFLoader} from './vendor/GLTFLoader.js';
 let assetPromise;
-function asset(){return assetPromise ||= new GLTFLoader().loadAsync(new URL('./assets/models/showroom-character/blue-fin-character.glb?v=5',import.meta.url).href).catch(error=>{assetPromise=null;throw error;});}
+function asset(){return assetPromise ||= new GLTFLoader().loadAsync(new URL('./assets/models/showroom-character/blue-fin-character.glb?v=6',import.meta.url).href).catch(error=>{assetPromise=null;throw error;});}
 // Geometry, materials, and textures are shared; each visitor owns their bones.
 export function cloneAvatar(source){
  const clone=source.clone(true),lookup=new Map();

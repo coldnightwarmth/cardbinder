@@ -15,6 +15,7 @@ function section(start, end) {
 function opacityContext() {
   const binderCardMeshByPosition = new Map();
   const context = vm.createContext({
+    ACTIVE_COLLECTION_ID: "cardnft2", CARDS: [],
     BINDER_CARD_LOAD_FADE_MS: 280,
     BINDER_CARD_PLACEHOLDER_OPACITY: 0.24,
     binderCardMeshByPosition,
