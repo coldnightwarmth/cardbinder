@@ -33,20 +33,25 @@ applying migrations.
 
 ## Production handoff
 
-Apply the D1 migrations and store a long random `RATE_LIMIT_SALT` and the private
-Helius endpoint as Worker secrets:
+The public `api.cards.art` domain is attached to the Cloudflare Pages project
+`cards-art-wallet-auth`. Deploy this API with `npm run deploy:pages` from this
+directory (production branch `main`), using `wrangler.jsonc`. This builds the
+supported-card index and Pages worker while retaining the project's existing
+production secrets and D1 binding.
 
-- `wrangler secret put RATE_LIMIT_SALT --config wrangler-worker.jsonc`
-- `wrangler secret put HELIUS_RPC_URL --config wrangler-worker.jsonc`
+For a new environment, apply the D1 migrations and configure `RATE_LIMIT_SALT`
+and `HELIUS_RPC_URL` as Pages project secrets. Do not copy credentials into the
+repository or change the existing custom domain during a routine deployment.
 
-Deploy with `npm run deploy:worker`, then associate `api.cards.art` with the
-Worker as a Cloudflare Custom Domain.
+`npm run deploy:worker` targets the separate, preexisting standalone Worker;
+it does **not** update `api.cards.art`. Showroom multiplayer has its own Worker
+and is deployed separately with `npm run deploy:showroom`.
 
 The browser uses `https://api.cards.art/api` so the host-only session cookie is
 same-site with `cards.art`. Keep the exact credentialed CORS allowlist; do not
 replace it with `*`.
 
 Before publishing the static site, run `npm run build` and verify that every
-binder page loads the generated `wallet-auth.js`. The production Worker must
+binder page loads the generated `wallet-auth.js`. The production API must
 not set `ALLOW_LOCALHOST_ORIGINS`; production CORS remains limited to
 `https://cards.art` and `https://www.cards.art`.
