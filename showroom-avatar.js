@@ -23,7 +23,8 @@ export function createAvatarLookPose(model){
    const blend=1-Math.exp(-Math.max(0,dt)*14);
    pitch+=(THREE.MathUtils.clamp(Number.isFinite(target)?target:0,-1.15,1.15)-pitch)*blend;
    held+=((holding?1:0)-held)*(1-Math.exp(-Math.max(0,dt)*16));
-   model.updateWorldMatrix(true,true);
+   // World-orientation queries update their ancestor chains. Descendant meshes
+   // and the rest of the skeleton can wait for the renderer's matrix update.
    model.getWorldQuaternion(parentRotation);axis.set(1,0,0).applyQuaternion(parentRotation);
    joints.forEach((bone,i)=>{
     base[i].copy(bone.quaternion);

@@ -1,7 +1,7 @@
 import {jumpHeight} from './showroom-locomotion.mjs?v=2';
 import {chatAnchor,chatVisibleThroughDoor} from './showroom-chat-projection.mjs';
 import {createChatBubble} from './showroom-chat.js?v=5';
-import {createShowroomAvatar} from './showroom-avatar.js?v=8';
+import {createShowroomAvatar} from './showroom-avatar.js?v=9';
 import {createPoseBuffer,remoteHandPose} from './showroom-motion.mjs?v=4';
 import * as THREE from 'three';
 import {connectShowroom} from './showroom-network.js?v=4';
@@ -70,7 +70,9 @@ export function createShowroomMultiplayer({scene,room,camera,portal,bridge,colum
   p.group.position.set(sample.x,sample.y,sample.z);p.group.rotation.y=sample.yaw;
   if(p.avatar){
    p.avatar.model.position.y=-sample.y+jumpHeight(sample.jumpTime??-1);
-   p.avatar.update(dt,velocity,p.holding,sample.pitch,sample);p.group.updateWorldMatrix(true,true);
+   p.avatar.update(dt,velocity,p.holding,sample.pitch,sample);
+   // The socket query updates its animated ancestors without walking the
+   // whole avatar (and every held card) again before the render pass.
    if(p.avatar.socket){p.avatar.socket.getWorldPosition(socketPosition);p.group.worldToLocal(socketPosition);p.cardsRoot.position.copy(socketPosition);const tilt=p.avatar.handPitch;
     p.cardsRoot.rotation.x=tilt;
     p.cardsRoot.position.y+=.09*Math.cos(tilt)+.07*Math.sin(tilt);

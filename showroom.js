@@ -4,7 +4,8 @@ import {createChatInput} from './showroom-chat.js?v=5';
 import {createShowroomRitualEffects,ritualPixelRatio} from './showroom-ritual-effects.js?v=3';
 import { createExhibitBudget } from './showroom-exhibit-lod.js?v=2';
 import { createSceneIndex } from './showroom-scene-index.mjs';
-import { createShowroomMultiplayer } from './showroom-multiplayer.js?v=19';
+import { createShowroomPickupLayer } from './showroom-pickup-layer.mjs';
+import { createShowroomMultiplayer } from './showroom-multiplayer.js?v=20';
 import { createShowroomSky } from './showroom-sky.js?v=5';
 import * as THREE from 'three';
 import { createShowroomColumns } from './showroom-columns.js?v=12';
@@ -410,10 +411,12 @@ export async function initShowroom(bridge) {
     fallback=false;dragging=false;keys.clear();releaseTouchInputs();
     pointerControls.release();leave.hidden=false;hud.querySelector('#showroomEnter').hidden=false;chat.focus();
   }
+  const pickupLayer=createShowroomPickupLayer({scene,renderer,lights:[hemi,sun,fill]});
+  const renderWorld=()=>portal.render();
   const renderShowroom=()=>{
-    if(!diagnostics)return portal.render();
+    if(!diagnostics)return pickupLayer.render(renderWorld,camera);
     diagnostics.begin();
-    try{return portal.render();}finally{diagnostics.end({inside:portal.inside});}
+    try{return pickupLayer.render(renderWorld,camera);}finally{diagnostics.end({inside:portal.inside});}
   };
   let fallback=false, dragging=false, dragged=false, touchMode=false, touchLook=null;
   let suppressTouchClickUntil=0;
@@ -895,29 +898,32 @@ export async function initShowroom(bridge) {
     const to=returning?item.home:pickupPosition(item);
     const rot=returning?item.rotation:camera.quaternion.clone();
     const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-    return new Promise(resolve=>{
+    const finishPickup=pickupLayer.begin(item.group);
+    return new Promise((resolve,reject)=>{
       const start=performance.now();
       function step(now) {
-        const t=reduced?1:Math.min(1,(now-start)/550), ease=t*t*(3-2*t);
-        item.group.position.lerpVectors(from,to,ease); item.group.quaternion.slerpQuaternions(q,rot,ease);
-        const coverShade=item.model?.userData.showroomCoverShade;
-        if(coverShade) {
-          const pickupProgress=returning?1-ease:ease;
-          const scale=THREE.MathUtils.lerp(coverShade.restScale,1,pickupProgress);
-          for(const entry of coverShade.materials) {
-            entry.material.color.copy(entry.originalColor).multiplyScalar(scale);
-            entry.material.emissive.copy(entry.originalEmissive).multiplyScalar(scale);
+        try {
+          const t=reduced?1:Math.min(1,(now-start)/550), ease=t*t*(3-2*t);
+          item.group.position.lerpVectors(from,to,ease); item.group.quaternion.slerpQuaternions(q,rot,ease);
+          const coverShade=item.model?.userData.showroomCoverShade;
+          if(coverShade) {
+            const pickupProgress=returning?1-ease:ease;
+            const scale=THREE.MathUtils.lerp(coverShade.restScale,1,pickupProgress);
+            for(const entry of coverShade.materials) {
+              entry.material.color.copy(entry.originalColor).multiplyScalar(scale);
+              entry.material.emissive.copy(entry.originalEmissive).multiplyScalar(scale);
+            }
           }
-        }
-        item.group.updateMatrix();
-        if(t<1) requestAnimationFrame(step);
-        else {
-          // Paint the exact endpoint before handing off to the interactive canvas.
-          renderShowroom();
-          resolve();
-        }
+          item.group.updateMatrix();
+          if(t<1) requestAnimationFrame(step);
+          else {
+            // Paint the exact endpoint before handing off to the interactive canvas.
+            renderShowroom();
+            resolve();
+          }
+        } catch(error) { reject(error); }
       } requestAnimationFrame(step);
-    });
+    }).finally(()=>{finishPickup();sceneDirty=true;});
   }
   async function open(item) {
     if(active || busy) return;

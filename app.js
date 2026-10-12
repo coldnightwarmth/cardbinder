@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { loadCardPreviewImage } from "./card-preview-loader.mjs";
+import { loadCardPreviewImage } from "./card-preview-loader.mjs?v=2";
 import { SUPPORTED_WALLET_CATALOG_VERSION } from "./supported-wallet-catalog.mjs";
 import { COLLECTION_CARD_COUNTS } from "./collection-card-counts.mjs";
 import { BROWSER_TRAIT_CATALOG } from "./browser-traits-catalog.js?v=browser-traits-13";
@@ -1848,7 +1848,7 @@ async function init() {
 
 async function initShowroomExperience() {
   const [{ initShowroom }, { createShowroomHand }, bridge] = await Promise.all([
-    import("./showroom.js?v=showroom-controls-10"),
+    import("./showroom.js?v=showroom-controls-11"),
     import("./showroom-hand.js?v=10"),
     createShowroomBridge(),
   ]);
@@ -1891,21 +1891,19 @@ async function initShowroomExperience() {
 
 // Showroom prefetching is deliberately detached from active wallet/render state.
 async function createShowroomBridge() {
-  const [{ createShowroomCache }, { createSharedResourceCache }] = await Promise.all([
-    import("./showroom-cache.mjs"), import("./showroom-resource-cache.mjs"),
+  const [{ createShowroomCache }, { createSharedResourceBundleCache }] = await Promise.all([
+    import("./showroom-cache.mjs"), import("./showroom-resource-cache.mjs?v=2"),
   ]);
-  const acquireHandTextures = createSharedResourceCache(async key => {
-    const images = await Promise.all(JSON.parse(key).map(url => loadCardPreviewImage(
+  const acquireHandTextures = createSharedResourceBundleCache(async url => {
+    const image = await loadCardPreviewImage(
       url, source => loadTextureImage(source, { fetchPriority: "low" }), { width: 192 },
-    )));
-    return images.map(image => {
-      const surface = document.createElement("canvas"); surface.width = 192; surface.height = 269;
-      surface.getContext("2d").drawImage(image, 0, 0, 192, 269);
-      const texture = new THREE.CanvasTexture(surface);
-      texture.colorSpace = THREE.SRGBColorSpace;
-      return texture;
-    });
-  }, { dispose: textures => textures.forEach(texture => texture.dispose()) });
+    );
+    const surface = document.createElement("canvas"); surface.width = 192; surface.height = 269;
+    surface.getContext("2d").drawImage(image, 0, 0, 192, 269);
+    const texture = new THREE.CanvasTexture(surface);
+    texture.colorSpace = THREE.SRGBColorSpace;
+    return texture;
+  }, { dispose: texture => texture.dispose() });
   const handRadius = .714 * (CARD_RADIUS / CARD_WIDTH);
   const handCoreGeometry = createRoundedCoreGeometry(.714, 1, .006, handRadius);
   const handFaceGeometry = createRoundedPlaneGeometry(.714, 1, handRadius);
@@ -1994,7 +1992,7 @@ async function createShowroomBridge() {
     async createSharedHandCard(descriptor) {
       const card=await this.resolveSharedCard(descriptor);
       const urls=[card.image,new URL(cardBackAssetPath(CARDS[card.index]),import.meta.url).href];
-      const resources=await acquireHandTextures(JSON.stringify(urls));
+      const resources=await acquireHandTextures(urls);
       const textures=resources.value;
       const faces=textures.map(map=>new THREE.MeshBasicMaterial({map,toneMapped:false}));
       const edge=new THREE.MeshBasicMaterial({color:0xd8d5ce,toneMapped:false});

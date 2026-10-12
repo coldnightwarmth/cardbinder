@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 import * as THREE from '../../vendor/three.module.min.js';
+import { createShowroomPickupLayer } from '../../showroom-pickup-layer.mjs';
 
 const source = readFileSync(new URL('../../showroom.js', import.meta.url), 'utf8');
 
@@ -41,8 +42,9 @@ test('frozen showroom descendants retain their local pose throughout pickup and 
   camera.rotation.set(-.35, .8, 0);
   const frames = [];
   let renders = 0;
+  const pickupLayer = createShowroomPickupLayer({ scene, renderer: {}, lights: [] });
   const context = vm.createContext({
-    THREE, scene, camera,
+    THREE, scene, camera, pickupLayer, sceneDirty: false,
     performance: { now: () => 0 },
     matchMedia: () => ({ matches: false }),
     requestAnimationFrame: callback => frames.push(callback),

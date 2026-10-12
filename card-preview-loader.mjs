@@ -16,10 +16,30 @@ export function createCardPreviewLoader({
   baseUrl = new URL('./', import.meta.url),
   manifests = CARD_PREVIEW_MANIFESTS,
   fetchManifest = requestManifest,
+  retryDelay = 30000,
+  now = Date.now,
 } = {}) {
   const base = new URL(baseUrl);
   const pending = new Map();
-  const unavailable = new Set();
+  // A timeout during startup must not disable small previews for the entire
+  // visit. Retry only when another consumer asks after a cooldown, never in a loop.
+  const manifestFailures = new Map();
+  const unavailable = new Map();
+  const retryMs = Math.max(1000, Number.isFinite(retryDelay) ? retryDelay : 30000);
+  function coolingDown(failures, key) {
+    const until = failures.get(key);
+    if (until === undefined) return false;
+    if (now() < until) return true;
+    failures.delete(key);
+    return false;
+  }
+  function markUnavailable(preview) {
+    unavailable.delete(preview);
+    unavailable.set(preview, now() + retryMs);
+    // The asset manifest itself remains cached, but failed image entries should
+    // not accumulate if a user browses many unavailable files during an outage.
+    if (unavailable.size > 256) unavailable.delete(unavailable.keys().next().value);
+  }
   function reference(source) {
     let url;
     try { url = new URL(source, base); } catch { return null; }
@@ -33,21 +53,35 @@ export function createCardPreviewLoader({
     if (!(width > 0 && width <= CARD_PREVIEW_WIDTH)) return source;
     const ref = reference(source);
     if (!ref) return source;
+    if (coolingDown(manifestFailures, ref.manifest)) return source;
     if (!pending.has(ref.manifest)) {
-      pending.set(ref.manifest, Promise.resolve().then(() => fetchManifest(new URL(ref.manifest, base).href)).catch(() => null));
+      const request = Promise.resolve()
+        .then(() => fetchManifest(new URL(ref.manifest, base).href))
+        .then(entries => {
+          if (!entries || typeof entries !== 'object' || Array.isArray(entries)) {
+            throw new Error('Invalid preview manifest');
+          }
+          return entries;
+        }).catch(() => {
+          pending.delete(ref.manifest);
+          manifestFailures.set(ref.manifest, now() + retryMs);
+          return null;
+        });
+      pending.set(ref.manifest, request);
     }
     const entries = await pending.get(ref.manifest);
     const asset = entries?.[ref.key];
     if (typeof asset !== 'string') return source;
-    const preview = new URL(asset, base).href;
-    return unavailable.has(preview) ? source : preview;
+    let preview;
+    try { preview = new URL(asset, base).href; } catch { return source; }
+    return coolingDown(unavailable, preview) ? source : preview;
   }
   async function load(source, loader, options) {
     const preview = await urlFor(source, options);
     if (preview === source) return loader(source);
     try { return await loader(preview); }
     catch {
-      unavailable.add(preview);
+      markUnavailable(preview);
       return loader(source);
     }
   }

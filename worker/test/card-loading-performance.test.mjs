@@ -5,7 +5,7 @@ import vm from "node:vm";
 
 import * as THREE from "../../vendor/three.module.min.js";
 import { createShowroomCache } from "../../showroom-cache.mjs";
-import { createSharedResourceCache } from "../../showroom-resource-cache.mjs";
+import { createSharedResourceBundleCache } from "../../showroom-resource-cache.mjs";
 
 const source = readFileSync(new URL("../../app.js", import.meta.url), "utf8");
 
@@ -247,7 +247,7 @@ async function createArtworkBridgeHarness({ artworkEnabled = true, compositionGa
     return texture;
   };
   const context = vm.createContext({
-    createShowroomCache, createSharedResourceCache, THREE, URL,
+    createShowroomCache, createSharedResourceBundleCache, THREE, URL,
     CARD_RADIUS: .15, CARD_WIDTH: 5,
     createRoundedCoreGeometry: () => new THREE.BoxGeometry(1,1,.01),
     createRoundedPlaneGeometry: () => new THREE.PlaneGeometry(),
@@ -277,7 +277,7 @@ async function createArtworkBridgeHarness({ artworkEnabled = true, compositionGa
   });
   // Use the real cache; only replace the module import in this isolated VM.
   vm.runInContext(section("async function createShowroomBridge(", "async function createShowroomInsideTexture(")
-    .replace(/  const \[\{ createShowroomCache \}, \{ createSharedResourceCache \}\] = await Promise.all\(\[[\s\S]*?\]\);/, "")
+    .replace(/  const \[\{ createShowroomCache \}, \{ createSharedResourceBundleCache \}\] = await Promise.all\(\[[\s\S]*?\]\);/, "")
     .replaceAll('import.meta.url', JSON.stringify(new URL('../../app.js',import.meta.url).href)), context);
   return { bridge: await context.createShowroomBridge(), context, composed, disposed, catalogs };
 }

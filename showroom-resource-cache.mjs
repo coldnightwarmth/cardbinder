@@ -52,3 +52,32 @@ export function createSharedResourceCache(load, { capacity = 48, concurrency = 3
     } };
   };
 }
+
+// Fronts and backs have independent ownership: different cards often use the
+// same back. A bundle preserves face order while sharing each unique resource.
+// A failed bundle releases its successful leases, including late completions.
+export function createSharedResourceBundleCache(load, options = {}) {
+  const acquire = createSharedResourceCache(load, { capacity: 96, ...options });
+  return async function acquireBundle(keys) {
+    const unique = [...new Set(keys)];
+    const results = await Promise.allSettled(unique.map(acquire));
+    const leases = new Map();
+    for (let index = 0; index < results.length; index++) {
+      if (results[index].status === 'fulfilled') leases.set(unique[index], results[index].value);
+    }
+    const failure = results.find(result => result.status === 'rejected');
+    if (failure) {
+      for (const lease of leases.values()) lease.release();
+      throw failure.reason;
+    }
+    let released = false;
+    return {
+      value: keys.map(key => leases.get(key).value),
+      release() {
+        if (released) return;
+        released = true;
+        for (const lease of leases.values()) lease.release();
+      },
+    };
+  };
+}
