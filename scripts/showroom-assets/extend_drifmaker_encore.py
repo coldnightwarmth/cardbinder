@@ -15,7 +15,6 @@ for style in ENCORE_VARIANTS['Eyes']:
    ell(p,(x,-.54,2.17),(.205,.045,.19),dm_lilac,n=16,m=10)
    line(p+'_lash',[(x-.10,-.59,2.19),(x,-.599,2.15),(x+.10,-.59,2.19)],.012,navy,'Head',6)
   else:
-   dm_eye_socket(p,x)
    if style=='target':
     for radius,mat in [(.14,sp_glowcyan),(.095,ink),(.048,sp_glowcyan)]:dm_disc(p,(x,-.56-(.14-radius)*.25,2.17),radius,mat)
    else:
@@ -123,22 +122,31 @@ for style in ENCORE_VARIANTS['Head']:
 for style in ENCORE_VARIANTS['Extra']:
  p='Drif_Extra_'+style
  if style=='butterflies':
-  for x,z,scale in [(-.91,2.45,1),(.87,1.72,.8),(-.76,1.02,.65)]:
+  for i,(x,z,scale) in enumerate([(-.91,2.45,1),(.87,1.72,.8),(-.76,1.02,.65)]):
+   start=len(pieces)
    for s in [-1,1]:
+    # Raised wing tips add a folded-wing profile before each butterfly is tilted.
+    wingstart=len(pieces)
     ell(p,(x+s*.09*scale,0,z+.06*scale),(.12*scale,.025,.15*scale),sp_hot,'Chest',n=12,m=8)
     ell(p,(x+s*.08*scale,0,z-.10*scale),(.09*scale,.025,.10*scale),dm_lilac,'Chest',n=12,m=8)
+    sp_float_finish(wingstart,(x,0,z),(x,0,z),(0,0,s*(24+i*9)))
    line(p,[(x,-.03,z-.11*scale),(x,-.03,z+.12*scale)],.012,sg_ink,'Chest',5)
+   sp_float_finish(start,(x,0,z),[(-1.07,.57,2.48),(1.0,-.44,1.80),(-.85,-.57,1.08)][i],[(18,21,-18),(-25,18,26),(28,-16,-22)][i])
  elif style=='ufo':
+  start=len(pieces)
   ell(p,(.82,.14,2.80),(.32,.25,.065),dm_silver,'Chest',n=24,m=10)
   ell(p,(.82,.14,2.87),(.15,.14,.14),sp_glowcyan,'Chest',n=16,m=10)
   for j in range(8):
    a=j*math.tau/8;ell(p,(.82+.25*math.cos(a),.14+.19*math.sin(a),2.78),(.025,.025,.025),sp_glowgold,'Chest',n=8,m=6)
-  for j in range(3):line(p,[(.75+j*.07,.14,2.72),(.58+j*.23,.14,2.23)],.008,sp_glowcyan,'Chest',5)
+  for j in range(3):line(p,[(.75+j*.07,.14,2.72),(.58+j*.23,.14+(j-1)*.12,2.23)],.008,sp_glowcyan,'Chest',5)
+  sp_float_finish(start,(.82,.14,2.80),(1.05,-.43,2.86),(12,-15,-14),.88)
  else:
+  start=len(pieces)
   for i,mat in enumerate([sg_red,sp_orange,dm_yellow,sp_lime,sp_glowcyan,sp_violet]):
-   r=1.03-i*.045;line(p,[(r*math.cos(j*math.pi/40),.46,1.96+r*math.sin(j*math.pi/40)) for j in range(41)],.027,mat,'Chest',7)
+   r=1.03-i*.045;line(p,[(r*math.cos(j*math.pi/40),.46+i*.025+.10*math.sin(j*math.pi/20),1.96+r*math.sin(j*math.pi/40)) for j in range(41)],.027,mat,'Chest',7)
   for s in [-1,1]:
-   for j in range(3):ell(p,(s*(.86+j*.10),.43,1.95+(.06 if j==1 else 0)),(.16,.10,.11),white,'Chest',n=12,m=8)
+   for j in range(3):ell(p,(s*(.86+j*.10),.43+j*.05,1.95+(.06 if j==1 else 0)),(.16,.10,.11),white,'Chest',n=12,m=8)
+  sp_float_finish(start,(0,.46,2.4),(-.38,.98,2.46),(-8,7,10))
 for style in ENCORE_VARIANTS['Tattoo']:
  p='Drif_Tattoo_'+style
  for s in [-1,1]:

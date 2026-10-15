@@ -59,7 +59,7 @@ for style in SPECTRAL_VARIANTS['Eyes']:
  p='Drif_Eyes_'+style
  for s in [-1,1]:
   x=s*.302
-  if style!='venom':dm_eye_socket(p,x,ink,.235)
+  if style not in ['venom','crescent','bolts','goggles','robot','stitched']:dm_eye_socket(p,x,ink,.235)
   if style=='venom':
    plaque(p+'_white',[(x+s*a,2.25+b) for a,b in [(-.16,-.02),(-.09,-.17),(.04,-.19),(.15,-.10),(.22,.08),(.23,.27),(.13,.18),(.18,.35),(.02,.20),(-.10,.11)]],-.56,.02,sp_pearl)
   elif style=='anime':
@@ -80,8 +80,18 @@ for style in SPECTRAL_VARIANTS['Eyes']:
    dm_disc(p+'_hub',(x,-.58,2.17),.09,dm_steel)
    dm_disc(p+'_pupil',(x,-.60,2.17),.045,sp_glowcyan)
   elif style=='crescent':
-   dm_disc(p+'_moon',(x,-.546,2.17),.146,sp_glowgold)
-   dm_disc(p+'_cutout',(x+.056,-.573,2.21),.126,ink)
+   # A real open crescent: no black disc pretending to cut out the moon.
+   radius=.155;cut_radius=.145;shift=.065
+   tip_x=(radius*radius-cut_radius*cut_radius+shift*shift)/(2*shift)
+   outer_angle=math.acos(tip_x/radius);inner_angle=math.acos((tip_x-shift)/cut_radius)
+   verts=[];faces=[]
+   for j in range(33):
+    t=j/32;oa=outer_angle+t*(math.tau-2*outer_angle);ia=inner_angle+t*(math.tau-2*inner_angle)
+    ox=radius*math.cos(oa);oz=radius*math.sin(oa);ix=shift+cut_radius*math.cos(ia);iz=cut_radius*math.sin(ia)
+    verts.extend([(x+ox,-.546,2.17+oz),(x+ix,-.546,2.17+iz),(x+ox,-.526,2.17+oz),(x+ix,-.526,2.17+iz)])
+    if j:
+     q=(j-1)*4;n=j*4;faces.extend([(q,q+1,n+1,n),(q+2,n+2,n+3,q+3),(q,n,n+2,q+2),(q+1,q+3,n+3,n+1)])
+   mesh(p+'_moon',verts,faces,sp_glowgold,'Head',False)
    star(p+'_star',(x-.09,-.59,2.30),.035,.012,sp_pearl,points=4)
   elif style=='bolts':
    sp_face(p+'_bolt',s,[(.01,.21),(-.12,.015),(-.01,.015),(-.07,-.19),(.13,.06),(.025,.06)],sp_glowgold)
@@ -429,12 +439,23 @@ for j in range(260):
  gf.extend([(idx,idx+1,idx+2),(idx+3,idx+4,idx+2)])
 mesh('Drif_Ghost_Fuzz',gv,gf,sp_ghost,'Head',False)
 
-# Extras occupy their own layer around the character. They follow the root/chest
-# during locomotion; head-centered frames follow Head and never animate the pose.
+# Bake rigid group placements into bind-space vertices, keeping each object's
+# skeleton weights. Separate depths and tilts avoid a billboard-like arrangement.
+from mathutils import Euler
+
+def sp_float_finish(start, pivot, position, degrees=(0,0,0), scale=1):
+ rotation=Euler(tuple(math.radians(a) for a in degrees),'XYZ').to_matrix()
+ pivot=Vector(pivot);position=Vector(position)
+ for obj in pieces[start:]:
+  for vertex in obj.data.vertices:vertex.co=position+rotation@((vertex.co-pivot)*scale)
+  obj.data.update()
+
+# Left-side satellites tend behind the silhouette and right-side ones toward
+# the camera, leaving the collection portrait's face and fins unobstructed.
 for style in SPECTRAL_VARIANTS['Extra']:
  p='Drif_Extra_'+style
  if style=='mon':
-  c=Vector((-.83,-.02,1.94))
+  start=len(pieces);c=Vector((-.83,-.02,1.94))
   ell(p+'_buddy',c,(.23,.19,.26),dm_lilac,'Chest',n=18,m=12)
   ell(p+'_belly',c+Vector((0,-.17,-.05)),(.16,.04,.14),dm_cream,'Chest',n=14,m=8)
   for s in [-1,1]:
@@ -443,12 +464,15 @@ for style in SPECTRAL_VARIANTS['Extra']:
    ell(p+'_arm',c+Vector((s*.23,0,-.02)),(.09,.065,.07),dm_lilac,'Chest',n=10,m=8)
    ell(p+'_foot',c+Vector((s*.12,-.02,-.22)),(.085,.085,.055),dm_lilac,'Chest',n=10,m=8)
   line(p+'_tail',[tuple(c+Vector((.17,.12,-.10))),tuple(c+Vector((.36,.16,-.05))),tuple(c+Vector((.35,.14,.10)))],.035,dm_lilac,'Chest')
+  sp_float_finish(start,c,(-.70,-.80,1.57),(8,-10,18),.78)
  elif style=='saiyanaura':
   for j in range(18):
-   a=j*math.tau/18;x=.73*math.cos(a);z=1.7+1.19*math.sin(a)
-   plaque(p+'_flame',[(x-.11,z-.12),(x-.065,z+.10),(x+.04,z+.30),(x+.13,z+.66),(x+.17,z+.20),(x+.12,z-.18)],.48,.018,sp_glowgold,'Pelvis')
-  for s in [-1,1]:line(p+'_lightning',[(s*.72,-.02,1.05),(s*.88,-.02,1.38),(s*.74,-.02,1.48),(s*.91,-.02,1.85),(s*.80,-.02,2.02)],.014,sp_glowwhite,'Pelvis',5)
+   a=j*math.tau/18;x=.88*math.cos(a);z=1.7+1.19*math.sin(a);start=len(pieces)
+   plaque(p+'_flame',[(x-.11,z-.12),(x-.065,z+.10),(x+.04,z+.30),(x+.13,z+.66),(x+.17,z+.20),(x+.12,z-.18)],.48,.035,sp_glowgold,'Pelvis')
+   sp_float_finish(start,(x,.48,z),(x-.52,1.42+.23*math.sin(2*a),z),(-12*math.sin(a),18*math.cos(a),9*math.sin(3*a)))
+  for s in [-1,1]:line(p+'_lightning',[(s*.95,-.34,1.05),(s*1.09,-.12,1.38),(s*.98,.05,1.48),(s*1.12,.24,1.85),(s*1.01,.35,2.02)],.014,sp_glowwhite,'Pelvis',5)
  elif style=='ornateframe':
+  start=len(pieces)
   for w,h,r in [(.91,.97,.035),(.85,.91,.014),(.97,1.03,.018)]:
    line(p+'_frame',[(-w,.42,2.15-h),(w,.42,2.15-h),(w,.42,2.15+h),(-w,.42,2.15+h),(-w,.42,2.15-h)],r,gold,'Head',8)
   for s in [-1,1]:
@@ -457,49 +481,66 @@ for style in SPECTRAL_VARIANTS['Extra']:
     pts=[(cx+.12*math.cos(j*math.tau/24)*(1-j/32),.42,cz+.15*math.sin(j*math.tau/24)*(1-j/32)) for j in range(25)]
     line(p+'_filigree',pts,.016,gold,'Head',6)
   star(p+'_crest',(0,.42,3.18),.15,.065,gold,points=6)
+  sp_float_finish(start,(0,.42,2.15),(-.52,1.38,2.08),(-7,6,11),.90)
  elif style=='spiritflames':
   for i,(x,z) in enumerate([(-.8,2.35),(.82,1.95),(-.65,1.20)]):
+   start=len(pieces)
    ell(p+'_spirit',(x,-.04,z),(.12,.095,.17),sp_glowcyan,'Chest',n=12,m=10)
    sp_cone(p+'_wisp',(x,-.04,z+.12),(x+.09,-.04,z+.38),.08,sp_glowcyan,'Chest')
    for dx in [-.035,.035]:ell(p+'_eye',(x+dx,-.135,z+.02),(.014,.008,.023),ink,'Chest',n=8,m=6)
+   sp_float_finish(start,(x,-.04,z),[(-1.04,.52,2.38),(1.03,-.45,1.99),(-.80,-.64,1.18)][i],[(8,-14,15),(-12,19,-20),(16,8,25)][i])
  elif style=='planets':
   for i,(x,z,r) in enumerate([(-.85,2.48,.16),(.84,2.0,.14),(-.74,1.20,.10)]):
+   start=len(pieces)
    ell(p+'_planet',(x,0,z),(r,r,r),[dm_lilac,dm_sky,sp_orange][i],'Chest',n=16,m=10)
    dm_loop(p+'_ring',(x,0,z),(r*1.65,r*.45),.017,gold,'Chest',steps=24)
+   sp_float_finish(start,(x,0,z),[(-1.07,.58,2.51),(1.02,-.45,2.03),(-.83,-.66,1.16)][i],[(24,-20,-26),(-32,12,27),(18,28,-14)][i])
  elif style=='arcane':
+  start=len(pieces)
   for r in [.89,.98]:dm_loop(p+'_circle',(0,.39,2.12),(r,r),.013,sp_glowcyan,steps=64)
   star(p+'_sigil',(0,.42,2.12),.89,.45,sp_glowpink,points=6)
   for i in range(12):
    a=i*math.tau/12;star(p+'_rune',(.94*math.cos(a),.37,2.12+.94*math.sin(a)),.045,.018,sp_glowgold,points=4)
+  sp_float_finish(start,(0,.40,2.12),(-.43,1.13,2.16),(10,-5,-14),1.02)
  elif style=='storm':
-  for x,z,r in [(-.23,3.0,.21),(0,3.09,.25),(.25,3.0,.19)]:ell(p+'_cloud',(x,.25,z),(r,.17,r*.55),dm_steel,'Head',n=14,m=8)
-  for s in [-1,1]:line(p+'_bolt',[(s*.28,.2,2.98),(s*.49,.15,2.74),(s*.38,.1,2.73),(s*.62,.0,2.48)],.015,sp_glowgold,'Head',5)
-  for x in [-.25,0,.25]:line(p+'_rain',[(x,.30,2.84),(x-.025,.30,2.70)],.008,dm_sky,'Head',5)
+  start=len(pieces)
+  for x,y,z,r in [(-.23,.09,3.0,.21),(0,.28,3.09,.25),(.25,.39,3.0,.19)]:ell(p+'_cloud',(x,y,z),(r,.17,r*.55),dm_steel,'Head',n=14,m=8)
+  for s in [-1,1]:line(p+'_bolt',[(s*.28,.28,2.98),(s*.49,.33,2.74),(s*.38,.42,2.73),(s*.68,.57,2.48)],.015,sp_glowgold,'Head',5)
+  for j,x in enumerate([-.25,0,.25]):line(p+'_rain',[(x,.30+j*.11,2.84),(x-.025,.36+j*.11,2.70)],.008,dm_sky,'Head',5)
+  sp_float_finish(start,(0,.25,2.9),(-.40,1.08,3.01),(-8,0,-12))
  elif style=='crystals':
   for i in range(7):
-   a=i*math.tau/7;x=.85*math.cos(a);z=1.97+.85*math.sin(a)
+   a=i*math.tau/7;x=.85*math.cos(a);z=1.97+.85*math.sin(a);start=len(pieces)
    sp_cone(p+'_top',(x,.14,z),(x+.03,.14,z+.22),.085,[dm_lilac,sp_glowcyan,sp_hot][i%3],'Chest',5)
    sp_cone(p+'_base',(x,.14,z),(x-.03,.14,z-.14),.085,[dm_lilac,sp_glowcyan,sp_hot][i%3],'Chest',5)
+   depth=.58 if math.cos(a)<0 else -.56
+   sp_float_finish(start,(x,.14,z),(1.06*math.cos(a),depth+.18*math.sin(2*a),1.97+1.01*math.sin(a)),(i*13-30,i*19-40,i*11-25))
  elif style=='pixelstars':
   for i,(x,z) in enumerate([(-.82,2.50),(.80,2.63),(-.77,1.60),(.79,1.35),(0,3.12)]):
+   start=len(pieces)
    for dx,dz in [(0,0),(-.06,0),(.06,0),(0,-.06),(0,.06)]:dm_box(p+'_pixel',(x+dx,-.1,z+dz),(.055,.04,.055),[sp_glowpink,sp_glowgold,sp_glowcyan][i%3],'Chest')
+   sp_float_finish(start,(x,-.1,z),[(-1.03,.51,2.54),(.94,-.48,2.70),(-.94,.37,1.60),(.93,-.61,1.31),(-.12,.65,3.16)][i],[(12,20,18),(-18,-25,-14),(20,-10,28),(-10,16,-25),(25,10,12)][i])
  elif style=='tentacles':
   for s in [-1,1]:
    for j in range(3):
-    pts=[(s*.20,.40,1.0+j*.15),(s*.6,.4,1.1+j*.22),(s*.84,.25,1.5+j*.25),(s*.80,.10,1.8+j*.25),(s*.65,.04,1.78+j*.25)]
+    pts=[(s*.20,1.08,1.0+j*.15),(s*.75,.97+j*.08,1.1+j*.22),(s*1.07,.83-j*.09,1.5+j*.25),(s*1.13,.64-j*.12,1.8+j*.25),(s*.99,.57-j*.10,1.78+j*.25)]
     line(p+'_tendril',pts,.032,sp_onyx,'Chest',7)
     for point in pts[2:]:ell(p+'_sucker',(point[0],point[1]-.028,point[2]),(.017,.012,.022),sp_hot,'Chest',n=8,m=6)
  elif style=='dragon':
-  pts=[(-.75,.1,1.28),(-.95,.10,1.70),(-.78,.1,2.07),(-.60,.06,2.32),(-.75,0,2.54),(-.91,-.03,2.49)]
+  pts=[(-.84,-.37,1.26),(-1.06,-.16,1.65),(-1.12,.19,2.03),(-.98,.52,2.28),(-1.10,.66,2.55),(-1.22,.58,2.51)]
   line(p+'_serpent',pts,.075,dm_mint,'Chest',10)
+  start=len(pieces)
   ell(p+'_head',(-.91,-.03,2.49),(.15,.10,.11),dm_mint,'Chest',n=14,m=10)
   ell(p+'_eye',(-.94,-.13,2.52),(.023,.014,.025),dm_rose,'Chest',n=10,m=6)
+  sp_float_finish(start,(-.91,-.03,2.49),pts[-1],(8,-12,-22))
   for j in range(1,5):
    x,y,z=pts[j];sp_cone(p+'_spine',(x,y+.04,z),(x-.05,y+.1,z+.15),.045,gold,'Chest')
  elif style=='cards':
   for i,(x,z,a) in enumerate([(-.83,2.23,-.2),(.80,1.90,.2),(-.70,1.20,-.1)]):
-   card=dm_box(p+'_card',(x,-.12,z),(.25,.025,.36),dm_cream,'Chest')
+   start=len(pieces)
+   dm_box(p+'_card',(x,-.12,z),(.25,.025,.36),dm_cream,'Chest')
    star(p+'_suit',(x,-.15,z),.073,.027,[dm_rose,sp_violet,teal][i],'Chest',points=4)
    for dx,dz in [(-.08,.12),(.08,-.12)]:dm_disc(p+'_pip',(x+dx,-.15,z+dz),.019,dm_rose,'Chest',sides=4)
+   sp_float_finish(start,(x,-.12,z),[(-.87,-.40,2.47),(1.03,-.45,1.96),(-.75,-.72,1.15)][i],[(14,-24,-18),(-20,18,26),(28,12,-30)][i])
 
 print('SPECTRAL_VARIANTS_READY', {k:len(v) for k,v in SPECTRAL_VARIANTS.items()})

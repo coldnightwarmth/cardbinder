@@ -9,6 +9,7 @@ the original joined model and adds compatible modeled wardrobe choices.
 | Category | Mesh prefix | Total choices |
 | --- | --- | --- |
 | Eyes | `Drif_Eyes_` | 27 |
+| Eyebrows | `Drif_Brows_` | 12 new styles, original, and none |
 | Mouth | `Drif_Mouth_` | 24 |
 | Shirts | `Drif_Shirt_` | 28 |
 | Pants / legs | `Drif_Legs_` | 24 |
@@ -144,8 +145,8 @@ show floor. `drifmaker-config.mjs` defines the allowlisted appearance schema and
 local storage; `drifmaker-avatar.mjs` applies visibility and isolated body colors.
 The showroom publishes saved appearances in player poses, and its Worker
 normalizes them before broadcasting. Legacy players retain the original look.
-The editor has eleven trait tabs with rendered option thumbnails, plus a color
-and finish tab. Appearance exports use schema version 5. Imports from versions
+The editor has twelve trait tabs with rendered option thumbnails, plus a color
+and finish tab. Appearance exports use schema version 6. Imports from versions
 1–4 retain their choices and fill missing categories with original facial traits,
 no tattoos, the classic head, original mouth/legs, no extra, and solid body finish. Randomize
 chooses from every category and both the body and portrait background palettes.
@@ -161,7 +162,7 @@ node scripts/verify-browser-runtime.mjs
 ```
 
 Release the static site and the showroom Worker together: an older Worker normalizes
-unknown trait IDs back to older defaults and drops new categories. This change has been verified locally, not deployed.
+unknown trait IDs back to older defaults and drops new categories. The showroom Worker must include the matching appearance catalog.
 `preview-editor.jpg` shows the browser editor with a mixed collection-inspired look.
 
 ## Collection portrait mode
@@ -248,7 +249,7 @@ chef/straw/Viking hats; jetpack/shoulder-fox/camera-bag gear;
 pumpkin/TV/crystal heads; butterflies/UFO/rainbow extras;
 chevron/crescent/circuit tattoos; diamond/wood/metal noses; and
 fox/axolotl/robot ears. Plasma purple, papaya and arctic colors expand both
-palettes. The library now contains 215 skinned choices and shared components.
+palettes. The library now contains 228 skinned choices and shared components.
 
 Validation covers all 1,066 frames across the 20 actions, preservation of the
 original geometry and locomotion tracks, indefinite holds, cancellation,
@@ -265,7 +266,7 @@ without horizontal overflow. All 48 focused runtime tests passed.
 
 ## Custom randomization rarity
 
-The **Rarity** button next to Randomize opens independent weights for all eleven
+The **Rarity** button next to Randomize opens independent weights for all twelve
 trait categories, body colors, body finishes, backgrounds and portrait poses.
 Every option defaults to weight 100. Higher weights are more common; 0 removes
 an option from dice rolls. Displayed chances normalize the weights within that
@@ -284,3 +285,42 @@ existing override behavior.
 selection boundaries, zero exclusion, all-off retention, portrait pose gating,
 storage recovery and bounded import/export. Browser checks cover persistence,
 live percentages, weighted finish/pose rolls and the mobile dialog layout.
+
+
+## Eyebrows, fitted eyes and spatial extras
+
+Twelve independently modeled brow styles take visual cues from the collection's
+angular expressions, curls, graphic accents and glowing motifs: soft arches,
+heavy, needle, raised, worried, slit, winged, flame, lightning, pixel, crescent and
+spiral. Original red brows and No eyebrows remain available. They follow Head,
+participate in rarity/randomization, save and sync to the showroom, and hide with
+all other facial categories under full head replacements. Old looks default to
+original brows. The full library contains 228 skinned meshes and 20 actions.
+
+The final eight eye styles (Crescent, Lightning, Pilot goggles, Robot, Stitched,
+Target, Flower and Sleep mask) have no generic black eye-orb backing. Crescents
+use an actual open mesh; graphic symbols are resized and fitted to the face;
+layered robot panels and target discs preserve their depth separation. The gold
+earring now pierces the original fin at its surface, above the hanging hoop.
+Ghost finish applies the selected color and translucent rim treatment to all
+body and facial surfaces, including fins, nose, muzzle, dot, brows and bare feet.
+Clothing, tattoos, accessories and extras retain their independent materials.
+
+All 15 Extras were adjusted with staggered depth, individual tilts and more
+clearance. Frames and aura elements sit behind the body; butterflies have folded
+wings; the dragon and tendrils curve through depth. The collection camera and
+export dimensions remain unchanged, so edge cropping and natural occlusion are
+still possible. Large outfits and extended-arm poses can overlap nearby props.
+`extra-clearance-validation.json` compares surface intersections with the classic
+wardrobe at neutral and all ten held pose endpoints: 281 mesh-pair intersections
+before, 10 after, and none remaining at neutral. This measures actual geometry
+intersections rather than visual occlusion. Reproduce with
+`check_drifmaker_extra_clearance.py` and `DRIFMAKER_BASELINE` set to the earlier
+`.blend` snapshot before executing it through the bridge.
+
+The final asset passed the 1,066-frame Blender sweep and all 132 Drifmaker /
+showroom runtime tests. Browser checks covered the eight refined eyes, new brow
+thumbnails and selection, eyebrow rarity controls, full-head overrides, whole-body
+ghost tint, Salute/T-pose/Deep bow, 390-pixel layout, and an actual 1200 × 1295
+PNG export. `preview-brows-editor.png`, `preview-brows-ghost.png`,
+`preview-brows-poses.png` and `preview-ghost-portrait.png` record those checks.

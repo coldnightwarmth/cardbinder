@@ -1,0 +1,115 @@
+{
+  "method": "Surface-intersection pairs against classic body, head, fins, mouth, hoodie and legs at neutral and all 10 held pose endpoints. Occlusion is allowed; this is a clipping comparison, not a guarantee for every wardrobe combination.",
+  "poses": {
+    "Neutral": {
+      "before": 24,
+      "after": 0
+    },
+    "Pose_salute": {
+      "before": 26,
+      "after": 0
+    },
+    "Pose_tpose": {
+      "before": 27,
+      "after": 2
+    },
+    "Pose_bow": {
+      "before": 17,
+      "after": 0
+    },
+    "Pose_victory": {
+      "before": 35,
+      "after": 0
+    },
+    "Pose_think": {
+      "before": 24,
+      "after": 1
+    },
+    "Pose_point": {
+      "before": 26,
+      "after": 0
+    },
+    "Pose_summon": {
+      "before": 21,
+      "after": 4
+    },
+    "Pose_flex": {
+      "before": 35,
+      "after": 0
+    },
+    "Pose_welcome": {
+      "before": 25,
+      "after": 3
+    },
+    "Pose_heart": {
+      "before": 21,
+      "after": 0
+    }
+  },
+  "byExtra": {
+    "Drif_Extra_mon": {
+      "before": 27,
+      "after": 2
+    },
+    "Drif_Extra_saiyanaura": {
+      "before": 28,
+      "after": 1
+    },
+    "Drif_Extra_ornateframe": {
+      "before": 0,
+      "after": 0
+    },
+    "Drif_Extra_spiritflames": {
+      "before": 23,
+      "after": 2
+    },
+    "Drif_Extra_planets": {
+      "before": 29,
+      "after": 0
+    },
+    "Drif_Extra_arcane": {
+      "before": 11,
+      "after": 0
+    },
+    "Drif_Extra_storm": {
+      "before": 11,
+      "after": 0
+    },
+    "Drif_Extra_crystals": {
+      "before": 32,
+      "after": 0
+    },
+    "Drif_Extra_pixelstars": {
+      "before": 14,
+      "after": 0
+    },
+    "Drif_Extra_tentacles": {
+      "before": 18,
+      "after": 0
+    },
+    "Drif_Extra_dragon": {
+      "before": 28,
+      "after": 4
+    },
+    "Drif_Extra_cards": {
+      "before": 23,
+      "after": 0
+    },
+    "Drif_Extra_butterflies": {
+      "before": 18,
+      "after": 1
+    },
+    "Drif_Extra_ufo": {
+      "before": 19,
+      "after": 0
+    },
+    "Drif_Extra_rainbow": {
+      "before": 0,
+      "after": 0
+    }
+  },
+  "total": {
+    "before": 281,
+    "after": 10
+  }
+}

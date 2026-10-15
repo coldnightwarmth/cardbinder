@@ -99,10 +99,15 @@ for style in SIGNATURE_VARIANTS['Ears']:
    for j in range(3):
     z=2.1+j*.18;plaque(p+'_fin',[(s*.50,z-.08),(s*.81,z+.06),(s*.66,z+.24),(s*.50,z+.12)],-.03,.12,blue if j%2 else white)
 
-# A single hoop, attached close to the shared ear root so every ear set can wear it.
+# A single pierced hoop on the outer fin, located from the actual fin surface.
 p='Drif_Accessory_goldearring'
-dm_loop(p+'_hoop',(.65,-.14,2.12),(.075,.105),.019,sg_gold,steps=32)
-ell(p+'_stud',(.65,-.14,2.225),(.027,.02,.027),sg_gold,n=12,m=8)
+sg_fin=bpy.data.objects['Drif_Ears_original']
+sg_fin_bvh=BVHTree.FromPolygons([v.co[:] for v in sg_fin.data.vertices],[tuple(face.vertices) for face in sg_fin.data.polygons])
+sg_fin_hit=sg_fin_bvh.ray_cast(Vector((.82,-2,2.29)),Vector((0,1,0)),4)[0]
+assert sg_fin_hit is not None, 'Gold earring must pierce the original fin'
+sg_earring_anchor=sg_fin_hit.copy();sg_earring_anchor.y-=.012
+dm_loop(p+'_hoop',sg_earring_anchor-Vector((0,0,.12)),(.083,.12),.018,sg_gold,steps=36)
+ell(p+'_stud',sg_earring_anchor,(.027,.02,.027),sg_gold,n=12,m=8)
 
 # Stylized back-mounted machine-gun prop; all hard parts remain Chest-bound.
 p='Drif_Accessory_machinegun'

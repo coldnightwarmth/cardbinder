@@ -1,4 +1,4 @@
-import {NEW_TRAITS} from './drifmaker-expansion.mjs?v=3';
+import {NEW_TRAITS} from './drifmaker-expansion.mjs?v=4';
 // Shared by the browser and the showroom worker: only these small, validated
 // appearance values cross the network. Models and materials always stay local.
 // Drifella 2 collection inspiration: https://www.tensor.trade/trade/drifella_2
@@ -8,7 +8,7 @@ import {NEW_TRAITS} from './drifmaker-expansion.mjs?v=3';
 const options=items=>Object.freeze(items.map(item=>Object.freeze(item)));
 const ORIGINAL_CATEGORIES=Object.freeze({
  eyes:options([
-  {id:'classic',label:'Classic',description:'Bright eyes and the original crimson brows.'},
+  {id:'classic',label:'Classic',description:'Bright glossy eyes.'},
   {id:'sleepy',label:'Sleepy',description:'A half-lidded expression inspired by the collection’s sleppy eyes.'},
   {id:'star',label:'Starry',description:'Sculpted star eyes inspired by pixelady star.'},
   {id:'spiral',label:'Spiral',description:'A hypnotic pair of sculpted spiral eyes.'},
@@ -153,7 +153,7 @@ export const PORTRAIT_BACKGROUNDS=options([
  {label:'Periwinkle',hex:'#8999e0'},{label:'Powder blue',hex:'#a4d5ed'},{label:'Mint',hex:'#a0eccb'},{label:'Peach',hex:'#f4b08c'},
  {label:'Pale lemon',hex:'#f1e3a0'},{label:'Ink',hex:'#131520'},{label:'Paper',hex:'#f4f0e6'},
 ]);
-export const DEFAULT_APPEARANCE=Object.freeze({bodyColor:'#1d5dea',eyes:'classic',mouth:'original',shirt:'original',legs:'original',hat:'none',accessory:'original',head:'original',extra:'none',nose:'original',ears:'original',tattoo:'none',bodyStyle:'solid'});
+export const DEFAULT_APPEARANCE=Object.freeze({bodyColor:'#1d5dea',eyes:'classic',mouth:'original',shirt:'original',legs:'original',hat:'none',accessory:'original',head:'original',extra:'none',nose:'original',ears:'original',tattoo:'none',brows:'original',bodyStyle:'solid'});
 // Keep the storage key: normalization supplies defaults for new categories
 // without resetting any existing selections in older saved looks.
 export const APPEARANCE_STORAGE_KEY='cards-art:drifmaker:appearance:v1';

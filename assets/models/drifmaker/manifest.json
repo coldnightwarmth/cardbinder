@@ -1,5 +1,5 @@
 {
-  "version": 5,
+  "version": 6,
   "asset": "drifella-customizable.glb",
   "source": "drifella-customizable.blend",
   "bodyMaterial": "Drif_Body_Main",
@@ -252,6 +252,22 @@
       "crescentmark",
       "circuit"
     ],
+    "brows": [
+      "none",
+      "original",
+      "arch",
+      "heavy",
+      "needle",
+      "raised",
+      "worried",
+      "slit",
+      "winged",
+      "flame",
+      "lightning",
+      "pixel",
+      "crescent",
+      "spiral"
+    ],
     "bodyStyles": [
       "solid",
       "ghost",
@@ -286,8 +302,24 @@
     "extra": "Drif_Extra_",
     "nose": "Drif_Nose_",
     "ears": "Drif_Ears_",
-    "tattoo": "Drif_Tattoo_"
+    "tattoo": "Drif_Tattoo_",
+    "brows": "Drif_Brows_"
   },
+  "orbFreeEyes": [
+    "crescent",
+    "bolts",
+    "goggles",
+    "robot",
+    "stitched",
+    "target",
+    "petals",
+    "sleepmask"
+  ],
+  "earringAnchor": [
+    0.8199999928474426,
+    -0.11209229379892349,
+    2.2899999618530273
+  ],
   "poses": [
     "salute",
     "tpose",
@@ -511,38 +543,38 @@
     },
     {
       "name": "Drif_Eyes_crescent",
-      "vertices": 452,
-      "triangles": 872
+      "vertices": 288,
+      "triangles": 560
     },
     {
       "name": "Drif_Eyes_bolts",
-      "vertices": 316,
-      "triangles": 616
+      "vertices": 24,
+      "triangles": 40
     },
     {
       "name": "Drif_Eyes_goggles",
-      "vertices": 884,
-      "triangles": 1732
+      "vertices": 592,
+      "triangles": 1156
     },
     {
       "name": "Drif_Eyes_robot",
-      "vertices": 356,
-      "triangles": 672
+      "vertices": 64,
+      "triangles": 96
     },
     {
       "name": "Drif_Eyes_stitched",
-      "vertices": 460,
-      "triangles": 848
+      "vertices": 168,
+      "triangles": 272
     },
     {
       "name": "Drif_Eyes_target",
-      "vertices": 484,
-      "triangles": 936
+      "vertices": 192,
+      "triangles": 360
     },
     {
       "name": "Drif_Eyes_petals",
-      "vertices": 1220,
-      "triangles": 2376
+      "vertices": 928,
+      "triangles": 1800
     },
     {
       "name": "Drif_Eyes_sleepmask",
@@ -946,8 +978,8 @@
     },
     {
       "name": "Drif_Accessory_goldearring",
-      "vertices": 284,
-      "triangles": 560
+      "vertices": 308,
+      "triangles": 608
     },
     {
       "name": "Drif_Accessory_machinegun",
@@ -1211,8 +1243,8 @@
     },
     {
       "name": "Drif_Head_original",
-      "vertices": 870,
-      "triangles": 1684
+      "vertices": 862,
+      "triangles": 1680
     },
     {
       "name": "Drif_Head_void",
@@ -1478,18 +1510,85 @@
       "name": "Drif_Tattoo_circuit",
       "vertices": 222,
       "triangles": 396
+    },
+    {
+      "name": "Drif_Brows_original",
+      "vertices": 8,
+      "triangles": 4
+    },
+    {
+      "name": "Drif_Brows_arch",
+      "vertices": 200,
+      "triangles": 392
+    },
+    {
+      "name": "Drif_Brows_heavy",
+      "vertices": 152,
+      "triangles": 296
+    },
+    {
+      "name": "Drif_Brows_needle",
+      "vertices": 200,
+      "triangles": 392
+    },
+    {
+      "name": "Drif_Brows_raised",
+      "vertices": 200,
+      "triangles": 392
+    },
+    {
+      "name": "Drif_Brows_worried",
+      "vertices": 152,
+      "triangles": 296
+    },
+    {
+      "name": "Drif_Brows_slit",
+      "vertices": 208,
+      "triangles": 400
+    },
+    {
+      "name": "Drif_Brows_winged",
+      "vertices": 28,
+      "triangles": 48
+    },
+    {
+      "name": "Drif_Brows_flame",
+      "vertices": 140,
+      "triangles": 264
+    },
+    {
+      "name": "Drif_Brows_lightning",
+      "vertices": 28,
+      "triangles": 48
+    },
+    {
+      "name": "Drif_Brows_pixel",
+      "vertices": 96,
+      "triangles": 144
+    },
+    {
+      "name": "Drif_Brows_crescent",
+      "vertices": 200,
+      "triangles": 392
+    },
+    {
+      "name": "Drif_Brows_spiral",
+      "vertices": 574,
+      "triangles": 1140
     }
   ],
   "originalParts": {
     "Drif_Body": 894,
-    "Drif_Head_original": 906,
+    "Drif_Head_original": 904,
     "Drif_Eyes_classic": 840,
     "Drif_Shirt_original": 528,
     "Drif_Accessory_original": 210,
     "Drif_Legs_original": 594,
     "Drif_Mouth_original": 3,
     "Drif_Ears_original": 42,
-    "Drif_Nose_original": 96
+    "Drif_Nose_original": 96,
+    "Drif_Brows_original": 2
   },
-  "notes": "All components share the original 19-bone rest pose, 10 locomotion actions and 10 enter-and-hold pose actions. Alternate heads replace the original head, eyes and mouth without discarding facial choices. Extra is independent of accessories. Ghost skin is applied by the runtime with the skinned fuzz mesh. Gold coats all body and facial surfaces. The Swag World hoodie embeds the user-supplied photograph with torso and sleeve UVs."
+  "extraLayout": "Staggered satellite depths and individual rotations; rear aura/frame clearance; folded butterfly wings and curved dragon/tendril paths.",
+  "notes": "All components share the original 19-bone rest pose, 10 locomotion actions and 10 enter-and-hold pose actions. Alternate heads replace the original head and all facial categories, including brows, without discarding choices. Extra is independent of accessories. Ghost color and rim transparency cover the entire body, facial surfaces and bare feet, with a skinned fuzz mesh. Gold coats all body and facial surfaces. The Swag World hoodie embeds the user-supplied photograph with torso and sleeve UVs."
 }

@@ -1,4 +1,4 @@
-import {BODY_COLORS,BODY_STYLES,PORTRAIT_BACKGROUNDS,CATEGORIES} from './drifmaker-config.mjs?v=5';
+import {BODY_COLORS,BODY_STYLES,PORTRAIT_BACKGROUNDS,CATEGORIES} from './drifmaker-config.mjs?v=6';
 import {POSES} from './drifmaker-poses.mjs?v=1';
 
 export const RARITY_STORAGE_KEY='cards-art:drifmaker:rarity:v1';
@@ -7,7 +7,7 @@ export const MAX_WEIGHT=10000;
 export const RARITY_GROUPS=Object.freeze({
  bodyColor:{label:'Body colors',options:BODY_COLORS},
  bodyStyle:{label:'Body finishes',options:BODY_STYLES},
- ...Object.fromEntries(['head','eyes','mouth','nose','ears','tattoo','shirt','legs','hat','accessory','extra'].map((key,index)=>[key,{label:['Heads','Eyes','Mouth','Nose','Ears','Tattoos','Tops','Legs','Hats','Accessories','Extra'][index],options:CATEGORIES[key]}])),
+ ...Object.fromEntries(['head','eyes','brows','mouth','nose','ears','tattoo','shirt','legs','hat','accessory','extra'].map((key,index)=>[key,{label:['Heads','Eyes','Eyebrows','Mouth','Nose','Ears','Tattoos','Tops','Legs','Hats','Accessories','Extra'][index],options:CATEGORIES[key]}])),
  background:{label:'Backgrounds',options:PORTRAIT_BACKGROUNDS.map(color=>({...color,id:color.hex}))},
  pose:{label:'Portrait poses',options:POSES},
 });

@@ -1,9 +1,9 @@
 import {POSES,normalizePose} from './drifmaker-poses.mjs?v=1';
-import {randomizeLook} from './drifmaker-rarity.mjs?v=1';
-import {createRarityEditor} from './drifmaker-rarity-controls.mjs?v=1';
+import {randomizeLook} from './drifmaker-rarity.mjs?v=2';
+import {createRarityEditor} from './drifmaker-rarity-controls.mjs?v=2';
 import * as THREE from 'three';
-import {createShowroomAvatar} from './showroom-avatar.js?v=14';
-import {BODY_COLORS,BODY_STYLES,PORTRAIT_BACKGROUNDS,CATEGORIES,DEFAULT_APPEARANCE,normalizeAppearance,loadAppearance,saveAppearance} from './drifmaker-config.mjs?v=5';
+import {createShowroomAvatar} from './showroom-avatar.js?v=15';
+import {BODY_COLORS,BODY_STYLES,PORTRAIT_BACKGROUNDS,CATEGORIES,DEFAULT_APPEARANCE,normalizeAppearance,loadAppearance,saveAppearance} from './drifmaker-config.mjs?v=6';
 import {PORTRAIT_COMPOSITION,createPortraitAvatar,configurePortraitCamera,capturePortrait,portraitPoseComposition} from './drifmaker-portrait.mjs?v=3';
 import {createDrifmakerEnvironment} from './drifmaker-lighting.mjs?v=1';
 import {jumpHeight} from './showroom-locomotion.mjs?v=2';
@@ -18,8 +18,8 @@ let viewMode='studio',portraitAvatar,portraitScene,portraitCamera,portraitDirty=
 let portraitBackground=PORTRAIT_COMPOSITION.background;
 let toastTimer,changeVersion=0,disposed=false,frameId,previousTime=0;
 const target=new THREE.Vector3(0,1.55,0),reducedMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
-const titles={eyes:'Eyes',mouth:'Mouth',shirt:'Tops',legs:'Pants & legs',hat:'Hats',accessory:'Accessories',head:'Heads',extra:'Extra',nose:'Nose',ears:'Ears',tattoo:'Tattoos'};
-const categoryOrder=['body','head','eyes','mouth','nose','ears','tattoo','shirt','legs','hat','accessory','extra'];
+const titles={brows:'Eyebrows',eyes:'Eyes',mouth:'Mouth',shirt:'Tops',legs:'Pants & legs',hat:'Hats',accessory:'Accessories',head:'Heads',extra:'Extra',nose:'Nose',ears:'Ears',tattoo:'Tattoos'};
+const categoryOrder=['body','head','eyes','brows','mouth','nose','ears','tattoo','shirt','legs','hat','accessory','extra'];
 let activeCategory='eyes';
 const rarityEditor=createRarityEditor({activeCategory:()=>activeCategory,onError:toast});
 const iconPaths={
@@ -72,7 +72,7 @@ function makeControls(){
  for(const category of categoryOrder.filter(item=>item!=='body')){
   const options=CATEGORIES[category],section=panel(category);
   const heading=document.createElement('div');heading.className='section-heading';heading.innerHTML=`<h3>${titles[category]}</h3><span class="selected-label" data-label="${category}"></span>`;section.append(heading);
-  if(['eyes','mouth','nose','ears','tattoo'].includes(category)){const note=document.createElement('p');note.className='head-override-note';note.dataset.overrideNotice=category;note.textContent='Head overrides face traits.';note.hidden=true;section.append(note);}
+  if(['eyes','brows','mouth','nose','ears','tattoo'].includes(category)){const note=document.createElement('p');note.className='head-override-note';note.dataset.overrideNotice=category;note.textContent='Head overrides face traits.';note.hidden=true;section.append(note);}
   const grid=document.createElement('div');grid.className='options';grid.setAttribute('role','group');grid.setAttribute('aria-label',titles[category]);
   for(const option of options){const button=document.createElement('button');button.className='option';button.type='button';button.dataset.category=category;button.dataset.option=option.id;button.title=option.label;button.innerHTML=`<span class="option-art">${icon(category,option.id)}</span>`;const label=document.createElement('span');label.className='option-label';label.textContent=option.label;button.append(label);button.onclick=()=>select({[category]:option.id});grid.append(button);}
   section.append(grid);controls.append(section);
@@ -105,7 +105,7 @@ $('#importLook').onclick=()=>$('#lookFile').click();
 $('#lookFile').onchange=async event=>{
  const file=event.target.files?.[0];event.target.value='';if(!file)return;
  try{if(file.size>16384)throw Error('Too large');const data=JSON.parse(await file.text()),value=data.appearance||data;
-  if((value?.bodyStyle!==undefined&&!BODY_STYLES.some(style=>style.id===value.bodyStyle))||!value||typeof value!=='object'||Array.isArray(value)||!/^#[a-f\d]{6}$/i.test(value.bodyColor)||!Object.entries(CATEGORIES).every(([key,options])=>(['legs','mouth','head','extra','nose','ears','tattoo'].includes(key)&&!Object.hasOwn(value,key))||options.some(option=>option.id===value[key])))throw Error('Invalid look');
+  if((value?.bodyStyle!==undefined&&!BODY_STYLES.some(style=>style.id===value.bodyStyle))||!value||typeof value!=='object'||Array.isArray(value)||!/^#[a-f\d]{6}$/i.test(value.bodyColor)||!Object.entries(CATEGORIES).every(([key,options])=>(['legs','mouth','head','extra','nose','ears','tattoo','brows'].includes(key)&&!Object.hasOwn(value,key))||options.some(option=>option.id===value[key])))throw Error('Invalid look');
   await select(normalizeAppearance(value));if(Object.hasOwn(data,'rarity'))rarityEditor.replace(data.rarity);if(data.portrait){portraitPosesEnabled=data.portrait.posesEnabled===true;portraitPose=normalizePose(data.portrait.pose)||'salute';$('#enablePortraitPoses').checked=portraitPosesEnabled;$('#portraitPose').hidden=!portraitPosesEnabled;$('#portraitPose').value=portraitPose;if(/^#[a-f\d]{6}$/i.test(data.portrait.background))setPortraitBackground(data.portrait.background);applyPortraitPose();}toast('Look imported.');
  }catch{toast('Choose a valid Drifmaker look exported from this editor.');}
 };
@@ -225,7 +225,7 @@ async function makeThumbnails(){
   previewRenderer=new THREE.WebGLRenderer({alpha:true,antialias:true});previewRenderer.setSize(180,132);previewRenderer.outputColorSpace=THREE.SRGBColorSpace;previewRenderer.toneMapping=THREE.ACESFilmicToneMapping;previewRenderer.toneMappingExposure=1.1;
   previewEnvironment=createDrifmakerEnvironment(previewRenderer);thumbnailScene.environment=previewEnvironment.texture;
   const portraitCamera=new THREE.OrthographicCamera(-1,1,1,-1,.05,20);
-  const views={eyes:{y:2.23,height:.70},mouth:{y:1.87,height:.60},shirt:{y:1.18,height:1.45},legs:{y:.47,height:1.08},hat:{y:2.82,height:1.68},accessory:{y:1.5,height:2.55},head:{y:2.25,height:2.05},extra:{y:1.80,height:3.25},nose:{y:1.98,height:.40},ears:{y:2.35,height:2.0},tattoo:{y:2.22,height:1.25}};
+  const views={brows:{y:2.47,height:.75},eyes:{y:2.23,height:.70},mouth:{y:1.87,height:.60},shirt:{y:1.18,height:1.45},legs:{y:.47,height:1.08},hat:{y:2.82,height:1.68},accessory:{y:1.5,height:2.55},head:{y:2.25,height:2.05},extra:{y:1.80,height:3.25},nose:{y:1.98,height:.40},ears:{y:2.35,height:2.0},tattoo:{y:2.22,height:1.25}};
   const remaining=[...controls.querySelectorAll('[data-option]')].filter(button=>button.dataset.option!=='none');
   while(remaining.length&&!disposed){
    for(let batch=0;batch<3&&remaining.length;batch++){

@@ -656,5 +656,63 @@ export const NEW_TRAITS={
    "id": "robot",
    "label": "Robot ears"
   }
+ ],
+ "brows": [
+  {
+   "id": "original",
+   "label": "Original brows"
+  },
+  {
+   "id": "none",
+   "label": "No eyebrows"
+  },
+  {
+   "id": "arch",
+   "label": "Soft arches"
+  },
+  {
+   "id": "heavy",
+   "label": "Heavy brows"
+  },
+  {
+   "id": "needle",
+   "label": "Needle brows"
+  },
+  {
+   "id": "raised",
+   "label": "Raised brow"
+  },
+  {
+   "id": "worried",
+   "label": "Worried brows"
+  },
+  {
+   "id": "slit",
+   "label": "Slit brows"
+  },
+  {
+   "id": "winged",
+   "label": "Winged brows"
+  },
+  {
+   "id": "flame",
+   "label": "Flame brows"
+  },
+  {
+   "id": "lightning",
+   "label": "Lightning brows"
+  },
+  {
+   "id": "pixel",
+   "label": "Pixel brows"
+  },
+  {
+   "id": "crescent",
+   "label": "Crescent brows"
+  },
+  {
+   "id": "spiral",
+   "label": "Spiral brows"
+  }
  ]
 };

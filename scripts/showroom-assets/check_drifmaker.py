@@ -22,11 +22,11 @@ for obj in meshes:
 def position_key(vertex):
     return tuple(round(v,6) for v in vertex.co)
 source=bpy.data.objects['BlueFinCharacterMesh']
-original_names=['Drif_Body','Drif_Head_original','Drif_Eyes_classic','Drif_Shirt_original','Drif_Accessory_original','Drif_Legs_original','Drif_Mouth_original','Drif_Nose_original','Drif_Ears_original']
+original_names=['Drif_Body','Drif_Head_original','Drif_Eyes_classic','Drif_Shirt_original','Drif_Accessory_original','Drif_Legs_original','Drif_Mouth_original','Drif_Nose_original','Drif_Ears_original','Drif_Brows_original']
 assert Counter(position_key(v) for v in source.data.vertices)==Counter(position_key(v) for name in original_names for v in bpy.data.objects[name].data.vertices)
 report={'normalizedWeights':True,'maxInfluences':4,'originalGeometryPreserved':True,
         'boneCount':len(rig.data.bones),'skinnedObjectCount':len(meshes),'clips':{},'neutralBounds':{},
-        'verification':'Every frame of all 20 actions evaluated for finite vertices; original nine-component union compared to original mesh; includes all alternate heads, extras and ghost fibers.'}
+        'verification':'Every frame of all 20 actions evaluated for finite vertices; original ten-component union compared to original mesh; includes all alternate heads, extras and ghost fibers.'}
 for action in bpy.data.actions:
     rig.animation_data.action=action
     frames=range(int(action.frame_range[0]),int(action.frame_range[1])+1)
@@ -54,9 +54,9 @@ for action in bpy.data.actions:
     print('Validated',action.name,len(frames),'frames')
 (OUT/'animation-validation.json').write_text(json.dumps(report,indent=2))
 
-def look(eyes,shirt,hat,accessory,action,frame,legs='original',mouth='original',head='original',extra='none',nose='original',ears='original',tattoo='none'):
-    names=['Drif_Body','Drif_Head_'+head,'Drif_Extra_'+extra,'Drif_Eyes_'+eyes,'Drif_Shirt_'+shirt,'Drif_Hat_'+hat,'Drif_Accessory_'+accessory,'Drif_Legs_'+legs,'Drif_Mouth_'+mouth,'Drif_Nose_'+nose,'Drif_Ears_'+ears,'Drif_Tattoo_'+tattoo]
-    if head!='original':names=[n for n in names if not n.startswith(('Drif_Eyes_','Drif_Mouth_','Drif_Nose_','Drif_Ears_','Drif_Tattoo_'))]
+def look(eyes,shirt,hat,accessory,action,frame,legs='original',mouth='original',head='original',extra='none',nose='original',ears='original',tattoo='none',brows='original'):
+    names=['Drif_Body','Drif_Head_'+head,'Drif_Extra_'+extra,'Drif_Eyes_'+eyes,'Drif_Shirt_'+shirt,'Drif_Hat_'+hat,'Drif_Accessory_'+accessory,'Drif_Legs_'+legs,'Drif_Mouth_'+mouth,'Drif_Nose_'+nose,'Drif_Ears_'+ears,'Drif_Tattoo_'+tattoo,'Drif_Brows_'+brows]
+    if head!='original':names=[n for n in names if not n.startswith(('Drif_Eyes_','Drif_Mouth_','Drif_Nose_','Drif_Ears_','Drif_Tattoo_','Drif_Brows_'))]
     for obj in meshes:
         visible=obj.name in names
         obj.hide_set(not visible)
