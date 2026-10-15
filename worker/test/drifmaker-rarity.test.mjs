@@ -5,7 +5,7 @@ import {DEFAULT_APPEARANCE,BODY_STYLES,BODY_STYLE_COLORS,HEAD_SCALES,normalizeAp
 import {RARITY_GROUPS,RARITY_STORAGE_KEY,DEFAULT_WEIGHT,MAX_WEIGHT,normalizeRarity,traitWeight,traitChances,pickTrait,randomizeLook,loadRarity,saveRarity} from '../../drifmaker-rarity.mjs';
 
 test('every trait, color, finish, background and pose starts with equal odds',()=>{
- assert.equal(Object.keys(RARITY_GROUPS).length,16);
+ assert.equal(Object.keys(RARITY_GROUPS).length,17);
  for(const [category,{options}] of Object.entries(RARITY_GROUPS)){
   assert.ok(options.every(option=>typeof option.id==='string'&&option.id));
   assert.equal(new Set(options.map(option=>option.id)).size,options.length);
@@ -34,7 +34,7 @@ test('all-off groups keep the current selection, including custom colors and por
  const rarity=Object.fromEntries(Object.entries(RARITY_GROUPS).map(([key,{options}])=>[key,Object.fromEntries(options.map(option=>[option.id,0]))]));
  const state={rarity,appearance:{...DEFAULT_APPEARANCE,bodyColor:'#123abc',shirt:'cardigan'},background:'#abcdef',pose:'heart',posesEnabled:true};
  assert.equal(pickTrait(rarity,'eyes'),null);
- assert.deepEqual(randomizeLook(state),{appearance:state.appearance,background:state.background,pose:state.pose});
+ assert.deepEqual(randomizeLook(state),{appearance:state.appearance,background:state.background,overlay:'none',pose:state.pose});
  assert.ok(Object.values(traitChances(rarity,'eyes')).every(chance=>chance===0));
 });
 

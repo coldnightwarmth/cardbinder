@@ -45,7 +45,7 @@ test('ZIP pairs each PNG with categorized JSON metadata in its own folder, with 
   result.metadata.forEach((metadata,index)=>{
    assert.equal(metadata.id,index+1);assert.equal(metadata.name,entries[index].name);assert.deepEqual(normalizeLook(metadata),entries[index].look);
    assert.deepEqual(metadata.properties,{files:[{uri:metadata.image,type:'image/png'}],category:'image'});
-   const categories=metadata.attributes.map(trait=>trait.trait_type);assert.deepEqual(categories,[...categories].sort());assert.equal(new Set(categories).size,16);
+   const categories=metadata.attributes.map(trait=>trait.trait_type);assert.deepEqual(categories,[...categories].sort());assert.equal(new Set(categories).size,17);
    assert.equal(metadata.attributes.find(trait=>trait.trait_type==='mouth').value,index?'Venom mouth':'Original');
   });
  }finally{rmSync(dir,{recursive:true,force:true});}
@@ -75,7 +75,7 @@ test('metadata uses readable visible trait names and preserves hidden selections
  const metadata=bookmarkMetadata({name:'Wizard',look:value},{image:'../001-Wizard.png',id:1}),traits=Object.fromEntries(metadata.attributes.map(item=>[item.trait_type,item.value]));
  assert.equal(traits.background,'Rainbow gradient');assert.equal(traits['body finish'],'Camo');assert.equal(traits['body color'],'Woodland camo');assert.equal(traits.pose,'Hold card');assert.equal(traits.top,'Star wizard robe');
  for(const key of ['eyes','eyebrows','mouth','nose','tattoos','legs'])assert.equal(traits[key],'None');
- assert.equal(traits.ears,'Original fins');assert.deepEqual(normalizeLook(metadata),value);
+ assert.equal(traits.ears,'Drooping fins');assert.deepEqual(normalizeLook(metadata),value);
  const custom=bookmarkMetadata({name:'Custom',look:look({bodyColor:'#123abc'},{background:'#abcdef',pose:'bow',posesEnabled:false})},{image:'../custom.png',id:2});
  const customTraits=Object.fromEntries(custom.attributes.map(item=>[item.trait_type,item.value]));
  assert.equal(customTraits['body color'],'Custom (#123abc)');assert.equal(customTraits.background,'Custom (#abcdef)');assert.equal(customTraits.pose,'Neutral');

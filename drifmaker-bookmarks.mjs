@@ -1,7 +1,8 @@
-import {validPortraitBackground} from './drifmaker-background.mjs?v=1';
-import {normalizeAppearance,BODY_COLORS,BODY_STYLES,PORTRAIT_BACKGROUNDS,CATEGORIES,isOriginalHead,CLASSIC_FIN_HEADS,LEG_OVERRIDE_TOPS} from './drifmaker-config.mjs?v=12';
+import {normalizeOverlay,PORTRAIT_OVERLAYS} from './drifmaker-portrait-art.mjs?v=1';
+import {validPortraitBackground} from './drifmaker-background.mjs?v=2';
+import {normalizeAppearance,BODY_COLORS,BODY_STYLES,PORTRAIT_BACKGROUNDS,CATEGORIES,isOriginalHead,EAR_COMPATIBLE_HEADS,LEG_OVERRIDE_TOPS} from './drifmaker-config.mjs?v=14';
 import {normalizePortraitPose,PORTRAIT_POSES} from './drifmaker-poses.mjs?v=3';
-import {PORTRAIT_COMPOSITION} from './drifmaker-portrait.mjs?v=6';
+import {PORTRAIT_COMPOSITION} from './drifmaker-portrait.mjs?v=7';
 import {createZipWriter} from './minotecurator/zip-writer.js';
 
 export const BOOKMARK_KEY='cards.art.drifmaker.bookmarks.v1';
@@ -10,6 +11,7 @@ export function normalizeLook(value={}){
  const portrait=value?.portrait||{};
  return {appearance:normalizeAppearance(value?.appearance),portrait:{
   background:validPortraitBackground(portrait.background)?portrait.background.toLowerCase():PORTRAIT_COMPOSITION.background,
+  overlay:normalizeOverlay(portrait.overlay),
   posesEnabled:portrait.posesEnabled===true,pose:normalizePortraitPose(portrait.pose)||'salute',
  }};
 }
@@ -56,12 +58,13 @@ export function bookmarkMetadata(item,{image,id}={}){
   background:PORTRAIT_BACKGROUNDS.find(color=>color.hex===portrait.background)?.label||`Custom (${portrait.background})`,
   'body color':BODY_COLORS.find(color=>color.hex===appearance.bodyColor)?.label||`Custom (${appearance.bodyColor})`,
   'body finish':label(BODY_STYLES,appearance.bodyStyle),
+  overlay:label(PORTRAIT_OVERLAYS,portrait.overlay),
   pose:portrait.posesEnabled?label(PORTRAIT_POSES,portrait.pose):'Neutral',
  };
  const categories={accessory:'accessories',brows:'eyebrows',ears:'ears',extra:'extra',eyes:'eyes',hat:'hat',head:'head',legs:'legs',mouth:'mouth',nose:'nose',shirt:'top',tattoo:'tattoos'};
  for(const [category,title] of Object.entries(categories)){
   let selected=appearance[category];
-  if(category==='ears'&&CLASSIC_FIN_HEADS.includes(appearance.head))selected='original';
+  if(category==='ears'&&EAR_COMPATIBLE_HEADS.includes(appearance.head))selected=appearance.ears;
   else if(!isOriginalHead(appearance.head)&&['eyes','brows','mouth','nose','ears','tattoo'].includes(category))selected=null;
   if(category==='legs'&&LEG_OVERRIDE_TOPS.includes(appearance.shirt))selected=null;
   values[title]=selected===null?'None':label(CATEGORIES[category],selected);

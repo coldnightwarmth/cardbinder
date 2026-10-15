@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import * as THREE from '../../vendor/three.module.min.js';
-import {CATEGORIES,CLASSIC_FIN_HEADS,LEG_OVERRIDE_TOPS,GOLD_COLOR,BODY_COLORS,PORTRAIT_BACKGROUNDS,HEAD_SCALES,isOriginalHead,DEFAULT_APPEARANCE,APPEARANCE_STORAGE_KEY,normalizeAppearance,appearanceKey,loadAppearance,saveAppearance} from '../../drifmaker-config.mjs';
+import {CATEGORIES,EAR_COMPATIBLE_HEADS,LEG_OVERRIDE_TOPS,GOLD_COLOR,BODY_COLORS,PORTRAIT_BACKGROUNDS,HEAD_SCALES,isOriginalHead,DEFAULT_APPEARANCE,APPEARANCE_STORAGE_KEY,normalizeAppearance,appearanceKey,loadAppearance,saveAppearance} from '../../drifmaker-config.mjs';
 import {createAvatarAppearance} from '../../drifmaker-avatar.mjs';
 import {bookmarkMetadata,normalizeLook} from '../../drifmaker-bookmarks.mjs';
 import {Showroom} from '../src/showroom.js';
@@ -12,6 +12,16 @@ import {freshRoom} from '../src/showroom-state.js';
 // Proportional heads reuse the original mesh and skeleton; they are persisted
 // catalog choices, but must never be counted as three missing GLB mesh assets.
 const meshOptions=(category,items)=>items.filter(item=>item.id!=='none'&&!(category==='head'&&item.id!=='original'&&isOriginalHead(item.id)));
+
+ const readAsset=path=>{
+  const bytes=readFileSync(new URL(path,import.meta.url)),length=bytes.readUInt32LE(12),json=JSON.parse(bytes.subarray(20,20+length).toString()),binaryStart=28+length;
+  const values=index=>{
+   const accessor=json.accessors[index],view=json.bufferViews[accessor.bufferView],size={SCALAR:1,VEC2:2,VEC3:3,VEC4:4,MAT4:16}[accessor.type];
+   const components={5121:[1,'readUInt8',255],5123:[2,'readUInt16LE',65535],5125:[4,'readUInt32LE',4294967295],5126:[4,'readFloatLE',1]},[bytesPer,method,denominator]=components[accessor.componentType];
+   const offset=binaryStart+(view.byteOffset||0)+(accessor.byteOffset||0),stride=view.byteStride||size*bytesPer,result=[];
+   for(let i=0;i<accessor.count;i++)for(let j=0;j<size;j++){const value=bytes[method](offset+i*stride+j*bytesPer);result.push(accessor.normalized?value/denominator:value);}return result;
+  };return {json,values};
+ };
 
 test('expanded wardrobe contains twelve independent categories and bounded normalized values',()=>{
  assert.deepEqual(Object.fromEntries(Object.entries(CATEGORIES).map(([category,items])=>[category,items.length])),{eyes:57,mouth:53,shirt:52,legs:46,hat:53,accessory:52,head:35,extra:38,tattoo:34,nose:31,ears:35,brows:36});
@@ -21,10 +31,10 @@ test('expanded wardrobe contains twelve independent categories and bounded norma
   for(const item of items)assert.match(item.id,/^[a-z0-9]+$/);
  }
  assert.equal(BODY_COLORS.length,63);
- assert.equal(PORTRAIT_BACKGROUNDS.length,50);
+ assert.equal(PORTRAIT_BACKGROUNDS.length,52);
  for(const palette of [BODY_COLORS,PORTRAIT_BACKGROUNDS]){
   assert.equal(new Set(palette.map(color=>color.hex)).size,palette.length);
-  for(const color of palette)if(color.hex!=='rainbow')assert.match(color.hex,/^#[a-f0-9]{6}$/);
+  for(const color of palette)if(!['rainbow','spiral','blackops'].includes(color.hex))assert.match(color.hex,/^#[a-f0-9]{6}$/);
  }
  assert.deepEqual(normalizeAppearance(null),DEFAULT_APPEARANCE);
  assert.deepEqual(normalizeAppearance([]),DEFAULT_APPEARANCE);
@@ -121,31 +131,31 @@ test('camo covers skin and feet, preserves eyewear and clothes, and restores oth
  controller.dispose();geometry.dispose();source.dispose();
 });
 
-test('replacement heads without built-in ears retain classic fins without losing selected face traits',()=>{
- const expected=['pumpkin','tv','crystal','ceramiccarapace','masonryidol','candywhorl','mossrelic','ashimp','opartmask','berrybust','orbitdemon'];
- assert.deepEqual(CLASSIC_FIN_HEADS,expected);
+test('all ear-compatible replacement heads support every ear pair without exposing hidden face traits',()=>{
+ const expected=['cobaltmecha','bonsaipot','discoball','paperbag','moonface','divingbell','embroidereddoll','copperoni','cloudhead','dicehead','pumpkin','tv','crystal','ceramiccarapace','masonryidol','candywhorl','mossrelic','ashimp','opartmask','berrybust','orbitdemon'];
+ assert.deepEqual(EAR_COMPATIBLE_HEADS,expected);
+ const manifest=JSON.parse(readFileSync(new URL('../../assets/models/drifmaker/manifest.json',import.meta.url)));
+ assert.deepEqual(manifest.earCompatibleHeads,expected);
  const chosenFace={eyes:'star',mouth:'fangs',brows:'heavy',nose:'pig',tattoo:'stars'};
  const faceNames=Object.entries(chosenFace).map(([category,id])=>`Drif_${category[0].toUpperCase()+category.slice(1)}_${id}`);
  const model=new THREE.Group();
- for(const name of ['Drif_Ears_original','Drif_Ears_elf',...faceNames,...meshOptions('head',CATEGORIES.head).map(head=>'Drif_Head_'+head.id)]){const part=new THREE.Group();part.name=name;model.add(part);}
- const controller=createAvatarAppearance(model),selected={...DEFAULT_APPEARANCE,...chosenFace,ears:'elf'};
- for(const head of expected){
-  controller.setAppearance({...selected,head});
+ for(const name of [...CATEGORIES.ears.map(ear=>'Drif_Ears_'+ear.id),...faceNames,...meshOptions('head',CATEGORIES.head).map(head=>'Drif_Head_'+head.id)]){const part=new THREE.Group();part.name=name;model.add(part);}
+ const controller=createAvatarAppearance(model),selected={...DEFAULT_APPEARANCE,...chosenFace};
+ for(const head of expected)for(const ears of CATEGORIES.ears.map(ear=>ear.id)){
+  controller.setAppearance({...selected,head,ears});
   assert.equal(model.getObjectByName('Drif_Head_'+head).visible,true,head);
   assert.equal(model.getObjectByName('Drif_Head_original').visible,false,head);
-  assert.equal(model.getObjectByName('Drif_Ears_original').visible,true,head);
-  assert.equal(model.getObjectByName('Drif_Ears_elf').visible,false,head);
+  assert.deepEqual(CATEGORIES.ears.filter(ear=>model.getObjectByName('Drif_Ears_'+ear.id).visible).map(ear=>ear.id),[ears],head+':'+ears);
   for(const name of faceNames)assert.equal(model.getObjectByName(name).visible,false,head+':'+name);
-  assert.deepEqual(controller.appearance,{...selected,head},'automatic fins preserve the saved face and ear choices');
+  assert.deepEqual(controller.appearance,{...selected,head,ears},'preserve saved face and ear choices');
  }
  for(const head of ['onyxcat','lilacdrake','void','vortex','gasmask','glitch','hockey','hayabusa']){
-  controller.setAppearance({...selected,head});
+  controller.setAppearance({...selected,head,ears:'elf'});
   assert.equal(model.getObjectByName('Drif_Head_'+head).visible,true,head);
-  assert.equal(model.getObjectByName('Drif_Ears_original').visible,false,head);
-  assert.equal(model.getObjectByName('Drif_Ears_elf').visible,false,head);
+  assert.equal(CATEGORIES.ears.some(ear=>model.getObjectByName('Drif_Ears_'+ear.id).visible),false,head);
  }
  for(const head of Object.keys(HEAD_SCALES)){
-  controller.setAppearance({...selected,head});
+  controller.setAppearance({...selected,head,ears:'elf'});
   assert.equal(model.getObjectByName('Drif_Ears_elf').visible,true,head);
   assert.equal(model.getObjectByName('Drif_Ears_original').visible,false,head);
   for(const name of faceNames)assert.equal(model.getObjectByName(name).visible,true,head+':'+name);
@@ -153,15 +163,15 @@ test('replacement heads without built-in ears retain classic fins without losing
  controller.dispose();
 });
 
-test('classic fins on replacement heads are reported in NFT metadata while hidden selections round-trip',()=>{
- const face={eyes:'star',mouth:'fangs',brows:'heavy',nose:'pig',ears:'elf',tattoo:'stars'};
- for(const head of [...CLASSIC_FIN_HEADS,'onyxcat','lilacdrake']){
-  const look=normalizeLook({appearance:{...DEFAULT_APPEARANCE,...face,head},portrait:{background:'#72c4d9',posesEnabled:true,pose:'wave'}});
+test('replacement heads export the visible ear trait in NFT metadata and retain it on reimport',()=>{
+ const face={eyes:'star',mouth:'fangs',brows:'heavy',nose:'pig',tattoo:'stars'};
+ for(const head of [...EAR_COMPATIBLE_HEADS,'onyxcat','lilacdrake'])for(const ear of CATEGORIES.ears){
+  const look=normalizeLook({appearance:{...DEFAULT_APPEARANCE,...face,head,ears:ear.id},portrait:{background:'#72c4d9',posesEnabled:true,pose:'wave'}});
   const metadata=bookmarkMetadata({name:head,look},{id:1,image:'../portrait.png'});
   const attributes=Object.fromEntries(metadata.attributes.map(trait=>[trait.trait_type,trait.value]));
-  assert.equal(attributes.ears,CLASSIC_FIN_HEADS.includes(head)?CATEGORIES.ears.find(option=>option.id==='original').label:'None',head);
+  assert.equal(attributes.ears,EAR_COMPATIBLE_HEADS.includes(head)?ear.label:'None',head+':'+ear.id);
   for(const category of ['eyes','eyebrows','mouth','nose','tattoos'])assert.equal(attributes[category],'None',head+':'+category);
-  assert.equal(metadata.appearance.ears,'elf','the exported editor state keeps the chosen ears');
+  assert.equal(metadata.appearance.ears,ear.id,'the exported editor state keeps the chosen ears');
   assert.deepEqual(normalizeLook(metadata),look,'reimport retains every hidden face choice');
  }
 });
@@ -259,16 +269,51 @@ test('mixing wardrobe parts isolates body color and visibility while sharing imm
  assert.throws(()=>wardrobeA.setAppearance(selected),/disposed/);wardrobeB.dispose();geometry.dispose();bodyMaterial.dispose();wardrobeMaterial.dispose();
 });
 
-test('every shipped wardrobe option is skinned to the original rig and retains all showroom clips',()=>{
- const readAsset=path=>{
-  const bytes=readFileSync(new URL(path,import.meta.url)),length=bytes.readUInt32LE(12),json=JSON.parse(bytes.subarray(20,20+length).toString()),binaryStart=28+length;
-  const values=index=>{
-   const accessor=json.accessors[index],view=json.bufferViews[accessor.bufferView],size={SCALAR:1,VEC2:2,VEC3:3,VEC4:4,MAT4:16}[accessor.type];
-   const components={5121:[1,'readUInt8',255],5123:[2,'readUInt16LE',65535],5125:[4,'readUInt32LE',4294967295],5126:[4,'readFloatLE',1]},[bytesPer,method,denominator]=components[accessor.componentType];
-   const offset=binaryStart+(view.byteOffset||0)+(accessor.byteOffset||0),stride=view.byteStride||size*bytesPer,result=[];
-   for(let i=0;i<accessor.count;i++)for(let j=0;j<size;j++){const value=bytes[method](offset+i*stride+j*bytesPer);result.push(accessor.normalized?value/denominator:value);}return result;
-  };return {json,values};
+test('dinosaur onesie hides only original tail surfaces, restores them, and isolates other avatars',()=>{
+ const {json:gltf,values}=readAsset('../../assets/models/drifmaker/drifella-customizable.glb');
+ const body=gltf.nodes.find(node=>node.name==='Drif_Body');
+ const bones=gltf.skins[body.skin].joints.map(index=>{const bone=new THREE.Bone();bone.name=gltf.nodes[index].name;return bone;});
+ const skeleton=new THREE.Skeleton(bones),sourceMaterial=new THREE.MeshStandardMaterial();sourceMaterial.name='Drif_Body_Main';
+ const geometries=gltf.meshes[body.mesh].primitives.map(primitive=>{
+  const geometry=new THREE.BufferGeometry();
+  for(const [name,attribute,size] of [['position','POSITION',3],['skinIndex','JOINTS_0',4],['skinWeight','WEIGHTS_0',4]])geometry.setAttribute(name,new THREE.Float32BufferAttribute(values(primitive.attributes[attribute]),size));
+  geometry.setIndex(values(primitive.indices));return geometry;
+ });
+ const makeModel=()=>{
+  const model=new THREE.Group(),body=new THREE.Group();body.name='Drif_Body';model.add(body);
+  for(const geometry of geometries){const mesh=new THREE.SkinnedMesh(geometry,sourceMaterial);mesh.bind(skeleton);body.add(mesh);}
+  // Deliberately reuse tail-weighted geometry to check the outfit's own tail
+  // cannot be filtered by a bone-name-only visibility rule.
+  const suit=new THREE.SkinnedMesh(geometries[0],sourceMaterial);suit.name='Drif_Shirt_dinosaursuit';suit.bind(skeleton);model.add(suit);
+  return model;
  };
+ const a=makeModel(),b=makeModel(),first=createAvatarAppearance(a),second=createAvatarAppearance(b);
+ const originalIndices=geometries.map(g=>Array.from(g.index.array));
+ second.setAppearance(DEFAULT_APPEARANCE);first.setAppearance({...DEFAULT_APPEARANCE,shirt:'dinosaursuit'});
+ const parts=a.getObjectByName('Drif_Body').children;
+ let removed=0,disposed=0;
+ parts.forEach((part,i)=>{
+  assert.notEqual(part.geometry,geometries[i]);
+  removed+=(geometries[i].index.count-part.geometry.index.count)/3;
+  assert.deepEqual(Array.from(part.geometry.getAttribute('position').array),Array.from(geometries[i].getAttribute('position').array));
+  assert.equal(b.getObjectByName('Drif_Body').children[i].geometry,geometries[i]);
+  const attribute=part.geometry.getAttribute('skinIndex'),weight=part.geometry.getAttribute('skinWeight');
+  for(const vertex of part.geometry.index.array)for(let slot=0;slot<4;slot++)if(weight.getComponent(vertex,slot)>0)assert.doesNotMatch(bones[attribute.getComponent(vertex,slot)].name,/^Tail(?:Tip)?$/);
+  part.geometry.addEventListener('dispose',()=>disposed++);
+ });
+ assert.equal(removed,140,'remove the actual 94 blue and 46 ivory tail triangles');
+ assert.equal(a.getObjectByName('Drif_Shirt_dinosaursuit').geometry,geometries[0]);
+ first.setAppearance({...DEFAULT_APPEARANCE,shirt:'dinosaursuit',bodyStyle:'ghost'});
+ first.setAppearance({...DEFAULT_APPEARANCE,shirt:'wizardrobe'});
+ parts.forEach((part,i)=>assert.equal(part.geometry,geometries[i],'other full-body outfits restore the original tail'));
+ first.setAppearance({...DEFAULT_APPEARANCE,shirt:'dinosaursuit'});first.dispose();second.dispose();
+ assert.equal(disposed,2,'release only this avatar’s temporary filtered geometries');
+ geometries.forEach((geometry,i)=>{assert.equal(parts[i].geometry,geometry);assert.deepEqual(Array.from(geometry.index.array),originalIndices[i]);geometry.dispose();});
+ sourceMaterial.dispose();skeleton.dispose();
+});
+
+test('every shipped wardrobe option is skinned to the original rig and retains all showroom clips',()=>{
+
  const current=readAsset('../../assets/models/drifmaker/drifella-customizable.glb'),original=readAsset('../../assets/models/showroom-character/blue-fin-character.glb');
  const {json:gltf,values}=current;
  assert.equal(gltf.skins.length,1);assert.deepEqual(gltf.skins[0].joints.map(index=>gltf.nodes[index].name),original.json.skins[0].joints.map(index=>original.json.nodes[index].name));

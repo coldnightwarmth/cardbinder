@@ -1,4 +1,5 @@
-import {BODY_COLORS,BODY_STYLES,PORTRAIT_BACKGROUNDS,CATEGORIES} from './drifmaker-config.mjs?v=12';
+import {PORTRAIT_OVERLAYS} from './drifmaker-portrait-art.mjs?v=1';
+import {BODY_COLORS,BODY_STYLES,PORTRAIT_BACKGROUNDS,CATEGORIES} from './drifmaker-config.mjs?v=14';
 import {PORTRAIT_POSES} from './drifmaker-poses.mjs?v=3';
 
 export const RARITY_STORAGE_KEY='cards-art:drifmaker:rarity:v1';
@@ -9,6 +10,7 @@ export const RARITY_GROUPS=Object.freeze({
  bodyStyle:{label:'Body finishes',options:BODY_STYLES},
  ...Object.fromEntries(['head','eyes','brows','mouth','nose','ears','tattoo','shirt','legs','hat','accessory','extra'].map((key,index)=>[key,{label:['Heads','Eyes','Eyebrows','Mouth','Nose','Ears','Tattoos','Tops','Legs','Hats','Accessories','Extra'][index],options:CATEGORIES[key]}])),
  background:{label:'Backgrounds',options:PORTRAIT_BACKGROUNDS.map(color=>({...color,id:color.hex}))},
+ overlay:{label:'Overlays',options:PORTRAIT_OVERLAYS},
  pose:{label:'Portrait poses',options:PORTRAIT_POSES},
 });
 
@@ -46,10 +48,10 @@ export function pickTrait(rarity,category,random=Math.random){
  for(let index=0;index<options.length;index++){target-=weights[index];if(weights[index]>0&&target<0)return options[index];}
  return options.findLast((_,index)=>weights[index]>0);
 }
-export function randomizeLook({rarity,appearance,background,pose,posesEnabled=false},random=Math.random){
+export function randomizeLook({rarity,appearance,background,overlay='none',pose,posesEnabled=false},random=Math.random){
  const next={...appearance};
  for(const category of ['bodyStyle',...Object.keys(CATEGORIES)]){const option=pickTrait(rarity,category,random);if(option)next[category]=option.id;}
  const color=pickTrait(rarity,'bodyColor',random),backdrop=pickTrait(rarity,'background',random);
  if(color)next.bodyColor=color.hex;
- return {appearance:next,background:backdrop?.hex??background,pose:posesEnabled?(pickTrait(rarity,'pose',random)?.id??pose):pose};
+ return {appearance:next,overlay:pickTrait(rarity,'overlay',random)?.id??overlay,background:backdrop?.hex??background,pose:posesEnabled?(pickTrait(rarity,'pose',random)?.id??pose):pose};
 }

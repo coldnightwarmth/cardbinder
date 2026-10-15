@@ -1,11 +1,16 @@
+import {IMAGE_BACKGROUNDS,loadPortraitTexture} from './drifmaker-portrait-art.mjs?v=1';
 export const RAINBOW_BACKGROUND='rainbow';
 export const RAINBOW_CSS='linear-gradient(135deg,#ff537a 0%,#ffb94d 20%,#edee5b 38%,#46dca3 56%,#4b9cff 76%,#af6df5 100%)';
-export const validPortraitBackground=value=>value===RAINBOW_BACKGROUND||typeof value==='string'&&/^#[a-f\d]{6}$/i.test(value);
-export const backgroundCSS=value=>value===RAINBOW_BACKGROUND?RAINBOW_CSS:value;
-const gradients=new WeakMap();
+export const validPortraitBackground=value=>typeof value==='string'&&(value===RAINBOW_BACKGROUND||Object.hasOwn(IMAGE_BACKGROUNDS,value)||/^#[a-f\d]{6}$/i.test(value));
+export const backgroundCSS=value=>value===RAINBOW_BACKGROUND?RAINBOW_CSS:Object.hasOwn(IMAGE_BACKGROUNDS,value)?`url("${IMAGE_BACKGROUNDS[value]}") center / cover`:value;
+const gradients=new WeakMap(),versions=new WeakMap();
 // An sRGB data texture gives the preview and every export the same diagonal
 // gradient, independent of canvas dimensions, device pixel ratio, and DOM CSS.
 export function setPortraitSceneBackground(THREE,scene,value){
+ const version=(versions.get(scene)||0)+1;versions.set(scene,version);
+ if(Object.hasOwn(IMAGE_BACKGROUNDS,value)){
+  return loadPortraitTexture(THREE,IMAGE_BACKGROUNDS[value]).then(texture=>{if(versions.get(scene)===version)scene.background=texture;});
+ }
  if(value!==RAINBOW_BACKGROUND){scene.background=new THREE.Color(value);return;}
  if(!gradients.has(scene)){
   const stops=[[255,83,122],[255,185,77],[237,238,91],[70,220,163],[75,156,255],[175,109,245]],positions=[0,.20,.38,.56,.76,1],size=256,data=new Uint8Array(size*size*4);
@@ -19,4 +24,4 @@ export function setPortraitSceneBackground(THREE,scene,value){
  }
  scene.background=gradients.get(scene);
 }
-export function disposePortraitBackground(scene){gradients.get(scene)?.dispose();gradients.delete(scene);}
+export function disposePortraitBackground(scene){versions.set(scene,(versions.get(scene)||0)+1);gradients.get(scene)?.dispose();gradients.delete(scene);}

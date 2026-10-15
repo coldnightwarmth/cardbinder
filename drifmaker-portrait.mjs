@@ -1,4 +1,5 @@
-import {setPortraitSceneBackground,disposePortraitBackground} from './drifmaker-background.mjs?v=1';
+import {setPortraitOverlay,renderPortraitScene,disposePortraitOverlay} from './drifmaker-portrait-art.mjs?v=1';
+import {setPortraitSceneBackground,disposePortraitBackground} from './drifmaker-background.mjs?v=2';
 import {createHeldCard,createHeldCardFollower,disposeHeldCard} from './drifmaker-held-card.mjs?v=1';
 import {normalizePortraitPose} from './drifmaker-poses.mjs?v=3';
 // Composition is shared by the fixed preview and its PNG export. These framing
@@ -74,16 +75,17 @@ export async function capturePortrait({THREE,scene,camera,composition,rendererFa
  try{
   renderer=createRenderer({antialias:true,alpha:false,preserveDrawingBuffer:true});
   renderer.setPixelRatio(1);renderer.setSize(framing.width,framing.height,false);
-  renderer.setClearColor(framing.background==='rainbow'?0:framing.background,1);
-  setPortraitSceneBackground(THREE,exportScene,framing.background);
+  renderer.setClearColor(/^#/.test(framing.background)?framing.background:0,1);
+  await setPortraitSceneBackground(THREE,exportScene,framing.background);
+  await setPortraitOverlay(THREE,exportScene,framing.overlay);
   renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=framing.exposure;
   if(environmentFactory){environment=environmentFactory(renderer);exportScene.environment=environment.texture;}
-  renderer.render(exportScene,exportCamera);
+  renderPortraitScene(renderer,exportScene,exportCamera);
   return await new Promise((resolve,reject)=>{
    renderer.domElement.toBlob(blob=>blob?resolve(blob):reject(Error('The portrait could not be encoded as a PNG. Please try again.')),'image/png');
   });
  }finally{
-  disposePortraitBackground(exportScene);environment?.dispose();
+  disposePortraitOverlay(exportScene);disposePortraitBackground(exportScene);environment?.dispose();
   if(renderer){try{renderer.dispose();}finally{renderer.forceContextLoss?.();}}
  }
 }

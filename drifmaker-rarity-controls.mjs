@@ -1,35 +1,35 @@
-import {backgroundCSS} from './drifmaker-background.mjs?v=1';
-import {RARITY_GROUPS,MAX_WEIGHT,validWeight,traitWeight,traitChances,loadRarity,saveRarity,normalizeRarity} from './drifmaker-rarity.mjs?v=9';
+import {RARITY_GROUPS,MAX_WEIGHT,validWeight,traitWeight,traitChances,loadRarity,saveRarity,normalizeRarity} from './drifmaker-rarity.mjs?v=11';
 
-export function createRarityEditor({activeCategory,onError}){
- const $=selector=>document.querySelector(selector),dialog=$('#rarityDialog'),group=$('#rarityCategory'),rows=$('#rarityRows'),note=$('#rarityNote');
- let rarity=loadRarity();
- for(const [key,{label}] of Object.entries(RARITY_GROUPS)){const option=document.createElement('option');option.value=key;option.textContent=label;group.append(option);}
- function persist(){try{rarity=saveRarity(rarity);$('#raritySaveState').textContent='Saved on this device';}catch{$('#raritySaveState').textContent='Not saved — current session only';onError('Rarity applies now, but could not be saved in this browser.');}}
- function updateChances(){
-  const chances=traitChances(rarity,group.value),enabled=Object.values(chances).some(chance=>chance>0);
-  for(const row of rows.children){const chance=chances[row.dataset.trait];row.querySelector('output').textContent=chance>0&&chance<.0001?'<0.01%':`${Number((chance*100).toFixed(2))}%`;}
-  const hints={bodyColor:'Gold finish uses its own color.',pose:'Used when portrait Poses is enabled.'};
-  note.textContent=enabled?(hints[group.value]||''):'All off — current selection kept.';note.hidden=!note.textContent;
- }
- function render(){
-  rows.replaceChildren();
-  for(const option of RARITY_GROUPS[group.value].options){
-   const row=document.createElement('tr');row.dataset.trait=option.id;
-   const name=document.createElement('th');name.scope='row';const label=document.createElement('label');label.htmlFor=`rarity-${group.value}-${option.id}`;
-   if(option.hex){const swatch=document.createElement('span');swatch.className='rarity-swatch';swatch.style.background=backgroundCSS(option.hex);swatch.setAttribute('aria-hidden','true');label.append(swatch);}
-   label.append(option.label);name.append(label);
-   const control=document.createElement('td'),input=document.createElement('input');input.type='number';input.min='0';input.max=String(MAX_WEIGHT);input.step='1';input.inputMode='numeric';input.id=label.htmlFor;input.value=traitWeight(rarity,group.value,option.id);input.setAttribute('aria-label',`${option.label} weight`);input.setAttribute('aria-describedby','rarityHelp');
-   input.oninput=()=>{if(!input.value.trim()||!validWeight(input.valueAsNumber))return;rarity[group.value]={...rarity[group.value],[option.id]:input.valueAsNumber};persist();updateChances();};
-   input.onchange=()=>{input.value=traitWeight(rarity,group.value,option.id);};
-   control.append(input);const chance=document.createElement('td');chance.append(document.createElement('output'));row.append(name,control,chance);rows.append(row);
+// Inputs are siblings of selection buttons, so editing a weight never selects
+// the trait or triggers a look-history action. All odds update as a group.
+export function createRarityEditor({onError}){
+ let rarity=loadRarity();const fields=[];
+ function persist(){try{rarity=saveRarity(rarity);}catch{onError('Rarity applies now, but could not be saved in this browser.');}}
+ function refresh(category){
+  const chances=new Map();
+  for(const field of fields){
+   if(category&&field.category!==category)continue;
+   if(!chances.has(field.category))chances.set(field.category,traitChances(rarity,field.category));
+   const chance=chances.get(field.category)[field.id];
+   field.output.textContent=chance>0&&chance<.0001?'<0.01%':`${Number((chance*100).toFixed(2))}%`;
+   field.output.title=chance===0?'Excluded from randomization':'Randomization chance in this category';
+   field.tile.dataset.excluded=String(traitWeight(rarity,field.category,field.id)===0);
   }
-  $('.rarity-table-scroll').scrollTop=0;
-  updateChances();
  }
- $('#editRarity').onclick=()=>{group.value=activeCategory()==='body'?'bodyColor':activeCategory();render();dialog.showModal();};
- $('#closeRarity').onclick=()=>dialog.close();group.onchange=render;
- $('#resetRarityCategory').onclick=()=>{delete rarity[group.value];persist();render();};
- $('#resetAllRarity').onclick=()=>{rarity={};persist();render();};
- return {get value(){return rarity;},replace(value){rarity=normalizeRarity(value);persist();if(dialog.open)render();}};
+ return {
+  get value(){return rarity;},
+  mount(button,category,id){
+   const option=RARITY_GROUPS[category]?.options.find(option=>option.id===id);if(!option)throw Error(`Unknown rarity trait: ${category}/${id}`);
+   const tile=document.createElement('div');tile.className='trait-tile';button.replaceWith(tile);tile.append(button);
+   const control=document.createElement('label');control.className='tile-rarity';control.title='Randomization weight: higher is more common; 0 disables this trait.';
+   const input=document.createElement('input');input.type='number';input.min='0';input.max=String(MAX_WEIGHT);input.step='1';input.inputMode='numeric';input.value=traitWeight(rarity,category,id);input.setAttribute('aria-label',`${option.label} ${RARITY_GROUPS[category].label.toLowerCase()} weight`);
+   const output=document.createElement('output');output.setAttribute('aria-label',`${option.label} chance`);
+   const caption=document.createElement('span');caption.className='sr-only';caption.textContent='Randomization weight';control.append(caption,input,output);tile.append(control);
+   fields.push({category,id,input,output,tile});
+   input.oninput=()=>{if(!input.value.trim()||!validWeight(input.valueAsNumber))return;rarity[category]={...rarity[category],[id]:input.valueAsNumber};persist();refresh(category);};
+   input.onchange=()=>{input.value=traitWeight(rarity,category,id);};
+   refresh(category);
+  },
+  replace(value){rarity=normalizeRarity(value);persist();for(const field of fields)field.input.value=traitWeight(rarity,field.category,field.id);refresh();},
+ };
 }

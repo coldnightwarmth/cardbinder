@@ -1,12 +1,38 @@
-import {CATEGORIES,DEFAULT_APPEARANCE,FINISH_COLORS,CLASSIC_FIN_HEADS,LEG_OVERRIDE_TOPS,HEAD_SCALES,isOriginalHead,normalizeAppearance} from './drifmaker-config.mjs?v=12';
+import {CATEGORIES,DEFAULT_APPEARANCE,FINISH_COLORS,EAR_COMPATIBLE_HEADS,LEG_OVERRIDE_TOPS,HEAD_SCALES,isOriginalHead,normalizeAppearance} from './drifmaker-config.mjs?v=14';
 import {applyHoloShader} from './drifmaker-holo.mjs?v=1';
 import {applyCamoShader} from './drifmaker-camo.mjs?v=1';
 import {COLLECTION_FINISHES,applyCollectionFinishShader} from './drifmaker-finishes.mjs?v=1';
 
+// The original tail shares the body mesh with the hands. Filter its complete
+// Tail/TailTip-weighted triangles without changing shared geometry or the rig.
+function bodyWithoutTail(node){
+ const source=node.geometry,joints=source.getAttribute('skinIndex'),weights=source.getAttribute('skinWeight');
+ const tailBones=new Set(node.skeleton.bones.flatMap((bone,index)=>/^Tail(?:Tip)?$/.test(bone.name)?[index]:[]));
+ if(!joints||!weights||!tailBones.size)return null;
+ const tail=Array.from({length:joints.count},(_,vertex)=>{
+  for(let component=0;component<4;component++)if(weights.getComponent(vertex,component)>0&&tailBones.has(joints.getComponent(vertex,component)))return true;
+  return false;
+ });
+ const count=source.index?.count??joints.count,kept=[],groups=[];
+ const ranges=source.groups.length?source.groups:[{start:0,count,materialIndex:0}];
+ for(const group of ranges){
+  const start=kept.length;
+  for(let i=group.start;i<Math.min(count,group.start+group.count);i+=3){
+   const triangle=[0,1,2].map(offset=>source.index?source.index.getX(i+offset):i+offset);
+   if(!triangle.some(vertex=>tail[vertex]))kept.push(...triangle);
+  }
+  groups.push({start,count:kept.length-start,materialIndex:group.materialIndex});
+ }
+ if(kept.length===count)return null;
+ const geometry=source.clone();geometry.setIndex(kept);geometry.clearGroups();
+ if(source.groups.length)for(const group of groups)geometry.addGroup(group.start,group.count,group.materialIndex);
+ return geometry;
+}
+
 // Each character owns its surface finishes and visibility; geometry and textures
 // remain shared. A material shared by a face and a shirt must get separate roles.
 export function createAvatarAppearance(model){
- const categories=Object.fromEntries(Object.keys(CATEGORIES).map(category=>[category,[]])),owned=new Map(),surfaces=[],fuzz=[];
+ const categories=Object.fromEntries(Object.keys(CATEGORIES).map(category=>[category,[]])),owned=new Map(),surfaces=[],fuzz=[],tailParts=[];
  const partName=node=>{for(let current=node;current&&current!==model;current=current.parent)if(/^Drif_(?:Body(?:_|$)|Head_|Ears_|Nose_|Eyes_|Brows_|Mouth_|Legs_|Shirt_|Ghost_)/.test(current.name))return current.name;return node.name;};
  model.traverse(node=>{
   const match=/^Drif_([a-z]+)_([a-z0-9]+)(?:_|$)/i.exec(node.name);
@@ -14,6 +40,7 @@ export function createAvatarAppearance(model){
   if(node.name.startsWith('Drif_Ghost_Fuzz'))fuzz.push(node);
   if(!node.material)return;
   const part=partName(node),skinPart=/^Drif_(?:Body(?:_|$)|Head_|Ears_|Nose_)/.test(part),face=/^Drif_(?:Eyes_|Brows_|Mouth_)/.test(part),fiber=part.startsWith('Drif_Ghost_Fuzz');
+  if(node.isSkinnedMesh&&/^Drif_Body(?:_|$)/.test(part))tailParts.push({node,original:node.geometry,hidden:null,prepared:false});
   const isolate=source=>{
    const recolor=/^(?:Drif_Body_Main|Azure blue)(?:[._]|$)/.test(source?.name||'');
    const feet=(part.startsWith('Drif_Legs_')||LEG_OVERRIDE_TOPS.some(id=>part.startsWith('Drif_Shirt_'+id)))&&/^Drif_Original_Warm_ivory/.test(source?.name||'');
@@ -54,9 +81,13 @@ outgoingLight += diffuse * drifRim * 0.7;
    if(disposed)throw Error('This character has been disposed.');
    restoreHeadScale();
    current=normalizeAppearance(value);
+   for(const part of tailParts){
+    if(current.shirt==='dinosaursuit'&&!part.prepared){part.hidden=bodyWithoutTail(part.node);part.prepared=true;}
+    part.node.geometry=current.shirt==='dinosaursuit'&&part.hidden?part.hidden:part.original;
+   }
    for(const [category,parts] of Object.entries(categories))for(const {node,id} of parts){
     if(category==='legs'&&LEG_OVERRIDE_TOPS.includes(current.shirt))node.visible=false;
-    else if(category==='ears'&&CLASSIC_FIN_HEADS.includes(current.head))node.visible=id==='original';
+    else if(category==='ears'&&EAR_COMPATIBLE_HEADS.includes(current.head))node.visible=id===current.ears;
     else node.visible=id===(category==='head'&&isOriginalHead(current.head)?'original':current[category])&&(!['eyes','brows','mouth','nose','ears','tattoo'].includes(category)||isOriginalHead(current.head));
    }
    for(const node of fuzz)node.visible=current.bodyStyle==='ghost';
@@ -84,6 +115,6 @@ outgoingLight += diffuse * drifRim * 0.7;
    }
    applyHeadScale();model.userData.appearance={...current};return {...current};
   },
-  dispose(){if(disposed)return;restoreHeadScale();disposed=true;for(const material of owned.values())material.dispose();owned.clear();},
+  dispose(){if(disposed)return;restoreHeadScale();disposed=true;for(const part of tailParts){part.node.geometry=part.original;part.hidden?.dispose();}for(const material of owned.values())material.dispose();owned.clear();},
  };
 }

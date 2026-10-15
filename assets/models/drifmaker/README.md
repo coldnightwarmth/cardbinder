@@ -51,8 +51,9 @@ such in the catalog. These are modeled interpretations, not claims of exact
 reconstruction. The earlier Little Swag World hoodie retains its supplied image.
 
 The DJ station is lowered at the waist with shorter legs that retain floor contact.
-Earless sculpted heads retain the classic Dratini fins; Onyx cat and Lilac drake
-keep their modeled ears.
+All 21 replacement heads that use separate ears support every selected ear trait,
+including pumpkin, TV, crystal, and the eight earless sculpted heads. Onyx cat
+and Lilac drake keep their modeled ears.
 
 The expansion includes a detailed DJ station, gumball machine, shield potions,
 carved relics, handheld devices, new fin constructions and fitted face sculptures.
@@ -134,7 +135,10 @@ model the helmet, and is not redistributed as a texture.
   The muzzle and forehead dot remain in `Drif_Head_original`. Original
   fins and nostrils are separate `Drif_Ears_original` / `Drif_Nose_original`
   meshes, so their replacements remove the old geometry. Hands and the animated
-  tail stay in the shared body.
+  tail stay in the shared body. The dinosaur onesie hides only the original
+  Tail/TailTip-weighted body triangles (including the ivory tip), preserving its
+  own costume tail. Other tops restore the original tail. The runtime uses an
+  avatar-owned filtered geometry so other players and all skin weights stay intact.
 - Ghost mode uses isolated skin materials with a transparent rim shader and
   luminous skinned fibers. Clothing keeps its normal opacity. Switching back to
   solid restores the original material settings, without affecting other players.

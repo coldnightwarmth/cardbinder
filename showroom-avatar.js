@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import {GLTFLoader} from './vendor/GLTFLoader.js';
-import {createAvatarAppearance} from './drifmaker-avatar.mjs?v=12';
+import {createAvatarAppearance} from './drifmaker-avatar.mjs?v=15';
 import {normalizePose,normalizePoseTime} from './drifmaker-poses.mjs?v=3';
 let assetPromise;
 function asset(){return assetPromise ||= new GLTFLoader().loadAsync(new URL('./assets/models/drifmaker/drifella-customizable.glb?v=12',import.meta.url).href).catch(error=>{assetPromise=null;throw error;});}

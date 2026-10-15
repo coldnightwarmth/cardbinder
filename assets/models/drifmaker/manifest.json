@@ -794,19 +794,6 @@
     "flightcoverall",
     "dinosaursuit"
   ],
-  "classicFinHeads": [
-    "pumpkin",
-    "tv",
-    "crystal",
-    "ceramiccarapace",
-    "masonryidol",
-    "candywhorl",
-    "mossrelic",
-    "ashimp",
-    "opartmask",
-    "berrybust",
-    "orbitdemon"
-  ],
   "poses": [
     "salute",
     "tpose",
@@ -4276,5 +4263,28 @@
       "ribbonvortex"
     ]
   },
-  "notes": "The sculpted collection study adds 120 modeled traits, rebuilds the 24 atelier ears/extras with shaped surfaces and solid hardware, adds six body finishes and three animated head proportions. The atelier expansion adds 12 traits to every category, embedded woven prints, short sleeves, four full-body outfits, and Miku-inspired twintails. Marble coats every visible trait matte white; holographic adds rest-space rainbow foil and sparkles to the body. All components share the original 19-bone rest pose, 10 locomotion actions and 22 enter-and-hold pose actions. Alternate heads replace the original head and facial categories without discarding choices; Earless sculpted heads, pumpkin, TV and crystal retain the classic fin ears. Replacement heads fit the original collar height and silhouette. Extra is independent of accessories. Ghost color and rim transparency cover the entire body, facial surfaces and bare feet, with a skinned fuzz mesh. Gold coats all body and facial surfaces. The Swag World hoodie embeds the user-supplied photograph with torso and sleeve UVs. The holiday extension adds mirrored Mog eyewear, a red VR headset, a Santa cap, a layered beard, four original-fin variations, and an ankle-length star robe that overrides legs while preserving the saved choice. Camo is a seamless rest-space runtime skin finish."
+  "notes": "The sculpted collection study adds 120 modeled traits, rebuilds the 24 atelier ears/extras with shaped surfaces and solid hardware, adds six body finishes and three animated head proportions. The atelier expansion adds 12 traits to every category, embedded woven prints, short sleeves, four full-body outfits, and Miku-inspired twintails. Marble coats every visible trait matte white; holographic adds rest-space rainbow foil and sparkles to the body. All components share the original 19-bone rest pose, 10 locomotion actions and 22 enter-and-hold pose actions. Alternate heads replace the original head and facial categories without discarding choices; Ear-compatible replacement heads retain the selected ears. Replacement heads fit the original collar height and silhouette. Extra is independent of accessories. Ghost color and rim transparency cover the entire body, facial surfaces and bare feet, with a skinned fuzz mesh. Gold coats all body and facial surfaces. The Swag World hoodie embeds the user-supplied photograph with torso and sleeve UVs. The holiday extension adds mirrored Mog eyewear, a red VR headset, a Santa cap, a layered beard, four original-fin variations, and an ankle-length star robe that overrides legs while preserving the saved choice. Camo is a seamless rest-space runtime skin finish.",
+  "earCompatibleHeads": [
+    "cobaltmecha",
+    "bonsaipot",
+    "discoball",
+    "paperbag",
+    "moonface",
+    "divingbell",
+    "embroidereddoll",
+    "copperoni",
+    "cloudhead",
+    "dicehead",
+    "pumpkin",
+    "tv",
+    "crystal",
+    "ceramiccarapace",
+    "masonryidol",
+    "candywhorl",
+    "mossrelic",
+    "ashimp",
+    "opartmask",
+    "berrybust",
+    "orbitdemon"
+  ]
 }

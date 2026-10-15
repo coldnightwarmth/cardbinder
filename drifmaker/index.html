@@ -7,7 +7,7 @@
   <meta name="description" content="Create, bookmark, and export your own 3D Drifella portraits.">
   <title>Drifmaker — cards.art</title>
   <link rel="icon" type="image/png" href="/cardnft.png">
-  <link rel="stylesheet" href="/drifmaker.css?v=11">
+  <link rel="stylesheet" href="/drifmaker.css?v=12">
   <script type="importmap">{"imports":{"three":"/vendor/three.module.min.js?v=three-r165-min-1"}}</script>
 </head>
 <body>
@@ -29,14 +29,14 @@
       </div>
       <div class="preview-bottom">
         <div class="view-switch" role="group" aria-label="Character view"><button id="studioMode" aria-pressed="true" disabled><svg viewBox="0 0 24 24"><path d="m12 2 9 5v10l-9 5-9-5V7zm0 10 9-5M12 12 3 7m9 5v10"/></svg>3D view</button><button id="portraitMode" aria-pressed="false" disabled><svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><circle cx="12" cy="9" r="3"/><path d="M7 19v-2a5 5 0 0 1 10 0v2"/></svg>Portrait</button></div>
-        <div class="portrait-controls" id="portraitControls" hidden><details class="background-picker"><summary><span id="backgroundPreview" aria-hidden="true"></span>Background <span aria-hidden="true">⌃</span></summary><div class="background-popover"><div id="portraitPalette" class="portrait-palette" role="group" aria-label="Portrait background"></div><label class="custom-background">Custom color<input type="color" id="customBackground" aria-label="Custom portrait background"></label></div></details><label class="hold-toggle"><input type="checkbox" id="enablePortraitPoses"><span>Poses</span></label><select id="portraitPose" aria-label="Portrait pose" hidden></select><button id="exportPortrait" class="portrait-export" disabled>Export PNG <span aria-hidden="true">↗</span></button></div>
+        <div class="portrait-controls" id="portraitControls" hidden><button id="chooseBackground" class="background-button"><span id="backgroundPreview" aria-hidden="true"></span>Background</button><label class="hold-toggle"><input type="checkbox" id="enablePortraitPoses"><span>Poses</span></label><select id="portraitPose" aria-label="Portrait pose" hidden></select><button id="exportPortrait" class="portrait-export" disabled>Export PNG <span aria-hidden="true">↗</span></button></div>
         <div class="motion-panel"><div class="motion-buttons" role="group" aria-label="Animation preview"><button data-motion="idle" aria-pressed="true">Idle</button><button data-motion="walk" aria-pressed="false">Walk</button><button data-motion="crouch" aria-pressed="false">Crouch</button><button data-motion="sneak" aria-pressed="false">Sneak</button><button data-motion="jump" aria-pressed="false">Jump</button></div><select id="studioPose" aria-label="Character pose" disabled><option value="">Pose</option></select><label class="hold-toggle"><input type="checkbox" id="holdCard"><span>Hold card</span></label></div>
       </div>
     </section>
     <aside class="wardrobe" aria-label="Traits">
       <div class="sidebar-tabs" role="tablist" aria-label="Sidebar"><button id="editorTab" role="tab" aria-controls="editorPanel" aria-selected="true">Editor</button><button id="bookmarksTab" role="tab" aria-controls="bookmarksPanel" aria-selected="false" tabindex="-1">Bookmarks</button></div>
       <div id="editorPanel" class="sidebar-panel" role="tabpanel" aria-labelledby="editorTab">
-      <div class="wardrobe-heading"><div class="history-actions"><button id="undoLook" class="icon-button" aria-label="Undo" title="Undo (right-click to redo)" disabled><svg viewBox="0 0 24 24"><path d="M9 5 4 10l5 5M4 10h10a6 6 0 0 1 0 12"/></svg></button><button id="saveBookmark" class="icon-button" title="Save bookmark" aria-label="Save bookmark" disabled><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4z"/><path d="M9 9h6m-3-3v6"/></svg></button></div><div class="randomize-actions"><button id="editRarity" class="randomize-button" aria-haspopup="dialog">Rarity</button><button id="randomize" class="randomize-button" title="Randomize look" aria-label="Randomize look" disabled><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4" transform="rotate(-12 12 12)"/><circle cx="8" cy="8" r=".7"/><circle cx="16" cy="8" r=".7"/><circle cx="12" cy="12" r=".7"/><circle cx="8" cy="16" r=".7"/><circle cx="16" cy="16" r=".7"/></svg>Randomize</button></div></div>
+      <div class="wardrobe-heading"><div class="history-actions"><button id="undoLook" class="icon-button" aria-label="Undo" title="Undo (right-click to redo)" disabled><svg viewBox="0 0 24 24"><path d="M9 5 4 10l5 5M4 10h10a6 6 0 0 1 0 12"/></svg></button><button id="saveBookmark" class="icon-button" title="Save bookmark" aria-label="Save bookmark" disabled><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4z"/><path d="M9 9h6m-3-3v6"/></svg></button></div><div class="randomize-actions"><button id="randomize" class="randomize-button" title="Randomize look" aria-label="Randomize look" disabled><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4" transform="rotate(-12 12 12)"/><circle cx="8" cy="8" r=".7"/><circle cx="16" cy="8" r=".7"/><circle cx="12" cy="12" r=".7"/><circle cx="8" cy="16" r=".7"/><circle cx="16" cy="16" r=".7"/></svg>Randomize</button></div></div>
       <nav class="category-nav" role="tablist" aria-label="Customization categories"></nav>
       <div id="editorControls" class="editor-controls" inert></div>
       <div class="wardrobe-footer"><div class="file-actions"><button id="exportLook" disabled>Export look</button><span>·</span><button id="importLook" disabled>Import look</button><input id="lookFile" type="file" accept="application/json,.json" hidden></div></div>
@@ -44,16 +44,10 @@
       <div id="bookmarksPanel" class="sidebar-panel bookmarks-panel" role="tabpanel" aria-labelledby="bookmarksTab" hidden inert></div>
     </aside>
   </main>
-  <dialog id="rarityDialog" class="rarity-dialog" aria-labelledby="rarityTitle" aria-describedby="rarityHelp">
-    <header><h2 id="rarityTitle">Rarity</h2><button id="closeRarity" aria-label="Close rarity settings">×</button></header>
-    <p id="rarityHelp">Higher weight = more common. 0 = off. Chances are per category.</p>
-    <div class="rarity-toolbar"><select id="rarityCategory" aria-label="Rarity category"></select><button id="resetRarityCategory" class="text-button">Reset category</button></div>
-    <div class="rarity-table-scroll"><table><thead><tr><th scope="col">Trait</th><th scope="col">Weight</th><th scope="col">Chance</th></tr></thead><tbody id="rarityRows"></tbody></table></div>
-    <p id="rarityNote" role="status" hidden></p><footer><span id="raritySaveState" role="status">Saved on this device</span><button id="resetAllRarity" class="text-button">Reset all</button></footer>
-  </dialog>
+
   <dialog id="portraitExportDialog" class="portrait-dialog" aria-labelledby="portraitExportTitle"><button id="closePortraitDialog" class="dialog-close" aria-label="Close PNG preview">×</button><h2 id="portraitExportTitle">PNG preview</h2><img id="exportedPortrait" alt="Drifella portrait PNG"><p id="portraitFileDetails"></p><a id="savePortraitFile" class="apply-button" download="my-drifella-portrait.png"><span>Save PNG</span><span aria-hidden="true">↓</span></a></dialog>
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
   <noscript><p class="noscript">Enable JavaScript to use the 3D character editor.</p></noscript>
-  <script type="module" src="/drifmaker.js?v=17"></script>
+  <script type="module" src="/drifmaker.js?v=20"></script>
 </body>
 </html>

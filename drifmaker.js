@@ -1,15 +1,16 @@
+import {PORTRAIT_OVERLAYS,setPortraitOverlay,renderPortraitScene,disposePortraitOverlay} from './drifmaker-portrait-art.mjs?v=1';
 import {createHeldCard,createHeldCardFollower,disposeHeldCard} from './drifmaker-held-card.mjs?v=1';
-import {validPortraitBackground,backgroundCSS,setPortraitSceneBackground,disposePortraitBackground} from './drifmaker-background.mjs?v=1';
-import {createLookHistory,normalizeLook} from './drifmaker-bookmarks.mjs?v=8';
-import {createBookmarkControls} from './drifmaker-bookmark-controls.mjs?v=8';
-import {createBookmarkRenderer} from './drifmaker-bookmark-renderer.mjs?v=8';
+import {validPortraitBackground,backgroundCSS,setPortraitSceneBackground,disposePortraitBackground} from './drifmaker-background.mjs?v=2';
+import {createLookHistory,normalizeLook} from './drifmaker-bookmarks.mjs?v=10';
+import {createBookmarkControls} from './drifmaker-bookmark-controls.mjs?v=10';
+import {createBookmarkRenderer} from './drifmaker-bookmark-renderer.mjs?v=10';
 import {POSES,PORTRAIT_POSES,normalizePose,normalizePortraitPose} from './drifmaker-poses.mjs?v=3';
-import {randomizeLook} from './drifmaker-rarity.mjs?v=9';
-import {createRarityEditor} from './drifmaker-rarity-controls.mjs?v=9';
+import {randomizeLook} from './drifmaker-rarity.mjs?v=11';
+import {createRarityEditor} from './drifmaker-rarity-controls.mjs?v=11';
 import * as THREE from 'three';
-import {createShowroomAvatar} from './showroom-avatar.js?v=22';
-import {BODY_COLORS,BODY_STYLES,BODY_STYLE_COLORS,LEG_OVERRIDE_TOPS,isOriginalHead,CLASSIC_FIN_HEADS,PORTRAIT_BACKGROUNDS,CATEGORIES,DEFAULT_APPEARANCE,normalizeAppearance,loadAppearance} from './drifmaker-config.mjs?v=12';
-import {PORTRAIT_COMPOSITION,createPortraitAvatar,configurePortraitCamera,capturePortrait,portraitPoseComposition} from './drifmaker-portrait.mjs?v=6';
+import {createShowroomAvatar} from './showroom-avatar.js?v=25';
+import {BODY_COLORS,BODY_STYLES,BODY_STYLE_COLORS,LEG_OVERRIDE_TOPS,isOriginalHead,EAR_COMPATIBLE_HEADS,PORTRAIT_BACKGROUNDS,CATEGORIES,DEFAULT_APPEARANCE,normalizeAppearance,loadAppearance} from './drifmaker-config.mjs?v=14';
+import {PORTRAIT_COMPOSITION,createPortraitAvatar,configurePortraitCamera,capturePortrait,portraitPoseComposition} from './drifmaker-portrait.mjs?v=7';
 import {createDrifmakerEnvironment} from './drifmaker-lighting.mjs?v=1';
 import {jumpHeight} from './showroom-locomotion.mjs?v=2';
 
@@ -20,7 +21,7 @@ let appearance={...saved},avatar,renderer,scene,camera,card,environment;
 let portraitPose='salute',portraitPosesEnabled=false;
 let motion='idle',holding=false,autoRotate=false,elapsed=0,settled=0,yaw=.18,pitch=.08,distance=7.0;
 let viewMode='studio',portraitAvatar,portraitScene,portraitCamera,portraitDirty=true,exporting=false;
-let portraitBackground=PORTRAIT_COMPOSITION.background;
+let portraitBackground=PORTRAIT_COMPOSITION.background,portraitOverlay='none';
 let toastTimer,changeVersion=0,disposed=false,frameId,previousTime=0;
 const target=new THREE.Vector3(0,1.55,0),reducedMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
 let bookmarkControls,followHeldCard;
@@ -31,12 +32,12 @@ function activateSidebar(name,focus=false){
 for(const name of ['editor','bookmarks'])$('#'+name+'Tab').onclick=()=>activateSidebar(name);
 $('.sidebar-tabs').onkeydown=event=>{const current=$('#editorTab').getAttribute('aria-selected')==='true'?'editor':'bookmarks';const next={ArrowLeft:current==='editor'?'bookmarks':'editor',ArrowRight:current==='editor'?'bookmarks':'editor',Home:'editor',End:'bookmarks'}[event.key];if(next){event.preventDefault();activateSidebar(next,true);}};
 const bookmarkRenderer=createBookmarkRenderer({THREE,createAvatar:createShowroomAvatar,environmentFactory:createDrifmakerEnvironment});
-function currentLook(){return {appearance,portrait:{background:portraitBackground,posesEnabled:portraitPosesEnabled,pose:portraitPose}};}
+function currentLook(){return {appearance,portrait:{background:portraitBackground,overlay:portraitOverlay,posesEnabled:portraitPosesEnabled,pose:portraitPose}};}
 const history=createLookHistory(currentLook());
-const titles={brows:'Eyebrows',eyes:'Eyes',mouth:'Mouth',shirt:'Tops',legs:'Pants & legs',hat:'Hats',accessory:'Accessories',head:'Heads',extra:'Extra',nose:'Nose',ears:'Ears',tattoo:'Tattoos'};
-const categoryOrder=['body','head','eyes','brows','mouth','nose','ears','tattoo','shirt','legs','hat','accessory','extra'];
+const titles={brows:'Eyebrows',eyes:'Eyes',mouth:'Mouth',shirt:'Tops',legs:'Pants & legs',hat:'Hats',accessory:'Accessories',head:'Heads',extra:'Extra',nose:'Nose',ears:'Ears',tattoo:'Tattoos',overlay:'Overlay',background:'Background',pose:'Poses'};
+const categoryOrder=['body','head','eyes','brows','mouth','nose','ears','tattoo','shirt','legs','hat','accessory','extra','background','overlay','pose'];
 let activeCategory='eyes';
-const rarityEditor=createRarityEditor({activeCategory:()=>activeCategory,onError:toast});
+const rarityEditor=createRarityEditor({onError:toast});
 const iconPaths={
   spiral:'<path d="M10 11c0-5-9-5-9 0s9 6 9 1-6-4-6-1 3 2 3 0m16 0c0-5-9-5-9 0s9 6 9 1-6-4-6-1 3 2 3 0"/>',
   backpack:'<path d="M7 7V5c0-4 10-4 10 0v2M4 8c0-3 16-3 16 0v12H4zM7 14h10v6H7zM2 10v8m20-8v8M9 10h1m4 0h1"/>',
@@ -80,27 +81,45 @@ function makeControls(){
  const panel=(category)=>{const section=document.createElement('section');section.className='control-section';section.id=`category-${category}`;section.setAttribute('role','tabpanel');section.setAttribute('aria-labelledby',`tab-${category}`);return section;};
  const body=panel('body');
  body.innerHTML='<div class="section-heading"><h3>Body color</h3><span class="selected-label" id="bodyLabel"></span></div><div class="palette" role="group" aria-label="Body color"></div>';
- for(const color of BODY_COLORS){const button=document.createElement('button');button.className='swatch';button.type='button';button.style.setProperty('--swatch',color.style==='holographic'?'linear-gradient(125deg,#ff8ccc,#b1fff1,#f1f393,#a8b8ff,#fc93e5)':color.hex);button.dataset.color=color.hex;button.title=color.label;button.setAttribute('aria-label',`${color.label} body color`);button.onclick=()=>select({bodyColor:color.hex,bodyStyle:color.style||(Object.hasOwn(BODY_STYLE_COLORS,appearance.bodyStyle)?'solid':appearance.bodyStyle)});body.querySelector('.palette').append(button);}
+ for(const color of BODY_COLORS){const button=document.createElement('button');button.className='swatch';button.type='button';button.style.setProperty('--swatch',color.style==='holographic'?'linear-gradient(125deg,#ff8ccc,#b1fff1,#f1f393,#a8b8ff,#fc93e5)':color.hex);button.dataset.color=color.hex;button.title=color.label;button.setAttribute('aria-label',`${color.label} body color`);button.onclick=()=>select({bodyColor:color.hex,bodyStyle:color.style||(Object.hasOwn(BODY_STYLE_COLORS,appearance.bodyStyle)?'solid':appearance.bodyStyle)});body.querySelector('.palette').append(button);rarityEditor.mount(button,'bodyColor',color.id);}
  const custom=document.createElement('label');custom.className='custom-color';custom.title='Custom body color';custom.innerHTML='<input type="color" id="customColor" aria-label="Custom body color"><span aria-hidden="true">+</span>';body.querySelector('.palette').append(custom);custom.querySelector('input').addEventListener('change',event=>select({bodyColor:event.target.value,bodyStyle:Object.hasOwn(BODY_STYLE_COLORS,appearance.bodyStyle)?'solid':appearance.bodyStyle}));const finish=document.createElement('div');finish.className='body-finishes';finish.setAttribute('role','group');finish.setAttribute('aria-label','Body finish');
- for(const style of BODY_STYLES){const button=document.createElement('button');button.type='button';button.dataset.bodyStyle=style.id;button.textContent=style.label;button.title=style.label;button.onclick=()=>select({bodyStyle:style.id});finish.append(button);}
+ for(const style of BODY_STYLES){const button=document.createElement('button');button.type='button';button.dataset.bodyStyle=style.id;button.textContent=style.label;button.title=style.label;button.onclick=()=>select({bodyStyle:style.id});finish.append(button);rarityEditor.mount(button,'bodyStyle',style.id);}
  body.append(finish);controls.append(body);
- for(const category of categoryOrder.filter(item=>item!=='body')){
+ for(const category of Object.keys(CATEGORIES)){
   const options=CATEGORIES[category],section=panel(category);
   const heading=document.createElement('div');heading.className='section-heading';heading.innerHTML=`<h3>${titles[category]}</h3><span class="selected-label" data-label="${category}"></span>`;section.append(heading);
   if(category==='legs'){const note=document.createElement('p');note.className='head-override-note';note.dataset.legOverride='';note.textContent='Robe overrides legs.';note.hidden=true;section.append(note);}
   if(['eyes','brows','mouth','nose','ears','tattoo'].includes(category)){const note=document.createElement('p');note.className='head-override-note';note.dataset.overrideNotice=category;note.textContent='Head overrides face traits.';note.hidden=true;section.append(note);}
   const grid=document.createElement('div');grid.className='options';grid.setAttribute('role','group');grid.setAttribute('aria-label',titles[category]);
-  for(const option of options){const button=document.createElement('button');button.className='option';button.type='button';button.dataset.category=category;button.dataset.option=option.id;button.title=option.label;button.innerHTML=`<span class="option-art">${icon(category,option.id)}</span>`;const label=document.createElement('span');label.className='option-label';label.textContent=option.label;button.append(label);button.onclick=()=>select({[category]:option.id});grid.append(button);}
+  for(const option of options){const button=document.createElement('button');button.className='option';button.type='button';button.dataset.category=category;button.dataset.option=option.id;button.title=option.label;button.innerHTML=`<span class="option-art">${icon(category,option.id)}</span>`;const label=document.createElement('span');label.className='option-label';label.textContent=option.label;button.append(label);button.onclick=()=>select({[category]:option.id});grid.append(button);rarityEditor.mount(button,category,option.id);}
   section.append(grid);controls.append(section);
+ }
+ for(const [category,options] of [['background',PORTRAIT_BACKGROUNDS.map(item=>({...item,id:item.hex}))],['overlay',PORTRAIT_OVERLAYS],['pose',PORTRAIT_POSES]]){
+  const section=panel(category),heading=document.createElement('div');heading.className='section-heading';heading.innerHTML=`<h3>${titles[category]}</h3><span class="selected-label">Portrait only</span>`;section.append(heading);
+  const grid=document.createElement('div');grid.className='options';grid.setAttribute('role','group');grid.setAttribute('aria-label',titles[category]);
+  for(const option of options){
+   const button=document.createElement('button');button.type='button';button.className='option';button.dataset.portraitCategory=category;button.dataset.portraitOption=option.id;button.title=option.label;
+   const art=document.createElement('span');art.className='option-art';
+   if(category==='background')art.style.background=backgroundCSS(option.id);
+   else if(option.src){const image=document.createElement('img');image.src=option.src;image.alt='';image.loading='lazy';art.append(image);}
+   else art.innerHTML=icon(category,option.id);
+   const label=document.createElement('span');label.className='option-label';label.textContent=option.label;button.append(art,label);
+   button.onclick=()=>{changePortrait({[category]:option.id,...(category==='pose'?{posesEnabled:true}:{})});setViewMode('portrait');};
+   grid.append(button);rarityEditor.mount(button,category,option.id);
+  }
+  section.append(grid);
+  if(category==='background'){const custom=document.createElement('label');custom.className='custom-background';custom.innerHTML='Custom color<input type="color" id="customBackground" aria-label="Custom portrait background">';custom.querySelector('input').onchange=event=>changePortrait({background:event.target.value});section.append(custom);}
+  controls.append(section);
  }
  const bookmarks=$('#bookmarksPanel');
  bookmarkControls=createBookmarkControls({panel:bookmarks,saveButton:$('#saveBookmark'),getLook:currentLook,loadLook:async look=>{await changeLook(look);setViewMode('portrait');},render:(...args)=>bookmarkRenderer.render(...args),download,toast});
  updateControls();activateCategory(activeCategory);
 }
 function updateControls(){
+ for(const button of controls.querySelectorAll('[data-portrait-option]'))button.setAttribute('aria-pressed',String(currentLook().portrait[button.dataset.portraitCategory]===button.dataset.portraitOption&&(button.dataset.portraitCategory!=='pose'||portraitPosesEnabled)));
  for(const notice of controls.querySelectorAll('[data-leg-override]'))notice.hidden=!LEG_OVERRIDE_TOPS.includes(appearance.shirt);
  for(const button of controls.querySelectorAll('[data-body-style]'))button.setAttribute('aria-pressed',String(button.dataset.bodyStyle===appearance.bodyStyle));
- for(const notice of controls.querySelectorAll('[data-override-notice]')){notice.hidden=isOriginalHead(appearance.head);notice.textContent=notice.dataset.overrideNotice==='ears'&&CLASSIC_FIN_HEADS.includes(appearance.head)?'Head uses classic fins.':'Head overrides face traits.';}
+ for(const notice of controls.querySelectorAll('[data-override-notice]')){const ears=notice.dataset.overrideNotice==='ears';notice.hidden=isOriginalHead(appearance.head)||(ears&&EAR_COMPATIBLE_HEADS.includes(appearance.head));notice.textContent='Head overrides face traits.';}
  for(const button of controls.querySelectorAll('[data-color]'))button.setAttribute('aria-pressed',String(button.dataset.color.toLowerCase()===appearance.bodyColor.toLowerCase()));
  $('#bodyLabel').textContent=BODY_COLORS.find(color=>color.hex.toLowerCase()===appearance.bodyColor.toLowerCase())?.label||'Custom';$('#customColor').value=appearance.bodyColor;
  for(const button of controls.querySelectorAll('[data-option]'))button.setAttribute('aria-pressed',String(appearance[button.dataset.category]===button.dataset.option));
@@ -114,8 +133,8 @@ function updateHistory(){
 }
 async function applyLookState(value){
  const next=normalizeLook(value),version=++changeVersion;
- appearance=next.appearance;portraitBackground=next.portrait.background;portraitPosesEnabled=next.portrait.posesEnabled;portraitPose=next.portrait.pose;
- updateControls();setPortraitBackground(portraitBackground);
+ appearance=next.appearance;portraitOverlay=next.portrait.overlay;portraitBackground=next.portrait.background;portraitPosesEnabled=next.portrait.posesEnabled;portraitPose=next.portrait.pose;
+ updateControls();setPortraitBackground(portraitBackground);if(portraitScene)void setPortraitOverlay(THREE,portraitScene,portraitOverlay).then(()=>portraitDirty=true).catch(()=>toast('Overlay could not load. Try selecting it again.'));
  $('#enablePortraitPoses').checked=portraitPosesEnabled;$('#portraitPose').hidden=!portraitPosesEnabled;$('#portraitPose').value=portraitPose;applyPortraitPose();updateHistory();
  try{if(avatar)await avatar.setAppearance(next.appearance);if(version!==changeVersion)return;if(portraitAvatar)await portraitAvatar.setAppearance(next.appearance);if(version!==changeVersion)return;applyPortraitPose();portraitDirty=true;}
  catch(error){console.error(error);toast('That look could not load. Try again or use Undo.');}
@@ -132,8 +151,8 @@ addEventListener('keydown',event=>{
  if((event.metaKey||event.ctrlKey)&&['z','y'].includes(event.key.toLowerCase())){event.preventDefault();stepHistory(event.shiftKey||event.key.toLowerCase()==='y');}
 });
 function download(blob,name){const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=name;link.hidden=true;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);}
-$('#randomize').onclick=()=>{const next=randomizeLook({rarity:rarityEditor.value,appearance,background:portraitBackground,pose:portraitPose,posesEnabled:portraitPosesEnabled});changeLook({appearance:next.appearance,portrait:{posesEnabled:portraitPosesEnabled,pose:portraitPosesEnabled?next.pose:portraitPose,background:next.background}});};
-$('#exportLook').onclick=()=>{download(new Blob([JSON.stringify({version:6,appearance,rarity:rarityEditor.value,portrait:{posesEnabled:portraitPosesEnabled,pose:portraitPose,background:portraitBackground}},null,2)],{type:'application/json'}),'my-drifella.json');toast('Look exported.');};
+$('#randomize').onclick=()=>{const next=randomizeLook({rarity:rarityEditor.value,appearance,background:portraitBackground,overlay:portraitOverlay,pose:portraitPose,posesEnabled:portraitPosesEnabled});changeLook({appearance:next.appearance,portrait:{posesEnabled:portraitPosesEnabled,pose:portraitPosesEnabled?next.pose:portraitPose,background:next.background,overlay:next.overlay}});};
+$('#exportLook').onclick=()=>{download(new Blob([JSON.stringify({version:6,appearance,rarity:rarityEditor.value,portrait:{posesEnabled:portraitPosesEnabled,pose:portraitPose,background:portraitBackground,overlay:portraitOverlay}},null,2)],{type:'application/json'}),'my-drifella.json');toast('Look exported.');};
 $('#importLook').onclick=()=>$('#lookFile').click();
 $('#lookFile').onchange=async event=>{
  const file=event.target.files?.[0];event.target.value='';if(!file)return;
@@ -146,7 +165,7 @@ for(const button of document.querySelectorAll('[data-motion]'))button.onclick=()
 $('#holdCard').onchange=event=>{avatar?.setPose('');$('#studioPose').value='';holding=event.target.checked;settled=0;if(card)card.visible=holding;};
 for(const [id,poses] of [['studioPose',POSES],['portraitPose',PORTRAIT_POSES]])for(const pose of poses){const option=document.createElement('option');option.value=pose.id;option.textContent=pose.label;$(`#${id}`).append(option);}
 $('#studioPose').onchange=event=>{const id=normalizePose(event.target.value);motion='idle';elapsed=0;settled=0;holding=false;$('#holdCard').checked=false;if(card)card.visible=false;for(const button of document.querySelectorAll('[data-motion]'))button.setAttribute('aria-pressed',String(!id&&button.dataset.motion==='idle'));avatar?.setPose(id,{static:reducedMotion});};
-function portraitComposition(){return {...portraitPoseComposition(portraitPosesEnabled?portraitPose:''),background:portraitBackground};}
+function portraitComposition(){return {...portraitPoseComposition(portraitPosesEnabled?portraitPose:''),background:portraitBackground,overlay:portraitOverlay};}
 function applyPortraitPose(){portraitAvatar?.setPose(portraitPosesEnabled?portraitPose:'');if(portraitCamera)configurePortraitCamera(THREE,portraitCamera,portraitComposition());portraitDirty=true;}
 $('#enablePortraitPoses').onchange=event=>changePortrait({posesEnabled:event.target.checked});
 $('#portraitPose').onchange=event=>changePortrait({pose:normalizePortraitPose(event.target.value)||'salute'});
@@ -186,7 +205,7 @@ function cameraPose(){const jumping=motion==='jump',fitted=distance*Math.max(1,.
 function frame(now){
  if(disposed)return;frameId=requestAnimationFrame(frame);if(document.hidden){previousTime=now;return;}
  const dt=Math.min((now-(previousTime||now))/1000,.05);previousTime=now;
- if(viewMode==='portrait'){if(portraitDirty&&portraitScene){renderer.render(portraitScene,portraitCamera);portraitDirty=false;}return;}
+ if(viewMode==='portrait'){if(portraitDirty&&portraitScene){renderPortraitScene(renderer,portraitScene,portraitCamera);portraitDirty=false;}return;}
  elapsed+=dt;settled+=dt;if(autoRotate&&pointers.size===0)yaw+=dt*.3;
  if(avatar){const jumpTime=motion==='jump'?((elapsed%2.4)<1.1?elapsed%2.4:-1):-1,crouch=['crouch','sneak'].includes(motion)?1:0,velocity=motion==='walk'?1.25:motion==='sneak'?.65:0;
   avatar.update(reducedMotion&&motion==='idle'&&settled>.8?0:dt,velocity,holding,0,{crouch,jumpTime});avatar.model.position.y=jumpHeight(jumpTime);if(holding)followHeldCard?.();
@@ -205,19 +224,16 @@ function setViewMode(mode){
  previousTime=0;resize();
 }
 $('#studioMode').onclick=()=>setViewMode('studio');$('#portraitMode').onclick=()=>setViewMode('portrait');
-function setPortraitBackground(hex){
- if(!validPortraitBackground(hex))return;
- portraitBackground=hex.toLowerCase();if(portraitScene)setPortraitSceneBackground(THREE,portraitScene,portraitBackground);portraitDirty=true;
- for(const swatch of $('#portraitPalette').children)swatch.setAttribute('aria-pressed',String(swatch.dataset.background===portraitBackground));
+function setPortraitBackground(value){
+ if(!validPortraitBackground(value))return;
+ portraitBackground=value.toLowerCase();
+ if(portraitScene)Promise.resolve(setPortraitSceneBackground(THREE,portraitScene,portraitBackground)).then(()=>portraitDirty=true).catch(()=>toast('Background could not load. Try selecting it again.'));
  $('#backgroundPreview').style.background=backgroundCSS(portraitBackground);
  $('#backgroundPreview').title=PORTRAIT_BACKGROUNDS.find(color=>color.hex===portraitBackground)?.label||'Custom';
- if(portraitBackground!=='rainbow')$('#customBackground').value=portraitBackground;
+ if(/^#/.test(portraitBackground)&&$('#customBackground'))$('#customBackground').value=portraitBackground;
+ portraitDirty=true;
 }
-for(const background of PORTRAIT_BACKGROUNDS){
- const button=document.createElement('button');button.type='button';button.className='swatch';button.dataset.background=background.hex;button.style.setProperty('--swatch',backgroundCSS(background.hex));button.setAttribute('aria-label',`${background.label} portrait background`);button.title=background.label;
- button.onclick=()=>changePortrait({background:background.hex});$('#portraitPalette').append(button);
-}
-$('#customBackground').addEventListener('change',event=>changePortrait({background:event.target.value}));
+$('#chooseBackground').onclick=()=>{activateSidebar('editor');activateCategory('background');};
 setPortraitBackground(portraitBackground);
 async function exportPortrait(){
  if(!portraitAvatar||exporting)return;
@@ -238,7 +254,7 @@ $('#exportPortrait').onclick=exportPortrait;$('#closePortraitDialog').onclick=()
 async function setupPortrait(){
  portraitAvatar=await createPortraitAvatar({THREE,createAvatar:createShowroomAvatar,appearance,pose:portraitPosesEnabled?portraitPose:''});if(disposed){portraitAvatar.dispose();return;}
  await portraitAvatar.setAppearance(appearance);
- portraitScene=new THREE.Scene();portraitScene.environment=environment.texture;setPortraitSceneBackground(THREE,portraitScene,portraitBackground);portraitScene.add(portraitAvatar.model);
+ portraitScene=new THREE.Scene();portraitScene.environment=environment.texture;await setPortraitSceneBackground(THREE,portraitScene,portraitBackground);await setPortraitOverlay(THREE,portraitScene,portraitOverlay);portraitScene.add(portraitAvatar.model);
  portraitScene.add(new THREE.HemisphereLight(0xf7fcff,0x748b79,2.2));
  const key=new THREE.DirectionalLight(0xfff5df,3.2);key.position.set(-3,7,5);portraitScene.add(key);
  const fill=new THREE.DirectionalLight(0xa9d4ec,1.2);fill.position.set(4,3,-4);portraitScene.add(fill);
@@ -294,7 +310,7 @@ async function init(){
  }catch(error){console.error(error);$('#loadState').replaceChildren();const message=document.createElement('strong');message.textContent='Model could not load.';const detail=document.createElement('span');detail.textContent='Check your connection and retry.';const retry=document.createElement('button');retry.textContent='Try again';retry.onclick=()=>location.reload();$('#loadState').append(message,detail,retry);}
 }
 canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();toast('The 3D preview was interrupted. Reload to restore it.');$('#saveBookmark').disabled=true;});
-function cleanup(){if(disposed)return;disposed=true;bookmarkControls?.dispose();void bookmarkRenderer.dispose();cancelAnimationFrame(frameId);clearTimeout(toastTimer);resizeObserver.disconnect();if(card)disposeHeldCard(card);avatar?.dispose();portraitAvatar?.dispose();if(portraitScene)disposePortraitBackground(portraitScene);scene?.traverse(node=>{if(node===card||!node.isSkinnedMesh){node.geometry?.dispose();if(node.material)for(const material of [].concat(node.material))material.dispose();}});environment?.dispose();renderer?.dispose();}
+function cleanup(){if(disposed)return;disposed=true;bookmarkControls?.dispose();void bookmarkRenderer.dispose();cancelAnimationFrame(frameId);clearTimeout(toastTimer);resizeObserver.disconnect();if(card)disposeHeldCard(card);avatar?.dispose();portraitAvatar?.dispose();if(portraitScene){disposePortraitOverlay(portraitScene);disposePortraitBackground(portraitScene);}scene?.traverse(node=>{if(node===card||!node.isSkinnedMesh){node.geometry?.dispose();if(node.material)for(const material of [].concat(node.material))material.dispose();}});environment?.dispose();renderer?.dispose();}
 addEventListener('pagehide',event=>{if(!event.persisted)cleanup();});
-makeControls();updateHistory();
+makeControls();setPortraitBackground(portraitBackground);updateHistory();
 init();

@@ -466,10 +466,12 @@ asset_path.write_bytes(optimized)
 (OUT/'optimization-report.json').write_text(json.dumps(optimization_report,indent=2))
 print('GLB_OPTIMIZED',json.dumps(optimization_report))
 
+EAR_COMPATIBLE_HEADS=['cobaltmecha', 'bonsaipot', 'discoball', 'paperbag', 'moonface', 'divingbell', 'embroidereddoll', 'copperoni', 'cloudhead', 'dicehead', 'pumpkin', 'tv', 'crystal', 'ceramiccarapace', 'masonryidol', 'candywhorl', 'mossrelic', 'ashimp', 'opartmask', 'berrybust', 'orbitdemon']
+
 def selection(eyes='classic',shirt='original',hat='none',accessory='original',legs='original',mouth='original',head='original',extra='none',nose='original',ears='original',tattoo='none',brows='original'):
     names=['Drif_Body','Drif_Head_'+head,'Drif_Shirt_'+shirt,'Drif_Hat_'+hat,'Drif_Accessory_'+accessory,'Drif_Legs_'+legs,'Drif_Extra_'+extra]
     if shirt in ['wizardrobe']+ATELIER_FULLBODY:names.remove('Drif_Legs_'+legs)
-    if head in ['pumpkin', 'tv', 'crystal', 'ceramiccarapace', 'masonryidol', 'candywhorl', 'mossrelic', 'ashimp', 'opartmask', 'berrybust', 'orbitdemon']:names.append('Drif_Ears_original')
+    if head in EAR_COMPATIBLE_HEADS:names.append('Drif_Ears_'+ears)
     if head=='original':
         names+=['Drif_Eyes_'+eyes,'Drif_Mouth_'+mouth,'Drif_Nose_'+nose,'Drif_Ears_'+ears,'Drif_Tattoo_'+tattoo,'Drif_Brows_'+brows]
     for obj in pieces:
@@ -496,7 +498,7 @@ manifest={
     'atelierSources':{'drifella2':['9eyes/3 eye.PNG','9eyes/astro boy$5.PNG','9eyes/geek.PNG','9eyes/beat n bruised.PNG','9eyes/ghost angry.PNG','9eyes/bloodshot tv hearts$6.PNG','7mouth/cubone.PNG','7mouth/deaths head moth.PNG','7mouth/manga missing tooth.PNG','7mouth/murakami.PNG','7mouth/biting lip.PNG','7mouth/snoot bubble.PNG','5cloth/duck camo.PNG','5cloth/ornate jacket.PNG','91head/jpop hair.PNG'], 'littleSwagWorld':'https://nftranker.io/rankings/little-swag-world','notes':'Visual studies of textile layering, collectible mask silhouettes and toy proportions; includes original designs. All twelve extras are objects or effects, not companions.'},
     'headFits':{name:{'scale':list(fit[:3]),'verticalOffset':fit[3],'pivot':[0,0,2.20]} for name,fit in HEAD_FITS.items()},
     'legOverrideTops':['wizardrobe']+ATELIER_FULLBODY,
-    'classicFinHeads':['pumpkin', 'tv', 'crystal', 'ceramiccarapace', 'masonryidol', 'candywhorl', 'mossrelic', 'ashimp', 'opartmask', 'berrybust', 'orbitdemon'],
+    'earCompatibleHeads':EAR_COMPATIBLE_HEADS,
     'poses':POSE_IDS,
     'clips':[{'name':a.name,'seconds':(a.frame_range[1]-a.frame_range[0])/30} for a in bpy.data.actions],
     'bones':[b.name for b in rig.data.bones],
@@ -509,7 +511,7 @@ manifest={
     'headSizeVariants':{'bighead':1.2,'gianthead':1.4,'smallhead':.76},
     'sculptSources':{name:json.loads((ROOT/'scripts/showroom-assets'/name).read_text()) for name in ['sculpt-faces-catalog.json','sculpt-wardrobe-catalog.json','sculpt-ear-extra-catalog.json']},
     'sculptRefinements':{'ears':ATELIER_VARIANTS['Ears'],'extra':ATELIER_VARIANTS['Extra']},
-    'notes':'The sculpted collection study adds 120 modeled traits, rebuilds the 24 atelier ears/extras with shaped surfaces and solid hardware, adds six body finishes and three animated head proportions. The atelier expansion adds 12 traits to every category, embedded woven prints, short sleeves, four full-body outfits, and Miku-inspired twintails. Marble coats every visible trait matte white; holographic adds rest-space rainbow foil and sparkles to the body. All components share the original 19-bone rest pose, 10 locomotion actions and 22 enter-and-hold pose actions. Alternate heads replace the original head and facial categories without discarding choices; Earless sculpted heads, pumpkin, TV and crystal retain the classic fin ears. Replacement heads fit the original collar height and silhouette. Extra is independent of accessories. Ghost color and rim transparency cover the entire body, facial surfaces and bare feet, with a skinned fuzz mesh. Gold coats all body and facial surfaces. The Swag World hoodie embeds the user-supplied photograph with torso and sleeve UVs. The holiday extension adds mirrored Mog eyewear, a red VR headset, a Santa cap, a layered beard, four original-fin variations, and an ankle-length star robe that overrides legs while preserving the saved choice. Camo is a seamless rest-space runtime skin finish.'
+    'notes':'The sculpted collection study adds 120 modeled traits, rebuilds the 24 atelier ears/extras with shaped surfaces and solid hardware, adds six body finishes and three animated head proportions. The atelier expansion adds 12 traits to every category, embedded woven prints, short sleeves, four full-body outfits, and Miku-inspired twintails. Marble coats every visible trait matte white; holographic adds rest-space rainbow foil and sparkles to the body. All components share the original 19-bone rest pose, 10 locomotion actions and 22 enter-and-hold pose actions. Alternate heads replace the original head and facial categories without discarding choices; Ear-compatible replacement heads retain the selected ears. Replacement heads fit the original collar height and silhouette. Extra is independent of accessories. Ghost color and rim transparency cover the entire body, facial surfaces and bare feet, with a skinned fuzz mesh. Gold coats all body and facial surfaces. The Swag World hoodie embeds the user-supplied photograph with torso and sleeve UVs. The holiday extension adds mirrored Mog eyewear, a red VR headset, a Santa cap, a layered beard, four original-fin variations, and an ankle-length star robe that overrides legs while preserving the saved choice. Camo is a seamless rest-space runtime skin finish.'
 }
 (OUT/'manifest.json').write_text(json.dumps(manifest,indent=2))
 # Camera/view setup is scoped to the saved customization source.

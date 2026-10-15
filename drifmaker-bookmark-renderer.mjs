@@ -1,6 +1,7 @@
-import {setPortraitSceneBackground,disposePortraitBackground} from './drifmaker-background.mjs?v=1';
-import {createPortraitAvatar,configurePortraitCamera,portraitPoseComposition,PORTRAIT_COMPOSITION} from './drifmaker-portrait.mjs?v=6';
-import {normalizeLook} from './drifmaker-bookmarks.mjs?v=8';
+import {setPortraitOverlay,renderPortraitScene,disposePortraitOverlay} from './drifmaker-portrait-art.mjs?v=1';
+import {setPortraitSceneBackground,disposePortraitBackground} from './drifmaker-background.mjs?v=2';
+import {createPortraitAvatar,configurePortraitCamera,portraitPoseComposition,PORTRAIT_COMPOSITION} from './drifmaker-portrait.mjs?v=7';
+import {normalizeLook} from './drifmaker-bookmarks.mjs?v=10';
 
 // One private avatar/context serves the gallery and ZIP, serially. Neither
 // exporting nor thumbnail generation changes the editor's active selection.
@@ -28,11 +29,11 @@ export function createBookmarkRenderer({THREE,createAvatar,environmentFactory,re
     const {avatar,renderer,scene,camera}=session;
     await avatar.setAppearance(look.appearance);avatar.setPose(look.portrait.posesEnabled?look.portrait.pose:'');
     const composition={...PORTRAIT_COMPOSITION,...portraitPoseComposition(look.portrait.posesEnabled?look.portrait.pose:''),background:look.portrait.background,...(thumbnail?{width:240,height:259}:{})};
-    configurePortraitCamera(THREE,camera,composition);renderer.setSize(composition.width,composition.height,false);renderer.setClearColor(composition.background==='rainbow'?0:composition.background,1);setPortraitSceneBackground(THREE,scene,composition.background);renderer.render(scene,camera);
+    configurePortraitCamera(THREE,camera,composition);renderer.setSize(composition.width,composition.height,false);renderer.setClearColor(/^#/.test(composition.background)?composition.background:0,1);await setPortraitSceneBackground(THREE,scene,composition.background);await setPortraitOverlay(THREE,scene,look.portrait.overlay);renderPortraitScene(renderer,scene,camera);
     return new Promise((resolve,reject)=>renderer.domElement.toBlob(blob=>blob?resolve(blob):reject(Error('Could not render the bookmarked portrait.')),thumbnail?'image/webp':'image/png',.9));
    });
    queue=job.catch(()=>{});return job;
   },
-  async dispose(){closed=true;await queue;if(session){disposePortraitBackground(session.scene);session.avatar.dispose();session.environment.dispose();session.renderer.dispose();session.renderer.forceContextLoss?.();session=null;}},
+  async dispose(){closed=true;await queue;if(session){disposePortraitOverlay(session.scene);disposePortraitBackground(session.scene);session.avatar.dispose();session.environment.dispose();session.renderer.dispose();session.renderer.forceContextLoss?.();session=null;}},
  };
 }

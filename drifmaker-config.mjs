@@ -6,10 +6,9 @@ import {NEW_TRAITS} from './drifmaker-expansion.mjs?v=8';
 // and orange cream plush. Eye cues include sleppy, pixelady star and spiral;
 // clothing and accessories are independently modeled adaptations for this rig.
 const options=items=>Object.freeze(items.map(item=>Object.freeze(item)));
-// Replacement heads with no built-in ears retain the original Dratini fins.
-// Onyx cat has its own ears and lilac drake its own fins; ash imp's horns are
-// separate from its ears, and ceramic carapace's side plates are cheek armor.
-export const CLASSIC_FIN_HEADS=Object.freeze(['pumpkin','tv','crystal','ceramiccarapace','masonryidol','candywhorl','mossrelic','ashimp','opartmask','berrybust','orbitdemon']);
+// Replacement heads without built-in ears retain their own face and accept the
+// selected ear pair. Onyx cat and Lilac drake keep their built-in ears/fins.
+export const EAR_COMPATIBLE_HEADS=Object.freeze(["cobaltmecha","bonsaipot","discoball","paperbag","moonface","divingbell","embroidereddoll","copperoni","cloudhead","dicehead","pumpkin","tv","crystal","ceramiccarapace","masonryidol","candywhorl","mossrelic","ashimp","opartmask","berrybust","orbitdemon"]);
 export const HEAD_SCALES=Object.freeze({original:1,bighead:1.2,gianthead:1.4,smallhead:.76});
 export const isOriginalHead=id=>Object.hasOwn(HEAD_SCALES,id);
 export const LEG_OVERRIDE_TOPS=Object.freeze(['wizardrobe','raincape','monasticrobe','flightcoverall','dinosaursuit']);
@@ -186,6 +185,8 @@ export const BODY_COLORS=options([
  {id:'porcelain',label:'Porcelain',hex:'#f5f0e7'},
 ]);
 export const PORTRAIT_BACKGROUNDS=options([
+ {label:'Spiral',hex:'spiral'},
+ {label:'Black Ops',hex:'blackops'},
  {label:'Obsidian mist',hex:'#909ba8'},
  {label:'Volcanic dusk',hex:'#311e35'},
  {label:'Linen',hex:'#dbcaaf'},
