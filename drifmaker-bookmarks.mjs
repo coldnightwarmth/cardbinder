@@ -1,5 +1,5 @@
 import {validPortraitBackground} from './drifmaker-background.mjs?v=1';
-import {normalizeAppearance,BODY_COLORS,BODY_STYLES,PORTRAIT_BACKGROUNDS,CATEGORIES,CLASSIC_FIN_HEADS,LEG_OVERRIDE_TOPS} from './drifmaker-config.mjs?v=10';
+import {normalizeAppearance,BODY_COLORS,BODY_STYLES,PORTRAIT_BACKGROUNDS,CATEGORIES,isOriginalHead,CLASSIC_FIN_HEADS,LEG_OVERRIDE_TOPS} from './drifmaker-config.mjs?v=12';
 import {normalizePortraitPose,PORTRAIT_POSES} from './drifmaker-poses.mjs?v=3';
 import {PORTRAIT_COMPOSITION} from './drifmaker-portrait.mjs?v=6';
 import {createZipWriter} from './minotecurator/zip-writer.js';
@@ -62,7 +62,7 @@ export function bookmarkMetadata(item,{image,id}={}){
  for(const [category,title] of Object.entries(categories)){
   let selected=appearance[category];
   if(category==='ears'&&CLASSIC_FIN_HEADS.includes(appearance.head))selected='original';
-  else if(appearance.head!=='original'&&['eyes','brows','mouth','nose','ears','tattoo'].includes(category))selected=null;
+  else if(!isOriginalHead(appearance.head)&&['eyes','brows','mouth','nose','ears','tattoo'].includes(category))selected=null;
   if(category==='legs'&&LEG_OVERRIDE_TOPS.includes(appearance.shirt))selected=null;
   values[title]=selected===null?'None':label(CATEGORIES[category],selected);
  }

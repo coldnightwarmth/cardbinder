@@ -1,4 +1,4 @@
-import {NEW_TRAITS} from './drifmaker-expansion.mjs?v=7';
+import {NEW_TRAITS} from './drifmaker-expansion.mjs?v=8';
 // Shared by the browser and the showroom worker: only these small, validated
 // appearance values cross the network. Models and materials always stay local.
 // Drifella 2 collection inspiration: https://www.tensor.trade/trade/drifella_2
@@ -6,7 +6,12 @@ import {NEW_TRAITS} from './drifmaker-expansion.mjs?v=7';
 // and orange cream plush. Eye cues include sleppy, pixelady star and spiral;
 // clothing and accessories are independently modeled adaptations for this rig.
 const options=items=>Object.freeze(items.map(item=>Object.freeze(item)));
-export const CLASSIC_FIN_HEADS=Object.freeze(['pumpkin','tv','crystal']);
+// Replacement heads with no built-in ears retain the original Dratini fins.
+// Onyx cat has its own ears and lilac drake its own fins; ash imp's horns are
+// separate from its ears, and ceramic carapace's side plates are cheek armor.
+export const CLASSIC_FIN_HEADS=Object.freeze(['pumpkin','tv','crystal','ceramiccarapace','masonryidol','candywhorl','mossrelic','ashimp','opartmask','berrybust','orbitdemon']);
+export const HEAD_SCALES=Object.freeze({original:1,bighead:1.2,gianthead:1.4,smallhead:.76});
+export const isOriginalHead=id=>Object.hasOwn(HEAD_SCALES,id);
 export const LEG_OVERRIDE_TOPS=Object.freeze(['wizardrobe','raincape','monasticrobe','flightcoverall','dinosaursuit']);
 const ORIGINAL_CATEGORIES=Object.freeze({
  eyes:options([
@@ -103,9 +108,24 @@ const ORIGINAL_CATEGORIES=Object.freeze({
 export const CATEGORIES=Object.freeze(Object.fromEntries([...new Set([...Object.keys(ORIGINAL_CATEGORIES),...Object.keys(NEW_TRAITS)])].map(category=>[category,options([...(ORIGINAL_CATEGORIES[category]||[]),...(NEW_TRAITS[category]||[])])])));
 export const GOLD_COLOR='#e2ad32';
 export const FINISH_COLORS=Object.freeze({gold:GOLD_COLOR,silver:'#d7dee8',matteblack:'#08090b'});
-export const BODY_STYLE_COLORS=Object.freeze({...FINISH_COLORS,camo:'#62734a',marble:'#ffffff',holographic:'#d8d6f4'});
-export const BODY_STYLES=options([{id:'marble',label:'Marble',description:'Matte white across all visible parts.'},{id:'holographic',label:'Holographic',description:'Rainbow interference and sparkling trading-card foil.'},{id:'solid',label:'Solid',description:'The familiar sculpted finish.'},{id:'ghost',label:'Ghost aura',description:'Clear, translucent skin with soft luminous fibers.'},{id:'gold',label:'Gold',description:'Polished gold across the whole body and face.'},{id:'silver',label:'Silver',description:'Polished silver across the whole body and face.'},{id:'matteblack',label:'Matte black',description:'A soft black finish across the whole body and face.'},{id:'camo',label:'Camo',description:'Woodland camouflage across the body and fins.'}]);
+export const BODY_STYLE_COLORS=Object.freeze({...FINISH_COLORS,camo:'#62734a',marble:'#ffffff',holographic:'#d8d6f4',blackgem:'#151722',lava:'#dd4818',woods:'#926442',mossy:'#73833f',pinklatex:'#e785ad',cowhide:'#decbb0'});
+// Studied original 3drifellabody layers: black gem.PNG, lava.PNG, woods.PNG,
+// mossy.PNG, pink leather latex.PNG, cow hide.PNG. See drifmaker-finishes.mjs.
+export const BODY_STYLES=options([{id:'marble',label:'Marble',description:'Matte white across all visible parts.'},{id:'holographic',label:'Holographic',description:'Rainbow interference and sparkling trading-card foil.'},{id:'solid',label:'Solid',description:'The familiar sculpted finish.'},{id:'ghost',label:'Ghost aura',description:'Clear, translucent skin with soft luminous fibers.'},{id:'gold',label:'Gold',description:'Polished gold across the whole body and face.'},{id:'silver',label:'Silver',description:'Polished silver across the whole body and face.'},{id:'matteblack',label:'Matte black',description:'A soft black finish across the whole body and face.'},{id:'camo',label:'Camo',description:'Woodland camouflage across the body and fins.'},
+ {id:'blackgem',label:'Black gem',description:'Deep glossy resin inspired by the collection’s black gem body.'},
+ {id:'lava',label:'Lava',description:'Glowing molten channels through a rough charcoal crust.'},
+ {id:'woods',label:'Woods',description:'Warm carved timber with layered directional grain.'},
+ {id:'mossy',label:'Mossy',description:'Dense green moss patches across an earthy, weathered surface.'},
+ {id:'pinklatex',label:'Pink latex',description:'A glossy pink coating with a fine pebbled texture.'},
+ {id:'cowhide',label:'Cow hide',description:'Cream and brown hide patches with directional fibers.'},
+]);
 export const BODY_COLORS=options([
+ {id:'blackgem',label:'Black gem',hex:BODY_STYLE_COLORS.blackgem,style:'blackgem'},
+ {id:'lava',label:'Lava',hex:BODY_STYLE_COLORS.lava,style:'lava'},
+ {id:'woods',label:'Woods',hex:BODY_STYLE_COLORS.woods,style:'woods'},
+ {id:'mossy',label:'Mossy',hex:BODY_STYLE_COLORS.mossy,style:'mossy'},
+ {id:'pinklatex',label:'Pink latex',hex:BODY_STYLE_COLORS.pinklatex,style:'pinklatex'},
+ {id:'cowhide',label:'Cow hide',hex:BODY_STYLE_COLORS.cowhide,style:'cowhide'},
  {id:'marble',label:'Marble',hex:BODY_STYLE_COLORS.marble,style:'marble'},
  {id:'holographic',label:'Holographic',hex:BODY_STYLE_COLORS.holographic,style:'holographic'},
  {id:'pool',label:'Pool blue',hex:'#00b9ff'},
@@ -166,6 +186,12 @@ export const BODY_COLORS=options([
  {id:'porcelain',label:'Porcelain',hex:'#f5f0e7'},
 ]);
 export const PORTRAIT_BACKGROUNDS=options([
+ {label:'Obsidian mist',hex:'#909ba8'},
+ {label:'Volcanic dusk',hex:'#311e35'},
+ {label:'Linen',hex:'#dbcaaf'},
+ {label:'Forest light',hex:'#bbc99a'},
+ {label:'Glaze blue',hex:'#72c4d9'},
+ {label:'Terracotta',hex:'#ac5d3c'},
  {label:'Pool',hex:'#00a4dd'},
  {label:'Matcha',hex:'#778c4e'},
  {label:'Candy rose',hex:'#f098bd'},

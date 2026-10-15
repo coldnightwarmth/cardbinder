@@ -1,14 +1,14 @@
 import {createHeldCard,createHeldCardFollower,disposeHeldCard} from './drifmaker-held-card.mjs?v=1';
 import {validPortraitBackground,backgroundCSS,setPortraitSceneBackground,disposePortraitBackground} from './drifmaker-background.mjs?v=1';
-import {createLookHistory,normalizeLook} from './drifmaker-bookmarks.mjs?v=6';
-import {createBookmarkControls} from './drifmaker-bookmark-controls.mjs?v=6';
-import {createBookmarkRenderer} from './drifmaker-bookmark-renderer.mjs?v=6';
+import {createLookHistory,normalizeLook} from './drifmaker-bookmarks.mjs?v=8';
+import {createBookmarkControls} from './drifmaker-bookmark-controls.mjs?v=8';
+import {createBookmarkRenderer} from './drifmaker-bookmark-renderer.mjs?v=8';
 import {POSES,PORTRAIT_POSES,normalizePose,normalizePortraitPose} from './drifmaker-poses.mjs?v=3';
-import {randomizeLook} from './drifmaker-rarity.mjs?v=7';
-import {createRarityEditor} from './drifmaker-rarity-controls.mjs?v=7';
+import {randomizeLook} from './drifmaker-rarity.mjs?v=9';
+import {createRarityEditor} from './drifmaker-rarity-controls.mjs?v=9';
 import * as THREE from 'three';
-import {createShowroomAvatar} from './showroom-avatar.js?v=20';
-import {BODY_COLORS,BODY_STYLES,BODY_STYLE_COLORS,LEG_OVERRIDE_TOPS,CLASSIC_FIN_HEADS,PORTRAIT_BACKGROUNDS,CATEGORIES,DEFAULT_APPEARANCE,normalizeAppearance,loadAppearance} from './drifmaker-config.mjs?v=10';
+import {createShowroomAvatar} from './showroom-avatar.js?v=22';
+import {BODY_COLORS,BODY_STYLES,BODY_STYLE_COLORS,LEG_OVERRIDE_TOPS,isOriginalHead,CLASSIC_FIN_HEADS,PORTRAIT_BACKGROUNDS,CATEGORIES,DEFAULT_APPEARANCE,normalizeAppearance,loadAppearance} from './drifmaker-config.mjs?v=12';
 import {PORTRAIT_COMPOSITION,createPortraitAvatar,configurePortraitCamera,capturePortrait,portraitPoseComposition} from './drifmaker-portrait.mjs?v=6';
 import {createDrifmakerEnvironment} from './drifmaker-lighting.mjs?v=1';
 import {jumpHeight} from './showroom-locomotion.mjs?v=2';
@@ -100,7 +100,7 @@ function makeControls(){
 function updateControls(){
  for(const notice of controls.querySelectorAll('[data-leg-override]'))notice.hidden=!LEG_OVERRIDE_TOPS.includes(appearance.shirt);
  for(const button of controls.querySelectorAll('[data-body-style]'))button.setAttribute('aria-pressed',String(button.dataset.bodyStyle===appearance.bodyStyle));
- for(const notice of controls.querySelectorAll('[data-override-notice]')){notice.hidden=appearance.head==='original';notice.textContent=notice.dataset.overrideNotice==='ears'&&CLASSIC_FIN_HEADS.includes(appearance.head)?'Head uses classic fins.':'Head overrides face traits.';}
+ for(const notice of controls.querySelectorAll('[data-override-notice]')){notice.hidden=isOriginalHead(appearance.head);notice.textContent=notice.dataset.overrideNotice==='ears'&&CLASSIC_FIN_HEADS.includes(appearance.head)?'Head uses classic fins.':'Head overrides face traits.';}
  for(const button of controls.querySelectorAll('[data-color]'))button.setAttribute('aria-pressed',String(button.dataset.color.toLowerCase()===appearance.bodyColor.toLowerCase()));
  $('#bodyLabel').textContent=BODY_COLORS.find(color=>color.hex.toLowerCase()===appearance.bodyColor.toLowerCase())?.label||'Custom';$('#customColor').value=appearance.bodyColor;
  for(const button of controls.querySelectorAll('[data-option]'))button.setAttribute('aria-pressed',String(appearance[button.dataset.category]===button.dataset.option));
@@ -137,7 +137,7 @@ $('#exportLook').onclick=()=>{download(new Blob([JSON.stringify({version:6,appea
 $('#importLook').onclick=()=>$('#lookFile').click();
 $('#lookFile').onchange=async event=>{
  const file=event.target.files?.[0];event.target.value='';if(!file)return;
- try{if(file.size>16384)throw Error('Too large');const data=JSON.parse(await file.text()),value=data.appearance||data;
+ try{if(file.size>32768)throw Error('Too large');const data=JSON.parse(await file.text()),value=data.appearance||data;
   if((value?.bodyStyle!==undefined&&!BODY_STYLES.some(style=>style.id===value.bodyStyle))||!value||typeof value!=='object'||Array.isArray(value)||!/^#[a-f\d]{6}$/i.test(value.bodyColor)||!Object.entries(CATEGORIES).every(([key,options])=>(['legs','mouth','head','extra','nose','ears','tattoo','brows'].includes(key)&&!Object.hasOwn(value,key))||options.some(option=>option.id===value[key])))throw Error('Invalid look');
   await changeLook({appearance:normalizeAppearance(value),portrait:data.portrait?{...currentLook().portrait,...data.portrait}:currentLook().portrait});if(Object.hasOwn(data,'rarity'))rarityEditor.replace(data.rarity);toast('Look imported.');
  }catch{toast('Choose a valid Drifmaker look exported from this editor.');}

@@ -1,0 +1,26 @@
+{
+ "ears": [
+  ["dratinicrest","Dratini crest","3drifellabody/dratini anime.PNG — long ivory membrane with a rolled root"],
+  ["dragonscallop","Dragon scallops","3drifellabody/dragon.PNG — smooth scalloped dragon fins"],
+  ["armoredfins","Armored fins","3drifellabody/drifella armor.PNG — overlapping metal fin plates"],
+  ["quiltfins","Quilted fins","3drifellabody/plush torn jester.PNG — inflated patchwork cloth fins"],
+  ["carnagefins","Carnage fins","3drifellabody/cloth carnage.PNG — pointed red and black folded cloth"],
+  ["icebladefins","Diamond fins","3drifellabody/diamond.PNG — cut crystal facets and broad prismatic blades"],
+  ["mossfins","Moss fins","3drifellabody/mossy.PNG — eroded fins and thick moss patches"],
+  ["wrappedfins","Wrapped fins","3drifellabody/wrapped dratini sketch.PNG — broad overlapping wrappings"],
+  ["batmembranes","Bat membranes","91head/leather demon bat hat.PNG — scooped leather wing membranes"],
+  ["ramhorns","Cloth ram horns","91head/cloth horn hat.PNG — thick curled fabric horns"]
+ ],
+ "extra": [
+  ["djstation","DJ turntables","User-requested DJ table; 92left/field recording.PNG music equipment reference"],
+  ["gumballstand","Gumball machine","92left/gumball machine.PNG — clear candy dome, coin mechanism, pedestal"],
+  ["potionflasks","Shield potions","92left/shield potion.PNG — corked conical blue potion flasks"],
+  ["greedvessel","Greed vessel","92left/pot of greed$4.PNG — sculpted grinning ceramic vessel"],
+  ["brokenhandhelds","Broken handhelds","93right/destroyed gameboy$1.PNG — damaged handheld shells and inset screens"],
+  ["sacredrelic","Sacred heart relic","93right/sacred heart.PNG — dimensional metal heart and radial swords"],
+  ["cardshrine","Ancient card shrine","2background+/ancient mew card.PNG — thick ornate card slab with inset relic face"],
+  ["notkinteapot","Skull teapot","92left/richard notkin teapot$8.PNG — stacked skull ceramic teapot"],
+  ["obsidianblades","Obsidian blades","92left/obsidian blade.PNG — broad chipped volcanic blades"],
+  ["minidiscorbit","MiniDisc orbit","92left/field recording.PNG — silver MiniDisc players with recessed controls"]
+ ]
+}

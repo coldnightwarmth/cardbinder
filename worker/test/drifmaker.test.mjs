@@ -4,20 +4,24 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import * as THREE from '../../vendor/three.module.min.js';
-import {CATEGORIES,LEG_OVERRIDE_TOPS,GOLD_COLOR,BODY_COLORS,PORTRAIT_BACKGROUNDS,DEFAULT_APPEARANCE,APPEARANCE_STORAGE_KEY,normalizeAppearance,appearanceKey,loadAppearance,saveAppearance} from '../../drifmaker-config.mjs';
+import {CATEGORIES,CLASSIC_FIN_HEADS,LEG_OVERRIDE_TOPS,GOLD_COLOR,BODY_COLORS,PORTRAIT_BACKGROUNDS,HEAD_SCALES,isOriginalHead,DEFAULT_APPEARANCE,APPEARANCE_STORAGE_KEY,normalizeAppearance,appearanceKey,loadAppearance,saveAppearance} from '../../drifmaker-config.mjs';
 import {createAvatarAppearance} from '../../drifmaker-avatar.mjs';
+import {bookmarkMetadata,normalizeLook} from '../../drifmaker-bookmarks.mjs';
 import {Showroom} from '../src/showroom.js';
 import {freshRoom} from '../src/showroom-state.js';
+// Proportional heads reuse the original mesh and skeleton; they are persisted
+// catalog choices, but must never be counted as three missing GLB mesh assets.
+const meshOptions=(category,items)=>items.filter(item=>item.id!=='none'&&!(category==='head'&&item.id!=='original'&&isOriginalHead(item.id)));
 
 test('expanded wardrobe contains twelve independent categories and bounded normalized values',()=>{
- assert.deepEqual(Object.fromEntries(Object.entries(CATEGORIES).map(([category,items])=>[category,items.length])),{eyes:47,mouth:43,shirt:42,legs:36,hat:43,accessory:42,head:22,extra:28,tattoo:24,nose:21,ears:25,brows:26});
+ assert.deepEqual(Object.fromEntries(Object.entries(CATEGORIES).map(([category,items])=>[category,items.length])),{eyes:57,mouth:53,shirt:52,legs:46,hat:53,accessory:52,head:35,extra:38,tattoo:34,nose:31,ears:35,brows:36});
  for(const items of Object.values(CATEGORIES)){
   assert.ok(items.filter(item=>item.id!=='none').length>=5);
   assert.equal(new Set(items.map(item=>item.id)).size,items.length);
   for(const item of items)assert.match(item.id,/^[a-z0-9]+$/);
  }
- assert.equal(BODY_COLORS.length,57);
- assert.equal(PORTRAIT_BACKGROUNDS.length,44);
+ assert.equal(BODY_COLORS.length,63);
+ assert.equal(PORTRAIT_BACKGROUNDS.length,50);
  for(const palette of [BODY_COLORS,PORTRAIT_BACKGROUNDS]){
   assert.equal(new Set(palette.map(color=>color.hex)).size,palette.length);
   for(const color of palette)if(color.hex!=='rainbow')assert.match(color.hex,/^#[a-f0-9]{6}$/);
@@ -32,6 +36,53 @@ test('expanded wardrobe contains twelve independent categories and bounded norma
  assert.notEqual(appearanceKey(chosen),appearanceKey({...chosen,mouth:'braces'}));
  assert.deepEqual(Object.keys(normalizeAppearance({...chosen,unsafe:'ignored'})),['bodyColor','bodyStyle',...Object.keys(CATEGORIES)]);
  assert.ok(JSON.stringify(normalizeAppearance(chosen)).length<384,'appearance remains a compact fixed-shape pose field');
+});
+
+test('source catalogs supply ten documented new mesh options in each of twelve categories',()=>{
+ const sources=['sculpt-faces-catalog.json','sculpt-wardrobe-catalog.json','sculpt-ear-extra-catalog.json'];
+ const categories=new Set(),options=new Set();
+ for(const source of sources){
+  const catalog=JSON.parse(readFileSync(new URL('../../scripts/showroom-assets/'+source,import.meta.url)));
+  for(const [category,rows] of Object.entries(catalog)){
+   assert.equal(categories.has(category),false,`${category} must have one authoring catalog`);categories.add(category);
+   assert.equal(rows.length,10,category);
+   for(const [id,label,reference] of rows){
+    assert.ok(typeof reference==='string'&&reference.length>25,`${category}/${id} records its reference`);
+    assert.equal(CATEGORIES[category].filter(item=>item.id===id).length,1,`${category}/${id}`);
+    assert.equal(CATEGORIES[category].find(item=>item.id===id).label,label);
+    assert.equal(meshOptions(category,[{id}]).length,1,`${id} must be modeled rather than a virtual alias`);
+    assert.equal(normalizeAppearance({...DEFAULT_APPEARANCE,[category]:id})[category],id);
+    options.add(category+'/'+id);
+   }
+  }
+ }
+ assert.deepEqual([...categories].sort(),Object.keys(CATEGORIES).sort());assert.equal(options.size,120);
+});
+
+test('all twenty-four rebuilt fin and extra IDs retain saved-look compatibility',()=>{
+ const atelier=JSON.parse(readFileSync(new URL('../../scripts/showroom-assets/atelier-catalog.json',import.meta.url)));
+ const retained={ears:['notchedfins','foldedfins','sweptfins','piercedfins','ribbedfins','patchworkfins','charredfins','opalfins','glassfins','ribbonfins','gildedfins','lacefins'],extra:['shatteredmirror','firehoop','talismans','coinshower','floppydisks','neondoor','vinylorbit','confettiburst','chessfloat','solareclipse','waterhoop','ribbonvortex']};
+ for(const [category,ids] of Object.entries(retained)){
+  assert.deepEqual(atelier[category].map(([id])=>id),ids);
+  for(const [id,label] of atelier[category])assert.equal(CATEGORIES[category].find(item=>item.id===id)?.label,label);
+ }
+ const values=new Map(),storage={getItem:key=>values.get(key),setItem:(key,value)=>values.set(key,value)};
+ for(let index=0;index<12;index++){
+  const look={...DEFAULT_APPEARANCE,ears:retained.ears[index],extra:retained.extra[index]};
+  saveAppearance(look,storage);assert.deepEqual(loadAppearance(storage),look);
+ }
+});
+
+test('proportional head aliases retain chosen facial traits in NFT metadata and reimport',()=>{
+ const face={eyes:'hearts',brows:'heavy',mouth:'fangs',nose:'pig',ears:'elf',tattoo:'stars'};
+ const titles={eyes:'eyes',brows:'eyebrows',mouth:'mouth',nose:'nose',ears:'ears',tattoo:'tattoos'};
+ for(const head of Object.keys(HEAD_SCALES)){
+  const look=normalizeLook({appearance:{...DEFAULT_APPEARANCE,...face,head},portrait:{background:'#72c4d9',posesEnabled:true,pose:'wave'}});
+  const metadata=bookmarkMetadata({name:head,look},{id:1,image:'../portrait.png'}),attributes=Object.fromEntries(metadata.attributes.map(trait=>[trait.trait_type,trait.value]));
+  assert.equal(attributes.head,CATEGORIES.head.find(option=>option.id===head).label);
+  for(const [category,id] of Object.entries(face))assert.equal(attributes[titles[category]],CATEGORIES[category].find(option=>option.id===id).label,head+':'+category);
+  assert.deepEqual(normalizeLook(metadata),look,'exported look retains size, appearance and portrait selections');
+ }
 });
 
 test('full-body tops hide all leg variants and switching tops restores the saved choice',()=>{
@@ -70,27 +121,49 @@ test('camo covers skin and feet, preserves eyewear and clothes, and restores oth
  controller.dispose();geometry.dispose();source.dispose();
 });
 
-test('pumpkin, TV and crystal retain classic fins without losing the selected ear variant',()=>{
+test('replacement heads without built-in ears retain classic fins without losing selected face traits',()=>{
+ const expected=['pumpkin','tv','crystal','ceramiccarapace','masonryidol','candywhorl','mossrelic','ashimp','opartmask','berrybust','orbitdemon'];
+ assert.deepEqual(CLASSIC_FIN_HEADS,expected);
+ const chosenFace={eyes:'star',mouth:'fangs',brows:'heavy',nose:'pig',tattoo:'stars'};
+ const faceNames=Object.entries(chosenFace).map(([category,id])=>`Drif_${category[0].toUpperCase()+category.slice(1)}_${id}`);
  const model=new THREE.Group();
- for(const name of ['Drif_Ears_original','Drif_Ears_elf','Drif_Eyes_classic','Drif_Mouth_original',...CATEGORIES.head.map(head=>'Drif_Head_'+head.id)]){const part=new THREE.Group();part.name=name;model.add(part);}
- const controller=createAvatarAppearance(model),selected={...DEFAULT_APPEARANCE,ears:'elf'};
- for(const head of ['pumpkin','tv','crystal']){
+ for(const name of ['Drif_Ears_original','Drif_Ears_elf',...faceNames,...meshOptions('head',CATEGORIES.head).map(head=>'Drif_Head_'+head.id)]){const part=new THREE.Group();part.name=name;model.add(part);}
+ const controller=createAvatarAppearance(model),selected={...DEFAULT_APPEARANCE,...chosenFace,ears:'elf'};
+ for(const head of expected){
   controller.setAppearance({...selected,head});
+  assert.equal(model.getObjectByName('Drif_Head_'+head).visible,true,head);
+  assert.equal(model.getObjectByName('Drif_Head_original').visible,false,head);
   assert.equal(model.getObjectByName('Drif_Ears_original').visible,true,head);
   assert.equal(model.getObjectByName('Drif_Ears_elf').visible,false,head);
-  assert.equal(model.getObjectByName('Drif_Eyes_classic').visible,false,head);
-  assert.equal(model.getObjectByName('Drif_Mouth_original').visible,false,head);
-  assert.equal(controller.appearance.ears,'elf');
+  for(const name of faceNames)assert.equal(model.getObjectByName(name).visible,false,head+':'+name);
+  assert.deepEqual(controller.appearance,{...selected,head},'automatic fins preserve the saved face and ear choices');
  }
- for(const head of ['void','vortex','gasmask','glitch','hockey','hayabusa']){
+ for(const head of ['onyxcat','lilacdrake','void','vortex','gasmask','glitch','hockey','hayabusa']){
   controller.setAppearance({...selected,head});
+  assert.equal(model.getObjectByName('Drif_Head_'+head).visible,true,head);
   assert.equal(model.getObjectByName('Drif_Ears_original').visible,false,head);
   assert.equal(model.getObjectByName('Drif_Ears_elf').visible,false,head);
  }
- controller.setAppearance(selected);
- assert.equal(model.getObjectByName('Drif_Ears_elf').visible,true);
- assert.equal(model.getObjectByName('Drif_Ears_original').visible,false);
+ for(const head of Object.keys(HEAD_SCALES)){
+  controller.setAppearance({...selected,head});
+  assert.equal(model.getObjectByName('Drif_Ears_elf').visible,true,head);
+  assert.equal(model.getObjectByName('Drif_Ears_original').visible,false,head);
+  for(const name of faceNames)assert.equal(model.getObjectByName(name).visible,true,head+':'+name);
+ }
  controller.dispose();
+});
+
+test('classic fins on replacement heads are reported in NFT metadata while hidden selections round-trip',()=>{
+ const face={eyes:'star',mouth:'fangs',brows:'heavy',nose:'pig',ears:'elf',tattoo:'stars'};
+ for(const head of [...CLASSIC_FIN_HEADS,'onyxcat','lilacdrake']){
+  const look=normalizeLook({appearance:{...DEFAULT_APPEARANCE,...face,head},portrait:{background:'#72c4d9',posesEnabled:true,pose:'wave'}});
+  const metadata=bookmarkMetadata({name:head,look},{id:1,image:'../portrait.png'});
+  const attributes=Object.fromEntries(metadata.attributes.map(trait=>[trait.trait_type,trait.value]));
+  assert.equal(attributes.ears,CLASSIC_FIN_HEADS.includes(head)?CATEGORIES.ears.find(option=>option.id==='original').label:'None',head);
+  for(const category of ['eyes','eyebrows','mouth','nose','tattoos'])assert.equal(attributes[category],'None',head+':'+category);
+  assert.equal(metadata.appearance.ears,'elf','the exported editor state keeps the chosen ears');
+  assert.deepEqual(normalizeLook(metadata),look,'reimport retains every hidden face choice');
+ }
 });
 
 test('alternate heads override facial meshes and ghost materials stay isolated and reversible',()=>{
@@ -153,7 +226,7 @@ test('mixing wardrobe parts isolates body color and visibility while sharing imm
  const source=new THREE.Group(),geometry=new THREE.BoxGeometry(),bodyMaterial=new THREE.MeshStandardMaterial({color:0x1d5dea}),wardrobeMaterial=new THREE.MeshStandardMaterial({color:0xffffff});
  bodyMaterial.name='Drif_Body_Main';
  const body=new THREE.Mesh(geometry,bodyMaterial);body.name='Drif_Body';source.add(body);
- for(const [category,items] of Object.entries(CATEGORIES))for(const item of items.filter(item=>item.id!=='none')){
+ for(const [category,items] of Object.entries(CATEGORIES))for(const item of meshOptions(category,items)){
   const part=new THREE.Mesh(geometry,category==='eyes'?[wardrobeMaterial,bodyMaterial]:wardrobeMaterial);
   part.name=`Drif_${category[0].toUpperCase()+category.slice(1)}_${item.id}`;source.add(part);
  }
@@ -162,18 +235,19 @@ test('mixing wardrobe parts isolates body color and visibility while sharing imm
  wardrobeA.setAppearance(selected);wardrobeB.setAppearance();
  assert.equal(a.children[0].geometry,geometry);assert.notEqual(a.children[0].material,bodyMaterial);assert.notEqual(a.children[0].material,b.children[0].material);
  assert.equal(a.children[0].material.color.getHexString(),'e67d9b');assert.equal(b.children[0].material.color.getHexString(),'1d5dea');assert.equal(bodyMaterial.color.getHexString(),'1d5dea');
- for(const [category,items] of Object.entries(CATEGORIES))for(const item of items.filter(item=>item.id!=='none')){
+ for(const [category,items] of Object.entries(CATEGORIES))for(const item of meshOptions(category,items)){
   const name=`Drif_${category[0].toUpperCase()+category.slice(1)}_${item.id}`;
   assert.equal(a.getObjectByName(name).visible,item.id===selected[category]);
   assert.equal(b.getObjectByName(name).visible,item.id===DEFAULT_APPEARANCE[category]);
  }
  // Each new category swaps only its own meshes, with no effect on another
  // category or another player's clone.
- for(const category of ['mouth','legs','nose','ears','tattoo'])for(const item of CATEGORIES[category]){
+ for(const category of ['mouth','legs','nose','ears','tattoo','head'])for(const item of category==='head'?CATEGORIES.head.filter(option=>isOriginalHead(option.id)):CATEGORIES[category]){
   const look={...selected,[category]:item.id};wardrobeA.setAppearance(look);
-  for(const [other,items] of Object.entries(CATEGORIES))for(const option of items.filter(option=>option.id!=='none')){
+  for(const [other,items] of Object.entries(CATEGORIES))for(const option of meshOptions(other,items)){
    const name=`Drif_${other[0].toUpperCase()+other.slice(1)}_${option.id}`;
-   assert.equal(a.getObjectByName(name).visible,option.id===look[other],`${category}:${item.id} must leave ${other} independent`);
+   const visibleId=other==='head'&&isOriginalHead(look.head)?'original':look[other];
+   assert.equal(a.getObjectByName(name).visible,option.id===visibleId,`${category}:${item.id} must leave ${other} independent`);
    assert.equal(b.getObjectByName(name).visible,option.id===DEFAULT_APPEARANCE[other]);
   }
  }
@@ -229,12 +303,15 @@ test('every shipped wardrobe option is skinned to the original rig and retains a
    assert.ok(gltf.images[texture.source].bufferView!==undefined,`${id}: embedded textile`);
   }
  }
- assert.ok(readFileSync(new URL('../../assets/models/drifmaker/drifella-customizable.glb',import.meta.url)).byteLength<25*1024*1024,'model stays below the static host asset limit');
+ // cards.art is GitHub Pages (main:/), not the separate wallet API's Cloudflare
+ // Pages project. Keep a deliberate loading budget below GitHub's file cap.
+ assert.ok(readFileSync(new URL('../../assets/models/drifmaker/drifella-customizable.glb',import.meta.url)).byteLength<50*1024*1024,'model stays within the 50 MiB transfer budget');
  assert.deepEqual(gltf.animations.filter(clip=>!clip.name.startsWith('Pose_')).map(clip=>clip.name).sort(),original.json.animations.map(clip=>clip.name).sort());
- const expectedNames=['Drif_Body','Drif_Ghost_Fuzz',...Object.entries(CATEGORIES).flatMap(([category,items])=>items.filter(item=>item.id!=='none').map(item=>`Drif_${category[0].toUpperCase()+category.slice(1)}_${item.id}`))];
- assert.equal(expectedNames.length,396);
+ const expectedNames=['Drif_Body','Drif_Ghost_Fuzz',...Object.entries(CATEGORIES).flatMap(([category,items])=>meshOptions(category,items).map(item=>`Drif_${category[0].toUpperCase()+category.slice(1)}_${item.id}`))];
+ assert.equal(expectedNames.length,516);
  assert.deepEqual(gltf.nodes.filter(node=>node.mesh!==undefined).map(node=>node.name).sort(),expectedNames.sort(),'every logical wardrobe option has exactly one mesh node');
- for(const [category,items] of Object.entries(CATEGORIES))for(const item of items.filter(item=>item.id!=='none')){
+ for(const head of Object.keys(HEAD_SCALES).filter(id=>id!=='original'))assert.equal(gltf.nodes.some(node=>node.name==='Drif_Head_'+head),false,'head size aliases must reuse the original mesh');
+ for(const [category,items] of Object.entries(CATEGORIES))for(const item of meshOptions(category,items)){
   const prefix=`Drif_${category[0].toUpperCase()+category.slice(1)}_${item.id}`;
   const parts=gltf.nodes.filter(node=>node.name===prefix||node.name?.startsWith(`${prefix}_`));
   assert.ok(parts.length,`missing ${prefix}`);

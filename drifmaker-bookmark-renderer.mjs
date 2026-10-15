@@ -1,6 +1,6 @@
 import {setPortraitSceneBackground,disposePortraitBackground} from './drifmaker-background.mjs?v=1';
 import {createPortraitAvatar,configurePortraitCamera,portraitPoseComposition,PORTRAIT_COMPOSITION} from './drifmaker-portrait.mjs?v=6';
-import {normalizeLook} from './drifmaker-bookmarks.mjs?v=6';
+import {normalizeLook} from './drifmaker-bookmarks.mjs?v=8';
 
 // One private avatar/context serves the gallery and ZIP, serially. Neither
 // exporting nor thumbnail generation changes the editor's active selection.

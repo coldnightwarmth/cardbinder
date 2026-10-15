@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {DEFAULT_APPEARANCE} from '../../drifmaker-config.mjs';
+import {readFileSync} from 'node:fs';
+import {DEFAULT_APPEARANCE,BODY_STYLES,BODY_STYLE_COLORS,HEAD_SCALES,normalizeAppearance} from '../../drifmaker-config.mjs';
 import {RARITY_GROUPS,RARITY_STORAGE_KEY,DEFAULT_WEIGHT,MAX_WEIGHT,normalizeRarity,traitWeight,traitChances,pickTrait,randomizeLook,loadRarity,saveRarity} from '../../drifmaker-rarity.mjs';
 
 test('every trait, color, finish, background and pose starts with equal odds',()=>{
@@ -61,9 +62,14 @@ test('saved/imported rarity is bounded, catalog-only, forward compatible and sur
  values.set(RARITY_STORAGE_KEY,'{broken');assert.deepEqual(loadRarity(storage),{});
  const denied={getItem(){throw Error('denied');},setItem(){throw Error('quota');}};
  assert.deepEqual(loadRarity(denied),{});assert.throws(()=>saveRarity(expected,denied),/quota/);
- // Even every configured weight fits the existing look import size limit.
+ // A fully configured exported look must fit the editor's real import guard;
+ // adding 120 options pushed the previous 16 KiB allowance over its limit.
  const full=Object.fromEntries(Object.entries(RARITY_GROUPS).map(([key,{options}])=>[key,Object.fromEntries(options.map(option=>[option.id,MAX_WEIGHT]))]));
- assert.ok(Buffer.byteLength(JSON.stringify({version:6,appearance:DEFAULT_APPEARANCE,rarity:full,portrait:{posesEnabled:true,pose:'salute',background:'#abcdef'}},null,2))<16384);
+ const editor=readFileSync(new URL('../../drifmaker.js',import.meta.url),'utf8'),guard=/file\.size\s*>\s*(\d+(?:\s*\*\s*\d+)*)/.exec(editor);
+ assert.ok(guard,'editor keeps an explicit bounded look import guard');
+ const importLimit=guard[1].split('*').reduce((value,factor)=>value*Number(factor),1);
+ assert.equal(importLimit,32*1024);
+ assert.ok(Buffer.byteLength(JSON.stringify({version:6,appearance:DEFAULT_APPEARANCE,rarity:full,portrait:{posesEnabled:true,pose:'salute',background:'#abcdef'}},null,2))<importLimit);
 });
 
 test('new finishes and rainbow gradient obey independent zero and exclusive weights',()=>{
@@ -73,4 +79,33 @@ test('new finishes and rainbow gradient obey independent zero and exclusive weig
  const state={rarity,appearance:DEFAULT_APPEARANCE,background:'#abcdef',pose:'salute'};
  for(const value of [0,.4,.999]){const result=randomizeLook(state,()=>value);assert.equal(result.appearance.bodyStyle,'silver');assert.equal(result.background,'rainbow');}
  rarity.bodyStyle.silver=0;rarity.bodyStyle.matteblack=1;assert.equal(randomizeLook(state).appearance.bodyStyle,'matteblack');
+});
+
+test('all six sculpt finishes are eligible, independently weighted, and normalize to their intended material color',()=>{
+ const ids=['blackgem','lava','woods','mossy','pinklatex','cowhide'];
+ const bodyColor='azure',background=RARITY_GROUPS.background.options[0];
+ const weights=(category,id)=>Object.fromEntries(RARITY_GROUPS[category].options.map(option=>[option.id,option.id===id?1:0]));
+ for(const id of ids){
+  assert.ok(BODY_STYLES.some(style=>style.id===id));assert.equal(traitWeight({},'bodyStyle',id),DEFAULT_WEIGHT);
+  const rarity={bodyStyle:weights('bodyStyle',id),bodyColor:weights('bodyColor',bodyColor),background:weights('background',background.id)};
+  for(const random of [0,.5,.999999]){
+   const result=randomizeLook({rarity,appearance:DEFAULT_APPEARANCE,background:'#abcdef',pose:'salute'},()=>random);
+   assert.equal(result.appearance.bodyStyle,id);assert.equal(result.background,background.hex);
+   const normalized=normalizeAppearance(result.appearance);assert.equal(normalized.bodyStyle,id);assert.equal(normalized.bodyColor,BODY_STYLE_COLORS[id]);
+  }
+  rarity.bodyStyle[id]=0;rarity.bodyStyle.solid=1;
+  assert.equal(randomizeLook({rarity,appearance:DEFAULT_APPEARANCE},()=>.5).appearance.bodyStyle,'solid','zero weight must exclude the new finish');
+ }
+});
+
+test('head-size aliases participate in rarity without discarding independently sampled facial traits',()=>{
+ for(const head of Object.keys(HEAD_SCALES).filter(id=>id!=='original')){
+  const rarity={head:Object.fromEntries(RARITY_GROUPS.head.options.map(option=>[option.id,option.id===head?1:0]))};
+  for(const random of [0,.5,.999999]){
+   const state={rarity,appearance:DEFAULT_APPEARANCE,background:'#abcdef',pose:'salute'},look=randomizeLook(state,()=>random);
+   assert.equal(look.appearance.head,head);
+   for(const category of ['eyes','brows','mouth','nose','ears','tattoo'])assert.equal(look.appearance[category],pickTrait({},category,()=>random).id);
+   assert.equal(normalizeAppearance(look.appearance).head,head);
+  }
+ }
 });

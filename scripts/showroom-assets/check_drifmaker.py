@@ -28,7 +28,7 @@ report={'normalizedWeights':True,'maxInfluences':4,'originalGeometryPreserved':T
         'boneCount':len(rig.data.bones),'skinnedObjectCount':len(meshes),'clips':{},'neutralBounds':{},
         'verification':'Every frame of all 32 actions evaluated for finite vertices; original ten-component union compared to original mesh; includes all alternate heads, extras and ghost fibers.'}
 report['headFits']={}
-for name in list(manifest.get('headFits',{}))+manifest.get('atelierHeads',[]):
+for name in list(manifest.get('headFits',{}))+manifest.get('atelierHeads',[])+manifest.get('sculptHeads',[]):
     obj=bpy.data.objects['Drif_Head_'+name]
     lo=[min(v.co[i] for v in obj.data.vertices) for i in range(3)]
     hi=[max(v.co[i] for v in obj.data.vertices) for i in range(3)]
@@ -69,7 +69,7 @@ def look(eyes,shirt,hat,accessory,action,frame,legs='original',mouth='original',
     names=['Drif_Body','Drif_Head_'+head,'Drif_Extra_'+extra,'Drif_Eyes_'+eyes,'Drif_Shirt_'+shirt,'Drif_Hat_'+hat,'Drif_Accessory_'+accessory,'Drif_Legs_'+legs,'Drif_Mouth_'+mouth,'Drif_Nose_'+nose,'Drif_Ears_'+ears,'Drif_Tattoo_'+tattoo,'Drif_Brows_'+brows]
     if head!='original':names=[n for n in names if not n.startswith(('Drif_Eyes_','Drif_Mouth_','Drif_Nose_','Drif_Ears_','Drif_Tattoo_','Drif_Brows_'))]
     if shirt in manifest['legOverrideTops']:names.remove('Drif_Legs_'+legs)
-    if head in ['pumpkin','tv','crystal']:names.append('Drif_Ears_original')
+    if head in manifest['classicFinHeads']:names.append('Drif_Ears_original')
     for obj in meshes:
         visible=obj.name in names
         obj.hide_set(not visible)

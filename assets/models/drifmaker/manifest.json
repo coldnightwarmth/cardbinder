@@ -1,5 +1,5 @@
 {
-  "version": 10,
+  "version": 11,
   "asset": "drifella-customizable.glb",
   "source": "drifella-customizable.blend",
   "bodyMaterial": "Drif_Body_Main",
@@ -60,7 +60,17 @@
       "prismeyes",
       "visorslit",
       "sakurapupils",
-      "closedjoy"
+      "closedjoy",
+      "buulids",
+      "deflatedbags",
+      "waojewels",
+      "beautyglass",
+      "dratinigaze",
+      "blazedcushions",
+      "geekframes",
+      "mangekyoseal",
+      "millerockets",
+      "seethewell"
     ],
     "shirts": [
       "original",
@@ -104,7 +114,17 @@
       "raincape",
       "monasticrobe",
       "flightcoverall",
-      "dinosaursuit"
+      "dinosaursuit",
+      "restraintcoat",
+      "gemblazer",
+      "officerleather",
+      "bosozoku",
+      "fieldmedic",
+      "exoshell",
+      "sunderland",
+      "ruffleharness",
+      "snowblouse",
+      "stormcollar"
     ],
     "hats": [
       "none",
@@ -149,7 +169,17 @@
       "silverhair",
       "croissant",
       "daisybonnet",
-      "tentaclehair"
+      "tentaclehair",
+      "falconhelm",
+      "psychiccrest",
+      "wingedslump",
+      "patchsprite",
+      "starsbandana",
+      "catknithood",
+      "leatherbat",
+      "thorncirclet",
+      "clothram",
+      "reversecap"
     ],
     "accessories": [
       "none",
@@ -193,7 +223,17 @@
       "bedroll",
       "bubblepack",
       "windupkey",
-      "championbelt"
+      "championbelt",
+      "deliveryrig",
+      "spikedpauldrons",
+      "reliccase",
+      "handheldsling",
+      "chesspouch",
+      "mimiclockbox",
+      "clockworkrelic",
+      "toonbook",
+      "chaineddeck",
+      "pillcanister"
     ],
     "legs": [
       "original",
@@ -231,7 +271,17 @@
       "stitchedleather",
       "footballshorts",
       "cloudbloomers",
-      "mosaicleggings"
+      "mosaicleggings",
+      "restraintstraps",
+      "gemskirt",
+      "officerbreeches",
+      "bosozokuwide",
+      "medicwraps",
+      "exogreaves",
+      "fieldkneepads",
+      "rufflebloomers",
+      "snowpleats",
+      "stormwaders"
     ],
     "mouth": [
       "original",
@@ -276,7 +326,17 @@
       "bandana",
       "tusks",
       "pixelsmile",
-      "fortunepaper"
+      "fortunepaper",
+      "batmanclench",
+      "cubonejaw",
+      "chipmunkbite",
+      "bulletjaw",
+      "demonpit",
+      "greedclamp",
+      "sillycurl",
+      "sweeperbite",
+      "tigermaw",
+      "murakamijaw"
     ],
     "head": [
       "original",
@@ -300,7 +360,20 @@
       "embroidereddoll",
       "copperoni",
       "cloudhead",
-      "dicehead"
+      "dicehead",
+      "ceramiccarapace",
+      "masonryidol",
+      "candywhorl",
+      "mossrelic",
+      "onyxcat",
+      "lilacdrake",
+      "ashimp",
+      "opartmask",
+      "berrybust",
+      "orbitdemon",
+      "bighead",
+      "gianthead",
+      "smallhead"
     ],
     "extra": [
       "none",
@@ -330,7 +403,17 @@
       "chessfloat",
       "solareclipse",
       "waterhoop",
-      "ribbonvortex"
+      "ribbonvortex",
+      "djstation",
+      "gumballstand",
+      "potionflasks",
+      "greedvessel",
+      "brokenhandhelds",
+      "sacredrelic",
+      "cardshrine",
+      "notkinteapot",
+      "obsidianblades",
+      "minidiscorbit"
     ],
     "nose": [
       "original",
@@ -353,7 +436,17 @@
       "frostnose",
       "brasssnout",
       "leafnose",
-      "safetypin"
+      "safetypin",
+      "crosscast",
+      "velvetpom",
+      "candybutton",
+      "carvednostrils",
+      "dragonbridge",
+      "berrysnout",
+      "linenpatch",
+      "bonecartilage",
+      "houndmuzzle",
+      "animebridge"
     ],
     "ears": [
       "original",
@@ -380,7 +473,17 @@
       "glassfins",
       "ribbonfins",
       "gildedfins",
-      "lacefins"
+      "lacefins",
+      "dratinicrest",
+      "dragonscallop",
+      "armoredfins",
+      "quiltfins",
+      "carnagefins",
+      "icebladefins",
+      "mossfins",
+      "wrappedfins",
+      "batmembranes",
+      "ramhorns"
     ],
     "tattoo": [
       "none",
@@ -406,7 +509,17 @@
       "constellation",
       "warpaint",
       "crackedink",
-      "musicalink"
+      "musicalink",
+      "jesterduality",
+      "pilledglyphs",
+      "troupeseal",
+      "seetheink",
+      "millerwash",
+      "brickink",
+      "berryfreckles",
+      "candyink",
+      "opartcheeks",
+      "orbink"
     ],
     "brows": [
       "none",
@@ -434,7 +547,17 @@
       "wavebrows",
       "leafbrows",
       "arrowbrows",
-      "dottedbrows"
+      "dottedbrows",
+      "buufolds",
+      "millerbrow",
+      "seethecrease",
+      "porcelainarc",
+      "dragonfold",
+      "facetbrows",
+      "geekblocks",
+      "tiredlobes",
+      "impbrow",
+      "candycaps"
     ],
     "bodyStyles": [
       "solid",
@@ -444,7 +567,13 @@
       "matteblack",
       "camo",
       "marble",
-      "holographic"
+      "holographic",
+      "blackgem",
+      "lava",
+      "woods",
+      "mossy",
+      "pinklatex",
+      "cowhide"
     ]
   },
   "inspiration": {
@@ -668,7 +797,15 @@
   "classicFinHeads": [
     "pumpkin",
     "tv",
-    "crystal"
+    "crystal",
+    "ceramiccarapace",
+    "masonryidol",
+    "candywhorl",
+    "mossrelic",
+    "ashimp",
+    "opartmask",
+    "berrybust",
+    "orbitdemon"
   ],
   "poses": [
     "salute",
@@ -1092,6 +1229,56 @@
       "triangles": 320
     },
     {
+      "name": "Drif_Eyes_buulids",
+      "vertices": 3106,
+      "triangles": 6172
+    },
+    {
+      "name": "Drif_Eyes_deflatedbags",
+      "vertices": 2500,
+      "triangles": 4952
+    },
+    {
+      "name": "Drif_Eyes_waojewels",
+      "vertices": 1152,
+      "triangles": 2216
+    },
+    {
+      "name": "Drif_Eyes_beautyglass",
+      "vertices": 2956,
+      "triangles": 5808
+    },
+    {
+      "name": "Drif_Eyes_dratinigaze",
+      "vertices": 982,
+      "triangles": 1924
+    },
+    {
+      "name": "Drif_Eyes_blazedcushions",
+      "vertices": 2500,
+      "triangles": 4952
+    },
+    {
+      "name": "Drif_Eyes_geekframes",
+      "vertices": 3672,
+      "triangles": 7268
+    },
+    {
+      "name": "Drif_Eyes_mangekyoseal",
+      "vertices": 2380,
+      "triangles": 4696
+    },
+    {
+      "name": "Drif_Eyes_millerockets",
+      "vertices": 140,
+      "triangles": 264
+    },
+    {
+      "name": "Drif_Eyes_seethewell",
+      "vertices": 2360,
+      "triangles": 4672
+    },
+    {
       "name": "Drif_Shirt_original",
       "vertices": 578,
       "triangles": 1112
@@ -1300,6 +1487,56 @@
       "name": "Drif_Shirt_dinosaursuit",
       "vertices": 2588,
       "triangles": 5096
+    },
+    {
+      "name": "Drif_Shirt_restraintcoat",
+      "vertices": 3724,
+      "triangles": 7148
+    },
+    {
+      "name": "Drif_Shirt_gemblazer",
+      "vertices": 3288,
+      "triangles": 6100
+    },
+    {
+      "name": "Drif_Shirt_officerleather",
+      "vertices": 3300,
+      "triangles": 6154
+    },
+    {
+      "name": "Drif_Shirt_bosozoku",
+      "vertices": 3328,
+      "triangles": 6104
+    },
+    {
+      "name": "Drif_Shirt_fieldmedic",
+      "vertices": 2650,
+      "triangles": 5028
+    },
+    {
+      "name": "Drif_Shirt_exoshell",
+      "vertices": 2860,
+      "triangles": 5272
+    },
+    {
+      "name": "Drif_Shirt_sunderland",
+      "vertices": 3640,
+      "triangles": 6628
+    },
+    {
+      "name": "Drif_Shirt_ruffleharness",
+      "vertices": 3546,
+      "triangles": 6884
+    },
+    {
+      "name": "Drif_Shirt_snowblouse",
+      "vertices": 2772,
+      "triangles": 5188
+    },
+    {
+      "name": "Drif_Shirt_stormcollar",
+      "vertices": 2654,
+      "triangles": 5176
     },
     {
       "name": "Drif_Hat_cap",
@@ -1512,6 +1749,56 @@
       "triangles": 3992
     },
     {
+      "name": "Drif_Hat_falconhelm",
+      "vertices": 972,
+      "triangles": 1908
+    },
+    {
+      "name": "Drif_Hat_psychiccrest",
+      "vertices": 700,
+      "triangles": 1380
+    },
+    {
+      "name": "Drif_Hat_wingedslump",
+      "vertices": 1070,
+      "triangles": 2096
+    },
+    {
+      "name": "Drif_Hat_patchsprite",
+      "vertices": 1340,
+      "triangles": 2648
+    },
+    {
+      "name": "Drif_Hat_starsbandana",
+      "vertices": 1114,
+      "triangles": 2188
+    },
+    {
+      "name": "Drif_Hat_catknithood",
+      "vertices": 904,
+      "triangles": 1792
+    },
+    {
+      "name": "Drif_Hat_leatherbat",
+      "vertices": 684,
+      "triangles": 1348
+    },
+    {
+      "name": "Drif_Hat_thorncirclet",
+      "vertices": 1004,
+      "triangles": 1936
+    },
+    {
+      "name": "Drif_Hat_clothram",
+      "vertices": 1216,
+      "triangles": 2416
+    },
+    {
+      "name": "Drif_Hat_reversecap",
+      "vertices": 1108,
+      "triangles": 2180
+    },
+    {
       "name": "Drif_Accessory_original",
       "vertices": 228,
       "triangles": 420
@@ -1717,6 +2004,56 @@
       "triangles": 632
     },
     {
+      "name": "Drif_Accessory_deliveryrig",
+      "vertices": 970,
+      "triangles": 1888
+    },
+    {
+      "name": "Drif_Accessory_spikedpauldrons",
+      "vertices": 356,
+      "triangles": 652
+    },
+    {
+      "name": "Drif_Accessory_reliccase",
+      "vertices": 480,
+      "triangles": 896
+    },
+    {
+      "name": "Drif_Accessory_handheldsling",
+      "vertices": 568,
+      "triangles": 1080
+    },
+    {
+      "name": "Drif_Accessory_chesspouch",
+      "vertices": 1310,
+      "triangles": 2508
+    },
+    {
+      "name": "Drif_Accessory_mimiclockbox",
+      "vertices": 684,
+      "triangles": 1296
+    },
+    {
+      "name": "Drif_Accessory_clockworkrelic",
+      "vertices": 1644,
+      "triangles": 3132
+    },
+    {
+      "name": "Drif_Accessory_toonbook",
+      "vertices": 436,
+      "triangles": 808
+    },
+    {
+      "name": "Drif_Accessory_chaineddeck",
+      "vertices": 752,
+      "triangles": 1464
+    },
+    {
+      "name": "Drif_Accessory_pillcanister",
+      "vertices": 906,
+      "triangles": 1780
+    },
+    {
       "name": "Drif_Legs_original",
       "vertices": 600,
       "triangles": 1164
@@ -1895,6 +2232,56 @@
       "name": "Drif_Legs_mosaicleggings",
       "vertices": 1428,
       "triangles": 2812
+    },
+    {
+      "name": "Drif_Legs_restraintstraps",
+      "vertices": 3176,
+      "triangles": 6208
+    },
+    {
+      "name": "Drif_Legs_gemskirt",
+      "vertices": 2916,
+      "triangles": 5768
+    },
+    {
+      "name": "Drif_Legs_officerbreeches",
+      "vertices": 3668,
+      "triangles": 7224
+    },
+    {
+      "name": "Drif_Legs_bosozokuwide",
+      "vertices": 2040,
+      "triangles": 4048
+    },
+    {
+      "name": "Drif_Legs_medicwraps",
+      "vertices": 3224,
+      "triangles": 6424
+    },
+    {
+      "name": "Drif_Legs_exogreaves",
+      "vertices": 3668,
+      "triangles": 7192
+    },
+    {
+      "name": "Drif_Legs_fieldkneepads",
+      "vertices": 1736,
+      "triangles": 3424
+    },
+    {
+      "name": "Drif_Legs_rufflebloomers",
+      "vertices": 2228,
+      "triangles": 4416
+    },
+    {
+      "name": "Drif_Legs_snowpleats",
+      "vertices": 2472,
+      "triangles": 4928
+    },
+    {
+      "name": "Drif_Legs_stormwaders",
+      "vertices": 3964,
+      "triangles": 7800
     },
     {
       "name": "Drif_Mouth_original",
@@ -2112,6 +2499,56 @@
       "triangles": 120
     },
     {
+      "name": "Drif_Mouth_batmanclench",
+      "vertices": 880,
+      "triangles": 1692
+    },
+    {
+      "name": "Drif_Mouth_cubonejaw",
+      "vertices": 1172,
+      "triangles": 2328
+    },
+    {
+      "name": "Drif_Mouth_chipmunkbite",
+      "vertices": 1662,
+      "triangles": 3300
+    },
+    {
+      "name": "Drif_Mouth_bulletjaw",
+      "vertices": 290,
+      "triangles": 520
+    },
+    {
+      "name": "Drif_Mouth_demonpit",
+      "vertices": 2522,
+      "triangles": 4988
+    },
+    {
+      "name": "Drif_Mouth_greedclamp",
+      "vertices": 1030,
+      "triangles": 1968
+    },
+    {
+      "name": "Drif_Mouth_sillycurl",
+      "vertices": 1547,
+      "triangles": 3082
+    },
+    {
+      "name": "Drif_Mouth_sweeperbite",
+      "vertices": 720,
+      "triangles": 1376
+    },
+    {
+      "name": "Drif_Mouth_tigermaw",
+      "vertices": 1722,
+      "triangles": 3404
+    },
+    {
+      "name": "Drif_Mouth_murakamijaw",
+      "vertices": 750,
+      "triangles": 1424
+    },
+    {
       "name": "Drif_Head_original",
       "vertices": 862,
       "triangles": 1680
@@ -2222,6 +2659,56 @@
       "triangles": 3364
     },
     {
+      "name": "Drif_Head_ceramiccarapace",
+      "vertices": 4826,
+      "triangles": 9600
+    },
+    {
+      "name": "Drif_Head_masonryidol",
+      "vertices": 1870,
+      "triangles": 3612
+    },
+    {
+      "name": "Drif_Head_candywhorl",
+      "vertices": 3634,
+      "triangles": 7252
+    },
+    {
+      "name": "Drif_Head_mossrelic",
+      "vertices": 8726,
+      "triangles": 17316
+    },
+    {
+      "name": "Drif_Head_onyxcat",
+      "vertices": 4039,
+      "triangles": 7990
+    },
+    {
+      "name": "Drif_Head_lilacdrake",
+      "vertices": 4704,
+      "triangles": 9348
+    },
+    {
+      "name": "Drif_Head_ashimp",
+      "vertices": 2917,
+      "triangles": 5742
+    },
+    {
+      "name": "Drif_Head_opartmask",
+      "vertices": 3338,
+      "triangles": 6660
+    },
+    {
+      "name": "Drif_Head_berrybust",
+      "vertices": 14057,
+      "triangles": 27684
+    },
+    {
+      "name": "Drif_Head_orbitdemon",
+      "vertices": 6679,
+      "triangles": 13250
+    },
+    {
       "name": "Drif_Extra_mon",
       "vertices": 774,
       "triangles": 1504
@@ -2298,63 +2785,113 @@
     },
     {
       "name": "Drif_Extra_shatteredmirror",
-      "vertices": 144,
-      "triangles": 240
+      "vertices": 1152,
+      "triangles": 2256
     },
     {
       "name": "Drif_Extra_firehoop",
-      "vertices": 3348,
-      "triangles": 6620
+      "vertices": 3654,
+      "triangles": 7248
     },
     {
       "name": "Drif_Extra_talismans",
-      "vertices": 408,
-      "triangles": 696
+      "vertices": 432,
+      "triangles": 768
     },
     {
       "name": "Drif_Extra_coinshower",
-      "vertices": 3270,
-      "triangles": 6360
+      "vertices": 15708,
+      "triangles": 30756
     },
     {
       "name": "Drif_Extra_floppydisks",
-      "vertices": 220,
-      "triangles": 340
+      "vertices": 3360,
+      "triangles": 6580
     },
     {
       "name": "Drif_Extra_neondoor",
-      "vertices": 100,
-      "triangles": 184
+      "vertices": 864,
+      "triangles": 1692
     },
     {
       "name": "Drif_Extra_vinylorbit",
-      "vertices": 4450,
-      "triangles": 8780
+      "vertices": 9920,
+      "triangles": 19800
     },
     {
       "name": "Drif_Extra_confettiburst",
-      "vertices": 560,
-      "triangles": 840
+      "vertices": 1296,
+      "triangles": 2448
     },
     {
       "name": "Drif_Extra_chessfloat",
-      "vertices": 860,
-      "triangles": 1680
+      "vertices": 2826,
+      "triangles": 5596
     },
     {
       "name": "Drif_Extra_solareclipse",
-      "vertices": 1110,
-      "triangles": 2020
+      "vertices": 3702,
+      "triangles": 7344
     },
     {
       "name": "Drif_Extra_waterhoop",
-      "vertices": 3600,
-      "triangles": 7124
+      "vertices": 3534,
+      "triangles": 7008
     },
     {
       "name": "Drif_Extra_ribbonvortex",
-      "vertices": 1608,
-      "triangles": 3204
+      "vertices": 840,
+      "triangles": 1668
+    },
+    {
+      "name": "Drif_Extra_djstation",
+      "vertices": 8104,
+      "triangles": 16008
+    },
+    {
+      "name": "Drif_Extra_gumballstand",
+      "vertices": 3774,
+      "triangles": 7396
+    },
+    {
+      "name": "Drif_Extra_potionflasks",
+      "vertices": 2184,
+      "triangles": 4296
+    },
+    {
+      "name": "Drif_Extra_greedvessel",
+      "vertices": 3074,
+      "triangles": 6096
+    },
+    {
+      "name": "Drif_Extra_brokenhandhelds",
+      "vertices": 5312,
+      "triangles": 10384
+    },
+    {
+      "name": "Drif_Extra_sacredrelic",
+      "vertices": 3125,
+      "triangles": 6102
+    },
+    {
+      "name": "Drif_Extra_cardshrine",
+      "vertices": 1056,
+      "triangles": 2060
+    },
+    {
+      "name": "Drif_Extra_notkinteapot",
+      "vertices": 1936,
+      "triangles": 3820
+    },
+    {
+      "name": "Drif_Extra_obsidianblades",
+      "vertices": 1824,
+      "triangles": 3584
+    },
+    {
+      "name": "Drif_Extra_minidiscorbit",
+      "vertices": 1776,
+      "triangles": 3472
     },
     {
       "name": "Drif_Nose_original",
@@ -2462,6 +2999,56 @@
       "triangles": 228
     },
     {
+      "name": "Drif_Nose_crosscast",
+      "vertices": 40,
+      "triangles": 72
+    },
+    {
+      "name": "Drif_Nose_velvetpom",
+      "vertices": 1490,
+      "triangles": 2976
+    },
+    {
+      "name": "Drif_Nose_candybutton",
+      "vertices": 1102,
+      "triangles": 2196
+    },
+    {
+      "name": "Drif_Nose_carvednostrils",
+      "vertices": 1562,
+      "triangles": 3112
+    },
+    {
+      "name": "Drif_Nose_dragonbridge",
+      "vertices": 430,
+      "triangles": 848
+    },
+    {
+      "name": "Drif_Nose_berrysnout",
+      "vertices": 1964,
+      "triangles": 3956
+    },
+    {
+      "name": "Drif_Nose_linenpatch",
+      "vertices": 30,
+      "triangles": 56
+    },
+    {
+      "name": "Drif_Nose_bonecartilage",
+      "vertices": 80,
+      "triangles": 152
+    },
+    {
+      "name": "Drif_Nose_houndmuzzle",
+      "vertices": 1322,
+      "triangles": 2632
+    },
+    {
+      "name": "Drif_Nose_animebridge",
+      "vertices": 25,
+      "triangles": 46
+    },
+    {
       "name": "Drif_Ears_original",
       "vertices": 32,
       "triangles": 56
@@ -2528,63 +3115,113 @@
     },
     {
       "name": "Drif_Ears_notchedfins",
-      "vertices": 32,
-      "triangles": 56
+      "vertices": 2164,
+      "triangles": 4320
     },
     {
       "name": "Drif_Ears_foldedfins",
-      "vertices": 32,
-      "triangles": 56
+      "vertices": 1444,
+      "triangles": 2880
     },
     {
       "name": "Drif_Ears_sweptfins",
-      "vertices": 32,
-      "triangles": 56
+      "vertices": 1444,
+      "triangles": 2880
     },
     {
       "name": "Drif_Ears_piercedfins",
-      "vertices": 932,
-      "triangles": 1832
+      "vertices": 2988,
+      "triangles": 5984
     },
     {
       "name": "Drif_Ears_ribbedfins",
-      "vertices": 212,
-      "triangles": 376
+      "vertices": 1444,
+      "triangles": 2880
     },
     {
       "name": "Drif_Ears_patchworkfins",
-      "vertices": 132,
-      "triangles": 216
+      "vertices": 1444,
+      "triangles": 2880
     },
     {
       "name": "Drif_Ears_charredfins",
-      "vertices": 32,
-      "triangles": 56
+      "vertices": 2932,
+      "triangles": 5824
     },
     {
       "name": "Drif_Ears_opalfins",
-      "vertices": 160,
-      "triangles": 280
+      "vertices": 1444,
+      "triangles": 2880
     },
     {
       "name": "Drif_Ears_glassfins",
-      "vertices": 96,
-      "triangles": 176
+      "vertices": 1444,
+      "triangles": 2880
     },
     {
       "name": "Drif_Ears_ribbonfins",
-      "vertices": 32,
-      "triangles": 56
+      "vertices": 1444,
+      "triangles": 2880
     },
     {
       "name": "Drif_Ears_gildedfins",
-      "vertices": 96,
-      "triangles": 176
+      "vertices": 1668,
+      "triangles": 3296
     },
     {
       "name": "Drif_Ears_lacefins",
-      "vertices": 1856,
-      "triangles": 3640
+      "vertices": 1996,
+      "triangles": 4016
+    },
+    {
+      "name": "Drif_Ears_dratinicrest",
+      "vertices": 1444,
+      "triangles": 2880
+    },
+    {
+      "name": "Drif_Ears_dragonscallop",
+      "vertices": 1804,
+      "triangles": 3600
+    },
+    {
+      "name": "Drif_Ears_armoredfins",
+      "vertices": 2164,
+      "triangles": 4296
+    },
+    {
+      "name": "Drif_Ears_quiltfins",
+      "vertices": 8740,
+      "triangles": 17472
+    },
+    {
+      "name": "Drif_Ears_carnagefins",
+      "vertices": 1444,
+      "triangles": 2880
+    },
+    {
+      "name": "Drif_Ears_icebladefins",
+      "vertices": 308,
+      "triangles": 600
+    },
+    {
+      "name": "Drif_Ears_mossfins",
+      "vertices": 2884,
+      "triangles": 5680
+    },
+    {
+      "name": "Drif_Ears_wrappedfins",
+      "vertices": 2404,
+      "triangles": 4760
+    },
+    {
+      "name": "Drif_Ears_batmembranes",
+      "vertices": 1804,
+      "triangles": 3600
+    },
+    {
+      "name": "Drif_Ears_ramhorns",
+      "vertices": 1760,
+      "triangles": 3512
     },
     {
       "name": "Drif_Tattoo_teardrops",
@@ -2700,6 +3337,56 @@
       "name": "Drif_Tattoo_musicalink",
       "vertices": 162,
       "triangles": 280
+    },
+    {
+      "name": "Drif_Tattoo_jesterduality",
+      "vertices": 120,
+      "triangles": 176
+    },
+    {
+      "name": "Drif_Tattoo_pilledglyphs",
+      "vertices": 375,
+      "triangles": 560
+    },
+    {
+      "name": "Drif_Tattoo_troupeseal",
+      "vertices": 640,
+      "triangles": 944
+    },
+    {
+      "name": "Drif_Tattoo_seetheink",
+      "vertices": 130,
+      "triangles": 192
+    },
+    {
+      "name": "Drif_Tattoo_millerwash",
+      "vertices": 130,
+      "triangles": 192
+    },
+    {
+      "name": "Drif_Tattoo_brickink",
+      "vertices": 400,
+      "triangles": 512
+    },
+    {
+      "name": "Drif_Tattoo_berryfreckles",
+      "vertices": 2520,
+      "triangles": 3840
+    },
+    {
+      "name": "Drif_Tattoo_candyink",
+      "vertices": 2250,
+      "triangles": 3520
+    },
+    {
+      "name": "Drif_Tattoo_opartcheeks",
+      "vertices": 450,
+      "triangles": 640
+    },
+    {
+      "name": "Drif_Tattoo_orbink",
+      "vertices": 2590,
+      "triangles": 4032
     },
     {
       "name": "Drif_Brows_original",
@@ -2825,6 +3512,56 @@
       "name": "Drif_Brows_dottedbrows",
       "vertices": 720,
       "triangles": 1400
+    },
+    {
+      "name": "Drif_Brows_buufolds",
+      "vertices": 66,
+      "triangles": 124
+    },
+    {
+      "name": "Drif_Brows_millerbrow",
+      "vertices": 58,
+      "triangles": 108
+    },
+    {
+      "name": "Drif_Brows_seethecrease",
+      "vertices": 58,
+      "triangles": 108
+    },
+    {
+      "name": "Drif_Brows_porcelainarc",
+      "vertices": 66,
+      "triangles": 124
+    },
+    {
+      "name": "Drif_Brows_dragonfold",
+      "vertices": 50,
+      "triangles": 92
+    },
+    {
+      "name": "Drif_Brows_facetbrows",
+      "vertices": 50,
+      "triangles": 92
+    },
+    {
+      "name": "Drif_Brows_geekblocks",
+      "vertices": 58,
+      "triangles": 108
+    },
+    {
+      "name": "Drif_Brows_tiredlobes",
+      "vertices": 66,
+      "triangles": 124
+    },
+    {
+      "name": "Drif_Brows_impbrow",
+      "vertices": 66,
+      "triangles": 124
+    },
+    {
+      "name": "Drif_Brows_candycaps",
+      "vertices": 66,
+      "triangles": 124
     }
   ],
   "originalParts": {
@@ -2860,5 +3597,684 @@
     "cloudhead",
     "dicehead"
   ],
-  "notes": "The atelier expansion adds 12 traits to every category, embedded woven prints, short sleeves, four full-body outfits, and Miku-inspired twintails. Marble coats every visible trait matte white; holographic adds rest-space rainbow foil and sparkles to the body. All components share the original 19-bone rest pose, 10 locomotion actions and 22 enter-and-hold pose actions. Alternate heads replace the original head and facial categories without discarding choices; pumpkin, TV and crystal retain the classic fin ears. Replacement heads fit the original collar height and silhouette. Extra is independent of accessories. Ghost color and rim transparency cover the entire body, facial surfaces and bare feet, with a skinned fuzz mesh. Gold coats all body and facial surfaces. The Swag World hoodie embeds the user-supplied photograph with torso and sleeve UVs. The holiday extension adds mirrored Mog eyewear, a red VR headset, a Santa cap, a layered beard, four original-fin variations, and an ankle-length star robe that overrides legs while preserving the saved choice. Camo is a seamless rest-space runtime skin finish."
+  "sculptHeads": [
+    "ceramiccarapace",
+    "masonryidol",
+    "candywhorl",
+    "mossrelic",
+    "onyxcat",
+    "lilacdrake",
+    "ashimp",
+    "opartmask",
+    "berrybust",
+    "orbitdemon"
+  ],
+  "headSizeVariants": {
+    "bighead": 1.2,
+    "gianthead": 1.4,
+    "smallhead": 0.76
+  },
+  "sculptSources": {
+    "sculpt-faces-catalog.json": {
+      "eyes": [
+        [
+          "buulids",
+          "Buu hoods",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/9eyes/kid buu.PNG \u2014 Observed fleshy mauve overhangs above black eyes and tiny red pupils; sculpted thick upper hood volumes."
+        ],
+        [
+          "deflatedbags",
+          "Deflated bags",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/9eyes/deflated.PNG \u2014 Observed compressed eyes, dark red irises and stacked under-eye folds; formed broad lower eye cushions."
+        ],
+        [
+          "waojewels",
+          "Wao jewels",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/9eyes/wao wao.PNG \u2014 Observed irregular pink/cyan jeweled outline around tall black/gold eyes; bevelled geometric orbital sockets."
+        ],
+        [
+          "beautyglass",
+          "Beauty glass",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/9eyes/beauty.PNG \u2014 Observed large glossy pale-blue irises with clustered highlights and dramatic radial lashes; modeled iris caps and broad lash fins."
+        ],
+        [
+          "dratinigaze",
+          "Dratini gaze",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/9eyes/dratini high.PNG \u2014 Observed sloping black upper mass and deep red lower eyes with white highlights; sculpted diagonal lids."
+        ],
+        [
+          "blazedcushions",
+          "Blazed cushions",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/9eyes/blazed.PNG \u2014 Observed soft gray-beige heavy drooping lids and cloud-like bags; thick rounded hood shells and lower cushions."
+        ],
+        [
+          "geekframes",
+          "Geek acetate",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/9eyes/geek.PNG \u2014 Observed thick black squared glasses around white eyes with small lavender irises; real closed thick acetate frames."
+        ],
+        [
+          "mangekyoseal",
+          "Red seal eyes",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/9eyes/mangekyo sharingan left bleed.PNG \u2014 Observed three red angular pinwheel lobes inside black iris; carved-looking multi-part enamel iris with dark inlays."
+        ],
+        [
+          "millerockets",
+          "Miller sockets",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/9eyes/miller batman eyes.PNG \u2014 Observed pinched white eyes inside heavy angular black sockets and forehead creases; deep orbital wells with blocky bone rims."
+        ],
+        [
+          "seethewell",
+          "Seethe wells",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/9eyes/seethe.PNG \u2014 Observed tense dark top lids, red irises and long blue tears; broad lids and substantial tapered tear forms."
+        ]
+      ],
+      "mouth": [
+        [
+          "batmanclench",
+          "Batman clench",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/7mouth/batman clench$1.PNG \u2014 Observed compressed rectangular gritted teeth inside a jagged dark lip; individual bevelled upper/lower teeth."
+        ],
+        [
+          "cubonejaw",
+          "Cubone jaw",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/7mouth/cubone.PNG \u2014 Observed tall asymmetric dark mouth, ivory tooth and pink lower tongue; hollow bone lip and deep socket."
+        ],
+        [
+          "chipmunkbite",
+          "Chipmunk bite",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/7mouth/chipmunk.PNG \u2014 Observed paired broad rounded upper incisors, smaller lower teeth and tiny red tongue; thick separated teeth."
+        ],
+        [
+          "bulletjaw",
+          "Bullet jaw",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/7mouth/bullet bill spike teeth$1.PNG \u2014 Observed broad red lower jaw with pointed white upper teeth; full deep gum socket and opposing teeth."
+        ],
+        [
+          "demonpit",
+          "Demon pit",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/7mouth/demon pit$1.PNG \u2014 Observed vertical oval cavity lined with chunky ivory teeth and a pink tongue at the base; recessed mouth bowl."
+        ],
+        [
+          "greedclamp",
+          "Greed clamp",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/7mouth/greed.PNG \u2014 Observed two long tightly packed rows of yellowed rounded teeth with layered mauve gums; individually bevelled crowns."
+        ],
+        [
+          "sillycurl",
+          "Silly curl",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/7mouth/silly.PNG \u2014 Observed dark narrow smiling mouth and small bright pink tongue sticking left; sculpted folded tongue volume."
+        ],
+        [
+          "sweeperbite",
+          "Sweeper bite",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/7mouth/sweeper manga.PNG \u2014 Observed broad pale mouth, two sawtooth rows and long side-projecting tongue; closed tooth and tongue meshes."
+        ],
+        [
+          "tigermaw",
+          "Tiger maw",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/7mouth/tiger.PNG \u2014 Observed four long yellowed canines around dark red open mouth and textured pink tongue; deep socket and substantial tapered canines."
+        ],
+        [
+          "murakamijaw",
+          "Murakami jaw",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/7mouth/murakami.PNG \u2014 Observed white outer grin, tall triangular upper teeth and orange lower sawteeth; sculpted opposing sawtooth jaws."
+        ]
+      ],
+      "head": [
+        [
+          "ceramiccarapace",
+          "Ceramic carapace",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/3drifellabody/hard surface.PNG \u2014 Observed smooth navy shell, pale projecting muzzle and ivory lateral fins; complete ceramic face with separate shell panels."
+        ],
+        [
+          "masonryidol",
+          "Masonry idol",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/3drifellabody/brick.PNG \u2014 Observed rectangular brick courses defining head and neck silhouette; individually bevelled masonry blocks and recessed facial openings."
+        ],
+        [
+          "candywhorl",
+          "Candy whorl",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/3drifellabody/lollipop.PNG \u2014 Observed candy-coloured twisted bands and central spiral; folded radial head topology with broad glossy painted bands in an embedded texture."
+        ],
+        [
+          "mossrelic",
+          "Moss relic",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/3drifellabody/mossy.PNG \u2014 Observed dirty pale cloth face, soft protruding muzzle and irregular moss clumps across the sides; sculpted moss lobes."
+        ],
+        [
+          "onyxcat",
+          "Onyx cat",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/3drifellabody/skull cat.PNG \u2014 Observed glossy black skull-cat head, two pointed upper ears, pale lower teeth and cheek hollows; entire replacement skull and jaw."
+        ],
+        [
+          "lilacdrake",
+          "Lilac drake",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/3drifellabody/dratini anime.PNG \u2014 Observed blue/lilac egg-shaped head, pale pink rounded projecting muzzle and tall eyes; full pastel dragon head."
+        ],
+        [
+          "ashimp",
+          "Ash imp",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/3drifellabody/ryuk.PNG \u2014 Observed dark skeletal imp, sharp cheekbones, orange deep-set eyes and dense grin; carved bone sockets and projecting cheek plates."
+        ],
+        [
+          "opartmask",
+          "Op-art mask",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/3drifellabody/postdemon$9.PNG \u2014 Observed high-contrast warped black-and-white stripes across face silhouette; clean high-contrast painted bands mapped to the actual head surface with an embedded texture."
+        ],
+        [
+          "berrybust",
+          "Berry bust",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/3drifellabody/strawberry.PNG \u2014 Observed red strawberry head with many seed pockets and green crown leaves; dimpled dense head topology and inset seeds."
+        ],
+        [
+          "orbitdemon",
+          "Orb demon",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/3drifellabody/orbs.PNG \u2014 Observed glossy dark surface with round glowing red nodules; deep-set red enamel orb sockets around a full black face."
+        ]
+      ],
+      "nose": [
+        [
+          "crosscast",
+          "Cross cast",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/8nose/real bandage.PNG \u2014 Observed crossing padded white bandages with raised rounded edges; two substantial molded wrapped pads."
+        ],
+        [
+          "velvetpom",
+          "Velvet pom",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/8nose/fuzzy nose.PNG \u2014 Observed a soft red tufted round nose; closed lobed mesh creates surface tufting instead of wire hair."
+        ],
+        [
+          "candybutton",
+          "Candy button",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/8nose/lollipop$12.PNG \u2014 Observed glossy dark-red candy ball on a pale stem; modeled candy and solid stem attached as a nose choice."
+        ],
+        [
+          "carvednostrils",
+          "Ceramic nares",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/3drifellabody/hard surface.PNG \u2014 Observed smoothly molded hard-surface muzzle; adapted as a solid blue nasal bridge with actual recessed nostril wells."
+        ],
+        [
+          "dragonbridge",
+          "Dragon bridge",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/3drifellabody/dratini anime.PNG \u2014 Observed rounded pastel muzzle; adapted into broad lilac nasal cartilage with flared, hollow nostrils."
+        ],
+        [
+          "berrysnout",
+          "Berry snout",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/3drifellabody/strawberry.PNG \u2014 Observed red fruit with seed hollows; compact sculpted berry nose with actual radial indentations."
+        ],
+        [
+          "linenpatch",
+          "Linen patch",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/3drifellabody/mossy.PNG \u2014 Observed worn beige cloth muzzle and compact dark nose; faceted padded textile nose with shallow surface cuts."
+        ],
+        [
+          "bonecartilage",
+          "Bone cartilage",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/3drifellabody/skull cat.PNG \u2014 Observed skeletal feline nose region; paired open triangular nasal cavities and ivory cartilage."
+        ],
+        [
+          "houndmuzzle",
+          "Hound leather",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/7mouth/tiger.PNG \u2014 Observed broad dark animal snout surrounding an open maw; broad leather nose with recessed paired nares."
+        ],
+        [
+          "animebridge",
+          "Anime bridge",
+          "/Users/kyl/Documents/portfolio/assets/images/peer-study-3-afella-2/thumbs/item-243.jpg \u2014 Observed small angular anime nose on the centered dark-haired character; compact ivory wedge with a bevelled tip."
+        ]
+      ],
+      "brows": [
+        [
+          "buufolds",
+          "Buu folds",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/9eyes/kid buu.PNG \u2014 Observed thick curled mauve flesh over each eye; independent wide sculpted brow cushions."
+        ],
+        [
+          "millerbrow",
+          "Miller ridge",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/9eyes/miller batman eyes.PNG \u2014 Observed prominent wrinkled forehead over deep angry sockets; broad chiseled brow masses with actual vertex depressions."
+        ],
+        [
+          "seethecrease",
+          "Seethe crease",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/9eyes/seethe.PNG \u2014 Observed inward tense asymmetrical upper lines; adapted as substantial angled brow folds."
+        ],
+        [
+          "porcelainarc",
+          "Porcelain arc",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/3drifellabody/hard surface.PNG \u2014 Observed rounded manufactured ivory/navy shell surfaces; adapted as curved ivory brow plates."
+        ],
+        [
+          "dragonfold",
+          "Dragon fold",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/9eyes/dratini high.PNG \u2014 Observed sharply sloping black upper-eye silhouette; a broad tapered lilac brow fold."
+        ],
+        [
+          "facetbrows",
+          "Jewel brows",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/9eyes/wao wao.PNG \u2014 Observed irregular angular crystal-like eye surround; modeled geometric silver orbital plates."
+        ],
+        [
+          "geekblocks",
+          "Acetate brows",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/9eyes/geek.PNG \u2014 Observed chunky straight black spectacle upper bars; thick closed rectangular brow blocks."
+        ],
+        [
+          "tiredlobes",
+          "Tired lobes",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/9eyes/blazed.PNG \u2014 Observed sagging beige lids with unequal heights; asymmetrical wide brow cushions."
+        ],
+        [
+          "impbrow",
+          "Imp brow",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/3drifellabody/ryuk.PNG \u2014 Observed projecting skeletal orbital ridges and furrowed forehead; notched ivory brow volumes with carved recesses."
+        ],
+        [
+          "candycaps",
+          "Candy caps",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/3drifellabody/lollipop.PNG \u2014 Observed rounded glossy candy bands; wide curved rose brow caps with a lobed silhouette."
+        ]
+      ],
+      "tattoo": [
+        [
+          "jesterduality",
+          "Jester duality",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/4tattoos/hisoka$5.PNG \u2014 Observed pale pink star on the left and bright green teardrop on the right; paired flat ink marks following cheeks."
+        ],
+        [
+          "pilledglyphs",
+          "Pilled glyphs",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/4tattoos/miladypilled$5.PNG \u2014 Observed blackletter Miladypilled word mark; adapted into a small broad-stemmed gothic forehead monogram, not a literal transcription."
+        ],
+        [
+          "troupeseal",
+          "Troupe six",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/4tattoos/phantom troupe$5.PNG \u2014 Observed eight-legged dark seal with a light number 6; compact flat cheek insignia."
+        ],
+        [
+          "seetheink",
+          "Seethe ink",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/9eyes/seethe.PNG \u2014 Observed blue liquid streaks descending beneath eyes; flat cyan cheek ink adaptation."
+        ],
+        [
+          "millerwash",
+          "Miller wash",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/9eyes/miller batman eyes.PNG \u2014 Observed rough black brush-like shadow under eye sockets; flat jagged cheek wash."
+        ],
+        [
+          "brickink",
+          "Brick ink",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/3drifellabody/brick.PNG \u2014 Observed alternating brick courses; flat staggered terracotta cheek blocks."
+        ],
+        [
+          "berryfreckles",
+          "Berry seeds",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/3drifellabody/strawberry.PNG \u2014 Observed golden seed flecks scattered across red fruit skin; elongated flat seed freckles."
+        ],
+        [
+          "candyink",
+          "Candy ink",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/3drifellabody/lollipop.PNG \u2014 Observed multicolour candy spiral; planar swirling cheek ink sectors projected onto head."
+        ],
+        [
+          "opartcheeks",
+          "Op-art cheeks",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/3drifellabody/postdemon$9.PNG \u2014 Observed bending high-contrast stripes; flat tapered contour stripes on both cheeks."
+        ],
+        [
+          "orbink",
+          "Orb ink",
+          "/Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/3drifellabody/orbs.PNG \u2014 Observed red round glowing nodes on dark body; flat crimson orbital cheek marks."
+        ]
+      ]
+    },
+    "sculpt-wardrobe-catalog.json": {
+      "shirt": [
+        [
+          "restraintcoat",
+          "Restraint coat",
+          "Drifella 2 straight jacket: grey gathered fabric, broad load-bearing restraint belts, real metal buckles and bellows pocket. Source: /Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/5cloth/straight jacket$4.PNG"
+        ],
+        [
+          "gemblazer",
+          "Gem-set blazer",
+          "Drifella 2 Vivienne Westwood gem jacket: rose fitted shell, raised lapels and actual faceted stones seated in brass mounts. Source: /Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/5cloth/vivienne westwood gem jacket$4.PNG"
+        ],
+        [
+          "officerleather",
+          "Leather officer coat",
+          "Drifella 2 leather general coat: black/oxblood double-breasted construction, red cravat, thick epaulettes and brass buttons. Source: /Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/5cloth/leather general coat.PNG"
+        ],
+        [
+          "bosozoku",
+          "Bosozoku jacket",
+          "Drifella 2 bosozoku jacket: grey open lapels, red yokes and cuffs, paired flap chest pockets, substantial fastening placket. Source: /Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/5cloth/bosozoku jacket$8.PNG"
+        ],
+        [
+          "fieldmedic",
+          "Field medic smock",
+          "Drifella 2 medic: gathered ivory smock with a rolled neck, broad red cloth cross and bottom medical pouches. Source: /Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/5cloth/medic.PNG"
+        ],
+        [
+          "exoshell",
+          "Cyborg shell",
+          "Drifella 2 cyborg: cream pectoral casings and deltoid plates over a rubber undersuit, segmented metal abdominal housing and recessed core. Source: /Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/5cloth/cyborg.PNG"
+        ],
+        [
+          "sunderland",
+          "Sunderland field jacket",
+          "Drifella 2 James Sunderland: worn olive field jacket with folded lapels, four fully built bellows/flap pockets and a storm placket. Source: /Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/5cloth/james sunderland$12.PNG"
+        ],
+        [
+          "ruffleharness",
+          "Ruffle harness blouse",
+          "Afella 2 #0: pink puffed blouse, ivory gathered neckline and a dark broad-strap harness; folds are part of the shell. Source: /Users/kyl/Documents/portfolio/assets/images/peer-study-3-afella-2/large/item-0001-peer-study-3-afella-2-0-720.webp"
+        ],
+        [
+          "snowblouse",
+          "Snow bow blouse",
+          "Afella 2 #328: ivory puffed blouse, scalloped collar, red three-dimensional bow and blue rolled cuffs. Source: /Users/kyl/Documents/portfolio/assets/images/peer-study-3-afella-2/large/item-0010-peer-study-3-afella-2-328-720.webp"
+        ],
+        [
+          "stormcollar",
+          "High-collar storm jacket",
+          "Afella 2 #92: matte black high-collar rainwear, open thick collar, storm fasteners and angled pocket welts. Source: /Users/kyl/Documents/portfolio/assets/images/peer-study-3-afella-2/large/item-0007-peer-study-3-afella-2-92-720.webp"
+        ]
+      ],
+      "legs": [
+        [
+          "restraintstraps",
+          "Restraint trousers",
+          "Lower-body design extrapolated from Drifella 2 straight jacket: grey gathered cloth with three dimensional wrapping belts and metal buckles; the source layer depicts the upper body. Source: /Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/5cloth/straight jacket$4.PNG"
+        ],
+        [
+          "gemskirt",
+          "Gem pleat culottes",
+          "Lower-body design extrapolated from Drifella 2 gem jacket: rose split pleats, golden thick hems and set jewels; independently skinned leg panels keep the silhouette walkable. Source: /Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/5cloth/vivienne westwood gem jacket$4.PNG"
+        ],
+        [
+          "officerbreeches",
+          "Officer breeches",
+          "Lower-body extension of Drifella 2 leather general coat: ballooned riding thighs, fitted shin boots, built soles and oxblood buckle straps. Source: /Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/5cloth/leather general coat.PNG"
+        ],
+        [
+          "bosozokuwide",
+          "Bosozoku wide trousers",
+          "Lower-body extension of Drifella 2 bosozoku jacket: exaggerated grey wide cuffs, sculpted compression folds, red rolled hems and cloth badge panels. Source: /Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/5cloth/bosozoku jacket$8.PNG"
+        ],
+        [
+          "medicwraps",
+          "Medic wrapped legs",
+          "Lower-body extension of Drifella 2 medic smock: overlapping substantial ivory wrap shells and a red medical patch, with original feet. Source: /Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/5cloth/medic.PNG"
+        ],
+        [
+          "exogreaves",
+          "Cyborg greaves",
+          "Lower-body extension of Drifella 2 cyborg: overlapping cream thigh and knee shells, inset cyan hardware and metal boots over a rubber base. Source: /Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/5cloth/cyborg.PNG"
+        ],
+        [
+          "fieldkneepads",
+          "Field kneepad trousers",
+          "Lower-body extension of Drifella 2 James Sunderland field jacket: olive cloth, thick rubber kneepad housings with inset plates, boxed side pockets and folding flaps. Source: /Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/5cloth/james sunderland$12.PNG"
+        ],
+        [
+          "rufflebloomers",
+          "Ruffle bloomers",
+          "Lower-body extension of Afella 2 #0 pink blouse: gathered rounded thighs, deeply lobed ivory cuffs and solid dark bows. Source: /Users/kyl/Documents/portfolio/assets/images/peer-study-3-afella-2/large/item-0001-peer-study-3-afella-2-0-720.webp"
+        ],
+        [
+          "snowpleats",
+          "Snow pleat shorts",
+          "Lower-body extension of Afella 2 #328: cobalt split pleated skirt-shorts with thick ivory hems; separately weighted pleats move with each leg. Source: /Users/kyl/Documents/portfolio/assets/images/peer-study-3-afella-2/large/item-0010-peer-study-3-afella-2-328-720.webp"
+        ],
+        [
+          "stormwaders",
+          "Storm waders",
+          "Lower-body extension of Afella 2 #92 black rainwear: rubber shin shafts, built-up sole boots, large protective thigh panels and fasteners. Source: /Users/kyl/Documents/portfolio/assets/images/peer-study-3-afella-2/large/item-0007-peer-study-3-afella-2-92-720.webp"
+        ]
+      ],
+      "hat": [
+        [
+          "falconhelm",
+          "Falcon plate helm",
+          "Drifella 2 Griffith helmet: metallic crown, sculpted raised beak keel, overlapping swept temple plates and brass side hinges; face remains independently editable. Source: /Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/91head/griffith helmet$6.PNG"
+        ],
+        [
+          "psychiccrest",
+          "Psychic crest helm",
+          "Drifella 2 Mewtwo helmet: paired swept silver prongs, raised central keel and recessed dark vents above a navy crown. Source: /Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/91head/mewtwo helmet$2.PNG"
+        ],
+        [
+          "wingedslump",
+          "Winged Slump cap",
+          "Drifella 2 Dr Slump hat: black cap with orange bill, thick front patch and a fan of overlapping ivory wing feathers. Source: /Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/91head/dr slumphat$6.PNG"
+        ],
+        [
+          "patchsprite",
+          "Patch sprite cap",
+          "Drifella 2 Mimikyu hat: aged ivory cap and bill, bent fabric ears with black tips, thick button eyes and orange cheek patches. Source: /Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/91head/mimikyu hat$9.PNG"
+        ],
+        [
+          "starsbandana",
+          "Stars bandana",
+          "Drifella 2 Bandit Keith bandana: wrapped red/ivory bands, blue star fold, side knot and solid fabric tails. Source: /Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/91head/bandit keith bandana$10.PNG"
+        ],
+        [
+          "catknithood",
+          "Cat knit hood",
+          "Drifella 2 knit cat ear balaclava: black folded cap with substantial hollow ear shells, recessed cloth interiors and sculpted gathered turn-up cuff. Source: /Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/91head/knit cat ear balaclava.PNG"
+        ],
+        [
+          "leatherbat",
+          "Leather bat cap",
+          "Drifella 2 leather demon bat hat: oxblood cap, thick scalloped bat wings with structural leading bones, and raised forehead armor. Source: /Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/91head/leather demon bat hat.PNG"
+        ],
+        [
+          "thorncirclet",
+          "Thorn circlet",
+          "Drifella 2 aura crown of thorns: broad dark violet circlet with actual tapered thorn solids and woody knots. Source: /Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/91head/aura crown of thorns.PNG"
+        ],
+        [
+          "clothram",
+          "Cloth ram bonnet",
+          "Drifella 2 cloth horn hat: worn tan crown, curled substantial ram horns, thick ear flaps and rolled dark wool cuff. Source: /Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/91head/cloth horn hat.PNG"
+        ],
+        [
+          "reversecap",
+          "Ethan reverse cap",
+          "Drifella 2 Ethan backwards cap: orange crown, curved violet rear bill, inset front cutout and modeled adjustable snap hardware. Source: /Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/91head/ethan backwards cap$7.PNG"
+        ]
+      ],
+      "accessory": [
+        [
+          "deliveryrig",
+          "Delivery pod rig",
+          "Drifella 2 bridge baby and monster delivery: a rigid cargo frame, side canisters, latches, broad straps and an orange chest pod. Source: /Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/6accesory/bridge baby and monster delivery$3.PNG"
+        ],
+        [
+          "spikedpauldrons",
+          "Spiked pauldrons",
+          "Drifella 2 spiky armor: overlapping forged shoulder plates and substantial tapered spikes, each bound to its correct upper arm. Source: /Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/6accesory/spiky armor$1.PNG"
+        ],
+        [
+          "reliccase",
+          "Ancient relic case",
+          "Drifella 2 ancient Mew card background: transformed into a wearable gold-framed relic with corner claws, recessed ruby panel and central faceted jewel. Source: /Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/2background+/ancient mew card.PNG"
+        ],
+        [
+          "handheldsling",
+          "Handheld console sling",
+          "Drifella 2 gameboy background: cream device with beveled shell, recessed screen, built controls, pixel scene blocks and broad straps. Source: /Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/2background+/gameboy.PNG"
+        ],
+        [
+          "chesspouch",
+          "Chess kit pouch",
+          "Drifella 2 chess background: boxed leather pouch with sixteen inset wood/ivory squares, a hinged lid, latch and carved pawn/rook/knight pieces. Source: /Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/2background+/chess.PNG"
+        ],
+        [
+          "mimiclockbox",
+          "Mimic lockbox",
+          "Drifella 2 mimics background: wearable wood chest with arched lid, real mouth cavity and teeth, hinges and metal lock; an inanimate wearable, not a companion. Source: /Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/2background+/mimics.PNG"
+        ],
+        [
+          "clockworkrelic",
+          "Chronos clockwork",
+          "Drifella 2 chronos background: wearable brass mechanical relic with open frame, actual meshed gear solids, axle heads and a thick clock hand. Source: /Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/2background+/chronos.PNG"
+        ],
+        [
+          "toonbook",
+          "Toon castle book",
+          "Drifella 2 Toon World background: three-dimensional purple-bound book, actual page block, carved pink castle relief, hinged clasp and binding ridges. Source: /Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/2background+/toon world.PNG"
+        ],
+        [
+          "chaineddeck",
+          "Chained deck case",
+          "Drifella 2 chained deck layer: gold-bordered ruby deck case enclosed by physical alternating interlocked metal links and a lock. Source: /Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/92left/chained deck.PNG"
+        ],
+        [
+          "pillcanister",
+          "Cyber capsule carrier",
+          "Drifella 2 backwards pill cyber jacket: blue/ivory pill motif translated into a rigid wearable capsule canister, metal locking collar and substantial support clips. Source: /Users/kyl/Documents/share_kit_3500-4512/drifella assets/drifella2 main/5cloth/backwards pill cyber jac.PNG"
+        ]
+      ]
+    },
+    "sculpt-ear-extra-catalog.json": {
+      "ears": [
+        [
+          "dratinicrest",
+          "Dratini crest",
+          "3drifellabody/dratini anime.PNG \u2014 long ivory membrane with a rolled root"
+        ],
+        [
+          "dragonscallop",
+          "Dragon scallops",
+          "3drifellabody/dragon.PNG \u2014 smooth scalloped dragon fins"
+        ],
+        [
+          "armoredfins",
+          "Armored fins",
+          "3drifellabody/drifella armor.PNG \u2014 overlapping metal fin plates"
+        ],
+        [
+          "quiltfins",
+          "Quilted fins",
+          "3drifellabody/plush torn jester.PNG \u2014 inflated patchwork cloth fins"
+        ],
+        [
+          "carnagefins",
+          "Carnage fins",
+          "3drifellabody/cloth carnage.PNG \u2014 pointed red and black folded cloth"
+        ],
+        [
+          "icebladefins",
+          "Diamond fins",
+          "3drifellabody/diamond.PNG \u2014 cut crystal facets and broad prismatic blades"
+        ],
+        [
+          "mossfins",
+          "Moss fins",
+          "3drifellabody/mossy.PNG \u2014 eroded fins and thick moss patches"
+        ],
+        [
+          "wrappedfins",
+          "Wrapped fins",
+          "3drifellabody/wrapped dratini sketch.PNG \u2014 broad overlapping wrappings"
+        ],
+        [
+          "batmembranes",
+          "Bat membranes",
+          "91head/leather demon bat hat.PNG \u2014 scooped leather wing membranes"
+        ],
+        [
+          "ramhorns",
+          "Cloth ram horns",
+          "91head/cloth horn hat.PNG \u2014 thick curled fabric horns"
+        ]
+      ],
+      "extra": [
+        [
+          "djstation",
+          "DJ turntables",
+          "User-requested DJ table; 92left/field recording.PNG music equipment reference"
+        ],
+        [
+          "gumballstand",
+          "Gumball machine",
+          "92left/gumball machine.PNG \u2014 clear candy dome, coin mechanism, pedestal"
+        ],
+        [
+          "potionflasks",
+          "Shield potions",
+          "92left/shield potion.PNG \u2014 corked conical blue potion flasks"
+        ],
+        [
+          "greedvessel",
+          "Greed vessel",
+          "92left/pot of greed$4.PNG \u2014 sculpted grinning ceramic vessel"
+        ],
+        [
+          "brokenhandhelds",
+          "Broken handhelds",
+          "93right/destroyed gameboy$1.PNG \u2014 damaged handheld shells and inset screens"
+        ],
+        [
+          "sacredrelic",
+          "Sacred heart relic",
+          "93right/sacred heart.PNG \u2014 dimensional metal heart and radial swords"
+        ],
+        [
+          "cardshrine",
+          "Ancient card shrine",
+          "2background+/ancient mew card.PNG \u2014 thick ornate card slab with inset relic face"
+        ],
+        [
+          "notkinteapot",
+          "Skull teapot",
+          "92left/richard notkin teapot$8.PNG \u2014 stacked skull ceramic teapot"
+        ],
+        [
+          "obsidianblades",
+          "Obsidian blades",
+          "92left/obsidian blade.PNG \u2014 broad chipped volcanic blades"
+        ],
+        [
+          "minidiscorbit",
+          "MiniDisc orbit",
+          "92left/field recording.PNG \u2014 silver MiniDisc players with recessed controls"
+        ]
+      ]
+    }
+  },
+  "sculptRefinements": {
+    "ears": [
+      "notchedfins",
+      "foldedfins",
+      "sweptfins",
+      "piercedfins",
+      "ribbedfins",
+      "patchworkfins",
+      "charredfins",
+      "opalfins",
+      "glassfins",
+      "ribbonfins",
+      "gildedfins",
+      "lacefins"
+    ],
+    "extra": [
+      "shatteredmirror",
+      "firehoop",
+      "talismans",
+      "coinshower",
+      "floppydisks",
+      "neondoor",
+      "vinylorbit",
+      "confettiburst",
+      "chessfloat",
+      "solareclipse",
+      "waterhoop",
+      "ribbonvortex"
+    ]
+  },
+  "notes": "The sculpted collection study adds 120 modeled traits, rebuilds the 24 atelier ears/extras with shaped surfaces and solid hardware, adds six body finishes and three animated head proportions. The atelier expansion adds 12 traits to every category, embedded woven prints, short sleeves, four full-body outfits, and Miku-inspired twintails. Marble coats every visible trait matte white; holographic adds rest-space rainbow foil and sparkles to the body. All components share the original 19-bone rest pose, 10 locomotion actions and 22 enter-and-hold pose actions. Alternate heads replace the original head and facial categories without discarding choices; Earless sculpted heads, pumpkin, TV and crystal retain the classic fin ears. Replacement heads fit the original collar height and silhouette. Extra is independent of accessories. Ghost color and rim transparency cover the entire body, facial surfaces and bare feet, with a skinned fuzz mesh. Gold coats all body and facial surfaces. The Swag World hoodie embeds the user-supplied photograph with torso and sleeve UVs. The holiday extension adds mirrored Mog eyewear, a red VR headset, a Santa cap, a layered beard, four original-fin variations, and an ankle-length star robe that overrides legs while preserving the saved choice. Camo is a seamless rest-space runtime skin finish."
 }

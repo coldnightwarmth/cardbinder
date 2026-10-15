@@ -1432,3 +1432,517 @@ const ATELIER_TRAITS={
  ]
 };
 for(const [category,items] of Object.entries(ATELIER_TRAITS))NEW_TRAITS[category].push(...items);
+NEW_TRAITS.head.push(
+ {id:'bighead',label:'Big head'},
+ {id:'gianthead',label:'Giant head'},
+ {id:'smallhead',label:'Small head'},
+);
+
+// Sculpted collection study: ten new modeled options in each category.
+export const SCULPT_TRAITS={
+ "eyes": [
+  {
+   "id": "buulids",
+   "label": "Buu hoods"
+  },
+  {
+   "id": "deflatedbags",
+   "label": "Deflated bags"
+  },
+  {
+   "id": "waojewels",
+   "label": "Wao jewels"
+  },
+  {
+   "id": "beautyglass",
+   "label": "Beauty glass"
+  },
+  {
+   "id": "dratinigaze",
+   "label": "Dratini gaze"
+  },
+  {
+   "id": "blazedcushions",
+   "label": "Blazed cushions"
+  },
+  {
+   "id": "geekframes",
+   "label": "Geek acetate"
+  },
+  {
+   "id": "mangekyoseal",
+   "label": "Red seal eyes"
+  },
+  {
+   "id": "millerockets",
+   "label": "Miller sockets"
+  },
+  {
+   "id": "seethewell",
+   "label": "Seethe wells"
+  }
+ ],
+ "mouth": [
+  {
+   "id": "batmanclench",
+   "label": "Batman clench"
+  },
+  {
+   "id": "cubonejaw",
+   "label": "Cubone jaw"
+  },
+  {
+   "id": "chipmunkbite",
+   "label": "Chipmunk bite"
+  },
+  {
+   "id": "bulletjaw",
+   "label": "Bullet jaw"
+  },
+  {
+   "id": "demonpit",
+   "label": "Demon pit"
+  },
+  {
+   "id": "greedclamp",
+   "label": "Greed clamp"
+  },
+  {
+   "id": "sillycurl",
+   "label": "Silly curl"
+  },
+  {
+   "id": "sweeperbite",
+   "label": "Sweeper bite"
+  },
+  {
+   "id": "tigermaw",
+   "label": "Tiger maw"
+  },
+  {
+   "id": "murakamijaw",
+   "label": "Murakami jaw"
+  }
+ ],
+ "head": [
+  {
+   "id": "ceramiccarapace",
+   "label": "Ceramic carapace"
+  },
+  {
+   "id": "masonryidol",
+   "label": "Masonry idol"
+  },
+  {
+   "id": "candywhorl",
+   "label": "Candy whorl"
+  },
+  {
+   "id": "mossrelic",
+   "label": "Moss relic"
+  },
+  {
+   "id": "onyxcat",
+   "label": "Onyx cat"
+  },
+  {
+   "id": "lilacdrake",
+   "label": "Lilac drake"
+  },
+  {
+   "id": "ashimp",
+   "label": "Ash imp"
+  },
+  {
+   "id": "opartmask",
+   "label": "Op-art mask"
+  },
+  {
+   "id": "berrybust",
+   "label": "Berry bust"
+  },
+  {
+   "id": "orbitdemon",
+   "label": "Orb demon"
+  }
+ ],
+ "nose": [
+  {
+   "id": "crosscast",
+   "label": "Cross cast"
+  },
+  {
+   "id": "velvetpom",
+   "label": "Velvet pom"
+  },
+  {
+   "id": "candybutton",
+   "label": "Candy button"
+  },
+  {
+   "id": "carvednostrils",
+   "label": "Ceramic nares"
+  },
+  {
+   "id": "dragonbridge",
+   "label": "Dragon bridge"
+  },
+  {
+   "id": "berrysnout",
+   "label": "Berry snout"
+  },
+  {
+   "id": "linenpatch",
+   "label": "Linen patch"
+  },
+  {
+   "id": "bonecartilage",
+   "label": "Bone cartilage"
+  },
+  {
+   "id": "houndmuzzle",
+   "label": "Hound leather"
+  },
+  {
+   "id": "animebridge",
+   "label": "Anime bridge"
+  }
+ ],
+ "brows": [
+  {
+   "id": "buufolds",
+   "label": "Buu folds"
+  },
+  {
+   "id": "millerbrow",
+   "label": "Miller ridge"
+  },
+  {
+   "id": "seethecrease",
+   "label": "Seethe crease"
+  },
+  {
+   "id": "porcelainarc",
+   "label": "Porcelain arc"
+  },
+  {
+   "id": "dragonfold",
+   "label": "Dragon fold"
+  },
+  {
+   "id": "facetbrows",
+   "label": "Jewel brows"
+  },
+  {
+   "id": "geekblocks",
+   "label": "Acetate brows"
+  },
+  {
+   "id": "tiredlobes",
+   "label": "Tired lobes"
+  },
+  {
+   "id": "impbrow",
+   "label": "Imp brow"
+  },
+  {
+   "id": "candycaps",
+   "label": "Candy caps"
+  }
+ ],
+ "tattoo": [
+  {
+   "id": "jesterduality",
+   "label": "Jester duality"
+  },
+  {
+   "id": "pilledglyphs",
+   "label": "Pilled glyphs"
+  },
+  {
+   "id": "troupeseal",
+   "label": "Troupe six"
+  },
+  {
+   "id": "seetheink",
+   "label": "Seethe ink"
+  },
+  {
+   "id": "millerwash",
+   "label": "Miller wash"
+  },
+  {
+   "id": "brickink",
+   "label": "Brick ink"
+  },
+  {
+   "id": "berryfreckles",
+   "label": "Berry seeds"
+  },
+  {
+   "id": "candyink",
+   "label": "Candy ink"
+  },
+  {
+   "id": "opartcheeks",
+   "label": "Op-art cheeks"
+  },
+  {
+   "id": "orbink",
+   "label": "Orb ink"
+  }
+ ],
+ "shirt": [
+  {
+   "id": "restraintcoat",
+   "label": "Restraint coat"
+  },
+  {
+   "id": "gemblazer",
+   "label": "Gem-set blazer"
+  },
+  {
+   "id": "officerleather",
+   "label": "Leather officer coat"
+  },
+  {
+   "id": "bosozoku",
+   "label": "Bosozoku jacket"
+  },
+  {
+   "id": "fieldmedic",
+   "label": "Field medic smock"
+  },
+  {
+   "id": "exoshell",
+   "label": "Cyborg shell"
+  },
+  {
+   "id": "sunderland",
+   "label": "Sunderland field jacket"
+  },
+  {
+   "id": "ruffleharness",
+   "label": "Ruffle harness blouse"
+  },
+  {
+   "id": "snowblouse",
+   "label": "Snow bow blouse"
+  },
+  {
+   "id": "stormcollar",
+   "label": "High-collar storm jacket"
+  }
+ ],
+ "legs": [
+  {
+   "id": "restraintstraps",
+   "label": "Restraint trousers"
+  },
+  {
+   "id": "gemskirt",
+   "label": "Gem pleat culottes"
+  },
+  {
+   "id": "officerbreeches",
+   "label": "Officer breeches"
+  },
+  {
+   "id": "bosozokuwide",
+   "label": "Bosozoku wide trousers"
+  },
+  {
+   "id": "medicwraps",
+   "label": "Medic wrapped legs"
+  },
+  {
+   "id": "exogreaves",
+   "label": "Cyborg greaves"
+  },
+  {
+   "id": "fieldkneepads",
+   "label": "Field kneepad trousers"
+  },
+  {
+   "id": "rufflebloomers",
+   "label": "Ruffle bloomers"
+  },
+  {
+   "id": "snowpleats",
+   "label": "Snow pleat shorts"
+  },
+  {
+   "id": "stormwaders",
+   "label": "Storm waders"
+  }
+ ],
+ "hat": [
+  {
+   "id": "falconhelm",
+   "label": "Falcon plate helm"
+  },
+  {
+   "id": "psychiccrest",
+   "label": "Psychic crest helm"
+  },
+  {
+   "id": "wingedslump",
+   "label": "Winged Slump cap"
+  },
+  {
+   "id": "patchsprite",
+   "label": "Patch sprite cap"
+  },
+  {
+   "id": "starsbandana",
+   "label": "Stars bandana"
+  },
+  {
+   "id": "catknithood",
+   "label": "Cat knit hood"
+  },
+  {
+   "id": "leatherbat",
+   "label": "Leather bat cap"
+  },
+  {
+   "id": "thorncirclet",
+   "label": "Thorn circlet"
+  },
+  {
+   "id": "clothram",
+   "label": "Cloth ram bonnet"
+  },
+  {
+   "id": "reversecap",
+   "label": "Ethan reverse cap"
+  }
+ ],
+ "accessory": [
+  {
+   "id": "deliveryrig",
+   "label": "Delivery pod rig"
+  },
+  {
+   "id": "spikedpauldrons",
+   "label": "Spiked pauldrons"
+  },
+  {
+   "id": "reliccase",
+   "label": "Ancient relic case"
+  },
+  {
+   "id": "handheldsling",
+   "label": "Handheld console sling"
+  },
+  {
+   "id": "chesspouch",
+   "label": "Chess kit pouch"
+  },
+  {
+   "id": "mimiclockbox",
+   "label": "Mimic lockbox"
+  },
+  {
+   "id": "clockworkrelic",
+   "label": "Chronos clockwork"
+  },
+  {
+   "id": "toonbook",
+   "label": "Toon castle book"
+  },
+  {
+   "id": "chaineddeck",
+   "label": "Chained deck case"
+  },
+  {
+   "id": "pillcanister",
+   "label": "Cyber capsule carrier"
+  }
+ ],
+ "ears": [
+  {
+   "id": "dratinicrest",
+   "label": "Dratini crest"
+  },
+  {
+   "id": "dragonscallop",
+   "label": "Dragon scallops"
+  },
+  {
+   "id": "armoredfins",
+   "label": "Armored fins"
+  },
+  {
+   "id": "quiltfins",
+   "label": "Quilted fins"
+  },
+  {
+   "id": "carnagefins",
+   "label": "Carnage fins"
+  },
+  {
+   "id": "icebladefins",
+   "label": "Diamond fins"
+  },
+  {
+   "id": "mossfins",
+   "label": "Moss fins"
+  },
+  {
+   "id": "wrappedfins",
+   "label": "Wrapped fins"
+  },
+  {
+   "id": "batmembranes",
+   "label": "Bat membranes"
+  },
+  {
+   "id": "ramhorns",
+   "label": "Cloth ram horns"
+  }
+ ],
+ "extra": [
+  {
+   "id": "djstation",
+   "label": "DJ turntables"
+  },
+  {
+   "id": "gumballstand",
+   "label": "Gumball machine"
+  },
+  {
+   "id": "potionflasks",
+   "label": "Shield potions"
+  },
+  {
+   "id": "greedvessel",
+   "label": "Greed vessel"
+  },
+  {
+   "id": "brokenhandhelds",
+   "label": "Broken handhelds"
+  },
+  {
+   "id": "sacredrelic",
+   "label": "Sacred heart relic"
+  },
+  {
+   "id": "cardshrine",
+   "label": "Ancient card shrine"
+  },
+  {
+   "id": "notkinteapot",
+   "label": "Skull teapot"
+  },
+  {
+   "id": "obsidianblades",
+   "label": "Obsidian blades"
+  },
+  {
+   "id": "minidiscorbit",
+   "label": "MiniDisc orbit"
+  }
+ ]
+};
+for(const [category,items] of Object.entries(SCULPT_TRAITS))NEW_TRAITS[category].push(...items);

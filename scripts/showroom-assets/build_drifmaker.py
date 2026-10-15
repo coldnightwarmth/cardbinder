@@ -374,7 +374,7 @@ for obj in collection.objects:
         obj.data.update()
 
 # Expand the catalog with fitted lower-body/mouth sets and the additional wardrobe.
-for extension_name in ['extend_drifmaker_legs_mouth.py','extend_drifmaker_wardrobe.py','extend_drifmaker_spectral.py','extend_drifmaker_signature.py','extend_drifmaker_encore.py','extend_drifmaker_brows.py','refine_drifmaker_portraits.py','extend_drifmaker_holiday.py','extend_drifmaker_collection.py','extend_drifmaker_atelier.py']:
+for extension_name in ['extend_drifmaker_legs_mouth.py','extend_drifmaker_wardrobe.py','extend_drifmaker_spectral.py','extend_drifmaker_signature.py','extend_drifmaker_encore.py','extend_drifmaker_brows.py','refine_drifmaker_portraits.py','extend_drifmaker_holiday.py','extend_drifmaker_collection.py','extend_drifmaker_atelier.py','extend_drifmaker_sculpt_faces.py','extend_drifmaker_sculpt_wardrobe.py','extend_drifmaker_sculpt_ears_extra.py']:
     extension_path=ROOT/'scripts/showroom-assets'/extension_name
     exec(compile(extension_path.read_text(),str(extension_path),'exec'),globals())
 variant_catalog={
@@ -406,6 +406,9 @@ for category,ids in COLLECTION_VARIANTS.items():
 
 for category,ids in ATELIER_VARIANTS.items():
     variant_catalog[category].extend(ids)
+
+for batch in [SCULPT_FACE_VARIANTS,SCULPT_WARDROBE_VARIANTS,SCULPT_EAR_EXTRA_VARIANTS]:
+    for category,ids in batch.items():variant_catalog[category].extend(ids)
 
 exec(compile((ROOT/'scripts/showroom-assets/animate_drifmaker_poses.py').read_text(),'animate_drifmaker_poses.py','exec'),globals())
 
@@ -454,10 +457,19 @@ if 'GLB' in formats:
     kwargs['export_format']='GLB'
 bpy.ops.export_scene.gltf(**kwargs)
 
+# Share identical buffers without changing a single geometry, skin or animation value.
+import runpy
+optimizer=runpy.run_path(str(ROOT/'scripts/showroom-assets/optimize_drifmaker_glb.py'))
+asset_path=OUT/'drifella-customizable.glb'
+optimized,optimization_report=optimizer['optimize_glb'](asset_path.read_bytes())
+asset_path.write_bytes(optimized)
+(OUT/'optimization-report.json').write_text(json.dumps(optimization_report,indent=2))
+print('GLB_OPTIMIZED',json.dumps(optimization_report))
+
 def selection(eyes='classic',shirt='original',hat='none',accessory='original',legs='original',mouth='original',head='original',extra='none',nose='original',ears='original',tattoo='none',brows='original'):
     names=['Drif_Body','Drif_Head_'+head,'Drif_Shirt_'+shirt,'Drif_Hat_'+hat,'Drif_Accessory_'+accessory,'Drif_Legs_'+legs,'Drif_Extra_'+extra]
     if shirt in ['wizardrobe']+ATELIER_FULLBODY:names.remove('Drif_Legs_'+legs)
-    if head in ['pumpkin','tv','crystal']:names.append('Drif_Ears_original')
+    if head in ['pumpkin', 'tv', 'crystal', 'ceramiccarapace', 'masonryidol', 'candywhorl', 'mossrelic', 'ashimp', 'opartmask', 'berrybust', 'orbitdemon']:names.append('Drif_Ears_original')
     if head=='original':
         names+=['Drif_Eyes_'+eyes,'Drif_Mouth_'+mouth,'Drif_Nose_'+nose,'Drif_Ears_'+ears,'Drif_Tattoo_'+tattoo,'Drif_Brows_'+brows]
     for obj in pieces:
@@ -468,14 +480,14 @@ def selection(eyes='classic',shirt='original',hat='none',accessory='original',le
 selection()
 scene.frame_set(1)
 manifest={
-    'version':10,'asset':'drifella-customizable.glb','source':'drifella-customizable.blend',
+    'version':11,'asset':'drifella-customizable.glb','source':'drifella-customizable.blend',
     'bodyMaterial':'Drif_Body_Main','shirtMaterial':'Drif_Shirt_Main',
     'hatMaterial':'Drif_Hat_Main','accessoryMaterial':'Drif_Accessory_Main',
     'orientation':{'blenderUp':'+Z','blenderForward':'-Y','gltfUp':'+Y','gltfForward':'+Z'},
     'categories':{'eyes':variant_catalog['Eyes'],'shirts':variant_catalog['Shirt'],
                   'hats':['none']+variant_catalog['Hat'],'accessories':['none']+variant_catalog['Accessory'],
                   'legs':variant_catalog['Legs'],'mouth':variant_catalog['Mouth'],
-                  'head':variant_catalog['Head'],'extra':['none']+variant_catalog['Extra'],'nose':variant_catalog['Nose'],'ears':variant_catalog['Ears'],'tattoo':['none']+variant_catalog['Tattoo'],'brows':['none']+variant_catalog['Brows'],'bodyStyles':['solid','ghost','gold','silver','matteblack','camo','marble','holographic']},
+                  'head':variant_catalog['Head']+['bighead','gianthead','smallhead'],'extra':['none']+variant_catalog['Extra'],'nose':variant_catalog['Nose'],'ears':variant_catalog['Ears'],'tattoo':['none']+variant_catalog['Tattoo'],'brows':['none']+variant_catalog['Brows'],'bodyStyles':['solid','ghost','gold','silver','matteblack','camo','marble','holographic','blackgem','lava','woods','mossy','pinklatex','cowhide']},
     'inspiration':{'collection':'Drifella 2','url':'https://www.tensor.trade/trade/drifella_2',
                    'traits':['jean jacket','white bomber','solana cap','doomer black beanie','rainbow party hat','sleppy','pixelady star','spiral','dark magician spiky headphones','pokeball necklace','warlax backpack']},
     'nodePrefixes':{'eyes':'Drif_Eyes_','shirts':'Drif_Shirt_','hats':'Drif_Hat_','accessories':'Drif_Accessory_','legs':'Drif_Legs_','mouth':'Drif_Mouth_','head':'Drif_Head_','extra':'Drif_Extra_','nose':'Drif_Nose_','ears':'Drif_Ears_','tattoo':'Drif_Tattoo_','brows':'Drif_Brows_'},
@@ -484,7 +496,7 @@ manifest={
     'atelierSources':{'drifella2':['9eyes/3 eye.PNG','9eyes/astro boy$5.PNG','9eyes/geek.PNG','9eyes/beat n bruised.PNG','9eyes/ghost angry.PNG','9eyes/bloodshot tv hearts$6.PNG','7mouth/cubone.PNG','7mouth/deaths head moth.PNG','7mouth/manga missing tooth.PNG','7mouth/murakami.PNG','7mouth/biting lip.PNG','7mouth/snoot bubble.PNG','5cloth/duck camo.PNG','5cloth/ornate jacket.PNG','91head/jpop hair.PNG'], 'littleSwagWorld':'https://nftranker.io/rankings/little-swag-world','notes':'Visual studies of textile layering, collectible mask silhouettes and toy proportions; includes original designs. All twelve extras are objects or effects, not companions.'},
     'headFits':{name:{'scale':list(fit[:3]),'verticalOffset':fit[3],'pivot':[0,0,2.20]} for name,fit in HEAD_FITS.items()},
     'legOverrideTops':['wizardrobe']+ATELIER_FULLBODY,
-    'classicFinHeads':['pumpkin','tv','crystal'],
+    'classicFinHeads':['pumpkin', 'tv', 'crystal', 'ceramiccarapace', 'masonryidol', 'candywhorl', 'mossrelic', 'ashimp', 'opartmask', 'berrybust', 'orbitdemon'],
     'poses':POSE_IDS,
     'clips':[{'name':a.name,'seconds':(a.frame_range[1]-a.frame_range[0])/30} for a in bpy.data.actions],
     'bones':[b.name for b in rig.data.bones],
@@ -493,7 +505,11 @@ manifest={
     'extraLayout':'Portrait-aware satellite positions with front fin clearance and varied depth/tilt; a curved rear rainbow, visible storm, lowered halo, raised lantern, offset shield, and wider jetpack pods.',
     'atelierFullBodyTops':ATELIER_FULLBODY,
     'atelierHeads':ATELIER_VARIANTS['Head'],
-    'notes':'The atelier expansion adds 12 traits to every category, embedded woven prints, short sleeves, four full-body outfits, and Miku-inspired twintails. Marble coats every visible trait matte white; holographic adds rest-space rainbow foil and sparkles to the body. All components share the original 19-bone rest pose, 10 locomotion actions and 22 enter-and-hold pose actions. Alternate heads replace the original head and facial categories without discarding choices; pumpkin, TV and crystal retain the classic fin ears. Replacement heads fit the original collar height and silhouette. Extra is independent of accessories. Ghost color and rim transparency cover the entire body, facial surfaces and bare feet, with a skinned fuzz mesh. Gold coats all body and facial surfaces. The Swag World hoodie embeds the user-supplied photograph with torso and sleeve UVs. The holiday extension adds mirrored Mog eyewear, a red VR headset, a Santa cap, a layered beard, four original-fin variations, and an ankle-length star robe that overrides legs while preserving the saved choice. Camo is a seamless rest-space runtime skin finish.'
+    'sculptHeads':SCULPT_FACE_VARIANTS['Head'],
+    'headSizeVariants':{'bighead':1.2,'gianthead':1.4,'smallhead':.76},
+    'sculptSources':{name:json.loads((ROOT/'scripts/showroom-assets'/name).read_text()) for name in ['sculpt-faces-catalog.json','sculpt-wardrobe-catalog.json','sculpt-ear-extra-catalog.json']},
+    'sculptRefinements':{'ears':ATELIER_VARIANTS['Ears'],'extra':ATELIER_VARIANTS['Extra']},
+    'notes':'The sculpted collection study adds 120 modeled traits, rebuilds the 24 atelier ears/extras with shaped surfaces and solid hardware, adds six body finishes and three animated head proportions. The atelier expansion adds 12 traits to every category, embedded woven prints, short sleeves, four full-body outfits, and Miku-inspired twintails. Marble coats every visible trait matte white; holographic adds rest-space rainbow foil and sparkles to the body. All components share the original 19-bone rest pose, 10 locomotion actions and 22 enter-and-hold pose actions. Alternate heads replace the original head and facial categories without discarding choices; Earless sculpted heads, pumpkin, TV and crystal retain the classic fin ears. Replacement heads fit the original collar height and silhouette. Extra is independent of accessories. Ghost color and rim transparency cover the entire body, facial surfaces and bare feet, with a skinned fuzz mesh. Gold coats all body and facial surfaces. The Swag World hoodie embeds the user-supplied photograph with torso and sleeve UVs. The holiday extension adds mirrored Mog eyewear, a red VR headset, a Santa cap, a layered beard, four original-fin variations, and an ankle-length star robe that overrides legs while preserving the saved choice. Camo is a seamless rest-space runtime skin finish.'
 }
 (OUT/'manifest.json').write_text(json.dumps(manifest,indent=2))
 # Camera/view setup is scoped to the saved customization source.
