@@ -36,10 +36,12 @@ test('new full-length tops override legs and earless heads preserve the ear sele
  for(const id of ['mnchoirrobe','mnrainponcho','mnsainttabard','mnpetaldress']){assert.ok(LEG_OVERRIDE_TOPS.includes(id));assert.ok(manifest.legOverrideTops.includes(id));}
  for(const row of catalog.head){assert.equal(EAR_COMPATIBLE_HEADS.includes(row.id),row.id!=='mnrabbitmask');assert.equal(normalizeAppearance({head:row.id,ears:'mnrabbitfolds'}).ears,'mnrabbitfolds');}
 });
-test('new gear is torso-mounted and every art panel has embedded textures and active UVs',()=>{
+test('new gear is torso-mounted and Mi Note models do not embed whole-card artwork',()=>{
  const bytes=readFileSync(new URL('../../assets/models/drifmaker/drifella-customizable.glb',import.meta.url));const gltf=JSON.parse(bytes.subarray(20,20+bytes.readUInt32LE(12)).toString());const start=28+bytes.readUInt32LE(12);
  const values=index=>{const a=gltf.accessors[index],v=gltf.bufferViews[a.bufferView],n={VEC4:4,VEC2:2,SCALAR:1}[a.type],w={5121:1,5123:2,5126:4}[a.componentType],method={5121:'readUInt8',5123:'readUInt16LE',5126:'readFloatLE'}[a.componentType];return Array.from({length:a.count*n},(_,i)=>bytes[method](start+v.byteOffset+(a.byteOffset||0)+Math.floor(i/n)*(v.byteStride||w*n)+(i%n)*w));};
  for(const {id} of catalog.accessory){const node=gltf.nodes.find(n=>n.name==='Drif_Accessory_'+id);for(const p of gltf.meshes[node.mesh].primitives){const joints=values(p.attributes.JOINTS_0),weights=values(p.attributes.WEIGHTS_0);for(let i=0;i<joints.length;i++)if(weights[i]>0)assert.equal(gltf.nodes[gltf.skins[node.skin].joints[joints[i]]].name,'Chest',id);}}
- let textured=0;for(const node of gltf.nodes.filter(n=>/^Drif_.*_mn/.test(n.name)&&n.mesh!==undefined))for(const p of gltf.meshes[node.mesh].primitives){const m=gltf.materials[p.material];if(!m.name.startsWith('Drif_MiNote_Art_'))continue;textured++;assert.ok(p.attributes.TEXCOORD_0!==undefined);const uv=values(p.attributes.TEXCOORD_0);assert.ok(Math.max(...uv)-Math.min(...uv)>.5);const t=gltf.textures[m.pbrMetallicRoughness.baseColorTexture.index];assert.ok(gltf.images[t.source??t.extensions?.EXT_texture_webp?.source].bufferView!==undefined);}
- assert.ok(textured>=10);
+ for(const node of gltf.nodes.filter(n=>/^Drif_.*_mn/.test(n.name)&&n.mesh!==undefined))for(const p of gltf.meshes[node.mesh].primitives){
+  const m=gltf.materials[p.material];assert.ok(!m.name.startsWith('Drif_MiNote_Art_'));
+  assert.equal(m.pbrMetallicRoughness?.baseColorTexture,undefined,node.name);
+ }
 });

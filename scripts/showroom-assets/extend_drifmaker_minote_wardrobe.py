@@ -28,7 +28,7 @@ for i,style in enumerate(MN_VARIANTS['Shirt']):
  mat=[mn_blue,mn_white,mn_ink,mn_purple,mn_red,mn_teal,mn_blue,mn_paper,mn_rose][i]
  mn_top(p,mat,kind,style in ['mnstrawberryknit','mnsailorsmock'])
  if style=='mnstrawberryknit':
-  mn_artpanel(p+'_berryprint',6,(0,-.32,1.17),(.43,.43));sw_loft(p+'_ribhem',[(.76,.411,.285,0,0),(.84,.425,.29,0,0)],mn_sky,torso_weights,40,20,.008,.03)
+  sw_loft(p+'_ribhem',[(.76,.411,.285,0,0),(.84,.425,.29,0,0)],mn_sky,torso_weights,40,20,.008,.03)
  elif style=='mnsailorsmock':
   for s in [-1,1]:sc_profile(p+'_squarecollar',[(s*.03,1.32),(s*.32,1.53),(s*.25,1.60),(s*.06,1.48)],-.265,.055,mn_blue,'Chest',.012)
   mn_badge(p+'_anchorheart',0,1.27,.07,mn_gold,'heart',-.32)
@@ -36,11 +36,11 @@ for i,style in enumerate(MN_VARIANTS['Shirt']):
  elif style=='mnchoirrobe':
   sc_profile(p+'_scallopcollar',[(-.32,1.56),(-.23,1.34),(-.11,1.39),(0,1.30),(.11,1.39),(.23,1.34),(.32,1.56),(0,1.64)],-.29,.055,mn_white,'Chest',.018)
   for z in [1.22,1.08,.94]:mn_ell(p+'_button',(0,-.33,z),(.025,.016,.025),mn_gold,'Chest',12,8)
-  mn_artpanel(p+'_iconpanel',24,(0,-.37,.53),(.28,.47),'Pelvis')
+
  elif style=='mnrainponcho':
   sc_profile(p+'_stormflap',[(-.22,1.51),(.22,1.51),(.30,1.26),(-.30,1.26)],-.32,.045,mn_sky,'Chest',.025)
   for s in [-1,1]:sc_box(p+'_pocket',(s*.25,-.345,.80),(.23,.06,.20),mn_purple,'Pelvis',.035)
-  mn_artpanel(p+'_rainlabel',83,(0,-.37,1.08),(.19,.21))
+
  elif style=='mnjestertunic':
   for s in [-1,1]:
    sc_profile(p+'_lapel',[(s*.03,1.56),(s*.31,1.48),(s*.27,1.17),(s*.12,1.28)],-.29,.06,mn_gold,'Chest',.018)
@@ -49,10 +49,10 @@ for i,style in enumerate(MN_VARIANTS['Shirt']):
  elif style=='mnlaprascoat':
   mn_ell(p+'_belly',(0,-.27,1.10),(.28,.075,.32),mn_yellow,'Chest')
   for s in [-1,1]:sc_box(p+'_toggle',(s*.17,-.35,1.40),(.08,.045,.045),mn_paper,'Chest',.012)
-  mn_artpanel(p+'_lagoonpatch',65,(.23,-.27,1.17),(.16,.20))
+
  elif style=='mncollagejacket':
   for s in [-1,1]:sc_profile(p+'_foldlapel',[(s*.04,1.59),(s*.27,1.49),(s*.20,1.23),(s*.08,1.39)],-.285,.05,mn_paper,'Chest',.015)
-  mn_artpanel(p+'_leftpanel',1,(-.19,-.30,1.08),(.25,.37));mn_artpanel(p+'_rightpanel',58,(.19,-.30,1.08),(.25,.37))
+
  elif style=='mnsainttabard':
   for s in [-1,1]:sc_profile(p+'_stole',[(s*.17,1.59),(s*.28,1.50),(s*.27,.28),(s*.14,.23)],-.35,.05,mn_blue,torso_weights,.015)
   mn_badge(p+'_cross',0,1.19,.12,mn_gold,'cross',-.34)
@@ -60,7 +60,7 @@ for i,style in enumerate(MN_VARIANTS['Shirt']):
   for j in range(8):
    a=j*math.tau/8;x=.27*math.cos(a);y=.22*math.sin(a)
    o=mn_ell(p+'_collarpetal',(x,y,1.52),(.14,.11,.045),mn_paper,'Chest',16,10)
-  mn_artpanel(p+'_flowerprint',49,(0,-.34,.49),(.36,.39),'Pelvis')
+
 
 for i,style in enumerate(MN_VARIANTS['Legs']):
  p='Drif_Legs_'+style;mat=[mn_blue,mn_white,mn_ink,mn_purple,mn_red,mn_paper,mn_sky,mn_ink,mn_green][i]
@@ -78,7 +78,6 @@ for i,style in enumerate(MN_VARIANTS['Legs']):
   if boot:sw_loft(p+'_shaft',[(.12,.16,.18,x,0),(.38,.18,.20,x,0),(.53,.205,.215,x,0)],mat,w,24,5,.008,.03)
   if style=='mnquilttrousers':
    for z in [.32,.45,.58]:mn_ell(p+'_quilt',(x,-.175,z),(.14,.045,.075),mn_paper,w,16,10)
-  if style=='mnpatchdenim':mn_artpanel(p+'_patch',2,(x,-.218,.56),(.19,.17),'Thigh.'+label)
   if style=='mnjesterpants':sc_profile(p+'_diamond',[(x-.10,.52),(x,.68),(x+.10,.52),(x,.36)],-.22,.035,mn_gold,w,.008)
   if style=='mnpetalboots':
    for k in [-1,0,1]:mn_ell(p+'_petalcuff',(x+k*.085,-.17,.50),(.06,.045,.10),mn_rose,'Shin.'+label,16,10)

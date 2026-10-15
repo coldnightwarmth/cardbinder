@@ -1,3 +1,4 @@
+import {DEFAULT_RARITY} from '../../drifmaker-rarity-defaults.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -59,9 +60,9 @@ test('saved/imported rarity is bounded, catalog-only, forward compatible and sur
  assert.deepEqual(normalizeRarity(invalid),expected);assert.deepEqual(normalizeRarity(null),{});
  assert.deepEqual(saveRarity(invalid,storage),expected);assert.deepEqual(loadRarity(storage),expected);
  assert.equal(traitWeight(loadRarity(storage),'eyes','target'),DEFAULT_WEIGHT,'new/default traits remain eligible');
- values.set(RARITY_STORAGE_KEY,'{broken');assert.deepEqual(loadRarity(storage),{});
+ values.set(RARITY_STORAGE_KEY,'{broken');assert.deepEqual(loadRarity(storage),normalizeRarity(DEFAULT_RARITY));
  const denied={getItem(){throw Error('denied');},setItem(){throw Error('quota');}};
- assert.deepEqual(loadRarity(denied),{});assert.throws(()=>saveRarity(expected,denied),/quota/);
+ assert.deepEqual(loadRarity(denied),normalizeRarity(DEFAULT_RARITY));assert.throws(()=>saveRarity(expected,denied),/quota/);
  // A full rarity catalog must fit the editor's bounded file import guard.
  const full=Object.fromEntries(Object.entries(RARITY_GROUPS).map(([key,{options}])=>[key,Object.fromEntries(options.map(option=>[option.id,MAX_WEIGHT]))]));
  const editor=readFileSync(new URL('../../drifmaker.js',import.meta.url),'utf8'),guard=/file\.size\s*>\s*(\d+(?:\s*\*\s*\d+)*)/.exec(editor);
@@ -107,4 +108,18 @@ test('head-size aliases participate in rarity without discarding independently s
    assert.equal(normalizeAppearance(look.appearance).head,head);
   }
  }
+});
+
+test('new visitors get the curated preset while existing saves and explicit equal odds survive',()=>{
+ const storage={getItem:()=>null};
+ assert.deepEqual(loadRarity(storage),normalizeRarity(DEFAULT_RARITY));
+ assert.equal(traitWeight(loadRarity(storage),'head','original'),2500);
+ assert.equal(traitWeight(loadRarity(storage),'eyes','galaxy'),0);
+ assert.equal(traitWeight(loadRarity(storage),'ears','original'),2700);
+ assert.equal(traitWeight(loadRarity(storage),'shirt','flamebowling'),1500);
+ assert.equal(traitWeight(loadRarity(storage),'bodyStyle','mnwatercolor'),100);
+ assert.deepEqual(loadRarity({getItem:()=>'{}'}),{});
+ assert.deepEqual(loadRarity({getItem:()=>'{"head":{"original":7}}'}),{head:{original:7}});
+ const loaded=loadRarity(storage);loaded.head.original=1;
+ assert.equal(loadRarity(storage).head.original,2500,'editing a visitor copy cannot mutate the preset');
 });

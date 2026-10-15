@@ -74,7 +74,7 @@ for i,style in enumerate(MN_VARIANTS['Extra']):
  if style=='mnopenbook':
   for s in [-1,1]:
    before=set(collection.objects);mn_book(p,(s*.36,-.79,.96),(.70,.48,.10),'Root',mn_blue)
-   mn_artpanel(p+'_drawing',1 if s<0 else 58,(s*.36,-.856,.96),(.64,.42),'Root')
+   mn_paperpanel(p+'_paper',(s*.36,-.856,.96),(.64,.42),'Root')
    sc_transform([o for o in collection.objects if o not in before],(s*.36,-.79,.96),(-.25,0,-s*.18))
   sc_box(p+'_plinth',(0,-.59,.43),(.28,.32,.47),mn_paper,'Root',.035)
  elif style=='mnchapelarch':
@@ -98,7 +98,7 @@ for i,style in enumerate(MN_VARIANTS['Extra']):
    for row in range(n):
     for col in range(n):
      u=col/(n-1)-.5;v=row/(n-1)-.5;verts.append((x+u*.34,y+.09*math.sin(u*4+v*3),z+v*.41))
-   o=mesh(p+'_curledsheet',verts,[(r*n+c,r*n+c+1,(r+1)*n+c+1,(r+1)*n+c) for r in range(n-1) for c in range(n-1)],mn_artmat([1,2,4,58,49][j]),'Root');uv=o.data.uv_layers.new(name='Mi Note artwork');uv.active_render=True
+   o=mesh(p+'_curledsheet',verts,[(r*n+c,r*n+c+1,(r+1)*n+c+1,(r+1)*n+c) for r in range(n-1) for c in range(n-1)],mn_paper,'Root');uv=o.data.uv_layers.new(name='Paper surface');uv.active_render=True
    for f in o.data.polygons:
     for li in f.loop_indices:
      vi=o.data.loops[li].vertex_index;uv.data[li].uv=(vi%n/(n-1),vi//n/(n-1))

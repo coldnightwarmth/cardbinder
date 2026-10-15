@@ -9,6 +9,12 @@ scene=bpy.context.scene;rig=bpy.data.objects['DrifellaRig'];source=bpy.data.obje
 rig.animation_data.action=bpy.data.actions['Neutral'];scene.frame_set(1)
 for o in list(collection.objects):
  if o.type=='MESH' and o.name.split('_')[2:3] and o.name.split('_')[2].startswith('mn'):bpy.data.objects.remove(o,do_unlink=True)
+# Remove retired whole-artwork materials and packed source images as well.
+for mat in list(bpy.data.materials):
+ if mat.name.startswith('Drif_MiNote_Art_'):bpy.data.materials.remove(mat,do_unlink=True)
+for image in list(bpy.data.images):
+ if '/textures/minote/' in image.filepath.replace('\\','/'):
+  bpy.data.images.remove(image,do_unlink=True)
 def hydrate(file):
  tree=ast.parse((ROOT/'scripts/showroom-assets'/file).read_text())
  # Load only helper definitions and direct material declarations, never old builds.

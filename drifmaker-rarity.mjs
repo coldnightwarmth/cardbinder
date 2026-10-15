@@ -1,3 +1,4 @@
+import {DEFAULT_RARITY} from './drifmaker-rarity-defaults.mjs?v=1';
 import {PORTRAIT_OVERLAYS} from './drifmaker-portrait-art.mjs?v=2';
 import {BODY_COLORS,BODY_STYLES,PORTRAIT_BACKGROUNDS,CATEGORIES} from './drifmaker-config.mjs?v=16';
 import {PORTRAIT_POSES} from './drifmaker-poses.mjs?v=5';
@@ -30,7 +31,10 @@ export function normalizeRarity(value){
  return result;
 }
 export function loadRarity(storage){
- try{return normalizeRarity(JSON.parse((storage??globalThis.localStorage)?.getItem(RARITY_STORAGE_KEY)||'{}'));}catch{return {};}
+ try{
+  const saved=(storage??globalThis.localStorage)?.getItem(RARITY_STORAGE_KEY);
+  return normalizeRarity(saved==null?DEFAULT_RARITY:JSON.parse(saved));
+ }catch{return normalizeRarity(DEFAULT_RARITY);}
 }
 export function saveRarity(value,storage){
  const target=storage??globalThis.localStorage;

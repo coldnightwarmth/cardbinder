@@ -1,4 +1,4 @@
-import {RARITY_GROUPS,MAX_WEIGHT,validWeight,traitWeight,traitChances,loadRarity,saveRarity,normalizeRarity} from './drifmaker-rarity.mjs?v=14';
+import {RARITY_GROUPS,MAX_WEIGHT,validWeight,traitWeight,traitChances,loadRarity,saveRarity,normalizeRarity} from './drifmaker-rarity.mjs?v=15';
 
 // Inputs are siblings of selection buttons, so editing a weight never selects
 // the trait or triggers a look-history action. All odds update as a group.

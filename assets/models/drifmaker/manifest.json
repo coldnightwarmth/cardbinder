@@ -4572,8 +4572,8 @@
     },
     {
       "name": "Drif_Shirt_mnstrawberryknit",
-      "vertices": 2020,
-      "triangles": 3948
+      "vertices": 1924,
+      "triangles": 3760
     },
     {
       "name": "Drif_Shirt_mnsailorsmock",
@@ -4582,13 +4582,13 @@
     },
     {
       "name": "Drif_Shirt_mnchoirrobe",
-      "vertices": 2294,
-      "triangles": 4480
+      "vertices": 2198,
+      "triangles": 4292
     },
     {
       "name": "Drif_Shirt_mnrainponcho",
-      "vertices": 2020,
-      "triangles": 3936
+      "vertices": 1924,
+      "triangles": 3748
     },
     {
       "name": "Drif_Shirt_mnjestertunic",
@@ -4597,13 +4597,13 @@
     },
     {
       "name": "Drif_Shirt_mnlaprascoat",
-      "vertices": 1786,
-      "triangles": 3476
+      "vertices": 1690,
+      "triangles": 3288
     },
     {
       "name": "Drif_Shirt_mncollagejacket",
-      "vertices": 1584,
-      "triangles": 3072
+      "vertices": 1392,
+      "triangles": 2696
     },
     {
       "name": "Drif_Shirt_mnsainttabard",
@@ -4612,8 +4612,8 @@
     },
     {
       "name": "Drif_Shirt_mnpetaldress",
-      "vertices": 3092,
-      "triangles": 6060
+      "vertices": 2996,
+      "triangles": 5872
     },
     {
       "name": "Drif_Legs_mnwashdenim",
@@ -4647,8 +4647,8 @@
     },
     {
       "name": "Drif_Legs_mnpatchdenim",
-      "vertices": 1492,
-      "triangles": 2968
+      "vertices": 1300,
+      "triangles": 2592
     },
     {
       "name": "Drif_Legs_mnchoirskirt",

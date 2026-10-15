@@ -33,19 +33,11 @@ def mn_badge(p,x,z,size,mat,shape='star',y=-.4,bone='Chest'):
  elif shape=='heart':pts=[(x+size*math.sin(a)**3,z+size*(13*math.cos(a)-5*math.cos(2*a)-2*math.cos(3*a)-math.cos(4*a))/16) for a in [j*math.tau/32 for j in range(32)]]
  else:pts=[(x-size*.6,z-size),(x+size*.6,z-size),(x+size*.6,z-size*.2),(x+size,z-size*.2),(x+size,z+size*.2),(x+size*.6,z+size*.2),(x+size*.6,z+size),(x-size*.6,z+size),(x-size*.6,z+size*.2),(x-size,z+size*.2),(x-size,z-size*.2),(x-size*.6,z-size*.2)]
  return sc_profile(p,pts,y,.035,mat,bone,.007)
-def mn_artmat(card):
- name='Drif_MiNote_Art_'+str(card);mat=bpy.data.materials.get(name)
- if mat:return mat
- mat=material(name,(1,1,1),.87);im=bpy.data.images.load(str(OUT/'textures/minote'/f'{card}.webp'),check_existing=True);im.pack()
- tex=mat.node_tree.nodes.new('ShaderNodeTexImage');tex.image=im;tex.extension='EXTEND';bs=next(n for n in mat.node_tree.nodes if n.type=='BSDF_PRINCIPLED');mat.node_tree.links.new(tex.outputs['Color'],bs.inputs['Base Color']);return mat
+def mn_paperpanel(p,c=(0,-.30,1.14),size=(.42,.48),bone='Root'):
+ # Plain sculpted paper; reference artworks are never mapped onto the model.
+ w,h=size
+ return sc_box(p,c,(w,.028,h),mn_paper,bone,.008)
 
-def mn_artpanel(p,card,c=(0,-.30,1.14),size=(.42,.48),bone='Chest'):
- x,y,z=c;w,h=size;obj=sc_box(p,c,(w,.028,h),mn_artmat(card),bone,.008)
- uv=obj.data.uv_layers.new(name='Mi Note artwork');uv.active_render=True
- for f in obj.data.polygons:
-  for li in f.loop_indices:
-   v=obj.data.vertices[obj.data.loops[li].vertex_index].co;uv.data[li].uv=((v.x-x)/w+.5,(v.z-z)/h+.5)
- return obj
 
 def mn_inkpatch(p,outline,mat=mn_ink):
  poly=[Vector((x,z,0)) for x,z in outline];tri=tessellate_polygon([poly]);verts=[];faces=[]

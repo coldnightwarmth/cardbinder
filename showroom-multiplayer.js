@@ -1,7 +1,7 @@
 import {jumpHeight} from './showroom-locomotion.mjs?v=2';
 import {chatAnchor,chatVisibleThroughDoor} from './showroom-chat-projection.mjs';
 import {createChatBubble} from './showroom-chat.js?v=5';
-import {createShowroomAvatar} from './showroom-avatar.js?v=28';
+import {createShowroomAvatar} from './showroom-avatar.js?v=29';
 import {appearanceKey,loadAppearance,normalizeAppearance,subscribeAppearance} from './drifmaker-config.mjs?v=16';
 import {createPoseBuffer,remoteHandPose} from './showroom-motion.mjs?v=6';
 import * as THREE from 'three';

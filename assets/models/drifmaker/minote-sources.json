@@ -2,17 +2,7 @@
   "collection": "Mi Note",
   "url": "https://cards.art/minotecurator/",
   "referenceMethod": "Visual studies of the original card artwork; catalog entries record the card behind each adaptation. Cloth folds, shells, fins and objects are modeled in Blender. Backgrounds and overlays are original vector interpretations of watercolor and notebook motifs.",
-  "reusedTextureCards": [
-    1,
-    2,
-    4,
-    6,
-    24,
-    49,
-    58,
-    65,
-    83
-  ],
+  "reusedTextureCards": [],
   "cards": [
     {
       "id": 1,
