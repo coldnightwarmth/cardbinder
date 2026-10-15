@@ -1,4 +1,4 @@
-import {CATEGORIES,DEFAULT_APPEARANCE,FINISH_COLORS,CLASSIC_FIN_HEADS,LEG_OVERRIDE_TOPS,normalizeAppearance} from './drifmaker-config.mjs?v=8';
+import {CATEGORIES,DEFAULT_APPEARANCE,FINISH_COLORS,CLASSIC_FIN_HEADS,LEG_OVERRIDE_TOPS,normalizeAppearance} from './drifmaker-config.mjs?v=9';
 import {applyCamoShader} from './drifmaker-camo.mjs?v=1';
 
 // Each character owns its surface finishes and visibility; geometry and textures

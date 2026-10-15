@@ -70,6 +70,36 @@ export const NEW_TRAITS={
   {
    "id": "virtualboy",
    "label": "Virtual Boy headset"
+  },
+  {
+   "id": "gengar",
+   "label": "Gengar eyes",
+   "sourceTrait": "9eyes/gengar$7.PNG"
+  },
+  {
+   "id": "ghastly",
+   "label": "Ghastly eyes",
+   "sourceTrait": "9eyes/ghaslty.PNG"
+  },
+  {
+   "id": "cartoon",
+   "label": "Cartoon eyes",
+   "sourceTrait": "9eyes/cartoon.PNG"
+  },
+  {
+   "id": "scarlet",
+   "label": "Scarlet eyes",
+   "sourceTrait": "9eyes/scarlet eyes$7.PNG"
+  },
+  {
+   "id": "pixelcry",
+   "label": "Pixel cry",
+   "sourceTrait": "9eyes/pixel cry.PNG"
+  },
+  {
+   "id": "money",
+   "label": "Money eyes",
+   "sourceTrait": "9eyes/moneys$8.PNG"
   }
  ],
  "mouth": [
@@ -138,6 +168,36 @@ export const NEW_TRAITS={
   {
    "id": "fluffybeard",
    "label": "Fluffy beard"
+  },
+  {
+   "id": "gengarsmile",
+   "label": "Gengar smile",
+   "sourceTrait": "7mouth/gengar smile$1.PNG"
+  },
+  {
+   "id": "catopen",
+   "label": "Cat open",
+   "sourceTrait": "7mouth/cat open.PNG"
+  },
+  {
+   "id": "grimer",
+   "label": "Grimer mouth",
+   "sourceTrait": "7mouth/grimer.PNG"
+  },
+  {
+   "id": "grit",
+   "label": "Grit teeth",
+   "sourceTrait": "7mouth/grit.PNG"
+  },
+  {
+   "id": "ghastlysmile",
+   "label": "Ghastly smile",
+   "sourceTrait": "7mouth/ghastly smile$1.PNG"
+  },
+  {
+   "id": "rainbowtongue",
+   "label": "Rainbow tongue",
+   "sourceTrait": "7mouth/rainbow.PNG"
   }
  ],
  "shirt": [
@@ -193,7 +253,7 @@ export const NEW_TRAITS={
   },
   {
    "id": "mcdonalds",
-   "label": "McDonald\u2019s shirt"
+   "label": "McDonald’s shirt"
   },
   {
    "id": "swagworld",
@@ -214,6 +274,11 @@ export const NEW_TRAITS={
   {
    "id": "wizardrobe",
    "label": "Star wizard robe"
+  },
+  {
+   "id": "militaryvest",
+   "label": "Military vest",
+   "sourceTrait": "5cloth/tek vest hoodie.PNG"
   }
  ],
  "legs": [
@@ -333,7 +398,7 @@ export const NEW_TRAITS={
   },
   {
    "id": "mcdonalds",
-   "label": "McDonald\u2019s visor"
+   "label": "McDonald’s visor"
   },
   {
    "id": "chef",
@@ -350,6 +415,16 @@ export const NEW_TRAITS={
   {
    "id": "santa",
    "label": "Santa hat"
+  },
+  {
+   "id": "ponchohood",
+   "label": "Poncho hood",
+   "sourceTrait": "User-supplied red-and-black poncho hood reference"
+  },
+  {
+   "id": "aliencap",
+   "label": "Alien hat",
+   "sourceTrait": "91head/alien hat.PNG"
   }
  ],
  "accessory": [

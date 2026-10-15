@@ -1,4 +1,4 @@
-import {NEW_TRAITS} from './drifmaker-expansion.mjs?v=5';
+import {NEW_TRAITS} from './drifmaker-expansion.mjs?v=6';
 // Shared by the browser and the showroom worker: only these small, validated
 // appearance values cross the network. Models and materials always stay local.
 // Drifella 2 collection inspiration: https://www.tensor.trade/trade/drifella_2

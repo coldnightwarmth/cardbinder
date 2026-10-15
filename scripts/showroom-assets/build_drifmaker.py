@@ -374,7 +374,7 @@ for obj in collection.objects:
         obj.data.update()
 
 # Expand the catalog with fitted lower-body/mouth sets and the additional wardrobe.
-for extension_name in ['extend_drifmaker_legs_mouth.py','extend_drifmaker_wardrobe.py','extend_drifmaker_spectral.py','extend_drifmaker_signature.py','extend_drifmaker_encore.py','extend_drifmaker_brows.py','refine_drifmaker_portraits.py','extend_drifmaker_holiday.py']:
+for extension_name in ['extend_drifmaker_legs_mouth.py','extend_drifmaker_wardrobe.py','extend_drifmaker_spectral.py','extend_drifmaker_signature.py','extend_drifmaker_encore.py','extend_drifmaker_brows.py','refine_drifmaker_portraits.py','extend_drifmaker_holiday.py','extend_drifmaker_collection.py']:
     extension_path=ROOT/'scripts/showroom-assets'/extension_name
     exec(compile(extension_path.read_text(),str(extension_path),'exec'),globals())
 variant_catalog={
@@ -399,6 +399,9 @@ for category,ids in ENCORE_VARIANTS.items():
     variant_catalog[category].extend(ids)
 
 for category,ids in HOLIDAY_VARIANTS.items():
+    variant_catalog[category].extend(ids)
+
+for category,ids in COLLECTION_VARIANTS.items():
     variant_catalog[category].extend(ids)
 
 exec(compile((ROOT/'scripts/showroom-assets/animate_drifmaker_poses.py').read_text(),'animate_drifmaker_poses.py','exec'),globals())
@@ -462,7 +465,7 @@ def selection(eyes='classic',shirt='original',hat='none',accessory='original',le
 selection()
 scene.frame_set(1)
 manifest={
-    'version':8,'asset':'drifella-customizable.glb','source':'drifella-customizable.blend',
+    'version':9,'asset':'drifella-customizable.glb','source':'drifella-customizable.blend',
     'bodyMaterial':'Drif_Body_Main','shirtMaterial':'Drif_Shirt_Main',
     'hatMaterial':'Drif_Hat_Main','accessoryMaterial':'Drif_Accessory_Main',
     'orientation':{'blenderUp':'+Z','blenderForward':'-Y','gltfUp':'+Y','gltfForward':'+Z'},
@@ -474,6 +477,7 @@ manifest={
                    'traits':['jean jacket','white bomber','solana cap','doomer black beanie','rainbow party hat','sleppy','pixelady star','spiral','dark magician spiky headphones','pokeball necklace','warlax backpack']},
     'nodePrefixes':{'eyes':'Drif_Eyes_','shirts':'Drif_Shirt_','hats':'Drif_Hat_','accessories':'Drif_Accessory_','legs':'Drif_Legs_','mouth':'Drif_Mouth_','head':'Drif_Head_','extra':'Drif_Extra_','nose':'Drif_Nose_','ears':'Drif_Ears_','tattoo':'Drif_Tattoo_','brows':'Drif_Brows_'},
     'orbFreeEyes':ORB_FREE_EYES,'earringAnchor':list(sg_earring_anchor),
+    'collectionTraitReferences':COLLECTION_REFERENCES,
     'headFits':{name:{'scale':list(fit[:3]),'verticalOffset':fit[3],'pivot':[0,0,2.20]} for name,fit in HEAD_FITS.items()},
     'legOverrideTops':['wizardrobe'],
     'classicFinHeads':['pumpkin','tv','crystal'],

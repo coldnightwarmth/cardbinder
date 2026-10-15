@@ -10,7 +10,7 @@ import {Showroom} from '../src/showroom.js';
 import {freshRoom} from '../src/showroom-state.js';
 
 test('expanded wardrobe contains twelve independent categories and bounded normalized values',()=>{
- assert.deepEqual(Object.fromEntries(Object.entries(CATEGORIES).map(([category,items])=>[category,items.length])),{eyes:29,mouth:25,shirt:29,legs:24,hat:29,accessory:30,head:10,extra:16,tattoo:12,nose:9,ears:13,brows:14});
+ assert.deepEqual(Object.fromEntries(Object.entries(CATEGORIES).map(([category,items])=>[category,items.length])),{eyes:35,mouth:31,shirt:30,legs:24,hat:31,accessory:30,head:10,extra:16,tattoo:12,nose:9,ears:13,brows:14});
  for(const items of Object.values(CATEGORIES)){
   assert.ok(items.filter(item=>item.id!=='none').length>=5);
   assert.equal(new Set(items.map(item=>item.id)).size,items.length);
@@ -205,9 +205,14 @@ test('every shipped wardrobe option is skinned to the original rig and retains a
  const photoMaterial=gltf.materials[photoPrimitive.material],texture=gltf.textures[photoMaterial.pbrMetallicRoughness.baseColorTexture.index];
  assert.ok(gltf.images[texture.source].bufferView!==undefined,'the supplied photo is embedded in the GLB');
  assert.ok(values(photoPrimitive.attributes.TEXCOORD_0).every(Number.isFinite));
+ const hood=gltf.meshes[gltf.nodes.find(node=>node.name==='Drif_Hat_ponchohood').mesh];
+ const woven=hood.primitives.find(primitive=>gltf.materials[primitive.material].name==='Drif_Collection_Poncho_Fabric');
+ assert.ok(woven?.attributes.TEXCOORD_0!==undefined,'poncho cloth retains its fabric UVs');
+ const wovenTexture=gltf.textures[gltf.materials[woven.material].pbrMetallicRoughness.baseColorTexture.index];
+ assert.ok(gltf.images[wovenTexture.source].bufferView!==undefined,'poncho cloth texture travels with the GLB');
  assert.deepEqual(gltf.animations.filter(clip=>!clip.name.startsWith('Pose_')).map(clip=>clip.name).sort(),original.json.animations.map(clip=>clip.name).sort());
  const expectedNames=['Drif_Body','Drif_Ghost_Fuzz',...Object.entries(CATEGORIES).flatMap(([category,items])=>items.filter(item=>item.id!=='none').map(item=>`Drif_${category[0].toUpperCase()+category.slice(1)}_${item.id}`))];
- assert.equal(expectedNames.length,237);
+ assert.equal(expectedNames.length,252);
  assert.deepEqual(gltf.nodes.filter(node=>node.mesh!==undefined).map(node=>node.name).sort(),expectedNames.sort(),'every logical wardrobe option has exactly one mesh node');
  for(const [category,items] of Object.entries(CATEGORIES))for(const item of items.filter(item=>item.id!=='none')){
   const prefix=`Drif_${category[0].toUpperCase()+category.slice(1)}_${item.id}`;
@@ -274,7 +279,7 @@ test('showroom broadcasts and snapshots carry validated appearance, including st
  const lastActive=player.lastActive;player.lastMove=0;
  await server.webSocketMessage(ws,JSON.stringify({type:'pose',pose:player.pose}));assert.equal(player.lastActive,lastActive);
  // New-category changes alone must be broadcast and count as activity.
- for(const patch of [{mouth:'venom'},{legs:'rainbow'},{head:'hockey'},{extra:'mon'},{bodyStyle:'ghost'},{bodyStyle:'gold',bodyColor:GOLD_COLOR},{nose:'pig'},{ears:'elf'},{tattoo:'stars'},{brows:'flame'}]){
+ for(const patch of [{mouth:'venom'},{legs:'rainbow'},{head:'hockey'},{extra:'mon'},{bodyStyle:'ghost'},{bodyStyle:'gold',bodyColor:GOLD_COLOR},{nose:'pig'},{ears:'elf'},{tattoo:'stars'},{brows:'flame'},{head:'original',hat:'ponchohood',shirt:'militaryvest',eyes:'gengar',mouth:'gengarsmile'},{hat:'aliencap',eyes:'pixelcry',mouth:'rainbowtongue'}]){
   player.lastMove=0;player.lastActive=1;
   const updated={...player.pose.appearance,...patch};
   await server.webSocketMessage(ws,JSON.stringify({type:'pose',pose:{...player.pose,appearance:updated}}));

@@ -1,5 +1,5 @@
 {
-  "version": 8,
+  "version": 9,
   "asset": "drifella-customizable.glb",
   "source": "drifella-customizable.blend",
   "bodyMaterial": "Drif_Body_Main",
@@ -42,7 +42,13 @@
       "petals",
       "sleepmask",
       "mog",
-      "virtualboy"
+      "virtualboy",
+      "gengar",
+      "ghastly",
+      "cartoon",
+      "scarlet",
+      "pixelcry",
+      "money"
     ],
     "shirts": [
       "original",
@@ -73,7 +79,8 @@
       "cardigan",
       "flightjacket",
       "sunburst",
-      "wizardrobe"
+      "wizardrobe",
+      "militaryvest"
     ],
     "hats": [
       "none",
@@ -104,7 +111,9 @@
       "chef",
       "straw",
       "viking",
-      "santa"
+      "santa",
+      "ponchohood",
+      "aliencap"
     ],
     "accessories": [
       "none",
@@ -189,7 +198,13 @@
       "smirk",
       "buckteeth",
       "whistle",
-      "fluffybeard"
+      "fluffybeard",
+      "gengarsmile",
+      "catopen",
+      "grimer",
+      "grit",
+      "ghastlysmile",
+      "rainbowtongue"
     ],
     "head": [
       "original",
@@ -332,6 +347,31 @@
     -0.11209229379892349,
     2.2899999618530273
   ],
+  "collectionTraitReferences": {
+    "eyes": {
+      "gengar": "9eyes/gengar$7.PNG",
+      "ghastly": "9eyes/ghaslty.PNG",
+      "cartoon": "9eyes/cartoon.PNG",
+      "scarlet": "9eyes/scarlet eyes$7.PNG",
+      "pixelcry": "9eyes/pixel cry.PNG",
+      "money": "9eyes/moneys$8.PNG"
+    },
+    "mouth": {
+      "gengarsmile": "7mouth/gengar smile$1.PNG",
+      "catopen": "7mouth/cat open.PNG",
+      "grimer": "7mouth/grimer.PNG",
+      "grit": "7mouth/grit.PNG",
+      "ghastlysmile": "7mouth/ghastly smile$1.PNG",
+      "rainbowtongue": "7mouth/rainbow.PNG"
+    },
+    "hat": {
+      "aliencap": "91head/alien hat.PNG",
+      "ponchohood": "User-supplied red-and-black poncho hood reference"
+    },
+    "shirt": {
+      "militaryvest": "5cloth/tek vest hoodie.PNG"
+    }
+  },
   "headFits": {
     "void": {
       "scale": [
@@ -731,6 +771,36 @@
       "triangles": 2536
     },
     {
+      "name": "Drif_Eyes_gengar",
+      "vertices": 444,
+      "triangles": 846
+    },
+    {
+      "name": "Drif_Eyes_ghastly",
+      "vertices": 288,
+      "triangles": 540
+    },
+    {
+      "name": "Drif_Eyes_cartoon",
+      "vertices": 554,
+      "triangles": 1002
+    },
+    {
+      "name": "Drif_Eyes_scarlet",
+      "vertices": 2600,
+      "triangles": 5152
+    },
+    {
+      "name": "Drif_Eyes_pixelcry",
+      "vertices": 752,
+      "triangles": 1128
+    },
+    {
+      "name": "Drif_Eyes_money",
+      "vertices": 680,
+      "triangles": 1268
+    },
+    {
       "name": "Drif_Shirt_original",
       "vertices": 578,
       "triangles": 1112
@@ -876,6 +946,11 @@
       "triangles": 4620
     },
     {
+      "name": "Drif_Shirt_militaryvest",
+      "vertices": 1072,
+      "triangles": 1952
+    },
+    {
       "name": "Drif_Hat_cap",
       "vertices": 376,
       "triangles": 728
@@ -1014,6 +1089,16 @@
       "name": "Drif_Hat_santa",
       "vertices": 3254,
       "triangles": 6360
+    },
+    {
+      "name": "Drif_Hat_ponchohood",
+      "vertices": 2522,
+      "triangles": 4780
+    },
+    {
+      "name": "Drif_Hat_aliencap",
+      "vertices": 3136,
+      "triangles": 6180
     },
     {
       "name": "Drif_Accessory_original",
@@ -1404,6 +1489,36 @@
       "name": "Drif_Mouth_fluffybeard",
       "vertices": 4048,
       "triangles": 7976
+    },
+    {
+      "name": "Drif_Mouth_gengarsmile",
+      "vertices": 578,
+      "triangles": 1070
+    },
+    {
+      "name": "Drif_Mouth_catopen",
+      "vertices": 313,
+      "triangles": 569
+    },
+    {
+      "name": "Drif_Mouth_grimer",
+      "vertices": 135,
+      "triangles": 241
+    },
+    {
+      "name": "Drif_Mouth_grit",
+      "vertices": 84,
+      "triangles": 112
+    },
+    {
+      "name": "Drif_Mouth_ghastlysmile",
+      "vertices": 458,
+      "triangles": 852
+    },
+    {
+      "name": "Drif_Mouth_rainbowtongue",
+      "vertices": 141,
+      "triangles": 244
     },
     {
       "name": "Drif_Head_original",
