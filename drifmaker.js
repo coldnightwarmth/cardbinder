@@ -1,7 +1,8 @@
+import {POSES,normalizePose} from './drifmaker-poses.mjs?v=1';
 import * as THREE from 'three';
-import {createShowroomAvatar} from './showroom-avatar.js?v=13';
-import {BODY_COLORS,BODY_STYLES,PORTRAIT_BACKGROUNDS,CATEGORIES,DEFAULT_APPEARANCE,normalizeAppearance,loadAppearance,saveAppearance} from './drifmaker-config.mjs?v=4';
-import {PORTRAIT_COMPOSITION,createPortraitAvatar,configurePortraitCamera,capturePortrait} from './drifmaker-portrait.mjs?v=2';
+import {createShowroomAvatar} from './showroom-avatar.js?v=14';
+import {BODY_COLORS,BODY_STYLES,PORTRAIT_BACKGROUNDS,CATEGORIES,DEFAULT_APPEARANCE,normalizeAppearance,loadAppearance,saveAppearance} from './drifmaker-config.mjs?v=5';
+import {PORTRAIT_COMPOSITION,createPortraitAvatar,configurePortraitCamera,capturePortrait,portraitPoseComposition} from './drifmaker-portrait.mjs?v=3';
 import {createDrifmakerEnvironment} from './drifmaker-lighting.mjs?v=1';
 import {jumpHeight} from './showroom-locomotion.mjs?v=2';
 
@@ -9,6 +10,7 @@ const $=selector=>document.querySelector(selector);
 const canvas=$('#characterView'),stage=$('#stage'),controls=$('#editorControls');
 const saved=loadAppearance();
 let appearance={...saved},avatar,renderer,scene,camera,card,environment;
+let portraitPose='salute',portraitPosesEnabled=false;
 let motion='idle',holding=false,autoRotate=false,elapsed=0,settled=0,yaw=.18,pitch=.08,distance=7.0;
 let viewMode='studio',portraitAvatar,portraitScene,portraitCamera,portraitDirty=true,exporting=false;
 let portraitBackground=PORTRAIT_COMPOSITION.background;
@@ -88,24 +90,30 @@ async function select(patch){
  try{await avatar.setAppearance(appearance);if(portraitAvatar)await portraitAvatar.setAppearance(appearance);portraitDirty=true;}catch(error){if(version!==changeVersion)return;appearance=previous;updateControls();toast('That look could not load. Please try again.');console.error(error);}
 }
 function download(blob,name){const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=name;link.hidden=true;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);}
-$('#randomize').onclick=()=>{const random=items=>items[Math.floor(Math.random()*items.length)];setPortraitBackground(random(PORTRAIT_BACKGROUNDS).hex);select({bodyStyle:random(BODY_STYLES).id,bodyColor:random(BODY_COLORS).hex,...Object.fromEntries(Object.entries(CATEGORIES).map(([key,options])=>[key,random(options).id]))});};
+$('#randomize').onclick=()=>{if(portraitPosesEnabled){portraitPose=POSES[Math.floor(Math.random()*POSES.length)].id;$('#portraitPose').value=portraitPose;applyPortraitPose();}const random=items=>items[Math.floor(Math.random()*items.length)];setPortraitBackground(random(PORTRAIT_BACKGROUNDS).hex);select({bodyStyle:random(BODY_STYLES).id,bodyColor:random(BODY_COLORS).hex,...Object.fromEntries(Object.entries(CATEGORIES).map(([key,options])=>[key,random(options).id]))});};
 $('#resetLook').onclick=()=>{select(DEFAULT_APPEARANCE);toast('Look reset.');};
 $('#applyLook').onclick=async()=>{
  const button=$('#applyLook');button.disabled=true;
  try{await avatar.setAppearance(appearance);saveAppearance(appearance);updateControls();location.assign('/show');}
  catch(error){toast('Could not save this look. Check that browser storage is available.');console.error(error);button.disabled=false;}
 };
-$('#exportLook').onclick=()=>{download(new Blob([JSON.stringify({version:4,appearance},null,2)],{type:'application/json'}),'my-drifella.json');toast('Look exported.');};
+$('#exportLook').onclick=()=>{download(new Blob([JSON.stringify({version:5,appearance,portrait:{posesEnabled:portraitPosesEnabled,pose:portraitPose,background:portraitBackground}},null,2)],{type:'application/json'}),'my-drifella.json');toast('Look exported.');};
 $('#importLook').onclick=()=>$('#lookFile').click();
 $('#lookFile').onchange=async event=>{
  const file=event.target.files?.[0];event.target.value='';if(!file)return;
  try{if(file.size>16384)throw Error('Too large');const data=JSON.parse(await file.text()),value=data.appearance||data;
   if((value?.bodyStyle!==undefined&&!BODY_STYLES.some(style=>style.id===value.bodyStyle))||!value||typeof value!=='object'||Array.isArray(value)||!/^#[a-f\d]{6}$/i.test(value.bodyColor)||!Object.entries(CATEGORIES).every(([key,options])=>(['legs','mouth','head','extra','nose','ears','tattoo'].includes(key)&&!Object.hasOwn(value,key))||options.some(option=>option.id===value[key])))throw Error('Invalid look');
-  await select(normalizeAppearance(value));toast('Look imported.');
+  await select(normalizeAppearance(value));if(data.portrait){portraitPosesEnabled=data.portrait.posesEnabled===true;portraitPose=normalizePose(data.portrait.pose)||'salute';$('#enablePortraitPoses').checked=portraitPosesEnabled;$('#portraitPose').hidden=!portraitPosesEnabled;$('#portraitPose').value=portraitPose;if(/^#[a-f\d]{6}$/i.test(data.portrait.background))setPortraitBackground(data.portrait.background);applyPortraitPose();}toast('Look imported.');
  }catch{toast('Choose a valid Drifmaker look exported from this editor.');}
 };
-for(const button of document.querySelectorAll('[data-motion]'))button.onclick=()=>{motion=button.dataset.motion;elapsed=0;settled=0;for(const option of document.querySelectorAll('[data-motion]'))option.setAttribute('aria-pressed',String(option===button));};
-$('#holdCard').onchange=event=>{holding=event.target.checked;settled=0;if(card)card.visible=holding;};
+for(const button of document.querySelectorAll('[data-motion]'))button.onclick=()=>{avatar?.setPose('');$('#studioPose').value='';motion=button.dataset.motion;elapsed=0;settled=0;for(const option of document.querySelectorAll('[data-motion]'))option.setAttribute('aria-pressed',String(option===button));};
+$('#holdCard').onchange=event=>{avatar?.setPose('');$('#studioPose').value='';holding=event.target.checked;settled=0;if(card)card.visible=holding;};
+for(const pose of POSES)for(const id of ['studioPose','portraitPose']){const option=document.createElement('option');option.value=pose.id;option.textContent=pose.label;$(`#${id}`).append(option);}
+$('#studioPose').onchange=event=>{const id=normalizePose(event.target.value);motion='idle';elapsed=0;settled=0;holding=false;$('#holdCard').checked=false;if(card)card.visible=false;for(const button of document.querySelectorAll('[data-motion]'))button.setAttribute('aria-pressed',String(!id&&button.dataset.motion==='idle'));avatar?.setPose(id,{static:reducedMotion});};
+function portraitComposition(){return {...portraitPoseComposition(portraitPosesEnabled?portraitPose:''),background:portraitBackground};}
+function applyPortraitPose(){portraitAvatar?.setPose(portraitPosesEnabled?portraitPose:'');if(portraitCamera)configurePortraitCamera(THREE,portraitCamera,portraitComposition());portraitDirty=true;}
+$('#enablePortraitPoses').onchange=event=>{portraitPosesEnabled=event.target.checked;$('#portraitPose').hidden=!portraitPosesEnabled;applyPortraitPose();};
+$('#portraitPose').onchange=event=>{portraitPose=normalizePose(event.target.value)||'salute';applyPortraitPose();};
 $('#resetView').onclick=()=>{yaw=.18;pitch=.08;distance=7.0;autoRotate=false;$('#rotateView').setAttribute('aria-pressed','false');};
 $('#rotateView').onclick=()=>{autoRotate=!autoRotate;$('#rotateView').setAttribute('aria-pressed',String(autoRotate));};
 $('#captureView').onclick=()=>{if(viewMode==='portrait'){void exportPortrait();return;}if(!renderer)return;renderer.render(scene,camera);canvas.toBlob(blob=>{if(blob)download(blob,'my-drifella.png');else toast('The portrait could not be captured.');});};
@@ -179,7 +187,7 @@ async function exportPortrait(){
  if(!portraitAvatar||exporting)return;
  exporting=true;$('#exportPortrait').disabled=true;$('#captureView').disabled=true;$('#exportPortrait').textContent='Preparing PNG…';
  try{
-  const blob=await capturePortrait({THREE,scene:portraitScene,camera:portraitCamera,composition:{background:portraitBackground},environmentFactory:createDrifmakerEnvironment});
+  const blob=await capturePortrait({THREE,scene:portraitScene,camera:portraitCamera,composition:portraitComposition(),environmentFactory:createDrifmakerEnvironment});
   if(disposed)return;
   const dataURL=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(Error('Could not prepare the PNG.'));reader.readAsDataURL(blob);});
   if(disposed)return;
@@ -192,13 +200,13 @@ async function exportPortrait(){
 }
 $('#exportPortrait').onclick=exportPortrait;$('#closePortraitDialog').onclick=()=>$('#portraitExportDialog').close();
 async function setupPortrait(){
- portraitAvatar=await createPortraitAvatar({createAvatar:createShowroomAvatar,appearance});if(disposed){portraitAvatar.dispose();return;}
+ portraitAvatar=await createPortraitAvatar({createAvatar:createShowroomAvatar,appearance,pose:portraitPosesEnabled?portraitPose:''});if(disposed){portraitAvatar.dispose();return;}
  await portraitAvatar.setAppearance(appearance);
  portraitScene=new THREE.Scene();portraitScene.environment=environment.texture;portraitScene.background=new THREE.Color(portraitBackground);portraitScene.add(portraitAvatar.model);
  portraitScene.add(new THREE.HemisphereLight(0xf7fcff,0x748b79,2.2));
  const key=new THREE.DirectionalLight(0xfff5df,3.2);key.position.set(-3,7,5);portraitScene.add(key);
  const fill=new THREE.DirectionalLight(0xa9d4ec,1.2);fill.position.set(4,3,-4);portraitScene.add(fill);
- portraitCamera=configurePortraitCamera(THREE,new THREE.OrthographicCamera());
+ portraitCamera=configurePortraitCamera(THREE,new THREE.OrthographicCamera(),portraitComposition());
  $('#portraitMode').disabled=false;$('#exportPortrait').disabled=false;
 }
 // Render catalog portraits with an independent avatar, so browsing and animation
@@ -219,7 +227,7 @@ async function makeThumbnails(){
   while(remaining.length&&!disposed){
    for(let batch=0;batch<3&&remaining.length;batch++){
     const preferred=remaining.findIndex(button=>button.dataset.category===activeCategory),button=remaining.splice(preferred<0?0:preferred,1)[0],{category,option}=button.dataset;
-    const view=views[category],rear=category==='accessory'&&['backpack','wings','skateboard','sword','angelwings','batwings','mechwings','shield','machinegun'].includes(option);
+    const view=views[category],rear=category==='accessory'&&['jetpack','backpack','wings','skateboard','sword','angelwings','batwings','mechwings','shield','machinegun'].includes(option);
     await preview.setAppearance({...DEFAULT_APPEARANCE,accessory:'none',[category]:option});
     portraitCamera.top=view.height/2;portraitCamera.bottom=-view.height/2;portraitCamera.right=view.height*180/132/2;portraitCamera.left=-portraitCamera.right;portraitCamera.updateProjectionMatrix();
     portraitCamera.position.set(category==='accessory'?(rear?-.9:.7):0,view.y+.03,rear?-5:5);portraitCamera.lookAt(0,view.y,0);
@@ -244,7 +252,7 @@ async function init(){
   avatar=await createShowroomAvatar({appearance});if(disposed){avatar.dispose();return;}avatar.model.position.set(0,0,0);avatar.model.rotation.y=0;avatar.model.scale.setScalar(1);scene.add(avatar.model);
   avatar.model.traverse(node=>{if(node.isMesh){node.castShadow=true;node.receiveShadow=true;}});
   card=new THREE.Mesh(new THREE.BoxGeometry(.19,.27,.009),[new THREE.MeshStandardMaterial({color:0xf4e7c7}),new THREE.MeshStandardMaterial({color:0xf4e7c7}),new THREE.MeshStandardMaterial({color:0xf4e7c7}),new THREE.MeshStandardMaterial({color:0xf4e7c7}),new THREE.MeshStandardMaterial({color:0xd5ed7c,roughness:.7}),new THREE.MeshStandardMaterial({color:0x354d43,roughness:.6})]);card.position.set(0,.11,0);card.visible=holding;card.castShadow=true;avatar.socket?.add(card);
-  settled=0;$('#loadState').hidden=true;controls.inert=false;for(const id of ['randomize','resetLook','applyLook','exportLook','importLook','captureView','studioMode'])$(`#${id}`).disabled=false;
+  settled=0;$('#loadState').hidden=true;controls.inert=false;for(const id of ['randomize','resetLook','applyLook','exportLook','importLook','captureView','studioMode','studioPose'])$(`#${id}`).disabled=false;
   void setupPortrait().catch(error=>{console.error(error);toast('Portrait mode could not load. Reload to try again.');});
   void makeThumbnails();
  }catch(error){console.error(error);$('#loadState').replaceChildren();const message=document.createElement('strong');message.textContent='Model could not load.';const detail=document.createElement('span');detail.textContent='Check your connection and retry.';const retry=document.createElement('button');retry.textContent='Try again';retry.onclick=()=>location.reload();$('#loadState').append(message,detail,retry);}

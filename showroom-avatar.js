@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 import {GLTFLoader} from './vendor/GLTFLoader.js';
-import {createAvatarAppearance} from './drifmaker-avatar.mjs?v=4';
+import {createAvatarAppearance} from './drifmaker-avatar.mjs?v=5';
+import {normalizePose,normalizePoseTime} from './drifmaker-poses.mjs?v=1';
 let assetPromise;
-function asset(){return assetPromise ||= new GLTFLoader().loadAsync(new URL('./assets/models/drifmaker/drifella-customizable.glb?v=4',import.meta.url).href).catch(error=>{assetPromise=null;throw error;});}
+function asset(){return assetPromise ||= new GLTFLoader().loadAsync(new URL('./assets/models/drifmaker/drifella-customizable.glb?v=5',import.meta.url).href).catch(error=>{assetPromise=null;throw error;});}
 // Geometry and textures are shared; each visitor owns their bones and any
 // recolored materials. Wardrobe pieces on the same skin reuse that visitor's skeleton.
 export function cloneAvatar(source){
@@ -49,15 +50,31 @@ export async function createShowroomAvatar({appearance}={}){
  const socket=model.getObjectByName('CardSocketR')||model.getObjectByName('CardSocket.R');
  const look=createAvatarLookPose(model);
  let moving=false,speed=0,handPitch=0,holdBlend=0,walkBlend=0;
- for(const [name,action] of actions){action.play().setEffectiveWeight(0);if(name.startsWith('Jump'))action.paused=true;}
- return {model,socket,get appearance(){return wardrobe.appearance;},async setAppearance(value){return wardrobe.setAppearance(value);},get handPitch(){return handPitch;},update(dt,velocity,holding,pitch=0,locomotion={}){
+ let selectedPose='',poseTime=0,staticPose=false;
+ for(const [name,action] of actions){action.play().setEffectiveWeight(0);if(name.startsWith('Jump')||name.startsWith('Pose_'))action.paused=true;}
+ function setPose(id,{static:freeze=false,time=0}={}){
+  look.restore();selectedPose=normalizePose(id);poseTime=freeze?2:normalizePoseTime(time);staticPose=freeze;
+  if(!selectedPose){speed=0;moving=false;holdBlend=0;walkBlend=0;for(const action of actions.values())action.time=0;}
+ }
+ return {model,socket,setPose,get pose(){return selectedPose;},get appearance(){return wardrobe.appearance;},async setAppearance(value){return wardrobe.setAppearance(value);},get handPitch(){return handPitch;},update(dt,velocity,holding,pitch=0,locomotion={}){
   look.restore();
+  if(Object.hasOwn(locomotion,'emote')){selectedPose=normalizePose(locomotion.emote);poseTime=normalizePoseTime(locomotion.emoteTime);}
+  else if(selectedPose&&!staticPose)poseTime=normalizePoseTime(poseTime+Math.max(0,dt));
+  if(selectedPose){
+   const name=`Pose_${selectedPose}`,chosen=actions.get(name);
+   if(chosen){
+    for(const [key,action] of actions)action.setEffectiveWeight(key===name?1:0);
+    chosen.time=Math.min(poseTime,chosen.getClip().duration);mixer.update(0);handPitch=0;
+    model.userData.animation=name;return;
+   }
+  }
   speed+=(Math.min(velocity,5)-speed)*(1-Math.exp(-dt*14));moving=speed>(moving?.045:.10);
   const blend=1-Math.exp(-dt*16);holdBlend+=((holding?1:0)-holdBlend)*blend;walkBlend+=((moving?1:0)-walkBlend)*blend;
   const crouch=THREE.MathUtils.clamp(locomotion.crouch||0,0,1),time=locomotion.jumpTime??-1;
   const airborne=time>=0&&time<=1.1;
   const jumpWeight=airborne?Math.min(1,time/.06,(1.1-time)/.1):0;
   for(const [name,action] of actions){
+   if(name.startsWith('Pose_')){action.setEffectiveWeight(0);continue;}
    const held=name.includes('Hold_Right'),holdWeight=held?holdBlend:1-holdBlend;
    if(name.startsWith('Jump')){action.time=THREE.MathUtils.clamp(time,0,1.1);action.setEffectiveWeight(jumpWeight*holdWeight);continue;}
    const duck=name.startsWith('Crouch'),walk=name.includes('Walk');

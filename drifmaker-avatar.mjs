@@ -1,4 +1,4 @@
-import {CATEGORIES,DEFAULT_APPEARANCE,GOLD_COLOR,normalizeAppearance} from './drifmaker-config.mjs?v=4';
+import {CATEGORIES,DEFAULT_APPEARANCE,GOLD_COLOR,normalizeAppearance} from './drifmaker-config.mjs?v=5';
 
 // Each character owns its surface finishes and visibility; geometry and textures
 // remain shared. A material shared by a face and a shirt must get separate roles.
@@ -50,7 +50,7 @@ outgoingLight += diffuse * drifRim * 0.7;
     if(saved.skin&&material.userData.drifGhost!==ghost){material.userData.drifGhost=ghost;material.needsUpdate=true;}
     material.opacity=ghost?.52:saved.opacity;material.transparent=ghost||saved.transparent;material.depthWrite=ghost?false:saved.depthWrite;
     material.metalness=gold?.94:saved.metalness;material.roughness=gold?.17:ghost?.95:saved.roughness;material.envMapIntensity=gold?1.4:saved.envMapIntensity;
-    if(material.emissive){if(ghost)material.emissive.set(current.bodyColor);else material.emissive.copy(saved.emissive);material.emissiveIntensity=ghost?.35:saved.intensity;}
+    if(material.emissive){if(gold)material.emissive.set(0);else if(ghost)material.emissive.set(current.bodyColor);else material.emissive.copy(saved.emissive);material.emissiveIntensity=gold?0:ghost?.35:saved.intensity;}
    }
    model.userData.appearance={...current};return {...current};
   },

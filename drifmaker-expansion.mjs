@@ -50,6 +50,18 @@ export const NEW_TRAITS={
    "id": "stitched",
    "label": "Stitched eyes",
    "description": "Crossed threads and colorful stitching."
+  },
+  {
+   "id": "target",
+   "label": "Target eyes"
+  },
+  {
+   "id": "petals",
+   "label": "Flower eyes"
+  },
+  {
+   "id": "sleepmask",
+   "label": "Sleep mask"
   }
  ],
  "mouth": [
@@ -102,6 +114,18 @@ export const NEW_TRAITS={
    "id": "respirator",
    "label": "Respirator",
    "description": "A compact mask with two vented filters."
+  },
+  {
+   "id": "smirk",
+   "label": "Smirk"
+  },
+  {
+   "id": "buckteeth",
+   "label": "Buck teeth"
+  },
+  {
+   "id": "whistle",
+   "label": "Whistle"
   }
  ],
  "shirt": [
@@ -157,11 +181,23 @@ export const NEW_TRAITS={
   },
   {
    "id": "mcdonalds",
-   "label": "McDonald’s shirt"
+   "label": "McDonald\u2019s shirt"
   },
   {
    "id": "swagworld",
    "label": "Swag World hoodie"
+  },
+  {
+   "id": "cardigan",
+   "label": "Mint cardigan"
+  },
+  {
+   "id": "flightjacket",
+   "label": "Flight jacket"
+  },
+  {
+   "id": "sunburst",
+   "label": "Sunburst top"
   }
  ],
  "legs": [
@@ -214,6 +250,18 @@ export const NEW_TRAITS={
    "id": "harem",
    "label": "Harem trousers",
    "description": "Loose folded fabric with gold ankle bands."
+  },
+  {
+   "id": "moonboots",
+   "label": "Moon boots"
+  },
+  {
+   "id": "checkers",
+   "label": "Checker pants"
+  },
+  {
+   "id": "ripped",
+   "label": "Ripped jeans"
   }
  ],
  "hat": [
@@ -269,7 +317,19 @@ export const NEW_TRAITS={
   },
   {
    "id": "mcdonalds",
-   "label": "McDonald’s visor"
+   "label": "McDonald\u2019s visor"
+  },
+  {
+   "id": "chef",
+   "label": "Chef hat"
+  },
+  {
+   "id": "straw",
+   "label": "Straw hat"
+  },
+  {
+   "id": "viking",
+   "label": "Viking helmet"
   }
  ],
  "accessory": [
@@ -330,6 +390,18 @@ export const NEW_TRAITS={
   {
    "id": "machinegun",
    "label": "Back machine gun"
+  },
+  {
+   "id": "jetpack",
+   "label": "Jetpack"
+  },
+  {
+   "id": "shoulderpet",
+   "label": "Shoulder fox"
+  },
+  {
+   "id": "camerabag",
+   "label": "Camera bag"
   }
  ],
  "head": [
@@ -366,6 +438,18 @@ export const NEW_TRAITS={
   {
    "id": "hayabusa",
    "label": "Hayabusa mask"
+  },
+  {
+   "id": "pumpkin",
+   "label": "Pumpkin head"
+  },
+  {
+   "id": "tv",
+   "label": "TV head"
+  },
+  {
+   "id": "crystal",
+   "label": "Crystal head"
   }
  ],
  "extra": [
@@ -433,6 +517,18 @@ export const NEW_TRAITS={
    "id": "cards",
    "label": "Floating cards",
    "description": "Three playing cards suspended around the character."
+  },
+  {
+   "id": "butterflies",
+   "label": "Butterflies"
+  },
+  {
+   "id": "ufo",
+   "label": "UFO"
+  },
+  {
+   "id": "rainbow",
+   "label": "Rainbow"
   }
  ],
  "tattoo": [
@@ -471,6 +567,18 @@ export const NEW_TRAITS={
   {
    "id": "skull",
    "label": "Skull marks"
+  },
+  {
+   "id": "chevrons",
+   "label": "Chevrons"
+  },
+  {
+   "id": "crescentmark",
+   "label": "Crescent marks"
+  },
+  {
+   "id": "circuit",
+   "label": "Circuit marks"
   }
  ],
  "nose": [
@@ -497,6 +605,18 @@ export const NEW_TRAITS={
   {
    "id": "clown",
    "label": "Clown nose"
+  },
+  {
+   "id": "diamond",
+   "label": "Diamond nose"
+  },
+  {
+   "id": "wood",
+   "label": "Wooden nose"
+  },
+  {
+   "id": "metal",
+   "label": "Metal nose"
   }
  ],
  "ears": [
@@ -523,6 +643,18 @@ export const NEW_TRAITS={
   {
    "id": "finlets",
    "label": "Finlets"
+  },
+  {
+   "id": "fox",
+   "label": "Fox ears"
+  },
+  {
+   "id": "axolotl",
+   "label": "Axolotl gills"
+  },
+  {
+   "id": "robot",
+   "label": "Robot ears"
   }
  ]
 };

@@ -1,12 +1,13 @@
 import {jumpHeight} from './showroom-locomotion.mjs?v=2';
 import {chatAnchor,chatVisibleThroughDoor} from './showroom-chat-projection.mjs';
 import {createChatBubble} from './showroom-chat.js?v=5';
-import {createShowroomAvatar} from './showroom-avatar.js?v=13';
-import {appearanceKey,loadAppearance,normalizeAppearance,subscribeAppearance} from './drifmaker-config.mjs?v=4';
-import {createPoseBuffer,remoteHandPose} from './showroom-motion.mjs?v=4';
+import {createShowroomAvatar} from './showroom-avatar.js?v=14';
+import {appearanceKey,loadAppearance,normalizeAppearance,subscribeAppearance} from './drifmaker-config.mjs?v=5';
+import {createPoseBuffer,remoteHandPose} from './showroom-motion.mjs?v=5';
 import * as THREE from 'three';
 import {connectShowroom} from './showroom-network.js?v=4';
-export function createShowroomMultiplayer({scene,room,camera,portal,bridge,columns,ripples,onDirty,onRoomState,onOwnChat,onOtherChat}) {
+import {normalizePose,normalizePoseTime} from './drifmaker-poses.mjs?v=1';
+export function createShowroomMultiplayer({local=false,scene,room,camera,portal,bridge,columns,ripples,onDirty,onRoomState,onOwnChat,onOtherChat}) {
  let hand=null,lastSent=0,lastPose='',settlePackets=0,state=null,epoch=0,lastSnapshot=null,retryTimer=null;
  let appearance=loadAppearance();
  const unsubscribeAppearance=subscribeAppearance(value=>{appearance=value;lastPose='';});
@@ -65,10 +66,10 @@ export function createShowroomMultiplayer({scene,room,camera,portal,bridge,colum
  });
  }
  onDirty();}
- const network=connectShowroom({url:location.hostname==='localhost'&&new URLSearchParams(location.search).has('multiplayerLocal')?'ws://localhost:8788/connect':'wss://cards-art-showroom.kururuga-online-leaderboard.workers.dev/connect',onState:m=>{lastSnapshot=m;void refresh(m).catch(error=>{console.warn(error);clearTimeout(retryTimer);retryTimer=setTimeout(()=>{if(lastSnapshot)void refresh(lastSnapshot).catch(console.warn);},2000);});},onChat:m=>{if(m.id===network.id){onOwnChat?.(m.text);return;}onOtherChat?.(m.text);const p=peers.get(m.id);if(!p)return;p.bubble?.dispose();p.bubble=createChatBubble(m.text);p.bubbleExpires=m.expiresAt;onDirty();},onPose:m=>{if(m.type==='leave')remove(m.id);else pose(m.id,m.pose,m.time);onDirty();},onStatus:status=>{if(status==='Online')lastPose='';}});
+ const network=connectShowroom({url:location.hostname==='localhost'&&local?'ws://localhost:8788/connect':'wss://cards-art-showroom.kururuga-online-leaderboard.workers.dev/connect',onState:m=>{lastSnapshot=m;void refresh(m).catch(error=>{console.warn(error);clearTimeout(retryTimer);retryTimer=setTimeout(()=>{if(lastSnapshot)void refresh(lastSnapshot).catch(console.warn);},2000);});},onChat:m=>{if(m.id===network.id){onOwnChat?.(m.text);return;}onOtherChat?.(m.text);const p=peers.get(m.id);if(!p)return;p.bubble?.dispose();p.bubble=createChatBubble(m.text);p.bubbleExpires=m.expiresAt;onDirty();},onPose:m=>{if(m.type==='leave')remove(m.id);else pose(m.id,m.pose,m.time);onDirty();},onStatus:status=>{if(status==='Online')lastPose='';}});
  columns.setNetwork(network);
  return {network,setHand(value){hand=value;hand.setNetwork(network);if(state)void hand.syncShared(state,network.id,bridge.resolveSharedCard);},
- update(now,{speechVisible=true,typing=false}={}){if(now-lastSent>=1000/15){const p={x:+camera.position.x.toFixed(3),y:+camera.position.y.toFixed(3),z:+camera.position.z.toFixed(3),yaw:+camera.rotation.y.toFixed(3),pitch:+camera.rotation.x.toFixed(3),room:portal.inside?'cube':'showroom',crouch:+(camera.userData.locomotion?.crouch||0).toFixed(3),jumpTime:+(camera.userData.locomotion?.jumpTime??-1).toFixed(3),typing:Boolean(typing),presentedCard:hand?.presentedCardId||null,appearance};const serialized=JSON.stringify(p);if(serialized!==lastPose)settlePackets=3;if(serialized!==lastPose||settlePackets>0){network.send({type:'pose',pose:p});if(serialized===lastPose)settlePackets--;lastPose=serialized;}lastSent=now;}
+ update(now,{speechVisible=true,typing=false}={}){if(now-lastSent>=1000/15){const p={x:+camera.position.x.toFixed(3),y:+camera.position.y.toFixed(3),z:+camera.position.z.toFixed(3),yaw:+camera.rotation.y.toFixed(3),pitch:+camera.rotation.x.toFixed(3),room:portal.inside?'cube':'showroom',crouch:+(camera.userData.locomotion?.crouch||0).toFixed(3),jumpTime:+(camera.userData.locomotion?.jumpTime??-1).toFixed(3),emote:normalizePose(camera.userData.pose?.emote),emoteTime:normalizePoseTime(camera.userData.pose?.emoteTime),typing:Boolean(typing),presentedCard:hand?.presentedCardId||null,appearance};const serialized=JSON.stringify(p);if(serialized!==lastPose)settlePackets=3;if(serialized!==lastPose||settlePackets>0){network.send({type:'pose',pose:p});if(serialized===lastPose)settlePackets--;lastPose=serialized;}lastSent=now;}
  for(const [id,p] of peers){if(p.bubble&&network.now()>=p.bubbleExpires){p.bubble.dispose();p.bubble=null;}const sample=p.motion.sample(now);if(!sample)continue;
   const dt=Math.min(.1,Math.max(0,(now-(p.lastUpdate||now))/1000));p.lastUpdate=now;
   const velocity=p.previous&&dt>0?Math.hypot(sample.x-p.previous.x,sample.z-p.previous.z)/dt:0;p.previous=sample;

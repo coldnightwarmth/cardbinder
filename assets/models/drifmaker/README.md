@@ -8,20 +8,20 @@ the original joined model and adds compatible modeled wardrobe choices.
 
 | Category | Mesh prefix | Total choices |
 | --- | --- | --- |
-| Eyes | `Drif_Eyes_` | 24 |
-| Mouth | `Drif_Mouth_` | 21 |
-| Shirts | `Drif_Shirt_` | 25 |
-| Pants / legs | `Drif_Legs_` | 21 |
-| Hats | `Drif_Hat_` | 25, including none |
-| Accessories | `Drif_Accessory_` | 27, including none |
-| Heads | `Drif_Head_` | Classic plus 6 replacements |
-| Extra | `Drif_Extra_` | 12 scenes / companions plus none |
-| Tattoos | `Drif_Tattoo_` | 8 sets plus none |
-| Nose | `Drif_Nose_` | Original plus 5 replacements |
-| Ears | `Drif_Ears_` | Original plus 5 replacements |
+| Eyes | `Drif_Eyes_` | 27 |
+| Mouth | `Drif_Mouth_` | 24 |
+| Shirts | `Drif_Shirt_` | 28 |
+| Pants / legs | `Drif_Legs_` | 24 |
+| Hats | `Drif_Hat_` | 28, including none |
+| Accessories | `Drif_Accessory_` | 30, including none |
+| Heads | `Drif_Head_` | Classic plus 9 replacements |
+| Extra | `Drif_Extra_` | 15 scenes / companions plus none |
+| Tattoos | `Drif_Tattoo_` | 11 sets plus none |
+| Nose | `Drif_Nose_` | Original plus 8 replacements |
+| Ears | `Drif_Ears_` | Original plus 8 replacements |
 
 `drifmaker-config.mjs` and `drifmaker-expansion.mjs` contain the full catalog and
-labels. The editor also offers 37 body colors, 28 portrait backgrounds, custom
+labels. The editor also offers 40 body colors, 31 portrait backgrounds, custom
 color inputs for both, and solid, translucent ghost, or reflective gold body finishes.
 
 The original shirt is the artwork hoodie and the original accessory is the
@@ -75,7 +75,7 @@ model the helmet, and is not redistributed as a texture.
 
 ## Runtime contract
 
-- `drifella-customizable.glb` contains 182 skinned mesh objects: `Drif_Body`,
+- `drifella-customizable.glb` contains 215 skinned mesh objects: `Drif_Body`,
   `Drif_Ghost_Fuzz`, and one object per modeled category choice. The file includes all alternatives; runtime
   code selects exactly one choice per category and optionally no hat/accessory/extra/tattoo.
 - The default leg set contains the original waist, denim, ankles and feet; the
@@ -124,14 +124,14 @@ wardrobe choices, five heads, twelve extras, and ghost fibers.
 `extend_drifmaker_signature.py` builds the tattoos, noses, ears, Hayabusa helmet,
 earring, back prop, visor and shirts, embedding the supplied hoodie photograph.
 Execute `scripts/showroom-assets/check_drifmaker.py`
-afterward to validate all 456 animation frames and create the render previews.
+afterward to validate all 1,066 animation frames and create the render previews.
 
 `animation-validation.json` confirms normalized weights, no more than four
-influences per vertex, finite deformations on all 10 clips, and exact preservation
+influences per vertex, finite deformations on all 20 clips, and exact preservation
 of the original mesh vertices across the original component choices. The saved
 previews show mixed choices in neutral, walk/hold, and crouch/hold poses, plus a
 rear view of the plush backpack and expanded looks with the new legs/mouths.
-All 182 meshes passed the complete 456-frame sweep after the final geometry
+All 215 meshes passed the complete 1,066-frame sweep after the final geometry
 refinement. The final GLB also passed the runtime regression for mesh names,
 normalized weights, identical bind matrices and animation tracks, and exact
 original triangle coverage.
@@ -145,8 +145,8 @@ local storage; `drifmaker-avatar.mjs` applies visibility and isolated body color
 The showroom publishes saved appearances in player poses, and its Worker
 normalizes them before broadcasting. Legacy players retain the original look.
 The editor has eleven trait tabs with rendered option thumbnails, plus a color
-and finish tab. Appearance exports use schema version 4. Imports from versions
-1–3 retain their choices and fill missing categories with original facial traits,
+and finish tab. Appearance exports use schema version 5. Imports from versions
+1–4 retain their choices and fill missing categories with original facial traits,
 no tattoos, the classic head, original mouth/legs, no extra, and solid body finish. Randomize
 chooses from every category and both the body and portrait background palettes.
 The expanded controls and preview were checked at desktop and 390-pixel mobile
@@ -213,3 +213,52 @@ reflection cleanup on successful and failed PNG exports. Browser proof images:
 (tattoos, heart nose, elf ears and earring), and `preview-signature-gold.png`
 (actual 1200 × 1295 reflective-gold export). `preview-signature-back.png` shows
 the back prop attached during the walk-and-hold animation.
+
+
+## Held poses and encore traits
+
+Ten new two-second actions enter from the original neutral stance and settle
+into a static final pose: Salute, T-pose, Deep bow, Victory, Thinking, Point,
+Spellcast, Flex, Welcome and Heart hands. `animate_drifmaker_poses.py` creates
+`Pose_<id>` actions on the same 19 bones without editing the original ten clips.
+`drifmaker-poses.mjs` is the shared runtime/server allowlist. Every selected part
+uses that skeleton, including face variants, shirts, ears, back gear and extras.
+
+The Drifmaker **Pose** selector plays a pose entrance and holds it indefinitely.
+A locomotion button, Hold card, or selecting the empty Pose option cancels it.
+In Portrait view, **Poses** enables a separate static pose selector. It samples
+the final frame without advancing the studio or changing its selected motion.
+The dice button randomizes this pose when enabled. Disabling Poses restores the
+original collection crop and neutral stance. Enabled poses use a wider frame to
+fit the arms, with the same camera direction and 1200 × 1295 output dimensions.
+Look JSON version 5 additionally saves the portrait toggle, pose and background.
+
+In the showroom, press Escape to open the menu and choose a pose. The selector
+is also available with touch controls. Walking, crouching, jumping or choosing
+the empty Pose option cancels it; another pose starts its new entrance. Compact
+`emote` and `emoteTime` fields synchronize progress and the held endpoint with
+peers, including late arrivals. Server normalization rejects unknown IDs and
+bounds playback to two seconds. The local test route `/show?multiplayerLocal`
+uses the Worker on port 8788, with the flag captured before URL normalization.
+
+`extend_drifmaker_encore.py` adds three modeled choices to each of eleven trait
+categories: target/flower/sleep-mask eyes; smirk/buck-teeth/whistle mouths;
+cardigan/flight-jacket/sunburst tops; moon-boots/checker/ripped legs;
+chef/straw/Viking hats; jetpack/shoulder-fox/camera-bag gear;
+pumpkin/TV/crystal heads; butterflies/UFO/rainbow extras;
+chevron/crescent/circuit tattoos; diamond/wood/metal noses; and
+fox/axolotl/robot ears. Plasma purple, papaya and arctic colors expand both
+palettes. The library now contains 215 skinned choices and shared components.
+
+Validation covers all 1,066 frames across the 20 actions, preservation of the
+original geometry and locomotion tracks, indefinite holds, cancellation,
+static/animated pose equivalence, material isolation and network normalization.
+A local two-client WebSocket check confirmed every pose, its held time,
+cancellation and the new traits. The browser showroom also rendered a remote
+posed avatar and broadcast the selection made in its pose menu.
+`preview-poses-showroom.png` records that check.
+`preview-poses-editor.png` shows the pose controls with the new flight jacket and
+target eyes, and `preview-poses-portrait.png` is their actual 1200 × 1295 PNG
+export. Browser checks also confirmed dice-based pose randomization, switching
+poses off and on, alternate-head compatibility, and a 390-pixel mobile layout
+without horizontal overflow. All 48 focused runtime tests passed.

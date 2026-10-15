@@ -1,0 +1,12 @@
+// Shared allowlist for Blender clips, editor controls and multiplayer packets.
+export const POSES=Object.freeze([
+ ['salute','Salute'],['tpose','T-pose'],['bow','Deep bow'],['victory','Victory'],
+ ['think','Thinking'],['point','Point'],['summon','Spellcast'],['flex','Flex'],
+ ['welcome','Welcome'],['heart','Heart hands'],
+].map(([id,label])=>Object.freeze({id,label,clip:`Pose_${id}`,duration:2})));
+export const normalizePose=id=>POSES.some(pose=>pose.id===id)?id:'';
+export const normalizePoseTime=time=>Number.isFinite(time)?Math.max(0,Math.min(2,time)):0;
+export function createPoseState(){
+ let id='',time=0;
+ return {get value(){return {emote:id,emoteTime:time};},select(value){id=normalizePose(value);time=0;},cancel(){id='';time=0;},update(dt){if(id)time=normalizePoseTime(time+Math.max(0,dt));return this.value;}};
+}

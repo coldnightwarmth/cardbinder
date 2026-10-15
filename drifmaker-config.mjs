@@ -1,4 +1,4 @@
-import {NEW_TRAITS} from './drifmaker-expansion.mjs?v=2';
+import {NEW_TRAITS} from './drifmaker-expansion.mjs?v=3';
 // Shared by the browser and the showroom worker: only these small, validated
 // appearance values cross the network. Models and materials always stay local.
 // Drifella 2 collection inspiration: https://www.tensor.trade/trade/drifella_2
@@ -102,6 +102,9 @@ export const CATEGORIES=Object.freeze(Object.fromEntries([...new Set([...Object.
 export const GOLD_COLOR='#e2ad32';
 export const BODY_STYLES=options([{id:'solid',label:'Solid',description:'The familiar sculpted finish.'},{id:'ghost',label:'Ghost aura',description:'Clear, translucent skin with soft luminous fibers.'},{id:'gold',label:'Gold',description:'Polished gold across the whole body and face.'}]);
 export const BODY_COLORS=options([
+ {id:'plasma',label:'Plasma purple',hex:'#c109ff'},
+ {id:'papaya',label:'Papaya',hex:'#ff582e'},
+ {id:'arctic',label:'Arctic blue',hex:'#63fff2'},
  {id:'metallicgold',label:'Metallic gold',hex:GOLD_COLOR,style:'gold'},
  {id:'azure',label:'Azure',hex:'#1d5dea'},
  {id:'mint',label:'Mint',hex:'#a4d8bd'},
@@ -141,6 +144,7 @@ export const BODY_COLORS=options([
  {id:'porcelain',label:'Porcelain',hex:'#f5f0e7'},
 ]);
 export const PORTRAIT_BACKGROUNDS=options([
+ {label:'Plasma',hex:'#b20fff'},{label:'Papaya',hex:'#ff6c43'},{label:'Arctic',hex:'#5be8e8'},
  {label:'Silver',hex:'#dedfe5'},{label:'Cream',hex:'#e8dfcf'},{label:'Rose',hex:'#dfc6cf'},{label:'Sage',hex:'#c6d1c4'},{label:'Midnight',hex:'#252a35'},
  {label:'Electric blue',hex:'#087ef5'},{label:'Ultramarine',hex:'#3213d5'},{label:'Cyan',hex:'#16cbe7'},{label:'Turquoise',hex:'#0dc7a0'},
  {label:'Emerald',hex:'#1fc36c'},{label:'Lime',hex:'#7fde1a'},{label:'Acid yellow',hex:'#d6ee16'},{label:'Goldenrod',hex:'#dfa51a'},

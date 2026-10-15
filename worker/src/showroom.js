@@ -1,3 +1,4 @@
+import {normalizePose,normalizePoseTime} from '../../drifmaker-poses.mjs';
 import {SHOWROOM_CARD_IDS} from './showroom-catalog.js';
 import {freshRoom,applyAction,finishRitual,expireWallArt,RITUAL_MS,publicPlayer} from './showroom-state.js';
 import {appearanceKey,normalizeAppearance} from '../../drifmaker-config.mjs';
@@ -69,8 +70,9 @@ export class Showroom {
     const crouch=Number.isFinite(p.crouch)?Math.max(0,Math.min(1,p.crouch)):0;
     const jumpTime=Number.isFinite(p.jumpTime)?Math.max(-1,Math.min(1.1,p.jumpTime)):-1;
     const appearance=normalizeAppearance(p.appearance);
-    const changed=crouch!==(player.pose.crouch||0)||jumpTime!==(player.pose.jumpTime??-1)||typing!==Boolean(player.pose.typing)||['x','y','z','yaw','pitch','room'].some(k=>p[k]!==player.pose[k])||presentedCard!==(player.pose.presentedCard||null)||appearanceKey(appearance)!==appearanceKey(player.pose.appearance);
-    player.pose={x:p.x,y:p.y,z:p.z,yaw:p.yaw,pitch:p.pitch,room:p.room,presentedCard,typing,crouch,jumpTime,appearance};player.lastMove=now;ws.serializeAttachment(player);
+    const emote=normalizePose(p.emote),emoteTime=emote?normalizePoseTime(p.emoteTime):0;
+    const changed=emote!==(player.pose.emote||'')||emoteTime!==(player.pose.emoteTime||0)||crouch!==(player.pose.crouch||0)||jumpTime!==(player.pose.jumpTime??-1)||typing!==Boolean(player.pose.typing)||['x','y','z','yaw','pitch','room'].some(k=>p[k]!==player.pose[k])||presentedCard!==(player.pose.presentedCard||null)||appearanceKey(appearance)!==appearanceKey(player.pose.appearance);
+    player.pose={x:p.x,y:p.y,z:p.z,yaw:p.yaw,pitch:p.pitch,room:p.room,presentedCard,typing,crouch,jumpTime,appearance,emote,emoteTime};player.lastMove=now;ws.serializeAttachment(player);
     if(changed)await this.activate(ws,player,now);
     if(player.inactive)return;
     this.broadcast({type:'pose',id:player.id,pose:player.pose,time:now});return;

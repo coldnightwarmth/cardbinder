@@ -1,3 +1,4 @@
+import {createPoseState} from '../../drifmaker-poses.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { seatFor, canWalkAt, facingStart } from '../../showroom-layout.mjs';
@@ -143,13 +144,14 @@ test('shared public-directory filter excludes empty wallets and checks missing s
 test('touch joystick movement is analog and camera-relative', () => {
   const source=readFileSync(new URL('../../showroom.js',import.meta.url),'utf8');
   const implementation=source.slice(source.indexOf('  function move(dt)'),source.indexOf('  const pickTargets'));
-  const camera={position:{x:0,z:0},rotation:{y:0}};
+  const camera={position:{x:0,z:0},rotation:{y:0}},poseState=createPoseState();poseState.select('salute');
   const context=vm.createContext({
-    THREE,camera,columns:{selecting:false},keys:new Set(),touchMove:{x:0,y:-.5},
+    THREE,camera,poseState,cancelPose:()=>poseState.cancel(),columns:{selecting:false},keys:new Set(),touchMove:{x:0,y:-.5},
     portal:{move(dx,dz){camera.position.x+=dx;camera.position.z+=dz;}},
   });
   vm.runInContext(implementation,context);
   context.move(1);
+  assert.equal(poseState.value.emote,'','walking cancels a held pose');
   assert.ok(Math.abs(camera.position.x)<1e-10);
   assert.ok(Math.abs(camera.position.z+1.35)<1e-10);
   camera.position.x=0;camera.position.z=0;context.touchMove.x=.25;context.touchMove.y=0;

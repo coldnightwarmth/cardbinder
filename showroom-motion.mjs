@@ -26,6 +26,8 @@ export function createPoseBuffer({delay=85,maxPrediction=80}={}) {
       for(const key of ['x','y','z','pitch'])result[key]=a.pose[key]+(b.pose[key]-a.pose[key])*t;
       result.crouch=(a.pose.crouch||0)+((b.pose.crouch||0)-(a.pose.crouch||0))*Math.min(t,1);
       result.jumpTime=b.pose.jumpTime??-1;
+      // Do not blend unrelated emotes or interpolate backward when one restarts.
+      if(b.pose.emote&&a.pose.emote===b.pose.emote&&b.pose.emoteTime>=a.pose.emoteTime)result.emoteTime=Math.min(2,a.pose.emoteTime+(b.pose.emoteTime-a.pose.emoteTime)*t);
       if(a.pose.jumpTime>=0&&b.pose.jumpTime>=a.pose.jumpTime)result.jumpTime=Math.min(1.1,a.pose.jumpTime+(b.pose.jumpTime-a.pose.jumpTime)*t);
       result.yaw=a.pose.yaw+angleDelta(a.pose.yaw,b.pose.yaw)*t;
       return result;

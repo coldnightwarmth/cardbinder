@@ -1,3 +1,4 @@
+import {POSES,createPoseState} from './drifmaker-poses.mjs?v=1';
 import {createVerticalMovement} from './showroom-locomotion.mjs?v=2';
 import {createShowroomPointerLock} from './showroom-pointer-lock.mjs';
 import {createChatInput} from './showroom-chat.js?v=5';
@@ -5,7 +6,7 @@ import {createShowroomRitualEffects,ritualPixelRatio} from './showroom-ritual-ef
 import { createExhibitBudget } from './showroom-exhibit-lod.js?v=2';
 import { createSceneIndex } from './showroom-scene-index.mjs';
 import { createShowroomPickupLayer } from './showroom-pickup-layer.mjs';
-import { createShowroomMultiplayer } from './showroom-multiplayer.js?v=24';
+import { createShowroomMultiplayer } from './showroom-multiplayer.js?v=25';
 import { createShowroomSky } from './showroom-sky.js?v=5';
 import * as THREE from 'three';
 import { createShowroomColumns } from './showroom-columns.js?v=12';
@@ -25,6 +26,7 @@ import { seatFor, canWalkAt, facingStart } from './showroom-layout.mjs?v=collect
 export async function initShowroom(bridge) {
   // Capture before normalizing /show's URL; diagnostics never affect ordinary visits.
   const diagnosticsRequested=new URLSearchParams(location.search).has('perf');
+  const multiplayerLocal=location.hostname==='localhost'&&new URLSearchParams(location.search).has('multiplayerLocal');
   const canvas = document.createElement('canvas');
   canvas.id = 'showroomCanvas'; canvas.setAttribute('aria-label', 'First person card show floor');
   document.body.prepend(canvas);
@@ -63,6 +65,7 @@ export async function initShowroom(bridge) {
     // The open menu uses normal keyboard focus; Escape and Enter still resume.
     if(menuOpen&&event.code==='Tab')return;
     // Let focused menu links retain their native keyboard navigation.
+    if(menuOpen&&event.code!=='Escape'&&event.target.closest?.('select,option'))return;
     if(menuOpen&&event.code==='Enter'&&event.target.closest?.('a[href]'))return;
     // Enter in the menu belongs to the focused chat input/send control.
     if(event.code==='Enter'&&menuOpen&&hud.querySelector('#showroomChat input')?.value.trim())return;
@@ -393,7 +396,11 @@ export async function initShowroom(bridge) {
   new MutationObserver(theme).observe(document.body,{attributes:true,attributeFilter:['class']}); theme();
 
   const tables=[], binders=[], addresses=new Set(), keys=new Set();
-  const verticalMovement=createVerticalMovement();
+  const verticalMovement=createVerticalMovement(),poseState=createPoseState();
+  const posePicker=document.createElement('select');posePicker.id='showroomPose';posePicker.setAttribute('aria-label','Character pose');posePicker.hidden=true;
+  for(const pose of [{id:'',label:'Pose'},...POSES]){const option=document.createElement('option');option.value=pose.id;option.textContent=pose.label;posePicker.append(option);}hud.append(posePicker);
+  const cancelPose=()=>{poseState.cancel();posePicker.value='';camera.userData.pose=poseState.value;};
+  posePicker.onchange=()=>{keys.clear();poseState.select(posePicker.value);camera.userData.pose=poseState.value;};
   let endZ=-8, active=null, hovered=null, busy=false, directoryLoading=false;
   let columns=null, hoveredColumn=null, sharedRowsBuilt=0;
   const portal=createShowroomPortal({renderer,scene,camera,
@@ -412,7 +419,7 @@ export async function initShowroom(bridge) {
     ritualCameraMode=mode;canvas.style.imageRendering=mode==='native'?'auto':'pixelated';
     renderer.setPixelRatio(showroomPixelRatio(resolution.ratio));sceneDirty=true;
   }});
-  const multiplayer=createShowroomMultiplayer({scene,room:portal.room,camera,portal,bridge,columns,ripples,onDirty:()=>{multiplayerDirty=true;},
+  const multiplayer=createShowroomMultiplayer({local:multiplayerLocal,scene,room:portal.room,camera,portal,bridge,columns,ripples,onDirty:()=>{multiplayerDirty=true;},
     onRoomState:(state,id,now)=>ritualEffects.sync(state,id,now),onOwnChat:text=>chat.record(text),onOtherChat:text=>chat.record(text,false)});
   const chat=createChatInput(hud,multiplayer.network,{resume:()=>lock(true)});
   function releaseControls(){
@@ -883,7 +890,8 @@ export async function initShowroom(bridge) {
   });
   document.addEventListener('keydown',e=>{
     if (active || (document.pointerLockElement!==canvas && !fallback)) return;
-    if(e.code==='Space'){e.preventDefault();if(!e.repeat)verticalMovement.jump();}
+    if(e.code==='Space'){e.preventDefault();if(!e.repeat){cancelPose();verticalMovement.jump();}}
+    if(['ControlLeft','ControlRight'].includes(e.code))cancelPose();
     if (['ShiftLeft','ShiftRight','ControlLeft','ControlRight'].includes(e.code)) {keys.add(e.code);e.preventDefault();}
     if (['KeyW','KeyA','KeyS','KeyD'].includes(e.code)) {keys.add(e.code);if(!e.repeat) move(1/60);e.preventDefault();}
   });
@@ -1086,6 +1094,7 @@ export async function initShowroom(bridge) {
       );
       const norm=Math.hypot(forward,right);
       if(norm<.001)return;
+      if(poseState.value.emote)cancelPose();
       const amount=Math.min(1,norm);
       const speed=dt*2.7*((keys.has('ControlLeft')||keys.has('ControlRight')) ? .45 : 1)*(keys.has('ShiftLeft') || keys.has('ShiftRight') ? 2.25 : 1)*amount/norm, yaw=camera.rotation.y;
       const dx=(right*Math.cos(yaw)-forward*Math.sin(yaw))*speed;
@@ -1137,9 +1146,11 @@ export async function initShowroom(bridge) {
     if(!active&&!busy){camera.position.y=verticalMovement.update(dt,keys.has('ControlLeft')||keys.has('ControlRight'));camera.userData.locomotion=verticalMovement.pose;}
     portal.place(tables);
     speech.update(now,camera,document.pointerLockElement===canvas || touchMode || dragging ? center : mousePoint,!active && !busy && !portal.inside);
+    camera.userData.pose=poseState.update(dt);
     multiplayer.update(now,{speechVisible:!active && !busy,typing:chat.typing});
     ritualEffects.update(multiplayer.network.now());
     const escapeControls=!active && !busy && !fallback && document.pointerLockElement!==canvas && !leave.hidden;
+    posePicker.hidden=Boolean(active||busy||columns.selecting)||!(escapeControls||touchMode||fallback);
     chat.update(escapeControls);if(!escapeControls)favoritesEmpty.hidden=true;favoritesButton.hidden=!favoritesReady || !escapeControls || columns.selecting;
     // Reserve the shared wallet-table footprint even when a visitor's private
     // directory fetch differs. Portal position and player coordinates agree.

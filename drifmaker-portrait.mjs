@@ -1,3 +1,4 @@
+import {normalizePose} from './drifmaker-poses.mjs?v=1';
 // Composition is shared by the fixed preview and its PNG export. These framing
 // values remain explicit so matching collection references does not depend on
 // the studio canvas size, orbit controls, animation time, or selected wardrobe.
@@ -11,6 +12,14 @@ export const PORTRAIT_COMPOSITION=Object.freeze({
  modelYaw:0,background:'#dedfe5',exposure:1.1,
 });
 
+// Wider pose framing keeps outstretched hands in the portrait while preserving
+// the collection's viewing direction, aspect ratio and native export resolution.
+export function portraitPoseComposition(id){
+ if(!normalizePose(id))return {};
+ const y=id==='bow'?1.25:1.55,shift=y-PORTRAIT_COMPOSITION.target[1];
+ return {spanHeight:id==='tpose'?3.45:3.15,target:[0,y,0],cameraPosition:[2.7,2.10+shift,7]};
+}
+
 function compositionWith(overrides={}){
  const composition={...PORTRAIT_COMPOSITION,...overrides};
  for(const key of ['width','height'])if(!Number.isInteger(composition[key])||composition[key]<1||composition[key]>8192)throw Error('Portrait dimensions must be whole numbers between 1 and 8192 pixels.');
@@ -23,15 +32,16 @@ function compositionWith(overrides={}){
 // createAvatar must create a fresh showroom clone. A fresh zero-delta update
 // samples Neutral at exactly t=0; no warm-up loop or studio state is involved.
 // Deliberately omit update from this facade so the portrait stays frozen.
-export async function createPortraitAvatar({createAvatar,appearance,composition}={}){
+export async function createPortraitAvatar({createAvatar,appearance,composition,pose=''}={}){
  if(typeof createAvatar!=='function')throw Error('A character factory is required for the portrait.');
  const framing=compositionWith(composition),avatar=await createAvatar({appearance});
  try{
   avatar.model.position.set(0,0,0);avatar.model.rotation.set(0,framing.modelYaw,0);avatar.model.scale.setScalar(1);
+  avatar.setPose?.(pose,{static:true});
   avatar.update(0,0,false,0,{crouch:0,jumpTime:-1});
   avatar.model.updateMatrixWorld(true);
  }catch(error){avatar.dispose();throw error;}
- return {model:avatar.model,get appearance(){return avatar.appearance;},setAppearance(value){return avatar.setAppearance(value);},dispose(){avatar.dispose();}};
+ return {model:avatar.model,get appearance(){return avatar.appearance;},setAppearance(value){return avatar.setAppearance(value);},setPose(id){avatar.setPose(id,{static:true});avatar.update(0,0,false,0,{crouch:0,jumpTime:-1});avatar.model.updateMatrixWorld(true);},dispose(){avatar.dispose();}};
 }
 
 export function configurePortraitCamera(THREE,camera,composition){

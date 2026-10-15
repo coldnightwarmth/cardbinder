@@ -1,3 +1,4 @@
+import {POSES,normalizePose,normalizePoseTime} from '../../drifmaker-poses.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -32,7 +33,7 @@ function avatarFactory(){
   return new Track(`${nodes[channel.target.node].name}.${property}`,values(sampler.input),values(sampler.output),sampler.interpolation==='STEP'?THREE.InterpolateDiscrete:THREE.InterpolateLinear);
  })));
  const source=readFileSync(new URL('../../showroom-avatar.js',import.meta.url),'utf8');
- const context=vm.createContext({THREE,createAvatarAppearance,asset:async()=>({scene,animations})});
+ const context=vm.createContext({THREE,normalizePose,normalizePoseTime,createAvatarAppearance,asset:async()=>({scene,animations})});
  vm.runInContext(source.slice(source.indexOf('export function cloneAvatar')).replaceAll('export ',''),context);
  return context.createShowroomAvatar;
 }
@@ -104,4 +105,35 @@ test('reflective PNG exports build their own environment and preserve the live p
   texture.dispose();
  }
  liveEnvironment.dispose();
+});
+
+test('all ten pose clips enter from neutral, hold indefinitely, cancel, and match static portraits',async()=>{
+ const createAvatar=avatarFactory(),avatar=await createAvatar(),neutral=await createPortraitAvatar({createAvatar});
+ for(const pose of POSES){
+  avatar.setPose(pose.id);avatar.update(0,0,false);const first=bonePose(avatar.model);
+  assert.deepEqual(first,bonePose(neutral.model),`${pose.id} enters from the neutral stance`);
+  avatar.update(.65,0,false);assert.notDeepEqual(bonePose(avatar.model),first,`${pose.id} contains motion`);
+  avatar.update(2,0,false);const held=bonePose(avatar.model);
+  assert.notDeepEqual(held,first,`${pose.id} has a distinct key pose`);
+  for(let i=0;i<100;i++)avatar.update(.1,0,true,.9);
+  assert.deepEqual(bonePose(avatar.model),held,`${pose.id} holds, without camera aim or card animation drift`);
+  const portrait=await createPortraitAvatar({createAvatar,pose:pose.id});
+  assert.deepEqual(bonePose(portrait.model),held,`${pose.id} portrait uses the exact held frame`);
+  portrait.setPose('');assert.deepEqual(bonePose(portrait.model),bonePose(neutral.model));portrait.dispose();
+  avatar.setPose('');avatar.update(.2,2,false);assert.equal(avatar.model.userData.animation,'Walk');
+ }
+ avatar.setPose('invalid');avatar.update(0,0,false);assert.equal(avatar.pose,'');
+ avatar.dispose();neutral.dispose();
+});
+
+test('remote pose time reproduces the same frame for late joiners and supports cancellation',async()=>{
+ const createAvatar=avatarFactory(),a=await createAvatar(),b=await createAvatar();
+ for(const pose of POSES){
+  a.setPose(pose.id);a.update(.8,0,false);
+  b.update(.03,0,false,0,{emote:pose.id,emoteTime:.8});
+  assert.deepEqual(bonePose(a.model),bonePose(b.model));
+  b.update(.03,0,false,0,{emote:pose.id,emoteTime:99});assert.equal(b.model.userData.animation,pose.clip);
+ }
+ b.update(.1,1,false,0,{emote:'',emoteTime:0});assert.equal(b.model.userData.animation,'Walk');
+ a.dispose();b.dispose();
 });

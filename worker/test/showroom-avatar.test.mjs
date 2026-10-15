@@ -1,3 +1,4 @@
+import {POSES,normalizePose,normalizePoseTime} from '../../drifmaker-poses.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -74,11 +75,11 @@ function animationPipeline(legacy){
  const rig=shippedAnimationRig();
  let code=source.slice(source.indexOf('export function cloneAvatar')).replaceAll('export ','');
  if(legacy)code=code.replace('model.getWorldQuaternion(parentRotation);','model.updateWorldMatrix(true,true);model.getWorldQuaternion(parentRotation);');
- const context=vm.createContext({THREE,asset:async()=>rig,createAvatarAppearance});vm.runInContext(code,context);
+ const context=vm.createContext({THREE,normalizePose,normalizePoseTime,asset:async()=>rig,createAvatarAppearance});vm.runInContext(code,context);
  const multiplayer=readFileSync(new URL('../../showroom-multiplayer.js',import.meta.url),'utf8');
  let update=multiplayer.slice(multiplayer.indexOf('  if(p.avatar){'),multiplayer.indexOf('  if(p.layoutDirty)'));
  if(legacy)update=update.replace('p.avatar.update(dt,velocity,p.holding,sample.pitch,sample);','p.avatar.update(dt,velocity,p.holding,sample.pitch,sample);p.group.updateWorldMatrix(true,true);');
- const updateContext=vm.createContext({THREE,jumpHeight,socketPosition:new THREE.Vector3()});
+ const updateContext=vm.createContext({THREE,normalizePose,normalizePoseTime,jumpHeight,socketPosition:new THREE.Vector3()});
  vm.runInContext(`function updatePeer(p,sample,dt,velocity){${update}}`,updateContext);
  return {create:context.createShowroomAvatar,update:updateContext.updatePeer};
 }

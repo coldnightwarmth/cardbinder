@@ -1,3 +1,4 @@
+import {POSES,normalizePose,normalizePoseTime} from '../../drifmaker-poses.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -9,14 +10,14 @@ import {Showroom} from '../src/showroom.js';
 import {freshRoom} from '../src/showroom-state.js';
 
 test('expanded wardrobe contains eleven independent categories and bounded normalized values',()=>{
- assert.deepEqual(Object.fromEntries(Object.entries(CATEGORIES).map(([category,items])=>[category,items.length])),{eyes:24,mouth:21,shirt:25,legs:21,hat:25,accessory:27,head:7,extra:13,tattoo:9,nose:6,ears:6});
+ assert.deepEqual(Object.fromEntries(Object.entries(CATEGORIES).map(([category,items])=>[category,items.length])),{eyes:27,mouth:24,shirt:28,legs:24,hat:28,accessory:30,head:10,extra:16,tattoo:12,nose:9,ears:9});
  for(const items of Object.values(CATEGORIES)){
   assert.ok(items.filter(item=>item.id!=='none').length>=5);
   assert.equal(new Set(items.map(item=>item.id)).size,items.length);
   for(const item of items)assert.match(item.id,/^[a-z0-9]+$/);
  }
- assert.equal(BODY_COLORS.length,37);
- assert.equal(PORTRAIT_BACKGROUNDS.length,28);
+ assert.equal(BODY_COLORS.length,40);
+ assert.equal(PORTRAIT_BACKGROUNDS.length,31);
  for(const palette of [BODY_COLORS,PORTRAIT_BACKGROUNDS]){
   assert.equal(new Set(palette.map(color=>color.hex)).size,palette.length);
   for(const color of palette)assert.match(color.hex,/^#[a-f0-9]{6}$/);
@@ -145,9 +146,9 @@ test('every shipped wardrobe option is skinned to the original rig and retains a
  const photoMaterial=gltf.materials[photoPrimitive.material],texture=gltf.textures[photoMaterial.pbrMetallicRoughness.baseColorTexture.index];
  assert.ok(gltf.images[texture.source].bufferView!==undefined,'the supplied photo is embedded in the GLB');
  assert.ok(values(photoPrimitive.attributes.TEXCOORD_0).every(Number.isFinite));
- assert.deepEqual(gltf.animations.map(clip=>clip.name).sort(),original.json.animations.map(clip=>clip.name).sort());
+ assert.deepEqual(gltf.animations.filter(clip=>!clip.name.startsWith('Pose_')).map(clip=>clip.name).sort(),original.json.animations.map(clip=>clip.name).sort());
  const expectedNames=['Drif_Body','Drif_Ghost_Fuzz',...Object.entries(CATEGORIES).flatMap(([category,items])=>items.filter(item=>item.id!=='none').map(item=>`Drif_${category[0].toUpperCase()+category.slice(1)}_${item.id}`))];
- assert.equal(expectedNames.length,182);
+ assert.equal(expectedNames.length,215);
  assert.deepEqual(gltf.nodes.filter(node=>node.mesh!==undefined).map(node=>node.name).sort(),expectedNames.sort(),'every logical wardrobe option has exactly one mesh node');
  for(const [category,items] of Object.entries(CATEGORIES))for(const item of items.filter(item=>item.id!=='none')){
   const prefix=`Drif_${category[0].toUpperCase()+category.slice(1)}_${item.id}`;
@@ -185,7 +186,8 @@ test('every shipped wardrobe option is skinned to the original rig and retains a
  const originalParts=['Drif_Body','Drif_Head_original','Drif_Eyes_classic','Drif_Mouth_original','Drif_Shirt_original','Drif_Legs_original','Drif_Accessory_original','Drif_Nose_original','Drif_Ears_original'];
  assert.deepEqual(triangles(current,originalParts),triangles(original),'the original body, eyes, mouth, shirt, legs and bag must reconstruct the original surface');
  // Compare actual animation sampler data, not just their display names.
- for(const clip of gltf.animations){
+ assert.deepEqual(gltf.animations.filter(clip=>clip.name.startsWith('Pose_')).map(clip=>clip.name).sort(),POSES.map(pose=>pose.clip).sort());
+ for(const clip of gltf.animations.filter(clip=>!clip.name.startsWith('Pose_'))){
   const baseline=original.json.animations.find(item=>item.name===clip.name);
   assert.equal(clip.channels.length,baseline.channels.length);
   for(const channel of clip.channels){
@@ -226,6 +228,16 @@ test('showroom broadcasts and snapshots carry validated appearance, including st
  const legacy={bodyColor:'#abc123',eyes:'sleepy',hat:'cap',shirt:'original',accessory:'none'};
  await server.webSocketMessage(ws,JSON.stringify({type:'pose',pose:{...player.pose,appearance:legacy}}));
  assert.deepEqual(messages.at(-1).pose.appearance,{...DEFAULT_APPEARANCE,...legacy});
+ for(const pose of POSES){
+  player.lastMove=0;player.lastActive=1;
+  await server.webSocketMessage(ws,JSON.stringify({type:'pose',pose:{...player.pose,emote:pose.id,emoteTime:1.25}}));
+  assert.equal(messages.at(-1).pose.emote,pose.id);assert.equal(server.snapshot().players[0].pose.emoteTime,1.25);assert.ok(player.lastActive>1);
+ }
+ player.lastMove=0;
+ await server.webSocketMessage(ws,JSON.stringify({type:'pose',pose:{...player.pose,emote:'salute',emoteTime:9999}}));assert.equal(player.pose.emoteTime,2);
+ player.lastMove=0;
+ await server.webSocketMessage(ws,JSON.stringify({type:'pose',pose:{...player.pose,emote:'untrusted',emoteTime:1}}));assert.equal(player.pose.emote,'');assert.equal(player.pose.emoteTime,0);
+
 });
 
 test('multiplayer publishes saved appearance and uses the newest choice after avatar loading',async()=>{
@@ -234,7 +246,7 @@ test('multiplayer publishes saved appearance and uses the newest choice after av
  let handlers,finishLoad,changeSaved;const sent=[],applied=[];
  const avatar={model:new THREE.Group(),async setAppearance(value){applied.push({...value});},dispose(){}};
  const network={id:'local',send:value=>sent.push(value),now:()=>Date.now(),close(){}};
- const context=vm.createContext({THREE,appearanceKey,normalizeAppearance,loadAppearance:()=>saved,subscribeAppearance:fn=>{changeSaved=fn;return ()=>{};},
+ const context=vm.createContext({THREE,normalizePose,normalizePoseTime,appearanceKey,normalizeAppearance,loadAppearance:()=>saved,subscribeAppearance:fn=>{changeSaved=fn;return ()=>{};},
   createShowroomAvatar:()=>new Promise(resolve=>{finishLoad=()=>resolve(avatar);}),createPoseBuffer:()=>({push(){},sample:()=>null}),connectShowroom:value=>{handlers=value;return network;},
   location:{hostname:'example.com'},performance:{now:()=>100},console,setTimeout,clearTimeout});
  vm.runInContext(source,context);
@@ -246,21 +258,22 @@ test('multiplayer publishes saved appearance and uses the newest choice after av
  handlers.onPose({type:'pose',id:'remote',pose:{...pose,appearance:latest},time:2});finishLoad();
  await new Promise(resolve=>setImmediate(resolve));assert.deepEqual(applied.at(-1),latest);
  changeSaved(latest);multiplayer.update(200);assert.deepEqual(sent.at(-1).pose.appearance,latest);
+ camera.userData.pose={emote:'bow',emoteTime:1.25};multiplayer.update(300);assert.equal(sent.at(-1).pose.emote,'bow');assert.equal(sent.at(-1).pose.emoteTime,1.25);
  multiplayer.dispose();
 });
 
 test('gold covers every body and face surface, isolates clothes, and restores original finishes',()=>{
  const root=new THREE.Group(),geometry=new THREE.BoxGeometry(),map=new THREE.Texture();
- const shared=new THREE.MeshStandardMaterial({color:0xddeeff,map,metalness:.12,roughness:.74});shared.name='shared-skin';
+ const shared=new THREE.MeshStandardMaterial({color:0xddeeff,map,metalness:.12,roughness:.74,emissive:0x00ffff,emissiveIntensity:2});shared.name='shared-skin';
  const names=['Drif_Body','Drif_Head_original','Drif_Ears_original','Drif_Nose_original','Drif_Mouth_original','Drif_Eyes_classic'];
  for(const name of [...names,'Drif_Shirt_original','Drif_Tattoo_stars']){const mesh=new THREE.Mesh(geometry,shared);mesh.name=name;root.add(mesh);}
  const other=root.clone(true),wardrobe=createAvatarAppearance(root),otherWardrobe=createAvatarAppearance(other);
  wardrobe.setAppearance({...DEFAULT_APPEARANCE,bodyStyle:'gold',bodyColor:'#111111',tattoo:'stars'});
  assert.equal(wardrobe.appearance.bodyColor,GOLD_COLOR,'gold persists with its canonical finish color');
- for(const name of names){const material=root.getObjectByName(name).material;assert.equal(material.color.getHexString(),GOLD_COLOR.slice(1));assert.equal(material.metalness,.94);assert.equal(material.roughness,.17);assert.equal(material.map,null);assert.equal(material.opacity,1);}
+ for(const name of names){const material=root.getObjectByName(name).material;assert.equal(material.color.getHexString(),GOLD_COLOR.slice(1));assert.equal(material.metalness,.94);assert.equal(material.roughness,.17);assert.equal(material.map,null);assert.equal(material.opacity,1);assert.equal(material.emissive.getHex(),0);assert.equal(material.emissiveIntensity,0);}
  assert.equal(root.getObjectByName('Drif_Shirt_original').material,shared);assert.equal(root.getObjectByName('Drif_Tattoo_stars').material,shared);
  assert.equal(other.getObjectByName('Drif_Head_original').material.color.getHex(),0xddeeff);
  wardrobe.setAppearance(DEFAULT_APPEARANCE);
- for(const name of names){const material=root.getObjectByName(name).material;assert.equal(material.map,map);assert.equal(material.color.getHex(),0xddeeff);assert.equal(material.metalness,.12);assert.equal(material.roughness,.74);}
+ for(const name of names){const material=root.getObjectByName(name).material;assert.equal(material.map,map);assert.equal(material.color.getHex(),0xddeeff);assert.equal(material.metalness,.12);assert.equal(material.roughness,.74);assert.equal(material.emissive.getHex(),0x00ffff);assert.equal(material.emissiveIntensity,2);}
  wardrobe.dispose();otherWardrobe.dispose();geometry.dispose();shared.dispose();map.dispose();
 });

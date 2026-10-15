@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 5,
   "asset": "drifella-customizable.glb",
   "source": "drifella-customizable.blend",
   "bodyMaterial": "Drif_Body_Main",
@@ -37,7 +37,10 @@
       "bolts",
       "goggles",
       "robot",
-      "stitched"
+      "stitched",
+      "target",
+      "petals",
+      "sleepmask"
     ],
     "shirts": [
       "original",
@@ -64,7 +67,10 @@
       "botanical",
       "racer",
       "mcdonalds",
-      "swagworld"
+      "swagworld",
+      "cardigan",
+      "flightjacket",
+      "sunburst"
     ],
     "hats": [
       "none",
@@ -91,7 +97,10 @@
       "jester",
       "sharkhood",
       "tiara",
-      "mcdonalds"
+      "mcdonalds",
+      "chef",
+      "straw",
+      "viking"
     ],
     "accessories": [
       "none",
@@ -120,7 +129,10 @@
       "boombox",
       "lantern",
       "goldearring",
-      "machinegun"
+      "machinegun",
+      "jetpack",
+      "shoulderpet",
+      "camerabag"
     ],
     "legs": [
       "original",
@@ -143,7 +155,10 @@
       "samurai",
       "pajamas",
       "skateshorts",
-      "harem"
+      "harem",
+      "moonboots",
+      "checkers",
+      "ripped"
     ],
     "mouth": [
       "original",
@@ -166,7 +181,10 @@
       "pacifier",
       "stitches",
       "candy",
-      "respirator"
+      "respirator",
+      "smirk",
+      "buckteeth",
+      "whistle"
     ],
     "head": [
       "original",
@@ -175,7 +193,10 @@
       "gasmask",
       "glitch",
       "hockey",
-      "hayabusa"
+      "hayabusa",
+      "pumpkin",
+      "tv",
+      "crystal"
     ],
     "extra": [
       "none",
@@ -190,7 +211,10 @@
       "pixelstars",
       "tentacles",
       "dragon",
-      "cards"
+      "cards",
+      "butterflies",
+      "ufo",
+      "rainbow"
     ],
     "nose": [
       "original",
@@ -198,7 +222,10 @@
       "heart",
       "cat",
       "pig",
-      "clown"
+      "clown",
+      "diamond",
+      "wood",
+      "metal"
     ],
     "ears": [
       "original",
@@ -206,7 +233,10 @@
       "elf",
       "bunny",
       "bat",
-      "finlets"
+      "finlets",
+      "fox",
+      "axolotl",
+      "robot"
     ],
     "tattoo": [
       "none",
@@ -217,7 +247,10 @@
       "rose",
       "runes",
       "freckles",
-      "skull"
+      "skull",
+      "chevrons",
+      "crescentmark",
+      "circuit"
     ],
     "bodyStyles": [
       "solid",
@@ -255,6 +288,18 @@
     "ears": "Drif_Ears_",
     "tattoo": "Drif_Tattoo_"
   },
+  "poses": [
+    "salute",
+    "tpose",
+    "bow",
+    "victory",
+    "think",
+    "point",
+    "summon",
+    "flex",
+    "welcome",
+    "heart"
+  ],
   "clips": [
     {
       "name": "Crouch",
@@ -286,6 +331,46 @@
     },
     {
       "name": "Neutral",
+      "seconds": 2.0
+    },
+    {
+      "name": "Pose_bow",
+      "seconds": 2.0
+    },
+    {
+      "name": "Pose_flex",
+      "seconds": 2.0
+    },
+    {
+      "name": "Pose_heart",
+      "seconds": 2.0
+    },
+    {
+      "name": "Pose_point",
+      "seconds": 2.0
+    },
+    {
+      "name": "Pose_salute",
+      "seconds": 2.0
+    },
+    {
+      "name": "Pose_summon",
+      "seconds": 2.0
+    },
+    {
+      "name": "Pose_think",
+      "seconds": 2.0
+    },
+    {
+      "name": "Pose_tpose",
+      "seconds": 2.0
+    },
+    {
+      "name": "Pose_victory",
+      "seconds": 2.0
+    },
+    {
+      "name": "Pose_welcome",
       "seconds": 2.0
     },
     {
@@ -450,6 +535,21 @@
       "triangles": 848
     },
     {
+      "name": "Drif_Eyes_target",
+      "vertices": 484,
+      "triangles": 936
+    },
+    {
+      "name": "Drif_Eyes_petals",
+      "vertices": 1220,
+      "triangles": 2376
+    },
+    {
+      "name": "Drif_Eyes_sleepmask",
+      "vertices": 352,
+      "triangles": 684
+    },
+    {
       "name": "Drif_Shirt_original",
       "vertices": 578,
       "triangles": 1112
@@ -575,6 +675,21 @@
       "triangles": 2124
     },
     {
+      "name": "Drif_Shirt_cardigan",
+      "vertices": 812,
+      "triangles": 1580
+    },
+    {
+      "name": "Drif_Shirt_flightjacket",
+      "vertices": 888,
+      "triangles": 1736
+    },
+    {
+      "name": "Drif_Shirt_sunburst",
+      "vertices": 804,
+      "triangles": 1540
+    },
+    {
       "name": "Drif_Hat_cap",
       "vertices": 376,
       "triangles": 728
@@ -693,6 +808,21 @@
       "name": "Drif_Hat_mcdonalds",
       "vertices": 350,
       "triangles": 544
+    },
+    {
+      "name": "Drif_Hat_chef",
+      "vertices": 632,
+      "triangles": 1244
+    },
+    {
+      "name": "Drif_Hat_straw",
+      "vertices": 1164,
+      "triangles": 2316
+    },
+    {
+      "name": "Drif_Hat_viking",
+      "vertices": 350,
+      "triangles": 684
     },
     {
       "name": "Drif_Accessory_original",
@@ -825,6 +955,21 @@
       "triangles": 304
     },
     {
+      "name": "Drif_Accessory_jetpack",
+      "vertices": 170,
+      "triangles": 312
+    },
+    {
+      "name": "Drif_Accessory_shoulderpet",
+      "vertices": 332,
+      "triangles": 640
+    },
+    {
+      "name": "Drif_Accessory_camerabag",
+      "vertices": 104,
+      "triangles": 192
+    },
+    {
       "name": "Drif_Legs_original",
       "vertices": 600,
       "triangles": 1164
@@ -928,6 +1073,21 @@
       "name": "Drif_Legs_harem",
       "vertices": 816,
       "triangles": 1596
+    },
+    {
+      "name": "Drif_Legs_moonboots",
+      "vertices": 1288,
+      "triangles": 2548
+    },
+    {
+      "name": "Drif_Legs_checkers",
+      "vertices": 696,
+      "triangles": 1300
+    },
+    {
+      "name": "Drif_Legs_ripped",
+      "vertices": 728,
+      "triangles": 1348
     },
     {
       "name": "Drif_Mouth_original",
@@ -1035,6 +1195,21 @@
       "triangles": 504
     },
     {
+      "name": "Drif_Mouth_smirk",
+      "vertices": 48,
+      "triangles": 88
+    },
+    {
+      "name": "Drif_Mouth_buckteeth",
+      "vertices": 43,
+      "triangles": 40
+    },
+    {
+      "name": "Drif_Mouth_whistle",
+      "vertices": 159,
+      "triangles": 280
+    },
+    {
       "name": "Drif_Head_original",
       "vertices": 870,
       "triangles": 1684
@@ -1068,6 +1243,21 @@
       "name": "Drif_Head_hayabusa",
       "vertices": 1923,
       "triangles": 3689
+    },
+    {
+      "name": "Drif_Head_pumpkin",
+      "vertices": 1383,
+      "triangles": 2710
+    },
+    {
+      "name": "Drif_Head_tv",
+      "vertices": 172,
+      "triangles": 308
+    },
+    {
+      "name": "Drif_Head_crystal",
+      "vertices": 97,
+      "triangles": 178
     },
     {
       "name": "Drif_Extra_mon",
@@ -1130,6 +1320,21 @@
       "triangles": 192
     },
     {
+      "name": "Drif_Extra_butterflies",
+      "vertices": 1062,
+      "triangles": 2064
+    },
+    {
+      "name": "Drif_Extra_ufo",
+      "vertices": 730,
+      "triangles": 1408
+    },
+    {
+      "name": "Drif_Extra_rainbow",
+      "vertices": 2238,
+      "triangles": 4428
+    },
+    {
       "name": "Drif_Nose_original",
       "vertices": 84,
       "triangles": 160
@@ -1160,6 +1365,21 @@
       "triangles": 520
     },
     {
+      "name": "Drif_Nose_diamond",
+      "vertices": 8,
+      "triangles": 12
+    },
+    {
+      "name": "Drif_Nose_wood",
+      "vertices": 9,
+      "triangles": 14
+    },
+    {
+      "name": "Drif_Nose_metal",
+      "vertices": 150,
+      "triangles": 288
+    },
+    {
       "name": "Drif_Ears_original",
       "vertices": 32,
       "triangles": 56
@@ -1188,6 +1408,21 @@
       "name": "Drif_Ears_finlets",
       "vertices": 48,
       "triangles": 72
+    },
+    {
+      "name": "Drif_Ears_fox",
+      "vertices": 24,
+      "triangles": 32
+    },
+    {
+      "name": "Drif_Ears_axolotl",
+      "vertices": 276,
+      "triangles": 456
+    },
+    {
+      "name": "Drif_Ears_robot",
+      "vertices": 80,
+      "triangles": 120
     },
     {
       "name": "Drif_Tattoo_teardrops",
@@ -1228,6 +1463,21 @@
       "name": "Drif_Tattoo_skull",
       "vertices": 465,
       "triangles": 894
+    },
+    {
+      "name": "Drif_Tattoo_chevrons",
+      "vertices": 390,
+      "triangles": 756
+    },
+    {
+      "name": "Drif_Tattoo_crescentmark",
+      "vertices": 1210,
+      "triangles": 2412
+    },
+    {
+      "name": "Drif_Tattoo_circuit",
+      "vertices": 222,
+      "triangles": 396
     }
   ],
   "originalParts": {
@@ -1241,5 +1491,5 @@
     "Drif_Ears_original": 42,
     "Drif_Nose_original": 96
   },
-  "notes": "All components share the original 19-bone rest pose and 10 locomotion actions. Alternate heads replace the original head, eyes and mouth without discarding facial choices. Extra is independent of accessories. Ghost skin is applied by the runtime with the skinned fuzz mesh. Gold coats all body and facial surfaces. The Swag World hoodie embeds the user-supplied photograph with torso and sleeve UVs."
+  "notes": "All components share the original 19-bone rest pose, 10 locomotion actions and 10 enter-and-hold pose actions. Alternate heads replace the original head, eyes and mouth without discarding facial choices. Extra is independent of accessories. Ghost skin is applied by the runtime with the skinned fuzz mesh. Gold coats all body and facial surfaces. The Swag World hoodie embeds the user-supplied photograph with torso and sleeve UVs."
 }
