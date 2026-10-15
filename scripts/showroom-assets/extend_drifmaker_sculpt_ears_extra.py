@@ -240,7 +240,10 @@ def sc_torus_effect(p,water=False):
    at_tube(p+'_flame',[(x,y,z,.058),(x+.08*math.cos(a),y-.045,z+.10,.07),(x+.14*math.cos(a),y-.015,z+.22,.002)],sc_ember if j%2 else sc_ruby,'Chest',sides=14,steps=5,depth=.55)
 
 for style in ATELIER_VARIANTS['Extra']:
- p='Drif_Extra_'+style;sc_remove(p)
+ p='Drif_Extra_'+style
+ # Preserve the exact first-pass atelier meshes for these four effects.
+ if style in ['neondoor','confettiburst','solareclipse','ribbonvortex']:continue
+ sc_remove(p)
  if style=='shatteredmirror':
   for j,(x,y,z) in enumerate(sc_satellites()):
    before=sc_newgroup();r=.17 if j%2 else .22
@@ -262,13 +265,28 @@ for style in ATELIER_VARIANTS['Extra']:
     sc_profile(p+'_printedseal',[(x-.03,zz),(x+.02,zz+.025),(x+.032,zz+.006),(x-.015,zz-.02)],y+.036-.008,.002,sc_ruby,'Chest',0)
    sc_transform(sc_group(before),(x,y,z),(.16*j,.3*(-1)**j,.3*(-1)**j))
  elif style=='coinshower':
-  for j in range(11):
-   x=(-1 if j%2 else 1)*(1.00+.09*math.sin(j*2.4));y=-.15+.19*(j%3);z=1.30+(j%6)*.32;before=sc_newgroup()
-   sc_lathe(p+'_coin',(x,y,z),[(-.024,.083),(-.019,.089),(.013,.089),(.021,.080)],a_gold,'Chest',40,'y')
+  # Deterministic blue-noise distribution. Each entire rotated coin fits in
+  # a .096 sphere; a .212 center distance guarantees positive clearance.
+  rng=random.Random(418);coin_centers=[]
+  for attempt in range(20000):
+   x=rng.uniform(-1.19,1.19);y=rng.uniform(-.40,.50);z=rng.uniform(1.03,3.06)
+   if abs(x)<.83 and z<2.91:continue
+   c=Vector((x,y,z))
+   if all((c-other).length>.212 for other in coin_centers):coin_centers.append(c)
+   if len(coin_centers)==64:break
+  assert len(coin_centers)==64
+  COIN_SHOWER_CENTERS=[list(c) for c in coin_centers]
+  COIN_SHOWER_CLEARANCE=min((a-b).length for i,a in enumerate(coin_centers) for b in coin_centers[i+1:])-.192
+  for j,(x,y,z) in enumerate(coin_centers):
+   before=sc_newgroup()
+   coin=sc_lathe(p+'_coin',(x,y,z),[(-.024,.083),(-.019,.089),(.013,.089),(.021,.080)],a_gold,'Chest',64,'y')
+   # Milled grip is part of the rim surface, with sixteen sculpted flutes.
+   for v in coin.data.vertices:
+    if -.020<v.co.y-y<.014:
+     a=math.atan2(v.co.z-z,v.co.x-x);r=math.hypot(v.co.x-x,v.co.z-z)+.0015*math.cos(a*16)
+     v.co.x=x+r*math.cos(a);v.co.z=z+r*math.sin(a)
    sc_lathe(p+'_inset',(x,y-.027,z),[(0,.060),(.004,.065),(.010,.060)],sc_ivory,'Chest',32,'y')
    star(p+'_stamp',(x,y-.033,z),.044,.019,a_gold,'Chest')
-   for k in range(12):
-    a=k*math.tau/12;sc_box(p+'_millededge',(x+.087*math.cos(a),y-.001,z+.087*math.sin(a)),(.008,.025,.008),sc_darksteel,'Chest',.002)
    sc_transform(sc_group(before),(x,y,z),(j*.23,j*.39,j*.11))
  elif style=='floppydisks':
   for j,(x,y,z) in enumerate(sc_satellites()[:5]):

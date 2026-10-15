@@ -1946,3 +1946,97 @@ export const SCULPT_TRAITS={
  ]
 };
 for(const [category,items] of Object.entries(SCULPT_TRAITS))NEW_TRAITS[category].push(...items);
+
+export const STAGECRAFT_TRAITS={
+  "shirt": [{"id":"hardcoretechno","label":"Hardcore Techno sweatshirt"},{"id":"seedoilfree","label":"Seed Oil Free tee"},{"id":"ainsliejersey","label":"Ainslie football jersey"}],
+ "hat": [
+  {
+   "id": "lavendercowl",
+   "label": "Lavender cowl",
+   "description": "Modeled and skinned in Blender for the stagecraft collection."
+  },
+  {
+   "id": "cablesnood",
+   "label": "Cable knit snood",
+   "description": "Modeled and skinned in Blender for the stagecraft collection."
+  },
+  {
+   "id": "officerpeak",
+   "label": "Leather officer cap",
+   "description": "Modeled and skinned in Blender for the stagecraft collection."
+  },
+  {
+   "id": "kettlevisor",
+   "label": "Kettle visor helmet",
+   "description": "Modeled and skinned in Blender for the stagecraft collection."
+  },
+  {
+   "id": "parchmentwitch",
+   "label": "Parchment witch hat",
+   "description": "Modeled and skinned in Blender for the stagecraft collection."
+  },
+  {
+   "id": "burgerstack",
+   "label": "Burger stack",
+   "description": "Modeled and skinned in Blender for the stagecraft collection."
+  },
+  {
+   "id": "storybookbow",
+   "label": "Storybook bow",
+   "description": "Modeled and skinned in Blender for the stagecraft collection."
+  }
+ ],
+ "accessory": [
+  {
+   "id": "arcadegauntlet",
+   "label": "Arcade gauntlet",
+   "description": "Modeled and skinned in Blender for the stagecraft collection."
+  },
+  {
+   "id": "wristcassette",
+   "label": "Wrist cassette deck",
+   "description": "Modeled and skinned in Blender for the stagecraft collection."
+  },
+  {
+   "id": "gemcuffs",
+   "label": "Jeweled cuffs",
+   "description": "Modeled and skinned in Blender for the stagecraft collection."
+  },
+  {
+   "id": "punchmitts",
+   "label": "Boxing mitts",
+   "description": "Modeled and skinned in Blender for the stagecraft collection."
+  },
+  {
+   "id": "aegisbracer",
+   "label": "Aegis bracer",
+   "description": "Modeled and skinned in Blender for the stagecraft collection."
+  },
+  {
+   "id": "potionstaff",
+   "label": "Potion scepter",
+   "description": "Modeled and skinned in Blender for the stagecraft collection."
+  },
+  {
+   "id": "foldingfan",
+   "label": "Folding fan",
+   "description": "Modeled and skinned in Blender for the stagecraft collection."
+  },
+  {
+   "id": "stagemic",
+   "label": "Stage microphone",
+   "description": "Modeled and skinned in Blender for the stagecraft collection."
+  },
+  {
+   "id": "instantcam",
+   "label": "Instant camera",
+   "description": "Modeled and skinned in Blender for the stagecraft collection."
+  },
+  {
+   "id": "handlantern",
+   "label": "Hand lantern",
+   "description": "Modeled and skinned in Blender for the stagecraft collection."
+  }
+ ]
+};
+for(const [category,items] of Object.entries(STAGECRAFT_TRAITS))NEW_TRAITS[category].push(...items);

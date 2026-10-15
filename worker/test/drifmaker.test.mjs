@@ -1,3 +1,4 @@
+import {createHash} from 'node:crypto';
 import {POSES,normalizePose,normalizePoseTime} from '../../drifmaker-poses.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -24,13 +25,13 @@ const meshOptions=(category,items)=>items.filter(item=>item.id!=='none'&&!(categ
  };
 
 test('expanded wardrobe contains twelve independent categories and bounded normalized values',()=>{
- assert.deepEqual(Object.fromEntries(Object.entries(CATEGORIES).map(([category,items])=>[category,items.length])),{eyes:57,mouth:53,shirt:52,legs:46,hat:53,accessory:52,head:35,extra:38,tattoo:34,nose:31,ears:35,brows:36});
+ assert.deepEqual(Object.fromEntries(Object.entries(CATEGORIES).map(([category,items])=>[category,items.length])),{eyes:57,mouth:53,shirt:55,legs:46,hat:60,accessory:62,head:35,extra:38,tattoo:34,nose:31,ears:35,brows:36});
  for(const items of Object.values(CATEGORIES)){
   assert.ok(items.filter(item=>item.id!=='none').length>=5);
   assert.equal(new Set(items.map(item=>item.id)).size,items.length);
   for(const item of items)assert.match(item.id,/^[a-z0-9]+$/);
  }
- assert.equal(BODY_COLORS.length,63);
+ assert.equal(BODY_COLORS.length,69);
  assert.equal(PORTRAIT_BACKGROUNDS.length,52);
  for(const palette of [BODY_COLORS,PORTRAIT_BACKGROUNDS]){
   assert.equal(new Set(palette.map(color=>color.hex)).size,palette.length);
@@ -353,7 +354,7 @@ test('every shipped wardrobe option is skinned to the original rig and retains a
  assert.ok(readFileSync(new URL('../../assets/models/drifmaker/drifella-customizable.glb',import.meta.url)).byteLength<50*1024*1024,'model stays within the 50 MiB transfer budget');
  assert.deepEqual(gltf.animations.filter(clip=>!clip.name.startsWith('Pose_')).map(clip=>clip.name).sort(),original.json.animations.map(clip=>clip.name).sort());
  const expectedNames=['Drif_Body','Drif_Ghost_Fuzz',...Object.entries(CATEGORIES).flatMap(([category,items])=>meshOptions(category,items).map(item=>`Drif_${category[0].toUpperCase()+category.slice(1)}_${item.id}`))];
- assert.equal(expectedNames.length,516);
+ assert.equal(expectedNames.length,536);
  assert.deepEqual(gltf.nodes.filter(node=>node.mesh!==undefined).map(node=>node.name).sort(),expectedNames.sort(),'every logical wardrobe option has exactly one mesh node');
  for(const head of Object.keys(HEAD_SCALES).filter(id=>id!=='original'))assert.equal(gltf.nodes.some(node=>node.name==='Drif_Head_'+head),false,'head size aliases must reuse the original mesh');
  for(const [category,items] of Object.entries(CATEGORIES))for(const item of meshOptions(category,items)){
@@ -549,4 +550,43 @@ test('holographic foil follows body and face with rest-space sparkles, leaving c
  wardrobe.setAppearance({...DEFAULT_APPEARANCE,bodyStyle:'marble'});assert.equal(root.children[0].material.userData.drifHolo,false);
  wardrobe.setAppearance(DEFAULT_APPEARANCE);assert.equal(root.children[0].material.map,map);assert.equal(root.children[0].material.metalness,source.metalness);
  wardrobe.dispose();source.dispose();geometry.dispose();map.dispose();
+});
+
+
+test('restored extras match their first-pass shipped geometry exactly',()=>{
+ const ref=JSON.parse(readFileSync(new URL('../../scripts/showroom-assets/stagecraft-first-pass-reference.json',import.meta.url)));
+ const {json:gltf,values}=readAsset('../../assets/models/drifmaker/drifella-customizable.glb');
+ for(const [id,expected] of Object.entries(ref.extras)){
+  const node=gltf.nodes.find(node=>node.name==='Drif_Extra_'+id),points=new Set();let triangles=0;
+  for(const primitive of gltf.meshes[node.mesh].primitives){
+   const positions=values(primitive.attributes.POSITION);
+   for(let i=0;i<positions.length;i+=3)points.add(positions.slice(i,i+3).map(v=>Math.abs(v)>.000005?v.toFixed(5):'0.00000').join(','));
+   triangles+=gltf.accessors[primitive.indices].count/3;
+  }
+  assert.equal(points.size,expected.uniquePositions,id);assert.equal(triangles,expected.triangles,id);
+  assert.equal(createHash('sha256').update([...points].sort().join('\n')).digest('hex'),expected.positionsSha256,id);
+ }
+});
+
+test('coin shower has 64 separated detailed coins and all new gear binds only to hands or forearms',()=>{
+ const manifest=JSON.parse(readFileSync(new URL('../../assets/models/drifmaker/manifest.json',import.meta.url)));
+ const {centers,boundingRadius}=manifest.coinShower;assert.equal(centers.length,64);
+ for(let i=0;i<centers.length;i++)for(let j=i+1;j<centers.length;j++)assert.ok(Math.hypot(...centers[i].map((v,k)=>v-centers[j][k]))>2*boundingRadius+.019);
+ const {json:gltf,values}=readAsset('../../assets/models/drifmaker/drifella-customizable.glb');
+ for(const id of ['arcadegauntlet','wristcassette','gemcuffs','punchmitts','aegisbracer','potionstaff','foldingfan','stagemic','instantcam','handlantern']){
+  const node=gltf.nodes.find(n=>n.name==='Drif_Accessory_'+id),skin=gltf.skins[node.skin];assert.ok(node);
+  for(const primitive of gltf.meshes[node.mesh].primitives){const weights=values(primitive.attributes.WEIGHTS_0),joints=values(primitive.attributes.JOINTS_0);for(let i=0;i<weights.length;i++)if(weights[i]>0)assert.match(gltf.nodes[skin.joints[joints[i]]].name,/^(Hand|Forearm)\.[LR]$/,id);}
+ }
+});
+
+test('new photo tops retain embedded garment artwork and short sleeves retain skin material',()=>{
+ const {json:gltf}=readAsset('../../assets/models/drifmaker/drifella-customizable.glb');
+ for(const id of ['hardcoretechno','seedoilfree','ainsliejersey']){
+  const node=gltf.nodes.find(n=>n.name==='Drif_Shirt_'+id),primitives=gltf.meshes[node.mesh].primitives;
+  const artwork=primitives.find(p=>gltf.materials[p.material].name.startsWith('Drif_Stage_Print_'));
+  assert.ok(artwork&&artwork.attributes.TEXCOORD_0!==undefined,id+': mapped photo');
+  const texture=gltf.textures[gltf.materials[artwork.material].pbrMetallicRoughness.baseColorTexture.index];
+  assert.ok(gltf.images[texture.source].bufferView!==undefined,id+': embedded photo');
+  if(id!=='hardcoretechno')assert.ok(primitives.some(p=>gltf.materials[p.material].name==='Drif_Body_Main'),id+': exposed forearms');
+ }
 });

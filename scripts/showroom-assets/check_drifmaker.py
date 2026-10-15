@@ -26,7 +26,7 @@ original_names=['Drif_Body','Drif_Head_original','Drif_Eyes_classic','Drif_Shirt
 assert Counter(position_key(v) for v in source.data.vertices)==Counter(position_key(v) for name in original_names for v in bpy.data.objects[name].data.vertices)
 report={'normalizedWeights':True,'maxInfluences':4,'originalGeometryPreserved':True,
         'boneCount':len(rig.data.bones),'skinnedObjectCount':len(meshes),'clips':{},'neutralBounds':{},
-        'verification':'Every frame of all 32 actions evaluated for finite vertices; original ten-component union compared to original mesh; includes all alternate heads, extras and ghost fibers.'}
+        'verification':'Every frame of all 40 actions evaluated for finite vertices; original ten-component union compared to original mesh; includes all alternate heads, extras and ghost fibers.'}
 report['headFits']={}
 for name in list(manifest.get('headFits',{}))+manifest.get('atelierHeads',[])+manifest.get('sculptHeads',[]):
     obj=bpy.data.objects['Drif_Head_'+name]

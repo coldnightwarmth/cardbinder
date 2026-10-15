@@ -1,0 +1,25 @@
+{
+  "commit": "74ec583a5",
+  "extras": {
+    "neondoor": {
+      "positionsSha256": "c2ea809f7e515ee95d7e328067c44da94f549c365af8b2462482899c894a92ba",
+      "uniquePositions": 100,
+      "triangles": 184
+    },
+    "confettiburst": {
+      "positionsSha256": "5f59baf0901bcff6ff17e238d97240430211f79363f4b1d9de81ce824fe9f04d",
+      "uniquePositions": 560,
+      "triangles": 840
+    },
+    "solareclipse": {
+      "positionsSha256": "03d46863585e51dc6c5da12234b279171165eca424cac633f9db24a64700611f",
+      "uniquePositions": 1110,
+      "triangles": 2020
+    },
+    "ribbonvortex": {
+      "positionsSha256": "1582c9159f290eca67311e843d5326355c32ce77f16088a8e487dbb67f09289b",
+      "uniquePositions": 1608,
+      "triangles": 3204
+    }
+  }
+}

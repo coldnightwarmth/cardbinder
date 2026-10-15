@@ -1,8 +1,8 @@
 import {normalizeOverlay,PORTRAIT_OVERLAYS} from './drifmaker-portrait-art.mjs?v=1';
 import {validPortraitBackground} from './drifmaker-background.mjs?v=2';
-import {normalizeAppearance,BODY_COLORS,BODY_STYLES,PORTRAIT_BACKGROUNDS,CATEGORIES,isOriginalHead,EAR_COMPATIBLE_HEADS,LEG_OVERRIDE_TOPS} from './drifmaker-config.mjs?v=14';
-import {normalizePortraitPose,PORTRAIT_POSES} from './drifmaker-poses.mjs?v=3';
-import {PORTRAIT_COMPOSITION} from './drifmaker-portrait.mjs?v=7';
+import {normalizeAppearance,BODY_COLORS,BODY_STYLES,PORTRAIT_BACKGROUNDS,CATEGORIES,isOriginalHead,EAR_COMPATIBLE_HEADS,LEG_OVERRIDE_TOPS} from './drifmaker-config.mjs?v=15';
+import {normalizePortraitPose,PORTRAIT_POSES} from './drifmaker-poses.mjs?v=4';
+import {PORTRAIT_COMPOSITION} from './drifmaker-portrait.mjs?v=8';
 import {createZipWriter} from './minotecurator/zip-writer.js';
 
 export const BOOKMARK_KEY='cards.art.drifmaker.bookmarks.v1';
@@ -33,6 +33,18 @@ export function createBookmarkStore(storage,{id=()=>crypto.randomUUID(),onError=
    if(entries.length>=MAX_BOOKMARKS)throw Error(`You can save up to ${MAX_BOOKMARKS} bookmarks. Remove one to save another.`);
    const number=Math.max(0,...entries.map(item=>Number(/^Look (\d+)$/.exec(item.name)?.[1])||0))+1;
    const entry={id:id(),name:`Look ${number}`,look:clean};persist([entry,...entries]);return {entry:copy(entry),duplicate:false};},
+  addMany(records){
+   const seen=new Set(entries.map(item=>lookKey(item.look))),added=[];let duplicates=0,full=0;
+   for(const record of records){
+    const clean=normalizeLook(record.look),key=lookKey(clean);
+    if(seen.has(key)){duplicates++;continue;}
+    if(entries.length+added.length>=MAX_BOOKMARKS){full++;continue;}
+    seen.add(key);added.push({id:id(),name:String(record.name||'Shared look').slice(0,60),look:clean});
+   }
+   // One storage write: quota errors leave the entire previous gallery intact.
+   if(added.length)persist([...added,...entries]);
+   return {added:added.length,duplicates,full};
+  },
   remove(id){const index=entries.findIndex(item=>item.id===id);if(index<0)return null;const entry=entries[index];persist(entries.filter(item=>item.id!==id));return {entry:copy(entry),index};},
   restore(removed){if(!removed||entries.some(item=>item.id===removed.entry.id))return;if(entries.length>=MAX_BOOKMARKS)throw Error('Remove a bookmark before restoring this one.');const next=[...entries];next.splice(removed.index,0,copy(removed.entry));persist(next);},
  };

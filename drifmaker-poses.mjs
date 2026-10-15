@@ -6,6 +6,7 @@ export const POSES=Object.freeze([
  ['wave','Wave'],['dab','Dab'],['lunge','Hero lunge'],['crane','Crane balance'],
  ['airguitar','Air guitar'],['kneel','Kneel'],['boxer','Boxing guard'],['shrug','Shrug'],
  ['leanback','Lean back'],['lookout','Lookout'],['conductor','Conductor'],['curtsey','Curtsey'],
+['fistbump', 'Fist bump'],['highfive', 'High five'],['crossarms', 'Arms crossed'],['powerpunch', 'Power punch'],['balancekick', 'Balance kick'],['oath', 'Oath'],['present', 'Presenting'],['micdrop', 'Mic drop'],
 ].map(([id,label])=>Object.freeze({id,label,clip:`Pose_${id}`,duration:2})));
 export const normalizePose=id=>POSES.some(pose=>pose.id===id)?id:'';
 // Card holding uses the existing showroom Hold_Right clip, with its card prop.

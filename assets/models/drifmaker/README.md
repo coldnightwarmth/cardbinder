@@ -13,10 +13,10 @@ compatible modeled wardrobe choices.
 | Eyes | `Drif_Eyes_` | 57 |
 | Eyebrows | `Drif_Brows_` | 36, including original and none |
 | Mouth | `Drif_Mouth_` | 53 |
-| Shirts | `Drif_Shirt_` | 52 |
+| Shirts | `Drif_Shirt_` | 55 |
 | Pants / legs | `Drif_Legs_` | 46 |
-| Hats | `Drif_Hat_` | 53, including none |
-| Accessories | `Drif_Accessory_` | 52, including none |
+| Hats | `Drif_Hat_` | 60, including none |
+| Accessories | `Drif_Accessory_` | 62, including none |
 | Heads | `Drif_Head_` | 35: 32 modeled choices and 3 proportion aliases |
 | Extra | `Drif_Extra_` | 38, including none |
 | Tattoos | `Drif_Tattoo_` | 34, including none |
@@ -24,12 +24,40 @@ compatible modeled wardrobe choices.
 | Ears | `Drif_Ears_` | 35 |
 
 Counts above come from `drifmaker-config.mjs`; its imported expansion modules
-contain the full catalog and labels. The editor also offers **63 body-color
-choices**, **50 portrait backgrounds**, custom color inputs, and **14 finishes**:
+contain the full catalog and labels. The editor also offers **69 body-color
+choices**, **52 portrait backgrounds**, custom color inputs, and **20 finishes**:
 solid, ghost, gold, silver, matte black, camo, marble, holographic, black gem,
-lava, woods, mossy, pink latex, and cow hide. Some color choices select their
+lava, woods, mossy, pink latex, cow hide, blue porcelain, verdigris copper, mother
+of pearl, amethyst, carbon fiber, and candy glaze. Some color choices select their
 associated finish. Marble makes every visible trait matte white; body-only
 finishes retain independent clothing and accessory colors.
+
+## Stagecraft expansion
+
+Three photo-textured tops use the user-supplied shirt photographs, packed intact
+into the asset with garment-only UV crops: Hardcore Techno sweatshirt, Seed Oil
+Free tee, and Ainslie football jersey. The latter two have modeled short sleeves;
+the jersey adds a folded black collar and sleeve hems.
+
+Seven hats adapt Little Swag World [#1685](https://nftranker.io/collections/little-swag-world/details/1685)
+and [#2382](https://nftranker.io/collections/little-swag-world/details/2382), plus
+Afella 2 #0, #93, #348, #285, #224 and #328 from the local source collection.
+The source mapping is in `extend_drifmaker_stagecraft.py` and `manifest.json`.
+Hoods use thick sculpted folds, the cap and helmet use layered shells, and the
+burger stack, bent witch hat and ribbon bow use solid shaped parts.
+
+Ten new gear choices bind rigidly to hands or forearms: arcade gauntlet, wrist
+cassette deck, jeweled cuffs, boxing mitts, aegis bracer, potion scepter, folding
+fan, stage microphone, instant camera and hand lantern. Eight new enter-and-hold
+poses are Fist bump, High five, Arms crossed, Power punch, Balance kick, Oath,
+Presenting and Mic drop. All are available to the editor and shared pose catalog.
+
+Neon doorway, Confetti burst, Solar eclipse and Ribbon vortex retain their exact
+first-pass geometry from commit `74ec583a5`; regression fingerprints compare
+exported positions and triangle counts. Coin shower contains 64 detailed coins
+with separated bounding spheres and shared Chest weights, preserving their gaps
+through every pose. `check_drifmaker_stagecraft.py` checks actual mesh containment,
+hand/forearm anchors and renders the new shapes for visual inspection.
 
 ## Sculpted collection study
 
@@ -121,7 +149,7 @@ model the helmet, and is not redistributed as a texture.
 
 ## Runtime contract
 
-- `drifella-customizable.glb` contains 516 skinned mesh objects: `Drif_Body`,
+- `drifella-customizable.glb` contains 536 skinned mesh objects: `Drif_Body`,
   `Drif_Ghost_Fuzz`, and one object per modeled category choice. The file includes
   all alternatives; runtime
   code selects exactly one choice per category and optionally no
@@ -149,7 +177,7 @@ model the helmet, and is not redistributed as a texture.
   for the studio, thumbnails and PNG-export WebGL renderers.
 - Every component uses the same 19-bone rest pose and skin. Preserve the bones,
   bind matrices, vertex weights, and original ten animation names when editing.
-  The current library has 32 actions: the ten locomotion clips plus 22 poses.
+  The current library has 40 actions: the ten locomotion clips plus 30 poses.
 - `Drif_Body_Main` is the blue body material, also used by the sleepy eyelids.
   Recolor this material per character. Keep shared source materials immutable.
 - `Drif_Shirt_Main`, `Drif_Hat_Main`, and `Drif_Accessory_Main` are additional
@@ -181,7 +209,7 @@ Run from the repository root. On this Mac the complete CLI rebuild is:
 ```
 
 The first command loads the preserved original, rebuilds only the generated
-`DrifmakerLibrary`, creates all 32 actions, and saves the editable blend, GLB and
+`DrifmakerLibrary`, creates all 40 actions, and saves the editable blend, GLB and
 manifest to this folder. The second validates the generated library and refreshes
 its render previews. `ROOT` in the Python scripts is configured for this workspace;
 change it when rebuilding from another checkout. An isolated CLI process does
@@ -192,9 +220,10 @@ and validator scripts.
 The builder runs every extension in order, ending with
 `extend_drifmaker_atelier.py`, `extend_drifmaker_sculpt_faces.py`,
 `extend_drifmaker_sculpt_wardrobe.py`, and
-`extend_drifmaker_sculpt_ears_extra.py`. The last extension also replaces the
-24 existing atelier ear/extra meshes. `animate_drifmaker_poses.py` creates the
-22 enter-and-hold actions while preserving the ten original locomotion actions.
+`extend_drifmaker_sculpt_ears_extra.py`, and `extend_drifmaker_stagecraft.py`.
+Four extras retain their original atelier meshes; the other 20 atelier ears/extras
+retain their sculpted replacements. `animate_drifmaker_poses.py` creates the
+30 enter-and-hold actions while preserving the ten original locomotion actions.
 
 The builder automatically runs `optimize_drifmaker_glb.py` after GLB export and
 writes `optimization-report.json`. This is lossless buffer deduplication: it
@@ -216,7 +245,7 @@ The 50 MiB optimizer budget is a project transfer budget, not a hosting-provider
 limit. The separate showroom prop build's Draco/simplification workflow does not
 apply to this character library.
 
-`check_drifmaker.py` evaluates every mesh over **1,798 frames across all 32
+`check_drifmaker.py` evaluates every mesh over **2,286 frames across all 40
 clips**, checks normalized weights with at most four influences per vertex,
 checks finite deformations and collar fit, and compares the original ten-part
 union against the original source vertices. `animation-validation.json` records
@@ -227,6 +256,16 @@ animation tracks and source-triangle coverage. Saved previews show mixed choices
 in neutral, held poses, walk/hold and crouch/hold, including rear accessories.
 
 ## Editor and showroom integration
+
+Bookmarks → **Import folder** reads local JSON files recursively, including the
+`json/` folder from a shared portrait ZIP. It accepts exported looks, bookmark
+metadata (including hidden selections), and recognized NFT-style trait names.
+New unique looks appear first in natural filename order with their shared names.
+Existing bookmarks remain intact; duplicates, invalid files and capacity overflow
+are reported. Imports use a single storage write and retain the 500-bookmark cap.
+No JSON or referenced image URL is uploaded or fetched. Browsers without folder
+selection receive a multiple-JSON-file picker instead.
+
 
 The standalone editor is served at `/drifmaker` (`drifmaker/index.html`). Its
 preview uses `createShowroomAvatar` and the same movement/holding blends as the

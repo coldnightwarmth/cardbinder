@@ -1,0 +1,26 @@
+{
+  "handProps": [
+    "arcadegauntlet",
+    "wristcassette",
+    "gemcuffs",
+    "punchmitts",
+    "aegisbracer",
+    "potionstaff",
+    "foldingfan",
+    "stagemic",
+    "instantcam",
+    "handlantern"
+  ],
+  "hats": [
+    "lavendercowl",
+    "cablesnood",
+    "officerpeak",
+    "kettlevisor",
+    "parchmentwitch",
+    "burgerstack",
+    "storybookbow"
+  ],
+  "coinCount": 64,
+  "actualCoinRadius": 0.09247319848920563,
+  "minimumGap": 0.020852335688866325
+}

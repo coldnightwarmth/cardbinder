@@ -1,8 +1,8 @@
-"""Twenty-two enter-and-hold actions on the unmodified 19-bone Drifella skeleton.
+"""Thirty enter-and-hold actions on the unmodified 19-bone Drifella skeleton.
 Executed by build_drifmaker.py. Original locomotion actions are never edited.
 """
 from mathutils import Quaternion, Matrix
-POSE_IDS=['salute','tpose','bow','victory','think','point','summon','flex','welcome','heart','wave','dab','lunge','crane','airguitar','kneel','boxer','shrug','leanback','lookout','conductor','curtsey']
+POSE_IDS=['salute','tpose','bow','victory','think','point','summon','flex','welcome','heart','wave','dab','lunge','crane','airguitar','kneel','boxer','shrug','leanback','lookout','conductor','curtsey','fistbump','highfive','crossarms','powerpunch','balancekick','oath','present','micdrop']
 for old_action in list(bpy.data.actions):
  if old_action.name.startswith('Pose_'):bpy.data.actions.remove(old_action,do_unlink=True)
 rig.animation_data.action=bpy.data.actions['Neutral'];scene.frame_set(1)
@@ -99,6 +99,23 @@ def pose_target(kind):
   pose_aim('Thigh.L',(-.12,-.15,-1));pose_aim('Shin.L',(.25,.2,-1));pose_aim('Thigh.R',(-.25,0,-1));pose_aim('Shin.R',(.15,.2,-1))
   for side,sgn in [('R',-1),('L',1)]:pose_arm(side,(sgn*.75,-.05,-.5),(sgn*.2,-.15,-.85))
   pose_turn('Chest',(1,0,0),12);pose_turn('Head',(1,0,0),9)
+ elif kind=='fistbump':
+  pose_arm('R',(-.3,-.85,-.18),(.05,-1,.10));pose_turn('Chest',(0,1,0),-8);pose_turn('Head',(0,0,1),-6)
+ elif kind=='highfive':
+  pose_arm('L',(.6,-.15,.75),(-.05,-.25,1),(.12,-.50,.8));pose_turn('Chest',(0,0,1),-7)
+ elif kind=='crossarms':
+  pose_arm('R',(-.23,-.7,-.4),(.88,-.2,.25));pose_arm('L',(.27,-.75,-.2),(-.85,-.18,.1));pose_turn('Head',(1,0,0),-7)
+ elif kind=='powerpunch':
+  pose_lower(.04);pose_arm('R',(-.05,-1,.15),(.05,-1,.05));pose_arm('L',(.45,.15,-.5),(-.2,-.6,.6));pose_turn('Chest',(0,1,0),-18)
+  pose_aim('Thigh.R',(-.25,.2,-1));pose_aim('Thigh.L',(.2,-.3,-1))
+ elif kind=='balancekick':
+  pose_aim('Thigh.L',(.75,-.6,.20));pose_aim('Shin.L',(.7,-.65,.05));pose_aim('Foot.L',(0,-1,0));pose_arm('R',(-.8,.1,.2),(-.9,-.1,.3));pose_arm('L',(.45,-.4,-.2),(-.3,-.5,.7));pose_turn('Chest',(0,0,1),8)
+ elif kind=='oath':
+  pose_arm('R',(-.25,-.6,-.45),(.65,-.25,.65));pose_arm('L',(.25,0,-1),(.12,-.1,-1));pose_turn('Head',(1,0,0),11)
+ elif kind=='present':
+  pose_arm('L',(.65,-.4,-.25),(.7,-.5,.30),(.75,-.35,.1));pose_arm('R',(-.3,.1,-1),(-.1,.2,-1));pose_turn('Head',(0,1,0),-12)
+ elif kind=='micdrop':
+  pose_arm('R',(-.9,-.3,-.05),(-.95,-.3,-.05),(-.5,-.2,-.7));pose_arm('L',(.4,.1,-.75),(-.3,.1,-.5));pose_turn('Chest',(0,0,1),8);pose_turn('Head',(1,0,0),14)
  return {b.name:(b.location.copy(),b.rotation_quaternion.copy(),b.scale.copy()) for b in rig.pose.bones}
 
 for kind in POSE_IDS:
@@ -109,9 +126,16 @@ for kind in POSE_IDS:
  target=pose_target(kind)
  # New emotes have a deliberate passing gesture before reaching their held pose.
  waypoint=None
- if kind in ['wave','dab','lunge','crane','airguitar','kneel','boxer','shrug','leanback','lookout','conductor','curtsey']:
+ if kind in ['wave','dab','lunge','crane','airguitar','kneel','boxer','shrug','leanback','lookout','conductor','curtsey','fistbump','highfive','crossarms','powerpunch','balancekick','oath','present','micdrop']:
   pose_target(kind)
-  if kind=='wave':pose_arm('R',(-.7,0,.6),(.35,-.1,1),(.5,0,.8))
+  if kind in ['fistbump','powerpunch']:pose_arm('R',(-.5,-.25,-.2),(.15,-.25,.95))
+  elif kind=='highfive':pose_arm('L',(.8,-.1,.1),(.1,-.4,.8))
+  elif kind=='crossarms':pose_arm('L',(.8,-.3,-.4),(.5,-.3,-.2))
+  elif kind=='balancekick':pose_aim('Shin.L',(-.2,.4,-1))
+  elif kind=='oath':pose_turn('Head',(1,0,0),-16)
+  elif kind=='present':pose_arm('L',(.3,-.7,-.4),(-.1,-.6,.6))
+  elif kind=='micdrop':pose_arm('R',(-.3,-.6,.1),(.1,-.3,.95))
+  elif kind=='wave':pose_arm('R',(-.7,0,.6),(.35,-.1,1),(.5,0,.8))
   elif kind=='dab':pose_arm('L',(.45,-.4,-.35),(-.5,-.5,.5))
   elif kind=='airguitar':pose_arm('R',(-.5,-.4,-.1),(.6,-.5,.7),(.5,-.3,.4))
   elif kind=='boxer':pose_arm('R',(-.25,-.8,.1),(.1,-1,.1))

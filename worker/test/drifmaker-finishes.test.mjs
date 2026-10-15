@@ -9,7 +9,7 @@ import {BODY_COLORS,BODY_STYLES,BODY_STYLE_COLORS,HEAD_SCALES,isOriginalHead,DEF
 import {normalizePose,normalizePoseTime} from '../../drifmaker-poses.mjs';
 import {createPortraitAvatar} from '../../drifmaker-portrait.mjs';
 
-const finishIds=['blackgem','lava','woods','mossy','pinklatex','cowhide'];
+const finishIds=['blueporcelain','verdigris','pearl','amethyst','carbonfiber','candyglaze','blackgem','lava','woods','mossy','pinklatex','cowhide'];
 function fixture(){
  const geometry=new THREE.BoxGeometry(),texture=new THREE.Texture();
  const source=new THREE.MeshStandardMaterial({color:'#dbbd96',map:texture,normalMap:texture,bumpMap:texture,roughnessMap:texture,metalnessMap:texture,alphaMap:texture,emissiveMap:texture,alphaTest:.35,vertexColors:true,emissive:'#351724',emissiveIntensity:.7,metalness:.19,roughness:.61,transparent:true,opacity:.6,depthWrite:false});
@@ -31,7 +31,7 @@ test('six source-inspired finishes are normalized and exposed by the shared pale
   assert.equal(BODY_STYLE_COLORS[id],finish.color);
   const selected=normalizeAppearance({...DEFAULT_APPEARANCE,bodyStyle:id,bodyColor:'#ffffff'});
   assert.equal(selected.bodyStyle,id);assert.equal(selected.bodyColor,finish.color);
-  assert.match(finish.source,/\.PNG$/);
+  assert.match(finish.source,/\.PNG$|Original stagecraft material/);
  }
  assert.equal(normalizeAppearance({...DEFAULT_APPEARANCE,bodyStyle:'constructor'}).bodyStyle,'solid');
 });
@@ -55,7 +55,7 @@ test('all new finishes cover skin, ears, nose and bare feet while preserving exp
   assert.deepEqual(state(other.getObjectByName('Drif_Body').children[0].material),original,'other character stays isolated');
   assert.deepEqual(state(f.source),original,'shared loaded material remains untouched');
  }
- assert.equal(cacheKeys.size,6,'each shader has a separate Three program cache key');
+ assert.equal(cacheKeys.size,12,'each shader has a separate Three program cache key');
  a.dispose();b.dispose();f.dispose();
 });
 
@@ -88,7 +88,7 @@ test('finish shaders use real Standard chunks, stable bind coordinates and disti
   assert.equal((shader.fragmentShader.match(/void drifFinishSample/g)||[]).length,1);
   results.push(shader.fragmentShader);
  }
- assert.equal(new Set(results).size,6);
+ assert.equal(new Set(results).size,12);
  assert.equal(applyCollectionFinishShader({},'unknown'),false);
  assert.throws(()=>applyCollectionFinishShader({vertexShader:'',fragmentShader:''},'lava'),/Unsupported Three shader/);
 });

@@ -6,6 +6,13 @@
 // without extra textures, world-space swimming, or changes to silhouette/rigging.
 const finish=(color,roughness,metalness,envMapIntensity,source)=>Object.freeze({color,roughness,metalness,envMapIntensity,source});
 export const COLLECTION_FINISHES=Object.freeze({
+ blueporcelain:finish('#e0e8ef',0.2,0.03,1.0,'Original stagecraft material'),
+ verdigris:finish('#49a68d',0.62,0.65,1.25,'Original stagecraft material'),
+ pearl:finish('#e9d6ee',0.19,0.35,1.65,'Original stagecraft material'),
+ amethyst:finish('#8d4ac3',0.22,0.26,1.35,'Original stagecraft material'),
+ carbonfiber:finish('#252b35',0.28,0.5,1.25,'Original stagecraft material'),
+ candyglaze:finish('#ff7d45',0.14,0.05,1.5,'Original stagecraft material'),
+
  blackgem:finish('#151722',.14,.32,1.7,'black gem.PNG'),
  lava:finish('#dd4818',.72,.08,.8,'lava.PNG'),
  woods:finish('#926442',.83,0,.55,'woods.PNG'),
@@ -39,6 +46,36 @@ vec3 drifSurfaceNormal(vec3 n,float height,vec3 viewPosition,float faceDirection
 // Broad bands/patches remain readable at portrait size; fine detail is filtered
 // through derivatives rather than screen-space noise or decorative line meshes.
 const samples={
+ blueporcelain:`float swirls=sin(p.y*21.0+sin(p.x*13.0)*2.0+sin(p.z*12.0));
+ float flower=sin(atan(p.z,p.x)*8.0+length(p.xz)*19.0);
+ float ink=smoothstep(.65,.90,swirls*flower);
+ color=drifSurfaceLinear(mix(vec3(.92,.95,.98),vec3(.025,.12,.42),ink));
+ roughness=.16+.07*drifSurfaceNoise(p*80.0);height=ink*.0004;`,
+ verdigris:`float field=drifSurfaceFbm(p*6.2);float patina=smoothstep(.37,.58,field);
+ color=drifSurfaceLinear(mix(vec3(.66,.30,.12),mix(vec3(.025,.22,.17),vec3(.23,.65,.48),drifSurfaceNoise(p*30.0)),patina));
+ roughness=mix(.25,.88,patina);height=patina*drifSurfaceNoise(p*70.0)*.003;`,
+ pearl:`float bands=sin(p.y*22.0+drifSurfaceFbm(p*8.0)*9.0);
+ vec3 nacre=.80+.14*cos(vec3(0.0,2.0,4.0)+bands*1.9+p.x*4.0);
+ color=drifSurfaceLinear(nacre);roughness=.13+.08*drifSurfaceNoise(p*30.0);height=bands*.0008;`,
+ amethyst:`vec3 q=p*10.0,base=floor(q),local=fract(q);float nearest=10.0,second=10.0,crystal=0.0;
+ for(int x=-1;x<=1;x++)for(int y=-1;y<=1;y++)for(int z=-1;z<=1;z++){
+  vec3 cell=vec3(float(x),float(y),float(z));vec3 id=base+cell;
+  vec3 seed=vec3(drifSurfaceHash(id),drifSurfaceHash(id+13.7),drifSurfaceHash(id+37.1));
+  float distanceToSeed=length(cell+seed-local);
+  if(distanceToSeed<nearest){second=nearest;nearest=distanceToSeed;crystal=drifSurfaceHash(id+71.0);}else{second=min(second,distanceToSeed);}
+ }
+ float quartz=1.0-smoothstep(.015,.07,second-nearest);
+ color=drifSurfaceLinear(mix(vec3(.22,.045,.39),vec3(.70,.41,.86),crystal));
+ color=mix(color,drifSurfaceLinear(vec3(.78,.60,.87)),quartz*.45);roughness=.15+crystal*.14;height=nearest*.002;`,
+ carbonfiber:`vec2 uv=p.xy*46.0;vec2 cell=floor(uv);vec2 f=fract(uv);
+ float orientation=mod(cell.x+cell.y,2.0);float strand=mix(f.x,f.y,orientation);
+ float yarn=pow(sin(strand*3.14159265),.5);float rib=.5+.5*sin(strand*50.0);
+ color=drifSurfaceLinear(mix(vec3(.025,.035,.05),vec3(.16,.18,.21),yarn*(.70+.30*orientation)));
+ roughness=.23+.13*(1.0-yarn);height=yarn*.0016+rib*.00012;`,
+ candyglaze:`float swirl=.5+.5*sin(p.y*16.0+p.x*9.0+drifSurfaceFbm(p*4.0)*8.0);
+ color=drifSurfaceLinear(mix(vec3(.95,.12,.04),vec3(1.0,.72,.25),smoothstep(.20,.80,swirl)));
+ float sugar=drifSurfaceNoise(p*170.0);roughness=.095+.09*sugar;height=(sugar-.5)*.0003;`,
+
  blackgem:`
  float cloud=drifSurfaceFbm(p*3.4);
  float polish=drifSurfaceNoise(p*105.0);
