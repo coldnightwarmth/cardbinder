@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {POSES,createPoseState,normalizePose,normalizePoseTime} from '../../drifmaker-poses.mjs';
 import {createPoseBuffer} from '../../showroom-motion.mjs';
 test('pose state holds at the endpoint, restarts the same pose, and cancels explicitly',()=>{
- const state=createPoseState();assert.equal(POSES.length,10);
+ const state=createPoseState();assert.equal(POSES.length,22);
  state.select('salute');assert.deepEqual(state.update(.7),{emote:'salute',emoteTime:.7});
  assert.equal(state.update(80).emoteTime,2);assert.equal(state.update(80).emote,'salute');
  state.select('salute');assert.equal(state.value.emoteTime,0);

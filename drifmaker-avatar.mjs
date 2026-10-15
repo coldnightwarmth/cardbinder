@@ -1,4 +1,5 @@
-import {CATEGORIES,DEFAULT_APPEARANCE,FINISH_COLORS,CLASSIC_FIN_HEADS,LEG_OVERRIDE_TOPS,normalizeAppearance} from './drifmaker-config.mjs?v=9';
+import {CATEGORIES,DEFAULT_APPEARANCE,FINISH_COLORS,CLASSIC_FIN_HEADS,LEG_OVERRIDE_TOPS,normalizeAppearance} from './drifmaker-config.mjs?v=10';
+import {applyHoloShader} from './drifmaker-holo.mjs?v=1';
 import {applyCamoShader} from './drifmaker-camo.mjs?v=1';
 
 // Each character owns its surface finishes and visibility; geometry and textures
@@ -14,18 +15,19 @@ export function createAvatarAppearance(model){
   const part=partName(node),skinPart=/^Drif_(?:Body(?:_|$)|Head_|Ears_|Nose_)/.test(part),face=/^Drif_(?:Eyes_|Brows_|Mouth_)/.test(part),fiber=part.startsWith('Drif_Ghost_Fuzz');
   const isolate=source=>{
    const recolor=/^(?:Drif_Body_Main|Azure blue)(?:[._]|$)/.test(source?.name||'');
-   const feet=(part.startsWith('Drif_Legs_')||part.startsWith('Drif_Shirt_wizardrobe'))&&/^Drif_Original_Warm_ivory/.test(source?.name||'');
+   const feet=(part.startsWith('Drif_Legs_')||LEG_OVERRIDE_TOPS.some(id=>part.startsWith('Drif_Shirt_'+id)))&&/^Drif_Original_Warm_ivory/.test(source?.name||'');
    const skin=skinPart||recolor,gilded=skin||face||feet;
-   if(!source?.color||(!gilded&&!fiber))return source;
-   const role=skin?'skin':feet?'feet':gilded?'gilded':'fiber',key=source.uuid+':'+role;
+   if(!source?.color)return source;
+   const role=skin?'skin':feet?'feet':gilded?'gilded':fiber?'fiber':'wardrobe',key=source.uuid+':'+role;
    if(!owned.has(key)){
     const material=source.clone();owned.set(key,material);
-    surfaces.push({material,skin,feet,gilded,recolor:recolor||fiber,color:source.color.clone(),map:source.map,metalness:source.metalness,roughness:source.roughness,envMapIntensity:source.envMapIntensity,opacity:source.opacity,transparent:source.transparent,depthWrite:source.depthWrite,emissive:source.emissive?.clone(),intensity:source.emissiveIntensity});
-    if(gilded){
+    surfaces.push({material,skin,feet,gilded,recolor:recolor||fiber,color:source.color.clone(),map:source.map,metalness:source.metalness,roughness:source.roughness,envMapIntensity:source.envMapIntensity,opacity:source.opacity,transparent:source.transparent,depthWrite:source.depthWrite,emissive:source.emissive?.clone(),intensity:source.emissiveIntensity,vertexColors:source.vertexColors,normalMap:source.normalMap,bumpMap:source.bumpMap,roughnessMap:source.roughnessMap,metalnessMap:source.metalnessMap,alphaMap:source.alphaMap});
+    {
      material.userData.drifGhost=false;
      material.userData.drifCamo=false;
-     material.customProgramCacheKey=()=>material.userData.drifCamo?'drif-camo-v1':material.userData.drifGhost?'drif-ghost-rim-v1':'drif-solid-v1';
-     material.onBeforeCompile=shader=>{if(material.userData.drifCamo)applyCamoShader(shader);if(material.userData.drifGhost)shader.fragmentShader=shader.fragmentShader.replace('#include <opaque_fragment>',`float drifRim = pow(1.0 - abs(dot(normalize(normal), normalize(vViewPosition))), 1.35);
+     material.userData.drifHolo=false;
+     material.customProgramCacheKey=()=>material.userData.drifHolo?'drif-holo-v1':material.userData.drifCamo?'drif-camo-v1':material.userData.drifGhost?'drif-ghost-rim-v1':'drif-solid-v1';
+     material.onBeforeCompile=shader=>{if(material.userData.drifHolo)applyHoloShader(shader);if(material.userData.drifCamo)applyCamoShader(shader);if(material.userData.drifGhost)shader.fragmentShader=shader.fragmentShader.replace('#include <opaque_fragment>',`float drifRim = pow(1.0 - abs(dot(normalize(normal), normalize(vViewPosition))), 1.35);
 diffuseColor.a *= 0.16 + 0.84 * drifRim;
 outgoingLight += diffuse * drifRim * 0.7;
 #include <opaque_fragment>`);};
@@ -49,15 +51,18 @@ outgoingLight += diffuse * drifRim * 0.7;
    }
    for(const node of fuzz)node.visible=current.bodyStyle==='ghost';
    for(const saved of surfaces){
-    const {material}=saved,ghost=current.bodyStyle==='ghost'&&saved.gilded,camo=current.bodyStyle==='camo'&&(saved.skin||saved.feet),coated=Object.hasOwn(FINISH_COLORS,current.bodyStyle)&&saved.gilded,metallic=coated&&current.bodyStyle!=='matteblack',matte=coated&&!metallic;
-    if(coated)material.color.set(FINISH_COLORS[current.bodyStyle]);else if(ghost)material.color.set(current.bodyColor);else if(saved.recolor&&current.bodyColor!==DEFAULT_APPEARANCE.bodyColor)material.color.set(current.bodyColor);else material.color.copy(saved.color);
-    const map=coated||camo?null:saved.map;
+    const {material}=saved,marble=current.bodyStyle==='marble',holo=current.bodyStyle==='holographic'&&saved.gilded,ghost=current.bodyStyle==='ghost'&&saved.gilded,camo=current.bodyStyle==='camo'&&(saved.skin||saved.feet),coated=Object.hasOwn(FINISH_COLORS,current.bodyStyle)&&saved.gilded,metallic=coated&&current.bodyStyle!=='matteblack',matte=coated&&!metallic;
+    if(marble||holo)material.color.set('#ffffff');else if(coated)material.color.set(FINISH_COLORS[current.bodyStyle]);else if(ghost)material.color.set(current.bodyColor);else if(saved.recolor&&current.bodyColor!==DEFAULT_APPEARANCE.bodyColor)material.color.set(current.bodyColor);else material.color.copy(saved.color);
+    const map=marble||holo||coated||camo?null:saved.map;
+    if(material.vertexColors!==(marble?false:saved.vertexColors)){material.vertexColors=marble?false:saved.vertexColors;material.needsUpdate=true;}
+    for(const slot of ['normalMap','bumpMap','roughnessMap','metalnessMap','alphaMap']){const value=marble?null:saved[slot];if(material[slot]!==value){material[slot]=value;material.needsUpdate=true;}}
+    if(material.userData.drifHolo!==holo){material.userData.drifHolo=holo;material.needsUpdate=true;}
     if(material.map!==map){material.map=map;material.needsUpdate=true;}
     if(saved.gilded&&material.userData.drifGhost!==ghost){material.userData.drifGhost=ghost;material.needsUpdate=true;}
     if(saved.gilded&&material.userData.drifCamo!==camo){material.userData.drifCamo=camo;material.needsUpdate=true;}
-    material.opacity=coated?1:ghost?.52:saved.opacity;material.transparent=coated?false:ghost||saved.transparent;material.depthWrite=coated?true:ghost?false:saved.depthWrite;
-    material.metalness=metallic?.94:matte||camo?0:saved.metalness;material.roughness=metallic?.17:matte||camo?1:ghost?.95:saved.roughness;material.envMapIntensity=metallic?1.4:matte||camo?.3:saved.envMapIntensity;
-    if(material.emissive){if(coated)material.emissive.set(0);else if(ghost)material.emissive.set(current.bodyColor);else material.emissive.copy(saved.emissive);material.emissiveIntensity=coated?0:ghost?.35:saved.intensity;}
+    material.opacity=marble||holo||coated?1:ghost?.52:saved.opacity;material.transparent=marble||holo||coated?false:ghost||saved.transparent;material.depthWrite=marble||holo||coated?true:ghost?false:saved.depthWrite;
+    material.metalness=marble?0:holo?.72:metallic?.94:matte||camo?0:saved.metalness;material.roughness=marble?1:holo?.24:metallic?.17:matte||camo?1:ghost?.95:saved.roughness;material.envMapIntensity=marble?.25:holo?1.6:metallic?1.4:matte||camo?.3:saved.envMapIntensity;
+    if(material.emissive){if(marble||holo||coated)material.emissive.set(0);else if(ghost)material.emissive.set(current.bodyColor);else material.emissive.copy(saved.emissive);material.emissiveIntensity=marble||holo||coated?0:ghost?.35:saved.intensity;}
    }
    model.userData.appearance={...current};return {...current};
   },

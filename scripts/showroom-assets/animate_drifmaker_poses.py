@@ -1,8 +1,8 @@
-"""Ten enter-and-hold actions on the unmodified 19-bone Drifella skeleton.
+"""Twenty-two enter-and-hold actions on the unmodified 19-bone Drifella skeleton.
 Executed by build_drifmaker.py. Original locomotion actions are never edited.
 """
 from mathutils import Quaternion, Matrix
-POSE_IDS=['salute','tpose','bow','victory','think','point','summon','flex','welcome','heart']
+POSE_IDS=['salute','tpose','bow','victory','think','point','summon','flex','welcome','heart','wave','dab','lunge','crane','airguitar','kneel','boxer','shrug','leanback','lookout','conductor','curtsey']
 for old_action in list(bpy.data.actions):
  if old_action.name.startswith('Pose_'):bpy.data.actions.remove(old_action,do_unlink=True)
 rig.animation_data.action=bpy.data.actions['Neutral'];scene.frame_set(1)
@@ -26,6 +26,12 @@ def pose_aim(name,direction):
 def pose_arm(side,upper,fore,hand=None):
  pose_aim('UpperArm.'+side,upper);pose_aim('Forearm.'+side,fore)
  pose_aim('Hand.'+side,hand or fore)
+
+def pose_lower(amount):
+ # Bone locations use rest-local axes; lower in Blender world Z.
+ b=rig.pose.bones['Pelvis']
+ b.location+=b.bone.matrix_local.to_quaternion().inverted() @ Vector((0,0,-amount))
+ bpy.context.view_layer.update()
 
 def pose_target(kind):
  pose_reset()
@@ -54,6 +60,45 @@ def pose_target(kind):
  elif kind=='heart':
   for side,s in [('R',-1),('L',1)]:pose_arm(side,(s*.25,-.7,-.25),(-s*.8,-.3,.4),(-s*.8,0,.45))
   pose_turn('Head',(1,0,0),6)
+ elif kind=='wave':
+  pose_arm('R',(-.80,0,.50),(-.10,-.05,1),(-.25,-.04,.85));pose_turn('Head',(0,1,0),-8)
+ elif kind=='dab':
+  pose_arm('L',(.96,.05,.45),(.9,.05,.45));pose_arm('R',(-.4,-.35,.55),(.7,-.4,.3),(.8,0,.1));pose_turn('Head',(1,0,0),15);pose_turn('Chest',(0,1,0),-12)
+ elif kind=='lunge':
+  pose_lower(.07)
+  pose_aim('Thigh.L',(.18,-.44,-.84));pose_aim('Shin.L',(.0,.36,-.93));pose_aim('Foot.L',(0,-1,0))
+  pose_aim('Thigh.R',(-.23,.35,-.91));pose_aim('Shin.R',(0,-.15,-1));pose_aim('Foot.R',(0,-1,0))
+  pose_arm('L',(.64,-.6,.24),(.6,-.75,.1));pose_arm('R',(-.55,.1,-.55),(.2,-.7,.2));pose_turn('Chest',(0,1,0),-12)
+ elif kind=='crane':
+  pose_aim('Thigh.L',(.18,-.8,-.15));pose_aim('Shin.L',(-.2,.25,-.9));pose_aim('Foot.L',(0,-.7,-.4))
+  for side,sgn in [('R',-1),('L',1)]:pose_arm(side,(sgn*.95,0,.2),(sgn*.75,-.1,.55))
+  pose_turn('Head',(0,0,1),-7)
+ elif kind=='airguitar':
+  pose_arm('L',(.72,-.45,-.2),(.72,-.48,.35),(.5,-.6,.2));pose_arm('R',(-.35,-.4,-.6),(.7,-.5,.1),(.6,-.4,-.1))
+  pose_turn('Chest',(0,1,0),12);pose_turn('Head',(0,0,1),12)
+ elif kind=='kneel':
+  pose_lower(.17)
+  pose_aim('Thigh.R',(-.15,-.4,-.8));pose_aim('Shin.R',(0,.8,-.3));pose_aim('Foot.R',(0,0,-1))
+  pose_aim('Thigh.L',(.1,-.8,-.2));pose_aim('Shin.L',(0,0,-1));pose_aim('Foot.L',(0,-1,0))
+  pose_arm('L',(.2,-.4,-.8),(-.1,-.45,-.65));pose_arm('R',(-.25,-.35,-.65),(.2,-.7,.25));pose_turn('Head',(1,0,0),9)
+ elif kind=='boxer':
+  pose_arm('R',(-.45,-.55,-.25),(.18,-.45,.9),(.05,-.2,.9));pose_arm('L',(.45,-.65,-.1),(-.25,-.35,.9),(-.1,-.15,.8));pose_turn('Chest',(0,1,0),-10)
+ elif kind=='shrug':
+  for side,sgn in [('R',-1),('L',1)]:pose_arm(side,(sgn*.6,-.1,-.4),(sgn*.2,-.3,.9),(sgn*.6,-.2,.1))
+  pose_turn('Head',(0,0,1),14)
+ elif kind=='leanback':
+  pose_turn('Chest',(1,0,0),-17);pose_turn('Head',(1,0,0),-12)
+  for side,sgn in [('R',-1),('L',1)]:pose_arm(side,(sgn*.65,.35,-.55),(sgn*.3,.1,-.8))
+  pose_aim('Thigh.L',(.2,-.15,-1));pose_aim('Thigh.R',(-.2,-.15,-1))
+ elif kind=='lookout':
+  pose_arm('L',(.75,-.1,.55),(-.3,-.55,.75),(-.7,-.15,.2));pose_turn('Head',(0,1,0),-18);pose_turn('Chest',(1,0,0),8)
+ elif kind=='conductor':
+  pose_arm('R',(-.55,-.5,.4),(.15,-.5,.8),(.3,-.4,.6));pose_arm('L',(.6,-.55,-.2),(.3,-.65,.4),(.1,-.6,.3));pose_turn('Head',(0,0,1),-7)
+ elif kind=='curtsey':
+  pose_lower(.05)
+  pose_aim('Thigh.L',(-.12,-.15,-1));pose_aim('Shin.L',(.25,.2,-1));pose_aim('Thigh.R',(-.25,0,-1));pose_aim('Shin.R',(.15,.2,-1))
+  for side,sgn in [('R',-1),('L',1)]:pose_arm(side,(sgn*.75,-.05,-.5),(sgn*.2,-.15,-.85))
+  pose_turn('Chest',(1,0,0),12);pose_turn('Head',(1,0,0),9)
  return {b.name:(b.location.copy(),b.rotation_quaternion.copy(),b.scale.copy()) for b in rig.pose.bones}
 
 for kind in POSE_IDS:
@@ -62,12 +107,26 @@ for kind in POSE_IDS:
  if old_action:bpy.data.actions.remove(old_action,do_unlink=True)
  rig.animation_data.action=None
  target=pose_target(kind)
+ # New emotes have a deliberate passing gesture before reaching their held pose.
+ waypoint=None
+ if kind in ['wave','dab','lunge','crane','airguitar','kneel','boxer','shrug','leanback','lookout','conductor','curtsey']:
+  pose_target(kind)
+  if kind=='wave':pose_arm('R',(-.7,0,.6),(.35,-.1,1),(.5,0,.8))
+  elif kind=='dab':pose_arm('L',(.45,-.4,-.35),(-.5,-.5,.5))
+  elif kind=='airguitar':pose_arm('R',(-.5,-.4,-.1),(.6,-.5,.7),(.5,-.3,.4))
+  elif kind=='boxer':pose_arm('R',(-.25,-.8,.1),(.1,-1,.1))
+  elif kind=='conductor':pose_arm('L',(.7,-.1,.6),(.15,-.3,.95))
+  elif kind=='shrug':pose_turn('Head',(0,0,1),-23)
+  elif kind=='lookout':pose_turn('Head',(0,1,0),32)
+  else:pose_turn('Chest',(0,1,0),-12)
+  waypoint={b.name:(b.location.copy(),b.rotation_quaternion.copy(),b.scale.copy()) for b in rig.pose.bones}
  action=bpy.data.actions.new(name);action.use_fake_user=True;rig.animation_data.action=action
  # Small anticipation, smooth arrival, settling, then an exactly repeated end.
  for frame,t in [(1,0),(7,.025),(20,.38),(36,.90),(45,1),(61,1)]:
   for b in rig.pose.bones:
    a,q,sc=neutral[b.name];ta,tq,ts=target[b.name]
    b.location=a.lerp(ta,t);b.rotation_quaternion=q.slerp(tq,t);b.scale=sc.lerp(ts,t)
+   if waypoint and frame==20:b.location,b.rotation_quaternion,b.scale=[v.copy() for v in waypoint[b.name]]
    if b.name=='Chest' and frame==7:b.rotation_quaternion @= Quaternion((1,0,0),math.radians(-3))
    for field in ['location','rotation_quaternion','scale']:b.keyframe_insert(field,frame=frame,group=b.name)
  action['drifmaker_pose']=kind;action['hold_frame']=45;action['duration_seconds']=2

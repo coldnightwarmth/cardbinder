@@ -4,20 +4,20 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import * as THREE from '../../vendor/three.module.min.js';
-import {CATEGORIES,GOLD_COLOR,BODY_COLORS,PORTRAIT_BACKGROUNDS,DEFAULT_APPEARANCE,APPEARANCE_STORAGE_KEY,normalizeAppearance,appearanceKey,loadAppearance,saveAppearance} from '../../drifmaker-config.mjs';
+import {CATEGORIES,LEG_OVERRIDE_TOPS,GOLD_COLOR,BODY_COLORS,PORTRAIT_BACKGROUNDS,DEFAULT_APPEARANCE,APPEARANCE_STORAGE_KEY,normalizeAppearance,appearanceKey,loadAppearance,saveAppearance} from '../../drifmaker-config.mjs';
 import {createAvatarAppearance} from '../../drifmaker-avatar.mjs';
 import {Showroom} from '../src/showroom.js';
 import {freshRoom} from '../src/showroom-state.js';
 
 test('expanded wardrobe contains twelve independent categories and bounded normalized values',()=>{
- assert.deepEqual(Object.fromEntries(Object.entries(CATEGORIES).map(([category,items])=>[category,items.length])),{eyes:35,mouth:31,shirt:30,legs:24,hat:31,accessory:30,head:10,extra:16,tattoo:12,nose:9,ears:13,brows:14});
+ assert.deepEqual(Object.fromEntries(Object.entries(CATEGORIES).map(([category,items])=>[category,items.length])),{eyes:47,mouth:43,shirt:42,legs:36,hat:43,accessory:42,head:22,extra:28,tattoo:24,nose:21,ears:25,brows:26});
  for(const items of Object.values(CATEGORIES)){
   assert.ok(items.filter(item=>item.id!=='none').length>=5);
   assert.equal(new Set(items.map(item=>item.id)).size,items.length);
   for(const item of items)assert.match(item.id,/^[a-z0-9]+$/);
  }
- assert.equal(BODY_COLORS.length,43);
- assert.equal(PORTRAIT_BACKGROUNDS.length,32);
+ assert.equal(BODY_COLORS.length,57);
+ assert.equal(PORTRAIT_BACKGROUNDS.length,44);
  for(const palette of [BODY_COLORS,PORTRAIT_BACKGROUNDS]){
   assert.equal(new Set(palette.map(color=>color.hex)).size,palette.length);
   for(const color of palette)if(color.hex!=='rainbow')assert.match(color.hex,/^#[a-f0-9]{6}$/);
@@ -34,15 +34,15 @@ test('expanded wardrobe contains twelve independent categories and bounded norma
  assert.ok(JSON.stringify(normalizeAppearance(chosen)).length<384,'appearance remains a compact fixed-shape pose field');
 });
 
-test('wizard robe hides all leg variants and switching tops restores the saved choice',()=>{
+test('full-body tops hide all leg variants and switching tops restores the saved choice',()=>{
  const model=new THREE.Group();
- for(const name of ['Drif_Shirt_wizardrobe','Drif_Shirt_original',...CATEGORIES.legs.map(item=>'Drif_Legs_'+item.id)]){const part=new THREE.Group();part.name=name;model.add(part);}
+ for(const name of [...LEG_OVERRIDE_TOPS.map(id=>'Drif_Shirt_'+id),'Drif_Shirt_original',...CATEGORIES.legs.map(item=>'Drif_Legs_'+item.id)]){const part=new THREE.Group();part.name=name;model.add(part);}
  const controller=createAvatarAppearance(model);
- for(const item of CATEGORIES.legs){
-  controller.setAppearance({...DEFAULT_APPEARANCE,shirt:'wizardrobe',legs:item.id});
+ for(const shirt of LEG_OVERRIDE_TOPS)for(const item of CATEGORIES.legs){
+  controller.setAppearance({...DEFAULT_APPEARANCE,shirt,legs:item.id});
   assert.equal(controller.appearance.legs,item.id);
   assert.ok(CATEGORIES.legs.every(option=>!model.getObjectByName('Drif_Legs_'+option.id).visible));
-  assert.equal(model.getObjectByName('Drif_Shirt_wizardrobe').visible,true);
+  assert.equal(model.getObjectByName('Drif_Shirt_'+shirt).visible,true);
   controller.setAppearance({...controller.appearance,shirt:'original'});
   assert.equal(model.getObjectByName('Drif_Legs_'+item.id).visible,true);
  }
@@ -112,7 +112,9 @@ test('alternate heads override facial meshes and ghost materials stay isolated a
  assert.equal(appearanceA.appearance.eyes,'venom');assert.equal(appearanceA.appearance.mouth,'venom');
  const ghost=a.getObjectByName('Drif_Head_hockey').material;
  assert.equal(ghost.transparent,true);assert.equal(ghost.depthWrite,false);assert.ok(ghost.opacity<1);assert.equal(ghost.userData.drifGhost,true);
- assert.equal(a.getObjectByName('Drif_Shirt_original').material,ivory,'clothes sharing a head material keep the opaque shared original');
+ assert.notEqual(a.getObjectByName('Drif_Shirt_original').material,ivory,'clothes own their material for the all-white finish');
+ assert.equal(a.getObjectByName('Drif_Shirt_original').material.transparent,false);
+ assert.equal(a.getObjectByName('Drif_Shirt_original').material.color.getHex(),ivory.color.getHex());
  assert.equal(ivory.transparent,false);assert.equal(b.getObjectByName('Drif_Head_original').material.opacity,1);
  const fragment={fragmentShader:'#include <opaque_fragment>'};ghost.onBeforeCompile(fragment);assert.match(fragment.fragmentShader,/drifRim/);
  appearanceA.setAppearance(selected);
@@ -210,9 +212,27 @@ test('every shipped wardrobe option is skinned to the original rig and retains a
  assert.ok(woven?.attributes.TEXCOORD_0!==undefined,'poncho cloth retains its fabric UVs');
  const wovenTexture=gltf.textures[gltf.materials[woven.material].pbrMetallicRoughness.baseColorTexture.index];
  assert.ok(gltf.images[wovenTexture.source].bufferView!==undefined,'poncho cloth texture travels with the GLB');
+
+ const atelier=JSON.parse(readFileSync(new URL('../../scripts/showroom-assets/atelier-catalog.json',import.meta.url)));
+ for(const [category,items] of Object.entries(atelier)){
+  assert.equal(items.length,12,category);
+  for(const [id,label] of items)assert.equal(CATEGORIES[category].find(item=>item.id===id)?.label,label);
+ }
+ for(const [category,ids] of [['Shirt',['mothtee','duckcamo','flamebowling','checkerwork','cosmicpajama','porcelainbaseball','acidknit','patchanorak']],['Legs',atelier.legs.map(([id])=>id)]])for(const id of ids){
+  const node=gltf.nodes.find(node=>node.name===`Drif_${category}_${id}`);
+  const primitives=gltf.meshes[node.mesh].primitives.filter(p=>gltf.materials[p.material].name.startsWith('Drif_Atelier_Fabric_'));
+  assert.ok(primitives.length,`${category}/${id} has woven fabric`);
+  for(const primitive of primitives){
+   assert.ok(primitive.attributes.TEXCOORD_0!==undefined,`${id}: texture coordinates`);
+   assert.ok(values(primitive.attributes.TEXCOORD_0).every(Number.isFinite));
+   const texture=gltf.textures[gltf.materials[primitive.material].pbrMetallicRoughness.baseColorTexture.index];
+   assert.ok(gltf.images[texture.source].bufferView!==undefined,`${id}: embedded textile`);
+  }
+ }
+ assert.ok(readFileSync(new URL('../../assets/models/drifmaker/drifella-customizable.glb',import.meta.url)).byteLength<25*1024*1024,'model stays below the static host asset limit');
  assert.deepEqual(gltf.animations.filter(clip=>!clip.name.startsWith('Pose_')).map(clip=>clip.name).sort(),original.json.animations.map(clip=>clip.name).sort());
  const expectedNames=['Drif_Body','Drif_Ghost_Fuzz',...Object.entries(CATEGORIES).flatMap(([category,items])=>items.filter(item=>item.id!=='none').map(item=>`Drif_${category[0].toUpperCase()+category.slice(1)}_${item.id}`))];
- assert.equal(expectedNames.length,252);
+ assert.equal(expectedNames.length,396);
  assert.deepEqual(gltf.nodes.filter(node=>node.mesh!==undefined).map(node=>node.name).sort(),expectedNames.sort(),'every logical wardrobe option has exactly one mesh node');
  for(const [category,items] of Object.entries(CATEGORIES))for(const item of items.filter(item=>item.id!=='none')){
   const prefix=`Drif_${category[0].toUpperCase()+category.slice(1)}_${item.id}`;
@@ -335,7 +355,7 @@ test('gold covers every body and face surface, isolates clothes, and restores or
  wardrobe.setAppearance({...DEFAULT_APPEARANCE,bodyStyle:'gold',bodyColor:'#111111',tattoo:'stars'});
  assert.equal(wardrobe.appearance.bodyColor,GOLD_COLOR,'gold persists with its canonical finish color');
  for(const name of names){const material=root.getObjectByName(name).material;assert.equal(material.color.getHexString(),GOLD_COLOR.slice(1));assert.equal(material.metalness,.94);assert.equal(material.roughness,.17);assert.equal(material.map,null);assert.equal(material.opacity,1);assert.equal(material.emissive.getHex(),0);assert.equal(material.emissiveIntensity,0);}
- assert.equal(root.getObjectByName('Drif_Shirt_original').material,shared);assert.equal(root.getObjectByName('Drif_Tattoo_stars').material,shared);
+ assert.equal(root.getObjectByName('Drif_Shirt_original').material.color.getHex(),shared.color.getHex());assert.equal(root.getObjectByName('Drif_Shirt_original').material.map,shared.map);assert.equal(root.getObjectByName('Drif_Tattoo_stars').material.color.getHex(),shared.color.getHex());assert.equal(root.getObjectByName('Drif_Tattoo_stars').material.map,shared.map);
  assert.equal(other.getObjectByName('Drif_Head_original').material.color.getHex(),0xddeeff);
  wardrobe.setAppearance(DEFAULT_APPEARANCE);
  for(const name of names){const material=root.getObjectByName(name).material;assert.equal(material.map,map);assert.equal(material.color.getHex(),0xddeeff);assert.equal(material.metalness,.12);assert.equal(material.roughness,.74);assert.equal(material.emissive.getHex(),0x00ffff);assert.equal(material.emissiveIntensity,2);}
@@ -360,8 +380,8 @@ test('ghost color and rim cover all skin and facial surfaces, including bare fee
    const shader={fragmentShader:'#include <opaque_fragment>'};material.onBeforeCompile(shader);assert.match(shader.fragmentShader,/drifRim/);
   }
  }
- assert.equal(root.getObjectByName('Drif_Shirt_original').material,shared);
- assert.equal(root.getObjectByName('Drif_Extra_mon').material,shared);
+ assert.equal(root.getObjectByName('Drif_Shirt_original').material.color.getHex(),shared.color.getHex());assert.equal(root.getObjectByName('Drif_Shirt_original').material.map,shared.map);
+ assert.equal(root.getObjectByName('Drif_Extra_mon').material.color.getHex(),shared.color.getHex());assert.equal(root.getObjectByName('Drif_Extra_mon').material.map,shared.map);
  assert.equal(other.getObjectByName('Drif_Ears_original').material.color.getHex(),0xffeedd);
  assert.equal(shared.opacity,1);
  wardrobe.setAppearance(DEFAULT_APPEARANCE);
@@ -378,8 +398,33 @@ test('silver and matte black cover the whole face and body, preserve clothes, an
   wardrobe.setAppearance({...DEFAULT_APPEARANCE,bodyStyle:'ghost',bodyColor:'#ff00ff'});
   wardrobe.setAppearance({...DEFAULT_APPEARANCE,bodyStyle});assert.equal(wardrobe.appearance.bodyColor,`#${color}`);
   for(const name of names){const material=root.getObjectByName(name).material;assert.equal(material.color.getHexString(),color);assert.equal(material.metalness,metalness);assert.equal(material.roughness,roughness);assert.equal(material.transparent,false);assert.equal(material.opacity,1);assert.equal(material.depthWrite,true);assert.equal(material.emissiveIntensity,0);assert.equal(material.userData.drifGhost,false);}
-  assert.equal(root.getObjectByName('Drif_Shirt_original').material,shared);assert.equal(root.getObjectByName('Drif_Extra_mon').material,shared);
+  assert.equal(root.getObjectByName('Drif_Shirt_original').material.color.getHex(),shared.color.getHex());assert.equal(root.getObjectByName('Drif_Shirt_original').material.map,shared.map);assert.equal(root.getObjectByName('Drif_Extra_mon').material.color.getHex(),shared.color.getHex());assert.equal(root.getObjectByName('Drif_Extra_mon').material.map,shared.map);
  }
  wardrobe.setAppearance({...DEFAULT_APPEARANCE,bodyStyle:'ghost',bodyColor:'#ff00ff'});assert.equal(root.getObjectByName('Drif_Ears_original').material.color.getHexString(),'ff00ff');assert.equal(root.getObjectByName('Drif_Ears_original').material.transparent,true);
  wardrobe.dispose();geometry.dispose();shared.dispose();
+});
+
+test('marble coats every trait, removes textures and emission, and restores without leaking into another avatar',()=>{
+ const geometry=new THREE.BoxGeometry(),map=new THREE.Texture(),root=new THREE.Group();
+ const source=new THREE.MeshStandardMaterial({color:'#ff328e',map,normalMap:map,alphaMap:map,roughnessMap:map,metalnessMap:map,bumpMap:map,emissive:'#00ffff',emissiveIntensity:2,metalness:.8,roughness:.2,transparent:true,opacity:.4,depthWrite:false,vertexColors:true});
+ for(const name of ['Drif_Body','Drif_Head_original','Drif_Eyes_thirdeye','Drif_Nose_bandage','Drif_Ears_glassfins','Drif_Shirt_mothtee','Drif_Legs_koipants','Drif_Hat_mikutails','Drif_Accessory_keytar','Drif_Tattoo_cardsuits','Drif_Extra_firehoop']){const part=new THREE.Mesh(geometry,source);part.name=name;root.add(part);}
+ const other=root.clone(true),a=createAvatarAppearance(root),b=createAvatarAppearance(other);
+ a.setAppearance({...DEFAULT_APPEARANCE,bodyStyle:'marble'});
+ for(const node of root.children){const m=node.material;assert.equal(m.color.getHexString(),'ffffff',node.name);assert.equal(m.opacity,1);assert.equal(m.transparent,false);assert.equal(m.metalness,0);assert.equal(m.roughness,1);assert.equal(m.emissiveIntensity,0);assert.equal(m.vertexColors,false);for(const key of ['map','normalMap','alphaMap','roughnessMap','metalnessMap','bumpMap'])assert.equal(m[key],null);}
+ assert.equal(other.children[0].material.color.getHexString(),'ff328e');assert.equal(source.opacity,.4);
+ a.setAppearance(DEFAULT_APPEARANCE);
+ for(const node of root.children){const m=node.material;assert.equal(m.color.getHexString(),'ff328e');assert.equal(m.opacity,.4);assert.equal(m.transparent,true);assert.equal(m.emissiveIntensity,2);assert.equal(m.vertexColors,true);for(const key of ['map','normalMap','alphaMap','roughnessMap','metalnessMap','bumpMap'])assert.equal(m[key],map);}
+ a.dispose();b.dispose();source.dispose();geometry.dispose();map.dispose();
+});
+
+test('holographic foil follows body and face with rest-space sparkles, leaving clothes intact and reversing cleanly',()=>{
+ const root=new THREE.Group(),geometry=new THREE.BoxGeometry(),map=new THREE.Texture(),source=new THREE.MeshStandardMaterial({color:'#c0b090',map});
+ const names=['Drif_Body','Drif_Head_original','Drif_Ears_original','Drif_Nose_original','Drif_Eyes_classic','Drif_Mouth_original'];
+ for(const name of [...names,'Drif_Shirt_mothtee','Drif_Extra_neondoor']){const node=new THREE.Mesh(geometry,source);node.name=name;root.add(node);}
+ const wardrobe=createAvatarAppearance(root);wardrobe.setAppearance({...DEFAULT_APPEARANCE,bodyStyle:'holographic'});
+ for(const name of names){const m=root.getObjectByName(name).material;assert.equal(m.userData.drifHolo,true);assert.equal(m.map,null);const shader={vertexShader:'#include <begin_vertex>',fragmentShader:'#include <opaque_fragment>'};m.onBeforeCompile(shader);assert.match(shader.vertexShader,/vDrifFoilPosition = position/);assert.match(shader.fragmentShader,/foilFlash/);assert.match(shader.fragmentShader,/foilFacing/);}
+ for(const name of ['Drif_Shirt_mothtee','Drif_Extra_neondoor']){const m=root.getObjectByName(name).material;assert.equal(m.userData.drifHolo,false);assert.equal(m.map,map);assert.equal(m.color.getHexString(),'c0b090');}
+ wardrobe.setAppearance({...DEFAULT_APPEARANCE,bodyStyle:'marble'});assert.equal(root.children[0].material.userData.drifHolo,false);
+ wardrobe.setAppearance(DEFAULT_APPEARANCE);assert.equal(root.children[0].material.map,map);assert.equal(root.children[0].material.metalness,source.metalness);
+ wardrobe.dispose();source.dispose();geometry.dispose();map.dispose();
 });

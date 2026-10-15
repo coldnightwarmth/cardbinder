@@ -827,3 +827,608 @@ export const NEW_TRAITS={
   }
  ]
 };
+
+// Atelier expansion: original designs and source-layer studies.
+const ATELIER_TRAITS={
+ "eyes": [
+  {
+   "id": "thirdeye",
+   "label": "Third eye"
+  },
+  {
+   "id": "wireframes",
+   "label": "Wire glasses"
+  },
+  {
+   "id": "astroboy",
+   "label": "Astro eyes"
+  },
+  {
+   "id": "bruised",
+   "label": "Bruised wink"
+  },
+  {
+   "id": "sidelong",
+   "label": "Side glance"
+  },
+  {
+   "id": "tvhearts",
+   "label": "TV hearts"
+  },
+  {
+   "id": "ghostglare",
+   "label": "Ghost glare"
+  },
+  {
+   "id": "googly",
+   "label": "Googly eyes"
+  },
+  {
+   "id": "prismeyes",
+   "label": "Prism eyes"
+  },
+  {
+   "id": "visorslit",
+   "label": "Slit visor"
+  },
+  {
+   "id": "sakurapupils",
+   "label": "Sakura pupils"
+  },
+  {
+   "id": "closedjoy",
+   "label": "Closed joy"
+  }
+ ],
+ "mouth": [
+  {
+   "id": "mothseal",
+   "label": "Moth seal"
+  },
+  {
+   "id": "bonejaw",
+   "label": "Bone jaw"
+  },
+  {
+   "id": "missingtooth",
+   "label": "Missing tooth"
+  },
+  {
+   "id": "sawgrin",
+   "label": "Saw grin"
+  },
+  {
+   "id": "bitinglip",
+   "label": "Biting lip"
+  },
+  {
+   "id": "partyhorn",
+   "label": "Party horn"
+  },
+  {
+   "id": "sleepbubble",
+   "label": "Sleep bubble"
+  },
+  {
+   "id": "cherrystem",
+   "label": "Cherry stem"
+  },
+  {
+   "id": "bandana",
+   "label": "Bandana mask"
+  },
+  {
+   "id": "tusks",
+   "label": "Tusks"
+  },
+  {
+   "id": "pixelsmile",
+   "label": "Pixel smile"
+  },
+  {
+   "id": "fortunepaper",
+   "label": "Paper fortune"
+  }
+ ],
+ "shirt": [
+  {
+   "id": "mothtee",
+   "label": "Moth tee"
+  },
+  {
+   "id": "duckcamo",
+   "label": "Duck camo tee"
+  },
+  {
+   "id": "flamebowling",
+   "label": "Flame bowling shirt"
+  },
+  {
+   "id": "checkerwork",
+   "label": "Checker work shirt"
+  },
+  {
+   "id": "cosmicpajama",
+   "label": "Cosmic pajama shirt"
+  },
+  {
+   "id": "porcelainbaseball",
+   "label": "Porcelain baseball shirt"
+  },
+  {
+   "id": "acidknit",
+   "label": "Acid knit vest"
+  },
+  {
+   "id": "patchanorak",
+   "label": "Patchwork anorak"
+  },
+  {
+   "id": "raincape",
+   "label": "Full rain cape"
+  },
+  {
+   "id": "monasticrobe",
+   "label": "Monastic robe"
+  },
+  {
+   "id": "flightcoverall",
+   "label": "Flight coverall"
+  },
+  {
+   "id": "dinosaursuit",
+   "label": "Dinosaur onesie"
+  }
+ ],
+ "legs": [
+  {
+   "id": "quilted",
+   "label": "Quilted trousers"
+  },
+  {
+   "id": "paintshorts",
+   "label": "Painter shorts"
+  },
+  {
+   "id": "carpenter",
+   "label": "Carpenter pants"
+  },
+  {
+   "id": "zipoffs",
+   "label": "Zip-off trousers"
+  },
+  {
+   "id": "koipants",
+   "label": "Koi trousers"
+  },
+  {
+   "id": "corduroy",
+   "label": "Corduroy flares"
+  },
+  {
+   "id": "petalshorts",
+   "label": "Petal shorts"
+  },
+  {
+   "id": "rallypants",
+   "label": "Rally pants"
+  },
+  {
+   "id": "stitchedleather",
+   "label": "Stitched leather pants"
+  },
+  {
+   "id": "footballshorts",
+   "label": "Football shorts"
+  },
+  {
+   "id": "cloudbloomers",
+   "label": "Cloud bloomers"
+  },
+  {
+   "id": "mosaicleggings",
+   "label": "Mosaic leggings"
+  }
+ ],
+ "hat": [
+  {
+   "id": "mikutails",
+   "label": "Miku twintails"
+  },
+  {
+   "id": "frogbucket",
+   "label": "Frog bucket"
+  },
+  {
+   "id": "ramknit",
+   "label": "Ram knit cap"
+  },
+  {
+   "id": "aviator",
+   "label": "Aviator cap"
+  },
+  {
+   "id": "paperboat",
+   "label": "Paper boat"
+  },
+  {
+   "id": "donut",
+   "label": "Donut hat"
+  },
+  {
+   "id": "candlecrown",
+   "label": "Candle crown"
+  },
+  {
+   "id": "trafficcone",
+   "label": "Traffic cone"
+  },
+  {
+   "id": "silverhair",
+   "label": "Silver spikes"
+  },
+  {
+   "id": "croissant",
+   "label": "Croissant hat"
+  },
+  {
+   "id": "daisybonnet",
+   "label": "Daisy bonnet"
+  },
+  {
+   "id": "tentaclehair",
+   "label": "Octopus hair"
+  }
+ ],
+ "accessory": [
+  {
+   "id": "dueldisk",
+   "label": "Duel disk"
+  },
+  {
+   "id": "heartbag",
+   "label": "Heart bag"
+  },
+  {
+   "id": "padlockharness",
+   "label": "Padlock harness"
+  },
+  {
+   "id": "pearlcollar",
+   "label": "Pearl collar"
+  },
+  {
+   "id": "umbrellasling",
+   "label": "Umbrella sling"
+  },
+  {
+   "id": "keytar",
+   "label": "Keytar"
+  },
+  {
+   "id": "toolbelt",
+   "label": "Tool belt"
+  },
+  {
+   "id": "ribboncape",
+   "label": "Ribbon cape"
+  },
+  {
+   "id": "bedroll",
+   "label": "Hiking bedroll"
+  },
+  {
+   "id": "bubblepack",
+   "label": "Bubble backpack"
+  },
+  {
+   "id": "windupkey",
+   "label": "Wind-up key"
+  },
+  {
+   "id": "championbelt",
+   "label": "Champion belt"
+  }
+ ],
+ "head": [
+  {
+   "id": "porcelainfox",
+   "label": "Porcelain fox"
+  },
+  {
+   "id": "plushbunny",
+   "label": "Plush bunny"
+  },
+  {
+   "id": "cobaltmecha",
+   "label": "Cobalt mecha"
+  },
+  {
+   "id": "bonsaipot",
+   "label": "Bonsai pot"
+  },
+  {
+   "id": "discoball",
+   "label": "Disco ball"
+  },
+  {
+   "id": "paperbag",
+   "label": "Paper bag"
+  },
+  {
+   "id": "moonface",
+   "label": "Moon face"
+  },
+  {
+   "id": "divingbell",
+   "label": "Diving bell"
+  },
+  {
+   "id": "embroidereddoll",
+   "label": "Embroidered doll"
+  },
+  {
+   "id": "copperoni",
+   "label": "Copper oni"
+  },
+  {
+   "id": "cloudhead",
+   "label": "Cloud head"
+  },
+  {
+   "id": "dicehead",
+   "label": "Dice head"
+  }
+ ],
+ "extra": [
+  {
+   "id": "shatteredmirror",
+   "label": "Shattered mirror"
+  },
+  {
+   "id": "firehoop",
+   "label": "Fire hoop"
+  },
+  {
+   "id": "talismans",
+   "label": "Paper talismans"
+  },
+  {
+   "id": "coinshower",
+   "label": "Coin shower"
+  },
+  {
+   "id": "floppydisks",
+   "label": "Floating disks"
+  },
+  {
+   "id": "neondoor",
+   "label": "Neon doorway"
+  },
+  {
+   "id": "vinylorbit",
+   "label": "Vinyl orbit"
+  },
+  {
+   "id": "confettiburst",
+   "label": "Confetti burst"
+  },
+  {
+   "id": "chessfloat",
+   "label": "Floating chess"
+  },
+  {
+   "id": "solareclipse",
+   "label": "Solar eclipse"
+  },
+  {
+   "id": "waterhoop",
+   "label": "Water hoop"
+  },
+  {
+   "id": "ribbonvortex",
+   "label": "Ribbon vortex"
+  }
+ ],
+ "tattoo": [
+  {
+   "id": "cardsuits",
+   "label": "Card suits"
+  },
+  {
+   "id": "spiderseal",
+   "label": "Spider seal"
+  },
+  {
+   "id": "barcode",
+   "label": "Barcode"
+  },
+  {
+   "id": "koiwave",
+   "label": "Koi waves"
+  },
+  {
+   "id": "stitchedscar",
+   "label": "Stitched scar"
+  },
+  {
+   "id": "honeycomb",
+   "label": "Honeycomb"
+  },
+  {
+   "id": "blossomink",
+   "label": "Blossom ink"
+  },
+  {
+   "id": "sunsigil",
+   "label": "Sun sigil"
+  },
+  {
+   "id": "constellation",
+   "label": "Constellation"
+  },
+  {
+   "id": "warpaint",
+   "label": "War paint"
+  },
+  {
+   "id": "crackedink",
+   "label": "Cracked ink"
+  },
+  {
+   "id": "musicalink",
+   "label": "Music notes"
+  }
+ ],
+ "nose": [
+  {
+   "id": "bandage",
+   "label": "Bandage"
+  },
+  {
+   "id": "fuzzynose",
+   "label": "Fuzzy nose"
+  },
+  {
+   "id": "septum",
+   "label": "Septum ring"
+  },
+  {
+   "id": "starnose",
+   "label": "Star nose"
+  },
+  {
+   "id": "skullnose",
+   "label": "Skull nose"
+  },
+  {
+   "id": "slitnose",
+   "label": "Slit nose"
+  },
+  {
+   "id": "foxnose",
+   "label": "Fox nose"
+  },
+  {
+   "id": "cherrynose",
+   "label": "Cherry nose"
+  },
+  {
+   "id": "frostnose",
+   "label": "Frost nose"
+  },
+  {
+   "id": "brasssnout",
+   "label": "Brass snout"
+  },
+  {
+   "id": "leafnose",
+   "label": "Leaf nose"
+  },
+  {
+   "id": "safetypin",
+   "label": "Safety pin"
+  }
+ ],
+ "ears": [
+  {
+   "id": "notchedfins",
+   "label": "Notched fins"
+  },
+  {
+   "id": "foldedfins",
+   "label": "Folded fins"
+  },
+  {
+   "id": "sweptfins",
+   "label": "Swept fins"
+  },
+  {
+   "id": "piercedfins",
+   "label": "Pierced fins"
+  },
+  {
+   "id": "ribbedfins",
+   "label": "Ribbed fins"
+  },
+  {
+   "id": "patchworkfins",
+   "label": "Patchwork fins"
+  },
+  {
+   "id": "charredfins",
+   "label": "Charred fins"
+  },
+  {
+   "id": "opalfins",
+   "label": "Opal fins"
+  },
+  {
+   "id": "glassfins",
+   "label": "Glass fins"
+  },
+  {
+   "id": "ribbonfins",
+   "label": "Ribbon fins"
+  },
+  {
+   "id": "gildedfins",
+   "label": "Gilded fins"
+  },
+  {
+   "id": "lacefins",
+   "label": "Lace fins"
+  }
+ ],
+ "brows": [
+  {
+   "id": "threadbrows",
+   "label": "Thread brows"
+  },
+  {
+   "id": "beadbrows",
+   "label": "Beaded brows"
+  },
+  {
+   "id": "doublebrows",
+   "label": "Double brows"
+  },
+  {
+   "id": "hookbrows",
+   "label": "Hook brows"
+  },
+  {
+   "id": "featherbrows",
+   "label": "Feather brows"
+  },
+  {
+   "id": "bladebrows",
+   "label": "Blade brows"
+  },
+  {
+   "id": "fuzzybrows",
+   "label": "Fuzzy brows"
+  },
+  {
+   "id": "shavedbrows",
+   "label": "Shaved arch"
+  },
+  {
+   "id": "wavebrows",
+   "label": "Wave brows"
+  },
+  {
+   "id": "leafbrows",
+   "label": "Leaf brows"
+  },
+  {
+   "id": "arrowbrows",
+   "label": "Arrow brows"
+  },
+  {
+   "id": "dottedbrows",
+   "label": "Dotted brows"
+  }
+ ]
+};
+for(const [category,items] of Object.entries(ATELIER_TRAITS))NEW_TRAITS[category].push(...items);

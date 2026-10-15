@@ -1,4 +1,4 @@
-import {NEW_TRAITS} from './drifmaker-expansion.mjs?v=6';
+import {NEW_TRAITS} from './drifmaker-expansion.mjs?v=7';
 // Shared by the browser and the showroom worker: only these small, validated
 // appearance values cross the network. Models and materials always stay local.
 // Drifella 2 collection inspiration: https://www.tensor.trade/trade/drifella_2
@@ -7,7 +7,7 @@ import {NEW_TRAITS} from './drifmaker-expansion.mjs?v=6';
 // clothing and accessories are independently modeled adaptations for this rig.
 const options=items=>Object.freeze(items.map(item=>Object.freeze(item)));
 export const CLASSIC_FIN_HEADS=Object.freeze(['pumpkin','tv','crystal']);
-export const LEG_OVERRIDE_TOPS=Object.freeze(['wizardrobe']);
+export const LEG_OVERRIDE_TOPS=Object.freeze(['wizardrobe','raincape','monasticrobe','flightcoverall','dinosaursuit']);
 const ORIGINAL_CATEGORIES=Object.freeze({
  eyes:options([
   {id:'classic',label:'Classic',description:'Bright glossy eyes.'},
@@ -103,9 +103,24 @@ const ORIGINAL_CATEGORIES=Object.freeze({
 export const CATEGORIES=Object.freeze(Object.fromEntries([...new Set([...Object.keys(ORIGINAL_CATEGORIES),...Object.keys(NEW_TRAITS)])].map(category=>[category,options([...(ORIGINAL_CATEGORIES[category]||[]),...(NEW_TRAITS[category]||[])])])));
 export const GOLD_COLOR='#e2ad32';
 export const FINISH_COLORS=Object.freeze({gold:GOLD_COLOR,silver:'#d7dee8',matteblack:'#08090b'});
-export const BODY_STYLE_COLORS=Object.freeze({...FINISH_COLORS,camo:'#62734a'});
-export const BODY_STYLES=options([{id:'solid',label:'Solid',description:'The familiar sculpted finish.'},{id:'ghost',label:'Ghost aura',description:'Clear, translucent skin with soft luminous fibers.'},{id:'gold',label:'Gold',description:'Polished gold across the whole body and face.'},{id:'silver',label:'Silver',description:'Polished silver across the whole body and face.'},{id:'matteblack',label:'Matte black',description:'A soft black finish across the whole body and face.'},{id:'camo',label:'Camo',description:'Woodland camouflage across the body and fins.'}]);
+export const BODY_STYLE_COLORS=Object.freeze({...FINISH_COLORS,camo:'#62734a',marble:'#ffffff',holographic:'#d8d6f4'});
+export const BODY_STYLES=options([{id:'marble',label:'Marble',description:'Matte white across all visible parts.'},{id:'holographic',label:'Holographic',description:'Rainbow interference and sparkling trading-card foil.'},{id:'solid',label:'Solid',description:'The familiar sculpted finish.'},{id:'ghost',label:'Ghost aura',description:'Clear, translucent skin with soft luminous fibers.'},{id:'gold',label:'Gold',description:'Polished gold across the whole body and face.'},{id:'silver',label:'Silver',description:'Polished silver across the whole body and face.'},{id:'matteblack',label:'Matte black',description:'A soft black finish across the whole body and face.'},{id:'camo',label:'Camo',description:'Woodland camouflage across the body and fins.'}]);
 export const BODY_COLORS=options([
+ {id:'marble',label:'Marble',hex:BODY_STYLE_COLORS.marble,style:'marble'},
+ {id:'holographic',label:'Holographic',hex:BODY_STYLE_COLORS.holographic,style:'holographic'},
+ {id:'pool',label:'Pool blue',hex:'#00b9ff'},
+ {id:'matcha',label:'Matcha',hex:'#86a64a'},
+ {id:'bubblepink',label:'Bubble pink',hex:'#ff96df'},
+ {id:'vermillion',label:'Vermillion',hex:'#ff3317'},
+ {id:'mango',label:'Mango',hex:'#ffb529'},
+ {id:'deepteal',label:'Deep teal',hex:'#00675e'},
+ {id:'mulberry',label:'Mulberry',hex:'#842058'},
+ {id:'iris',label:'Iris',hex:'#6958db'},
+ {id:'clay',label:'Clay',hex:'#bd7054'},
+ {id:'seafoam',label:'Seafoam',hex:'#78f3c2'},
+ {id:'pearlrose',label:'Pearl rose',hex:'#f2d5dd'},
+ {id:'midnightnavy',label:'Midnight navy',hex:'#101e46'},
+
  {id:'woodlandcamo',label:'Woodland camo',hex:BODY_STYLE_COLORS.camo,style:'camo'},
  {id:'plasma',label:'Plasma purple',hex:'#c109ff'},
  {id:'papaya',label:'Papaya',hex:'#ff582e'},
@@ -151,6 +166,19 @@ export const BODY_COLORS=options([
  {id:'porcelain',label:'Porcelain',hex:'#f5f0e7'},
 ]);
 export const PORTRAIT_BACKGROUNDS=options([
+ {label:'Pool',hex:'#00a4dd'},
+ {label:'Matcha',hex:'#778c4e'},
+ {label:'Candy rose',hex:'#f098bd'},
+ {label:'Tomato',hex:'#ff4428'},
+ {label:'Mango',hex:'#f8bf40'},
+ {label:'Deep sea',hex:'#006d75'},
+ {label:'Wine',hex:'#732542'},
+ {label:'Iris',hex:'#5144a8'},
+ {label:'Clay',hex:'#bf8064'},
+ {label:'Sea glass',hex:'#75c9b3'},
+ {label:'Pearl rose',hex:'#f5e1e5'},
+ {label:'Night blue',hex:'#172d58'},
+
  {label:'Rainbow gradient',hex:'rainbow'},
  {label:'Plasma',hex:'#b20fff'},{label:'Papaya',hex:'#ff6c43'},{label:'Arctic',hex:'#5be8e8'},
  {label:'Silver',hex:'#dedfe5'},{label:'Cream',hex:'#e8dfcf'},{label:'Rose',hex:'#dfc6cf'},{label:'Sage',hex:'#c6d1c4'},{label:'Midnight',hex:'#252a35'},

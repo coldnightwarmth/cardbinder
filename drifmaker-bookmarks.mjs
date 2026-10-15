@@ -1,7 +1,7 @@
 import {validPortraitBackground} from './drifmaker-background.mjs?v=1';
-import {normalizeAppearance,BODY_COLORS,BODY_STYLES,PORTRAIT_BACKGROUNDS,CATEGORIES,CLASSIC_FIN_HEADS,LEG_OVERRIDE_TOPS} from './drifmaker-config.mjs?v=9';
-import {normalizePortraitPose,PORTRAIT_POSES} from './drifmaker-poses.mjs?v=2';
-import {PORTRAIT_COMPOSITION} from './drifmaker-portrait.mjs?v=5';
+import {normalizeAppearance,BODY_COLORS,BODY_STYLES,PORTRAIT_BACKGROUNDS,CATEGORIES,CLASSIC_FIN_HEADS,LEG_OVERRIDE_TOPS} from './drifmaker-config.mjs?v=10';
+import {normalizePortraitPose,PORTRAIT_POSES} from './drifmaker-poses.mjs?v=3';
+import {PORTRAIT_COMPOSITION} from './drifmaker-portrait.mjs?v=6';
 import {createZipWriter} from './minotecurator/zip-writer.js';
 
 export const BOOKMARK_KEY='cards.art.drifmaker.bookmarks.v1';

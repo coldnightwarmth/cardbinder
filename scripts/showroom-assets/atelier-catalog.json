@@ -1,0 +1,602 @@
+{
+  "eyes": [
+    [
+      "thirdeye",
+      "Third eye"
+    ],
+    [
+      "wireframes",
+      "Wire glasses"
+    ],
+    [
+      "astroboy",
+      "Astro eyes"
+    ],
+    [
+      "bruised",
+      "Bruised wink"
+    ],
+    [
+      "sidelong",
+      "Side glance"
+    ],
+    [
+      "tvhearts",
+      "TV hearts"
+    ],
+    [
+      "ghostglare",
+      "Ghost glare"
+    ],
+    [
+      "googly",
+      "Googly eyes"
+    ],
+    [
+      "prismeyes",
+      "Prism eyes"
+    ],
+    [
+      "visorslit",
+      "Slit visor"
+    ],
+    [
+      "sakurapupils",
+      "Sakura pupils"
+    ],
+    [
+      "closedjoy",
+      "Closed joy"
+    ]
+  ],
+  "mouth": [
+    [
+      "mothseal",
+      "Moth seal"
+    ],
+    [
+      "bonejaw",
+      "Bone jaw"
+    ],
+    [
+      "missingtooth",
+      "Missing tooth"
+    ],
+    [
+      "sawgrin",
+      "Saw grin"
+    ],
+    [
+      "bitinglip",
+      "Biting lip"
+    ],
+    [
+      "partyhorn",
+      "Party horn"
+    ],
+    [
+      "sleepbubble",
+      "Sleep bubble"
+    ],
+    [
+      "cherrystem",
+      "Cherry stem"
+    ],
+    [
+      "bandana",
+      "Bandana mask"
+    ],
+    [
+      "tusks",
+      "Tusks"
+    ],
+    [
+      "pixelsmile",
+      "Pixel smile"
+    ],
+    [
+      "fortunepaper",
+      "Paper fortune"
+    ]
+  ],
+  "shirt": [
+    [
+      "mothtee",
+      "Moth tee"
+    ],
+    [
+      "duckcamo",
+      "Duck camo tee"
+    ],
+    [
+      "flamebowling",
+      "Flame bowling shirt"
+    ],
+    [
+      "checkerwork",
+      "Checker work shirt"
+    ],
+    [
+      "cosmicpajama",
+      "Cosmic pajama shirt"
+    ],
+    [
+      "porcelainbaseball",
+      "Porcelain baseball shirt"
+    ],
+    [
+      "acidknit",
+      "Acid knit vest"
+    ],
+    [
+      "patchanorak",
+      "Patchwork anorak"
+    ],
+    [
+      "raincape",
+      "Full rain cape"
+    ],
+    [
+      "monasticrobe",
+      "Monastic robe"
+    ],
+    [
+      "flightcoverall",
+      "Flight coverall"
+    ],
+    [
+      "dinosaursuit",
+      "Dinosaur onesie"
+    ]
+  ],
+  "legs": [
+    [
+      "quilted",
+      "Quilted trousers"
+    ],
+    [
+      "paintshorts",
+      "Painter shorts"
+    ],
+    [
+      "carpenter",
+      "Carpenter pants"
+    ],
+    [
+      "zipoffs",
+      "Zip-off trousers"
+    ],
+    [
+      "koipants",
+      "Koi trousers"
+    ],
+    [
+      "corduroy",
+      "Corduroy flares"
+    ],
+    [
+      "petalshorts",
+      "Petal shorts"
+    ],
+    [
+      "rallypants",
+      "Rally pants"
+    ],
+    [
+      "stitchedleather",
+      "Stitched leather pants"
+    ],
+    [
+      "footballshorts",
+      "Football shorts"
+    ],
+    [
+      "cloudbloomers",
+      "Cloud bloomers"
+    ],
+    [
+      "mosaicleggings",
+      "Mosaic leggings"
+    ]
+  ],
+  "hat": [
+    [
+      "mikutails",
+      "Miku twintails"
+    ],
+    [
+      "frogbucket",
+      "Frog bucket"
+    ],
+    [
+      "ramknit",
+      "Ram knit cap"
+    ],
+    [
+      "aviator",
+      "Aviator cap"
+    ],
+    [
+      "paperboat",
+      "Paper boat"
+    ],
+    [
+      "donut",
+      "Donut hat"
+    ],
+    [
+      "candlecrown",
+      "Candle crown"
+    ],
+    [
+      "trafficcone",
+      "Traffic cone"
+    ],
+    [
+      "silverhair",
+      "Silver spikes"
+    ],
+    [
+      "croissant",
+      "Croissant hat"
+    ],
+    [
+      "daisybonnet",
+      "Daisy bonnet"
+    ],
+    [
+      "tentaclehair",
+      "Octopus hair"
+    ]
+  ],
+  "accessory": [
+    [
+      "dueldisk",
+      "Duel disk"
+    ],
+    [
+      "heartbag",
+      "Heart bag"
+    ],
+    [
+      "padlockharness",
+      "Padlock harness"
+    ],
+    [
+      "pearlcollar",
+      "Pearl collar"
+    ],
+    [
+      "umbrellasling",
+      "Umbrella sling"
+    ],
+    [
+      "keytar",
+      "Keytar"
+    ],
+    [
+      "toolbelt",
+      "Tool belt"
+    ],
+    [
+      "ribboncape",
+      "Ribbon cape"
+    ],
+    [
+      "bedroll",
+      "Hiking bedroll"
+    ],
+    [
+      "bubblepack",
+      "Bubble backpack"
+    ],
+    [
+      "windupkey",
+      "Wind-up key"
+    ],
+    [
+      "championbelt",
+      "Champion belt"
+    ]
+  ],
+  "head": [
+    [
+      "porcelainfox",
+      "Porcelain fox"
+    ],
+    [
+      "plushbunny",
+      "Plush bunny"
+    ],
+    [
+      "cobaltmecha",
+      "Cobalt mecha"
+    ],
+    [
+      "bonsaipot",
+      "Bonsai pot"
+    ],
+    [
+      "discoball",
+      "Disco ball"
+    ],
+    [
+      "paperbag",
+      "Paper bag"
+    ],
+    [
+      "moonface",
+      "Moon face"
+    ],
+    [
+      "divingbell",
+      "Diving bell"
+    ],
+    [
+      "embroidereddoll",
+      "Embroidered doll"
+    ],
+    [
+      "copperoni",
+      "Copper oni"
+    ],
+    [
+      "cloudhead",
+      "Cloud head"
+    ],
+    [
+      "dicehead",
+      "Dice head"
+    ]
+  ],
+  "extra": [
+    [
+      "shatteredmirror",
+      "Shattered mirror"
+    ],
+    [
+      "firehoop",
+      "Fire hoop"
+    ],
+    [
+      "talismans",
+      "Paper talismans"
+    ],
+    [
+      "coinshower",
+      "Coin shower"
+    ],
+    [
+      "floppydisks",
+      "Floating disks"
+    ],
+    [
+      "neondoor",
+      "Neon doorway"
+    ],
+    [
+      "vinylorbit",
+      "Vinyl orbit"
+    ],
+    [
+      "confettiburst",
+      "Confetti burst"
+    ],
+    [
+      "chessfloat",
+      "Floating chess"
+    ],
+    [
+      "solareclipse",
+      "Solar eclipse"
+    ],
+    [
+      "waterhoop",
+      "Water hoop"
+    ],
+    [
+      "ribbonvortex",
+      "Ribbon vortex"
+    ]
+  ],
+  "tattoo": [
+    [
+      "cardsuits",
+      "Card suits"
+    ],
+    [
+      "spiderseal",
+      "Spider seal"
+    ],
+    [
+      "barcode",
+      "Barcode"
+    ],
+    [
+      "koiwave",
+      "Koi waves"
+    ],
+    [
+      "stitchedscar",
+      "Stitched scar"
+    ],
+    [
+      "honeycomb",
+      "Honeycomb"
+    ],
+    [
+      "blossomink",
+      "Blossom ink"
+    ],
+    [
+      "sunsigil",
+      "Sun sigil"
+    ],
+    [
+      "constellation",
+      "Constellation"
+    ],
+    [
+      "warpaint",
+      "War paint"
+    ],
+    [
+      "crackedink",
+      "Cracked ink"
+    ],
+    [
+      "musicalink",
+      "Music notes"
+    ]
+  ],
+  "nose": [
+    [
+      "bandage",
+      "Bandage"
+    ],
+    [
+      "fuzzynose",
+      "Fuzzy nose"
+    ],
+    [
+      "septum",
+      "Septum ring"
+    ],
+    [
+      "starnose",
+      "Star nose"
+    ],
+    [
+      "skullnose",
+      "Skull nose"
+    ],
+    [
+      "slitnose",
+      "Slit nose"
+    ],
+    [
+      "foxnose",
+      "Fox nose"
+    ],
+    [
+      "cherrynose",
+      "Cherry nose"
+    ],
+    [
+      "frostnose",
+      "Frost nose"
+    ],
+    [
+      "brasssnout",
+      "Brass snout"
+    ],
+    [
+      "leafnose",
+      "Leaf nose"
+    ],
+    [
+      "safetypin",
+      "Safety pin"
+    ]
+  ],
+  "ears": [
+    [
+      "notchedfins",
+      "Notched fins"
+    ],
+    [
+      "foldedfins",
+      "Folded fins"
+    ],
+    [
+      "sweptfins",
+      "Swept fins"
+    ],
+    [
+      "piercedfins",
+      "Pierced fins"
+    ],
+    [
+      "ribbedfins",
+      "Ribbed fins"
+    ],
+    [
+      "patchworkfins",
+      "Patchwork fins"
+    ],
+    [
+      "charredfins",
+      "Charred fins"
+    ],
+    [
+      "opalfins",
+      "Opal fins"
+    ],
+    [
+      "glassfins",
+      "Glass fins"
+    ],
+    [
+      "ribbonfins",
+      "Ribbon fins"
+    ],
+    [
+      "gildedfins",
+      "Gilded fins"
+    ],
+    [
+      "lacefins",
+      "Lace fins"
+    ]
+  ],
+  "brows": [
+    [
+      "threadbrows",
+      "Thread brows"
+    ],
+    [
+      "beadbrows",
+      "Beaded brows"
+    ],
+    [
+      "doublebrows",
+      "Double brows"
+    ],
+    [
+      "hookbrows",
+      "Hook brows"
+    ],
+    [
+      "featherbrows",
+      "Feather brows"
+    ],
+    [
+      "bladebrows",
+      "Blade brows"
+    ],
+    [
+      "fuzzybrows",
+      "Fuzzy brows"
+    ],
+    [
+      "shavedbrows",
+      "Shaved arch"
+    ],
+    [
+      "wavebrows",
+      "Wave brows"
+    ],
+    [
+      "leafbrows",
+      "Leaf brows"
+    ],
+    [
+      "arrowbrows",
+      "Arrow brows"
+    ],
+    [
+      "dottedbrows",
+      "Dotted brows"
+    ]
+  ]
+}

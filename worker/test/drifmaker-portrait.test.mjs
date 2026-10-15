@@ -148,7 +148,7 @@ test('reflective PNG exports build their own environment and preserve the live p
  liveEnvironment.dispose();
 });
 
-test('all ten pose clips enter from neutral, hold indefinitely, cancel, and match static portraits',async()=>{
+test('all twenty-two pose clips enter from neutral, hold indefinitely, cancel, and match static portraits',async()=>{
  const createAvatar=avatarFactory(),avatar=await createAvatar(),neutral=await createPortraitAvatar({createAvatar});
  for(const pose of POSES){
   avatar.setPose(pose.id);avatar.update(0,0,false);const first=bonePose(avatar.model);

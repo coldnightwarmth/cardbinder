@@ -1,15 +1,15 @@
 import {createHeldCard,createHeldCardFollower,disposeHeldCard} from './drifmaker-held-card.mjs?v=1';
 import {validPortraitBackground,backgroundCSS,setPortraitSceneBackground,disposePortraitBackground} from './drifmaker-background.mjs?v=1';
-import {createLookHistory,normalizeLook} from './drifmaker-bookmarks.mjs?v=5';
-import {createBookmarkControls} from './drifmaker-bookmark-controls.mjs?v=5';
-import {createBookmarkRenderer} from './drifmaker-bookmark-renderer.mjs?v=5';
-import {POSES,PORTRAIT_POSES,normalizePose,normalizePortraitPose} from './drifmaker-poses.mjs?v=2';
-import {randomizeLook} from './drifmaker-rarity.mjs?v=6';
-import {createRarityEditor} from './drifmaker-rarity-controls.mjs?v=6';
+import {createLookHistory,normalizeLook} from './drifmaker-bookmarks.mjs?v=6';
+import {createBookmarkControls} from './drifmaker-bookmark-controls.mjs?v=6';
+import {createBookmarkRenderer} from './drifmaker-bookmark-renderer.mjs?v=6';
+import {POSES,PORTRAIT_POSES,normalizePose,normalizePortraitPose} from './drifmaker-poses.mjs?v=3';
+import {randomizeLook} from './drifmaker-rarity.mjs?v=7';
+import {createRarityEditor} from './drifmaker-rarity-controls.mjs?v=7';
 import * as THREE from 'three';
-import {createShowroomAvatar} from './showroom-avatar.js?v=19';
-import {BODY_COLORS,BODY_STYLES,BODY_STYLE_COLORS,LEG_OVERRIDE_TOPS,CLASSIC_FIN_HEADS,PORTRAIT_BACKGROUNDS,CATEGORIES,DEFAULT_APPEARANCE,normalizeAppearance,loadAppearance} from './drifmaker-config.mjs?v=9';
-import {PORTRAIT_COMPOSITION,createPortraitAvatar,configurePortraitCamera,capturePortrait,portraitPoseComposition} from './drifmaker-portrait.mjs?v=5';
+import {createShowroomAvatar} from './showroom-avatar.js?v=20';
+import {BODY_COLORS,BODY_STYLES,BODY_STYLE_COLORS,LEG_OVERRIDE_TOPS,CLASSIC_FIN_HEADS,PORTRAIT_BACKGROUNDS,CATEGORIES,DEFAULT_APPEARANCE,normalizeAppearance,loadAppearance} from './drifmaker-config.mjs?v=10';
+import {PORTRAIT_COMPOSITION,createPortraitAvatar,configurePortraitCamera,capturePortrait,portraitPoseComposition} from './drifmaker-portrait.mjs?v=6';
 import {createDrifmakerEnvironment} from './drifmaker-lighting.mjs?v=1';
 import {jumpHeight} from './showroom-locomotion.mjs?v=2';
 
@@ -80,7 +80,7 @@ function makeControls(){
  const panel=(category)=>{const section=document.createElement('section');section.className='control-section';section.id=`category-${category}`;section.setAttribute('role','tabpanel');section.setAttribute('aria-labelledby',`tab-${category}`);return section;};
  const body=panel('body');
  body.innerHTML='<div class="section-heading"><h3>Body color</h3><span class="selected-label" id="bodyLabel"></span></div><div class="palette" role="group" aria-label="Body color"></div>';
- for(const color of BODY_COLORS){const button=document.createElement('button');button.className='swatch';button.type='button';button.style.setProperty('--swatch',color.hex);button.dataset.color=color.hex;button.title=color.label;button.setAttribute('aria-label',`${color.label} body color`);button.onclick=()=>select({bodyColor:color.hex,bodyStyle:color.style||(Object.hasOwn(BODY_STYLE_COLORS,appearance.bodyStyle)?'solid':appearance.bodyStyle)});body.querySelector('.palette').append(button);}
+ for(const color of BODY_COLORS){const button=document.createElement('button');button.className='swatch';button.type='button';button.style.setProperty('--swatch',color.style==='holographic'?'linear-gradient(125deg,#ff8ccc,#b1fff1,#f1f393,#a8b8ff,#fc93e5)':color.hex);button.dataset.color=color.hex;button.title=color.label;button.setAttribute('aria-label',`${color.label} body color`);button.onclick=()=>select({bodyColor:color.hex,bodyStyle:color.style||(Object.hasOwn(BODY_STYLE_COLORS,appearance.bodyStyle)?'solid':appearance.bodyStyle)});body.querySelector('.palette').append(button);}
  const custom=document.createElement('label');custom.className='custom-color';custom.title='Custom body color';custom.innerHTML='<input type="color" id="customColor" aria-label="Custom body color"><span aria-hidden="true">+</span>';body.querySelector('.palette').append(custom);custom.querySelector('input').addEventListener('change',event=>select({bodyColor:event.target.value,bodyStyle:Object.hasOwn(BODY_STYLE_COLORS,appearance.bodyStyle)?'solid':appearance.bodyStyle}));const finish=document.createElement('div');finish.className='body-finishes';finish.setAttribute('role','group');finish.setAttribute('aria-label','Body finish');
  for(const style of BODY_STYLES){const button=document.createElement('button');button.type='button';button.dataset.bodyStyle=style.id;button.textContent=style.label;button.title=style.label;button.onclick=()=>select({bodyStyle:style.id});finish.append(button);}
  body.append(finish);controls.append(body);

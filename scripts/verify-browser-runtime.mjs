@@ -582,7 +582,7 @@ assert(
   "app does not lazy-load packed browser traits",
 );
 assert(
-  app.includes('./showroom.js?v=showroom-controls-20'),
+  app.includes('./showroom.js?v=showroom-controls-21'),
   "showroom runtime cache key is stale",
 );
 assert(
