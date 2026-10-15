@@ -1,14 +1,15 @@
+import {createHeldCard,createHeldCardFollower,disposeHeldCard} from './drifmaker-held-card.mjs?v=1';
 import {validPortraitBackground,backgroundCSS,setPortraitSceneBackground,disposePortraitBackground} from './drifmaker-background.mjs?v=1';
-import {createLookHistory,normalizeLook} from './drifmaker-bookmarks.mjs?v=1';
-import {createBookmarkControls} from './drifmaker-bookmark-controls.mjs?v=1';
-import {createBookmarkRenderer} from './drifmaker-bookmark-renderer.mjs?v=1';
-import {POSES,normalizePose} from './drifmaker-poses.mjs?v=1';
-import {randomizeLook} from './drifmaker-rarity.mjs?v=3';
-import {createRarityEditor} from './drifmaker-rarity-controls.mjs?v=3';
+import {createLookHistory,normalizeLook} from './drifmaker-bookmarks.mjs?v=3';
+import {createBookmarkControls} from './drifmaker-bookmark-controls.mjs?v=3';
+import {createBookmarkRenderer} from './drifmaker-bookmark-renderer.mjs?v=3';
+import {POSES,PORTRAIT_POSES,normalizePose,normalizePortraitPose} from './drifmaker-poses.mjs?v=2';
+import {randomizeLook} from './drifmaker-rarity.mjs?v=5';
+import {createRarityEditor} from './drifmaker-rarity-controls.mjs?v=5';
 import * as THREE from 'three';
-import {createShowroomAvatar} from './showroom-avatar.js?v=16';
-import {BODY_COLORS,BODY_STYLES,FINISH_COLORS,CLASSIC_FIN_HEADS,PORTRAIT_BACKGROUNDS,CATEGORIES,DEFAULT_APPEARANCE,normalizeAppearance,loadAppearance} from './drifmaker-config.mjs?v=7';
-import {PORTRAIT_COMPOSITION,createPortraitAvatar,configurePortraitCamera,capturePortrait,portraitPoseComposition} from './drifmaker-portrait.mjs?v=4';
+import {createShowroomAvatar} from './showroom-avatar.js?v=18';
+import {BODY_COLORS,BODY_STYLES,BODY_STYLE_COLORS,LEG_OVERRIDE_TOPS,CLASSIC_FIN_HEADS,PORTRAIT_BACKGROUNDS,CATEGORIES,DEFAULT_APPEARANCE,normalizeAppearance,loadAppearance} from './drifmaker-config.mjs?v=8';
+import {PORTRAIT_COMPOSITION,createPortraitAvatar,configurePortraitCamera,capturePortrait,portraitPoseComposition} from './drifmaker-portrait.mjs?v=5';
 import {createDrifmakerEnvironment} from './drifmaker-lighting.mjs?v=1';
 import {jumpHeight} from './showroom-locomotion.mjs?v=2';
 
@@ -22,12 +23,18 @@ let viewMode='studio',portraitAvatar,portraitScene,portraitCamera,portraitDirty=
 let portraitBackground=PORTRAIT_COMPOSITION.background;
 let toastTimer,changeVersion=0,disposed=false,frameId,previousTime=0;
 const target=new THREE.Vector3(0,1.55,0),reducedMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
-let bookmarkControls;
+let bookmarkControls,followHeldCard;
+function activateSidebar(name,focus=false){
+ for(const id of ['editor','bookmarks']){const active=id===name,button=$('#'+id+'Tab');button.setAttribute('aria-selected',String(active));button.tabIndex=active?0:-1;$('#'+id+'Panel').hidden=!active;if(active&&focus)button.focus();}
+ if(name==='bookmarks')bookmarkControls?.refresh();
+}
+for(const name of ['editor','bookmarks'])$('#'+name+'Tab').onclick=()=>activateSidebar(name);
+$('.sidebar-tabs').onkeydown=event=>{const current=$('#editorTab').getAttribute('aria-selected')==='true'?'editor':'bookmarks';const next={ArrowLeft:current==='editor'?'bookmarks':'editor',ArrowRight:current==='editor'?'bookmarks':'editor',Home:'editor',End:'bookmarks'}[event.key];if(next){event.preventDefault();activateSidebar(next,true);}};
 const bookmarkRenderer=createBookmarkRenderer({THREE,createAvatar:createShowroomAvatar,environmentFactory:createDrifmakerEnvironment});
 function currentLook(){return {appearance,portrait:{background:portraitBackground,posesEnabled:portraitPosesEnabled,pose:portraitPose}};}
 const history=createLookHistory(currentLook());
-const titles={bookmarks:'Bookmarks',brows:'Eyebrows',eyes:'Eyes',mouth:'Mouth',shirt:'Tops',legs:'Pants & legs',hat:'Hats',accessory:'Accessories',head:'Heads',extra:'Extra',nose:'Nose',ears:'Ears',tattoo:'Tattoos'};
-const categoryOrder=['body','head','eyes','brows','mouth','nose','ears','tattoo','shirt','legs','hat','accessory','extra','bookmarks'];
+const titles={brows:'Eyebrows',eyes:'Eyes',mouth:'Mouth',shirt:'Tops',legs:'Pants & legs',hat:'Hats',accessory:'Accessories',head:'Heads',extra:'Extra',nose:'Nose',ears:'Ears',tattoo:'Tattoos'};
+const categoryOrder=['body','head','eyes','brows','mouth','nose','ears','tattoo','shirt','legs','hat','accessory','extra'];
 let activeCategory='eyes';
 const rarityEditor=createRarityEditor({activeCategory:()=>activeCategory,onError:toast});
 const iconPaths={
@@ -56,7 +63,7 @@ function activateCategory(category,focus=false){
   if(active&&focus)button.focus();
  }
  for(const section of controls.querySelectorAll('.control-section'))section.hidden=section.id!==`category-${category}`;
- controls.scrollTop=0;if(category==='bookmarks')bookmarkControls?.refresh();
+ controls.scrollTop=0;
 }
 function makeControls(){
  const nav=$('.category-nav');
@@ -73,23 +80,25 @@ function makeControls(){
  const panel=(category)=>{const section=document.createElement('section');section.className='control-section';section.id=`category-${category}`;section.setAttribute('role','tabpanel');section.setAttribute('aria-labelledby',`tab-${category}`);return section;};
  const body=panel('body');
  body.innerHTML='<div class="section-heading"><h3>Body color</h3><span class="selected-label" id="bodyLabel"></span></div><div class="palette" role="group" aria-label="Body color"></div>';
- for(const color of BODY_COLORS){const button=document.createElement('button');button.className='swatch';button.type='button';button.style.setProperty('--swatch',color.hex);button.dataset.color=color.hex;button.title=color.label;button.setAttribute('aria-label',`${color.label} body color`);button.onclick=()=>select({bodyColor:color.hex,bodyStyle:color.style||(Object.hasOwn(FINISH_COLORS,appearance.bodyStyle)?'solid':appearance.bodyStyle)});body.querySelector('.palette').append(button);}
- const custom=document.createElement('label');custom.className='custom-color';custom.title='Custom body color';custom.innerHTML='<input type="color" id="customColor" aria-label="Custom body color"><span aria-hidden="true">+</span>';body.querySelector('.palette').append(custom);custom.querySelector('input').addEventListener('change',event=>select({bodyColor:event.target.value,bodyStyle:Object.hasOwn(FINISH_COLORS,appearance.bodyStyle)?'solid':appearance.bodyStyle}));const finish=document.createElement('div');finish.className='body-finishes';finish.setAttribute('role','group');finish.setAttribute('aria-label','Body finish');
+ for(const color of BODY_COLORS){const button=document.createElement('button');button.className='swatch';button.type='button';button.style.setProperty('--swatch',color.hex);button.dataset.color=color.hex;button.title=color.label;button.setAttribute('aria-label',`${color.label} body color`);button.onclick=()=>select({bodyColor:color.hex,bodyStyle:color.style||(Object.hasOwn(BODY_STYLE_COLORS,appearance.bodyStyle)?'solid':appearance.bodyStyle)});body.querySelector('.palette').append(button);}
+ const custom=document.createElement('label');custom.className='custom-color';custom.title='Custom body color';custom.innerHTML='<input type="color" id="customColor" aria-label="Custom body color"><span aria-hidden="true">+</span>';body.querySelector('.palette').append(custom);custom.querySelector('input').addEventListener('change',event=>select({bodyColor:event.target.value,bodyStyle:Object.hasOwn(BODY_STYLE_COLORS,appearance.bodyStyle)?'solid':appearance.bodyStyle}));const finish=document.createElement('div');finish.className='body-finishes';finish.setAttribute('role','group');finish.setAttribute('aria-label','Body finish');
  for(const style of BODY_STYLES){const button=document.createElement('button');button.type='button';button.dataset.bodyStyle=style.id;button.textContent=style.label;button.title=style.label;button.onclick=()=>select({bodyStyle:style.id});finish.append(button);}
  body.append(finish);controls.append(body);
- for(const category of categoryOrder.filter(item=>item!=='body'&&item!=='bookmarks')){
+ for(const category of categoryOrder.filter(item=>item!=='body')){
   const options=CATEGORIES[category],section=panel(category);
   const heading=document.createElement('div');heading.className='section-heading';heading.innerHTML=`<h3>${titles[category]}</h3><span class="selected-label" data-label="${category}"></span>`;section.append(heading);
+  if(category==='legs'){const note=document.createElement('p');note.className='head-override-note';note.dataset.legOverride='';note.textContent='Robe overrides legs.';note.hidden=true;section.append(note);}
   if(['eyes','brows','mouth','nose','ears','tattoo'].includes(category)){const note=document.createElement('p');note.className='head-override-note';note.dataset.overrideNotice=category;note.textContent='Head overrides face traits.';note.hidden=true;section.append(note);}
   const grid=document.createElement('div');grid.className='options';grid.setAttribute('role','group');grid.setAttribute('aria-label',titles[category]);
   for(const option of options){const button=document.createElement('button');button.className='option';button.type='button';button.dataset.category=category;button.dataset.option=option.id;button.title=option.label;button.innerHTML=`<span class="option-art">${icon(category,option.id)}</span>`;const label=document.createElement('span');label.className='option-label';label.textContent=option.label;button.append(label);button.onclick=()=>select({[category]:option.id});grid.append(button);}
   section.append(grid);controls.append(section);
  }
- const bookmarks=panel('bookmarks');controls.append(bookmarks);
+ const bookmarks=$('#bookmarksPanel');
  bookmarkControls=createBookmarkControls({panel:bookmarks,saveButton:$('#saveBookmark'),getLook:currentLook,loadLook:async look=>{await changeLook(look);setViewMode('portrait');},render:(...args)=>bookmarkRenderer.render(...args),download,toast});
  updateControls();activateCategory(activeCategory);
 }
 function updateControls(){
+ for(const notice of controls.querySelectorAll('[data-leg-override]'))notice.hidden=!LEG_OVERRIDE_TOPS.includes(appearance.shirt);
  for(const button of controls.querySelectorAll('[data-body-style]'))button.setAttribute('aria-pressed',String(button.dataset.bodyStyle===appearance.bodyStyle));
  for(const notice of controls.querySelectorAll('[data-override-notice]')){notice.hidden=appearance.head==='original';notice.textContent=notice.dataset.overrideNotice==='ears'&&CLASSIC_FIN_HEADS.includes(appearance.head)?'Head uses classic fins.':'Head overrides face traits.';}
  for(const button of controls.querySelectorAll('[data-color]'))button.setAttribute('aria-pressed',String(button.dataset.color.toLowerCase()===appearance.bodyColor.toLowerCase()));
@@ -124,7 +133,6 @@ addEventListener('keydown',event=>{
 });
 function download(blob,name){const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=name;link.hidden=true;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);}
 $('#randomize').onclick=()=>{const next=randomizeLook({rarity:rarityEditor.value,appearance,background:portraitBackground,pose:portraitPose,posesEnabled:portraitPosesEnabled});changeLook({appearance:next.appearance,portrait:{posesEnabled:portraitPosesEnabled,pose:portraitPosesEnabled?next.pose:portraitPose,background:next.background}});};
-$('#resetLook').onclick=()=>{select(DEFAULT_APPEARANCE);toast('Look reset.');};
 $('#exportLook').onclick=()=>{download(new Blob([JSON.stringify({version:6,appearance,rarity:rarityEditor.value,portrait:{posesEnabled:portraitPosesEnabled,pose:portraitPose,background:portraitBackground}},null,2)],{type:'application/json'}),'my-drifella.json');toast('Look exported.');};
 $('#importLook').onclick=()=>$('#lookFile').click();
 $('#lookFile').onchange=async event=>{
@@ -136,12 +144,12 @@ $('#lookFile').onchange=async event=>{
 };
 for(const button of document.querySelectorAll('[data-motion]'))button.onclick=()=>{avatar?.setPose('');$('#studioPose').value='';motion=button.dataset.motion;elapsed=0;settled=0;for(const option of document.querySelectorAll('[data-motion]'))option.setAttribute('aria-pressed',String(option===button));};
 $('#holdCard').onchange=event=>{avatar?.setPose('');$('#studioPose').value='';holding=event.target.checked;settled=0;if(card)card.visible=holding;};
-for(const pose of POSES)for(const id of ['studioPose','portraitPose']){const option=document.createElement('option');option.value=pose.id;option.textContent=pose.label;$(`#${id}`).append(option);}
+for(const [id,poses] of [['studioPose',POSES],['portraitPose',PORTRAIT_POSES]])for(const pose of poses){const option=document.createElement('option');option.value=pose.id;option.textContent=pose.label;$(`#${id}`).append(option);}
 $('#studioPose').onchange=event=>{const id=normalizePose(event.target.value);motion='idle';elapsed=0;settled=0;holding=false;$('#holdCard').checked=false;if(card)card.visible=false;for(const button of document.querySelectorAll('[data-motion]'))button.setAttribute('aria-pressed',String(!id&&button.dataset.motion==='idle'));avatar?.setPose(id,{static:reducedMotion});};
 function portraitComposition(){return {...portraitPoseComposition(portraitPosesEnabled?portraitPose:''),background:portraitBackground};}
 function applyPortraitPose(){portraitAvatar?.setPose(portraitPosesEnabled?portraitPose:'');if(portraitCamera)configurePortraitCamera(THREE,portraitCamera,portraitComposition());portraitDirty=true;}
 $('#enablePortraitPoses').onchange=event=>changePortrait({posesEnabled:event.target.checked});
-$('#portraitPose').onchange=event=>changePortrait({pose:normalizePose(event.target.value)||'salute'});
+$('#portraitPose').onchange=event=>changePortrait({pose:normalizePortraitPose(event.target.value)||'salute'});
 $('#resetView').onclick=()=>{yaw=.18;pitch=.08;distance=7.0;autoRotate=false;$('#rotateView').setAttribute('aria-pressed','false');};
 $('#rotateView').onclick=()=>{autoRotate=!autoRotate;$('#rotateView').setAttribute('aria-pressed',String(autoRotate));};
 $('#captureView').onclick=()=>{if(viewMode==='portrait'){void exportPortrait();return;}if(!renderer)return;renderer.render(scene,camera);canvas.toBlob(blob=>{if(blob)download(blob,'my-drifella.png');else toast('The portrait could not be captured.');});};
@@ -181,7 +189,7 @@ function frame(now){
  if(viewMode==='portrait'){if(portraitDirty&&portraitScene){renderer.render(portraitScene,portraitCamera);portraitDirty=false;}return;}
  elapsed+=dt;settled+=dt;if(autoRotate&&pointers.size===0)yaw+=dt*.3;
  if(avatar){const jumpTime=motion==='jump'?((elapsed%2.4)<1.1?elapsed%2.4:-1):-1,crouch=['crouch','sneak'].includes(motion)?1:0,velocity=motion==='walk'?1.25:motion==='sneak'?.65:0;
-  avatar.update(reducedMotion&&motion==='idle'&&settled>.8?0:dt,velocity,holding,0,{crouch,jumpTime});avatar.model.position.y=jumpHeight(jumpTime);
+  avatar.update(reducedMotion&&motion==='idle'&&settled>.8?0:dt,velocity,holding,0,{crouch,jumpTime});avatar.model.position.y=jumpHeight(jumpTime);if(holding)followHeldCard?.();
  }
  cameraPose();renderer.render(scene,camera);
 }
@@ -228,7 +236,7 @@ async function exportPortrait(){
 }
 $('#exportPortrait').onclick=exportPortrait;$('#closePortraitDialog').onclick=()=>$('#portraitExportDialog').close();
 async function setupPortrait(){
- portraitAvatar=await createPortraitAvatar({createAvatar:createShowroomAvatar,appearance,pose:portraitPosesEnabled?portraitPose:''});if(disposed){portraitAvatar.dispose();return;}
+ portraitAvatar=await createPortraitAvatar({THREE,createAvatar:createShowroomAvatar,appearance,pose:portraitPosesEnabled?portraitPose:''});if(disposed){portraitAvatar.dispose();return;}
  await portraitAvatar.setAppearance(appearance);
  portraitScene=new THREE.Scene();portraitScene.environment=environment.texture;setPortraitSceneBackground(THREE,portraitScene,portraitBackground);portraitScene.add(portraitAvatar.model);
  portraitScene.add(new THREE.HemisphereLight(0xf7fcff,0x748b79,2.2));
@@ -279,14 +287,14 @@ async function init(){
   resize();frameId=requestAnimationFrame(frame);
   avatar=await createShowroomAvatar({appearance});if(disposed){avatar.dispose();return;}avatar.model.position.set(0,0,0);avatar.model.rotation.y=0;avatar.model.scale.setScalar(1);scene.add(avatar.model);
   avatar.model.traverse(node=>{if(node.isMesh){node.castShadow=true;node.receiveShadow=true;}});
-  card=new THREE.Mesh(new THREE.BoxGeometry(.19,.27,.009),[new THREE.MeshStandardMaterial({color:0xf4e7c7}),new THREE.MeshStandardMaterial({color:0xf4e7c7}),new THREE.MeshStandardMaterial({color:0xf4e7c7}),new THREE.MeshStandardMaterial({color:0xf4e7c7}),new THREE.MeshStandardMaterial({color:0xd5ed7c,roughness:.7}),new THREE.MeshStandardMaterial({color:0x354d43,roughness:.6})]);card.position.set(0,.11,0);card.visible=holding;card.castShadow=true;avatar.socket?.add(card);
-  settled=0;$('#loadState').hidden=true;controls.inert=false;for(const id of ['randomize','resetLook','saveBookmark','exportLook','importLook','captureView','studioMode','studioPose'])$(`#${id}`).disabled=false;
+  card=createHeldCard(THREE);card.visible=holding;card.castShadow=true;scene.add(card);followHeldCard=createHeldCardFollower({THREE,card,avatar});followHeldCard();
+  settled=0;$('#loadState').hidden=true;controls.inert=false;$('#bookmarksPanel').inert=false;for(const id of ['randomize','saveBookmark','exportLook','importLook','captureView','studioMode','studioPose'])$(`#${id}`).disabled=false;
   void setupPortrait().catch(error=>{console.error(error);toast('Portrait mode could not load. Reload to try again.');});
   void makeThumbnails();
  }catch(error){console.error(error);$('#loadState').replaceChildren();const message=document.createElement('strong');message.textContent='Model could not load.';const detail=document.createElement('span');detail.textContent='Check your connection and retry.';const retry=document.createElement('button');retry.textContent='Try again';retry.onclick=()=>location.reload();$('#loadState').append(message,detail,retry);}
 }
 canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();toast('The 3D preview was interrupted. Reload to restore it.');$('#saveBookmark').disabled=true;});
-function cleanup(){if(disposed)return;disposed=true;bookmarkControls?.dispose();void bookmarkRenderer.dispose();cancelAnimationFrame(frameId);clearTimeout(toastTimer);resizeObserver.disconnect();if(card){card.removeFromParent();card.geometry.dispose();for(const material of [].concat(card.material))material.dispose();}avatar?.dispose();portraitAvatar?.dispose();if(portraitScene)disposePortraitBackground(portraitScene);scene?.traverse(node=>{if(node===card||!node.isSkinnedMesh){node.geometry?.dispose();if(node.material)for(const material of [].concat(node.material))material.dispose();}});environment?.dispose();renderer?.dispose();}
+function cleanup(){if(disposed)return;disposed=true;bookmarkControls?.dispose();void bookmarkRenderer.dispose();cancelAnimationFrame(frameId);clearTimeout(toastTimer);resizeObserver.disconnect();if(card)disposeHeldCard(card);avatar?.dispose();portraitAvatar?.dispose();if(portraitScene)disposePortraitBackground(portraitScene);scene?.traverse(node=>{if(node===card||!node.isSkinnedMesh){node.geometry?.dispose();if(node.material)for(const material of [].concat(node.material))material.dispose();}});environment?.dispose();renderer?.dispose();}
 addEventListener('pagehide',event=>{if(!event.persisted)cleanup();});
 makeControls();updateHistory();
 init();

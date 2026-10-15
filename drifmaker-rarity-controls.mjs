@@ -1,5 +1,5 @@
 import {backgroundCSS} from './drifmaker-background.mjs?v=1';
-import {RARITY_GROUPS,MAX_WEIGHT,validWeight,traitWeight,traitChances,loadRarity,saveRarity,normalizeRarity} from './drifmaker-rarity.mjs?v=3';
+import {RARITY_GROUPS,MAX_WEIGHT,validWeight,traitWeight,traitChances,loadRarity,saveRarity,normalizeRarity} from './drifmaker-rarity.mjs?v=5';
 
 export function createRarityEditor({activeCategory,onError}){
  const $=selector=>document.querySelector(selector),dialog=$('#rarityDialog'),group=$('#rarityCategory'),rows=$('#rarityRows'),note=$('#rarityNote');

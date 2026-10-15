@@ -48,6 +48,7 @@ test('randomization uses weights in every group and only rolls portrait poses wh
  assert.equal(result.background,expected.background.hex);assert.equal(result.pose,expected.pose.id);
  assert.equal(randomizeLook({...state,posesEnabled:false},()=>.5).pose,'salute');
  assert.equal(state.appearance,DEFAULT_APPEARANCE);
+ assert.equal(expected.pose.id,'holdcard');assert.equal(RARITY_GROUPS.pose.options.length,11);
 });
 
 test('saved/imported rarity is bounded, catalog-only, forward compatible and survives reload',()=>{

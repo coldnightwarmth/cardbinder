@@ -1,5 +1,5 @@
 import {backgroundCSS} from './drifmaker-background.mjs?v=1';
-import {createBookmarkStore,lookKey,exportBookmarkZip} from './drifmaker-bookmarks.mjs?v=1';
+import {createBookmarkStore,lookKey,exportBookmarkZip} from './drifmaker-bookmarks.mjs?v=3';
 
 export function createBookmarkControls({panel,saveButton,getLook,loadLook,render,download,toast}){
  let storage;try{storage=localStorage;}catch{storage={getItem(){throw Error();},setItem(){throw Error();}};}

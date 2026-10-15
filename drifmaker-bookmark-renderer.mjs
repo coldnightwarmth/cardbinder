@@ -1,6 +1,6 @@
 import {setPortraitSceneBackground,disposePortraitBackground} from './drifmaker-background.mjs?v=1';
-import {createPortraitAvatar,configurePortraitCamera,portraitPoseComposition,PORTRAIT_COMPOSITION} from './drifmaker-portrait.mjs?v=4';
-import {normalizeLook} from './drifmaker-bookmarks.mjs?v=1';
+import {createPortraitAvatar,configurePortraitCamera,portraitPoseComposition,PORTRAIT_COMPOSITION} from './drifmaker-portrait.mjs?v=5';
+import {normalizeLook} from './drifmaker-bookmarks.mjs?v=3';
 
 // One private avatar/context serves the gallery and ZIP, serially. Neither
 // exporting nor thumbnail generation changes the editor's active selection.
@@ -9,7 +9,7 @@ export function createBookmarkRenderer({THREE,createAvatar,environmentFactory,re
  async function initialize(){
   let avatar,renderer,environment;
   try{
-   avatar=await createPortraitAvatar({createAvatar});
+   avatar=await createPortraitAvatar({THREE,createAvatar});
    renderer=rendererFactory({antialias:true,alpha:false,preserveDrawingBuffer:true});renderer.setPixelRatio(1);
    renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=PORTRAIT_COMPOSITION.exposure;
    environment=environmentFactory(renderer);

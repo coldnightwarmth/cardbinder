@@ -1,5 +1,6 @@
 import {setPortraitSceneBackground,disposePortraitBackground} from './drifmaker-background.mjs?v=1';
-import {normalizePose} from './drifmaker-poses.mjs?v=1';
+import {createHeldCard,createHeldCardFollower,disposeHeldCard} from './drifmaker-held-card.mjs?v=1';
+import {normalizePortraitPose} from './drifmaker-poses.mjs?v=2';
 // Composition is shared by the fixed preview and its PNG export. These framing
 // values remain explicit so matching collection references does not depend on
 // the studio canvas size, orbit controls, animation time, or selected wardrobe.
@@ -13,13 +14,9 @@ export const PORTRAIT_COMPOSITION=Object.freeze({
  modelYaw:0,background:'#dedfe5',exposure:1.1,
 });
 
-// Wider pose framing keeps outstretched hands in the portrait while preserving
-// the collection's viewing direction, aspect ratio and native export resolution.
-export function portraitPoseComposition(id){
- if(!normalizePose(id))return {};
- const y=id==='bow'?1.25:1.55,shift=y-PORTRAIT_COMPOSITION.target[1];
- return {spanHeight:id==='tpose'?3.45:3.15,target:[0,y,0],cameraPosition:[2.7,2.10+shift,7]};
-}
+// Poses change the skeleton only. Keep the original portrait crop, even when
+// hands or the lower body extend beyond it, for previews and every PNG export.
+export function portraitPoseComposition(){return {};}
 
 function compositionWith(overrides={}){
  const composition={...PORTRAIT_COMPOSITION,...overrides};
@@ -33,16 +30,25 @@ function compositionWith(overrides={}){
 // createAvatar must create a fresh showroom clone. A fresh zero-delta update
 // samples Neutral at exactly t=0; no warm-up loop or studio state is involved.
 // Deliberately omit update from this facade so the portrait stays frozen.
-export async function createPortraitAvatar({createAvatar,appearance,composition,pose=''}={}){
+export async function createPortraitAvatar({THREE,createAvatar,appearance,composition,pose=''}={}){
  if(typeof createAvatar!=='function')throw Error('A character factory is required for the portrait.');
  const framing=compositionWith(composition),avatar=await createAvatar({appearance});
+ let card,followCard;
+ function setPose(value){
+  const id=normalizePortraitPose(value),holding=id==='holdcard';
+  if(holding&&!card){
+   if(!THREE)throw Error('Card portraits require THREE.');
+   card=createHeldCard(THREE);avatar.model.add(card);followCard=createHeldCardFollower({THREE,card,avatar});
+  }
+  avatar.setPose?.(holding?'':id,{static:true,holding});
+  avatar.update(0,0,holding,0,{crouch:0,jumpTime:-1});avatar.model.updateMatrixWorld(true);
+  if(card){card.visible=holding;if(holding)followCard();}
+ }
  try{
   avatar.model.position.set(0,0,0);avatar.model.rotation.set(0,framing.modelYaw,0);avatar.model.scale.setScalar(1);
-  avatar.setPose?.(pose,{static:true});
-  avatar.update(0,0,false,0,{crouch:0,jumpTime:-1});
-  avatar.model.updateMatrixWorld(true);
- }catch(error){avatar.dispose();throw error;}
- return {model:avatar.model,get appearance(){return avatar.appearance;},setAppearance(value){return avatar.setAppearance(value);},setPose(id){avatar.setPose(id,{static:true});avatar.update(0,0,false,0,{crouch:0,jumpTime:-1});avatar.model.updateMatrixWorld(true);},dispose(){avatar.dispose();}};
+  setPose(pose);
+ }catch(error){if(card)disposeHeldCard(card);avatar.dispose();throw error;}
+ return {model:avatar.model,get appearance(){return avatar.appearance;},setAppearance(value){return avatar.setAppearance(value);},setPose,dispose(){if(card)disposeHeldCard(card);avatar.dispose();}};
 }
 
 export function configurePortraitCamera(THREE,camera,composition){

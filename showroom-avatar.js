@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 import {GLTFLoader} from './vendor/GLTFLoader.js';
-import {createAvatarAppearance} from './drifmaker-avatar.mjs?v=7';
-import {normalizePose,normalizePoseTime} from './drifmaker-poses.mjs?v=1';
+import {createAvatarAppearance} from './drifmaker-avatar.mjs?v=8';
+import {normalizePose,normalizePoseTime} from './drifmaker-poses.mjs?v=2';
 let assetPromise;
-function asset(){return assetPromise ||= new GLTFLoader().loadAsync(new URL('./assets/models/drifmaker/drifella-customizable.glb?v=7',import.meta.url).href).catch(error=>{assetPromise=null;throw error;});}
+function asset(){return assetPromise ||= new GLTFLoader().loadAsync(new URL('./assets/models/drifmaker/drifella-customizable.glb?v=8',import.meta.url).href).catch(error=>{assetPromise=null;throw error;});}
 // Geometry and textures are shared; each visitor owns their bones and any
 // recolored materials. Wardrobe pieces on the same skin reuse that visitor's skeleton.
 export function cloneAvatar(source){
@@ -50,10 +50,11 @@ export async function createShowroomAvatar({appearance}={}){
  const socket=model.getObjectByName('CardSocketR')||model.getObjectByName('CardSocket.R');
  const look=createAvatarLookPose(model);
  let moving=false,speed=0,handPitch=0,holdBlend=0,walkBlend=0;
- let selectedPose='',poseTime=0,staticPose=false;
+ let selectedPose='',poseTime=0,staticPose=false,staticHold=false;
  for(const [name,action] of actions){action.play().setEffectiveWeight(0);if(name.startsWith('Jump')||name.startsWith('Pose_'))action.paused=true;}
- function setPose(id,{static:freeze=false,time=0}={}){
+ function setPose(id,{static:freeze=false,time=0,holding=false}={}){
   look.restore();selectedPose=normalizePose(id);poseTime=freeze?2:normalizePoseTime(time);staticPose=freeze;
+  staticHold=freeze&&holding;
   if(!selectedPose){speed=0;moving=false;holdBlend=0;walkBlend=0;for(const action of actions.values())action.time=0;}
  }
  return {model,socket,setPose,get pose(){return selectedPose;},get appearance(){return wardrobe.appearance;},async setAppearance(value){return wardrobe.setAppearance(value);},get handPitch(){return handPitch;},update(dt,velocity,holding,pitch=0,locomotion={}){
@@ -68,6 +69,7 @@ export async function createShowroomAvatar({appearance}={}){
     model.userData.animation=name;return;
    }
   }
+  if(staticHold){dt=0;velocity=0;holding=true;holdBlend=1;walkBlend=0;speed=0;for(const action of actions.values())action.time=0;}
   speed+=(Math.min(velocity,5)-speed)*(1-Math.exp(-dt*14));moving=speed>(moving?.045:.10);
   const blend=1-Math.exp(-dt*16);holdBlend+=((holding?1:0)-holdBlend)*blend;walkBlend+=((moving?1:0)-walkBlend)*blend;
   const crouch=THREE.MathUtils.clamp(locomotion.crouch||0,0,1),time=locomotion.jumpTime??-1;

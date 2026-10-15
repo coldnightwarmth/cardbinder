@@ -68,6 +68,7 @@ for action in bpy.data.actions:
 def look(eyes,shirt,hat,accessory,action,frame,legs='original',mouth='original',head='original',extra='none',nose='original',ears='original',tattoo='none',brows='original'):
     names=['Drif_Body','Drif_Head_'+head,'Drif_Extra_'+extra,'Drif_Eyes_'+eyes,'Drif_Shirt_'+shirt,'Drif_Hat_'+hat,'Drif_Accessory_'+accessory,'Drif_Legs_'+legs,'Drif_Mouth_'+mouth,'Drif_Nose_'+nose,'Drif_Ears_'+ears,'Drif_Tattoo_'+tattoo,'Drif_Brows_'+brows]
     if head!='original':names=[n for n in names if not n.startswith(('Drif_Eyes_','Drif_Mouth_','Drif_Nose_','Drif_Ears_','Drif_Tattoo_','Drif_Brows_'))]
+    if shirt=='wizardrobe':names.remove('Drif_Legs_'+legs)
     if head in ['pumpkin','tv','crystal']:names.append('Drif_Ears_original')
     for obj in meshes:
         visible=obj.name in names

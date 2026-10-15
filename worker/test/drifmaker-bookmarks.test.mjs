@@ -68,3 +68,10 @@ test('rainbow background survives bookmarks and complete look history',()=>{
  assert.equal(createBookmarkStore(storage).entries[0].look.portrait.background,'rainbow');
  const history=createLookHistory(look());history.commit(value);history.undo();assert.deepEqual(history.redo(),value);
 });
+
+test('card holding survives saved bookmarks, undo and redo',()=>{
+ const value=look({shirt:'wizardrobe'},{pose:'holdcard',posesEnabled:true});
+ const storage=memory(),store=createBookmarkStore(storage,{id:()=> 'card'});store.add(value);
+ assert.equal(createBookmarkStore(storage).entries[0].look.portrait.pose,'holdcard');
+ const history=createLookHistory(look());history.commit(value);history.undo();assert.deepEqual(history.redo(),value);
+});

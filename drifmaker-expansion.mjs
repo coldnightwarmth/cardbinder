@@ -1,4 +1,4 @@
-// Modeled by the spectral and signature Blender extensions.
+// Modeled by the Blender wardrobe extensions.
 export const NEW_TRAITS={
  "eyes": [
   {
@@ -62,6 +62,14 @@ export const NEW_TRAITS={
   {
    "id": "sleepmask",
    "label": "Sleep mask"
+  },
+  {
+   "id": "mog",
+   "label": "Mog sunglasses"
+  },
+  {
+   "id": "virtualboy",
+   "label": "Virtual Boy headset"
   }
  ],
  "mouth": [
@@ -126,6 +134,10 @@ export const NEW_TRAITS={
   {
    "id": "whistle",
    "label": "Whistle"
+  },
+  {
+   "id": "fluffybeard",
+   "label": "Fluffy beard"
   }
  ],
  "shirt": [
@@ -198,6 +210,10 @@ export const NEW_TRAITS={
   {
    "id": "sunburst",
    "label": "Sunburst top"
+  },
+  {
+   "id": "wizardrobe",
+   "label": "Star wizard robe"
   }
  ],
  "legs": [
@@ -330,6 +346,10 @@ export const NEW_TRAITS={
   {
    "id": "viking",
    "label": "Viking helmet"
+  },
+  {
+   "id": "santa",
+   "label": "Santa hat"
   }
  ],
  "accessory": [
@@ -655,6 +675,22 @@ export const NEW_TRAITS={
   {
    "id": "robot",
    "label": "Robot ears"
+  },
+  {
+   "id": "smallfins",
+   "label": "Small fins"
+  },
+  {
+   "id": "largefins",
+   "label": "Large fins"
+  },
+  {
+   "id": "blackfins",
+   "label": "Black fins"
+  },
+  {
+   "id": "droopyfins",
+   "label": "Drooping fins"
   }
  ],
  "brows": [

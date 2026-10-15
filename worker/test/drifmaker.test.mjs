@@ -10,13 +10,13 @@ import {Showroom} from '../src/showroom.js';
 import {freshRoom} from '../src/showroom-state.js';
 
 test('expanded wardrobe contains twelve independent categories and bounded normalized values',()=>{
- assert.deepEqual(Object.fromEntries(Object.entries(CATEGORIES).map(([category,items])=>[category,items.length])),{eyes:27,mouth:24,shirt:28,legs:24,hat:28,accessory:30,head:10,extra:16,tattoo:12,nose:9,ears:9,brows:14});
+ assert.deepEqual(Object.fromEntries(Object.entries(CATEGORIES).map(([category,items])=>[category,items.length])),{eyes:29,mouth:25,shirt:29,legs:24,hat:29,accessory:30,head:10,extra:16,tattoo:12,nose:9,ears:13,brows:14});
  for(const items of Object.values(CATEGORIES)){
   assert.ok(items.filter(item=>item.id!=='none').length>=5);
   assert.equal(new Set(items.map(item=>item.id)).size,items.length);
   for(const item of items)assert.match(item.id,/^[a-z0-9]+$/);
  }
- assert.equal(BODY_COLORS.length,42);
+ assert.equal(BODY_COLORS.length,43);
  assert.equal(PORTRAIT_BACKGROUNDS.length,32);
  for(const palette of [BODY_COLORS,PORTRAIT_BACKGROUNDS]){
   assert.equal(new Set(palette.map(color=>color.hex)).size,palette.length);
@@ -32,6 +32,42 @@ test('expanded wardrobe contains twelve independent categories and bounded norma
  assert.notEqual(appearanceKey(chosen),appearanceKey({...chosen,mouth:'braces'}));
  assert.deepEqual(Object.keys(normalizeAppearance({...chosen,unsafe:'ignored'})),['bodyColor','bodyStyle',...Object.keys(CATEGORIES)]);
  assert.ok(JSON.stringify(normalizeAppearance(chosen)).length<384,'appearance remains a compact fixed-shape pose field');
+});
+
+test('wizard robe hides all leg variants and switching tops restores the saved choice',()=>{
+ const model=new THREE.Group();
+ for(const name of ['Drif_Shirt_wizardrobe','Drif_Shirt_original',...CATEGORIES.legs.map(item=>'Drif_Legs_'+item.id)]){const part=new THREE.Group();part.name=name;model.add(part);}
+ const controller=createAvatarAppearance(model);
+ for(const item of CATEGORIES.legs){
+  controller.setAppearance({...DEFAULT_APPEARANCE,shirt:'wizardrobe',legs:item.id});
+  assert.equal(controller.appearance.legs,item.id);
+  assert.ok(CATEGORIES.legs.every(option=>!model.getObjectByName('Drif_Legs_'+option.id).visible));
+  assert.equal(model.getObjectByName('Drif_Shirt_wizardrobe').visible,true);
+  controller.setAppearance({...controller.appearance,shirt:'original'});
+  assert.equal(model.getObjectByName('Drif_Legs_'+item.id).visible,true);
+ }
+ controller.dispose();
+});
+
+test('camo covers skin and feet, preserves eyewear and clothes, and restores other finishes',()=>{
+ const geometry=new THREE.BoxGeometry(),source=new THREE.MeshStandardMaterial({color:'#ffffff'});source.name='Drif_Original_Warm_ivory';
+ const model=new THREE.Group();
+ for(const name of ['Drif_Head_original','Drif_Ears_original','Drif_Nose_original','Drif_Eyes_mog','Drif_Mouth_fluffybeard','Drif_Shirt_original','Drif_Legs_original']){const part=new THREE.Mesh(geometry,source);part.name=name;model.add(part);}
+ const controller=createAvatarAppearance(model);
+ controller.setAppearance({...DEFAULT_APPEARANCE,bodyStyle:'camo',eyes:'mog',mouth:'fluffybeard'});
+ assert.equal(controller.appearance.bodyColor,'#62734a');
+ for(const part of ['Head_original','Ears_original','Nose_original','Legs_original']){
+  const mat=model.getObjectByName('Drif_'+part).material;
+  assert.equal(mat.userData.drifCamo,true,part);assert.equal(mat.roughness,1);assert.equal(mat.metalness,0);
+  const shader={vertexShader:'#include <begin_vertex>',fragmentShader:'#include <color_fragment>'};mat.onBeforeCompile(shader);
+  assert.match(shader.vertexShader,/vDrifCamoPosition = position/);assert.match(shader.fragmentShader,/diffuseColor.rgb = camoColor/);
+ }
+ for(const part of ['Eyes_mog','Mouth_fluffybeard','Shirt_original'])assert.ok(!model.getObjectByName('Drif_'+part).material.userData.drifCamo,part);
+ const skin=model.getObjectByName('Drif_Head_original').material;
+ controller.setAppearance({...controller.appearance,bodyStyle:'ghost'});assert.equal(skin.userData.drifCamo,false);assert.equal(skin.userData.drifGhost,true);
+ controller.setAppearance({...controller.appearance,bodyStyle:'silver'});assert.equal(skin.userData.drifCamo,false);assert.equal(skin.metalness,.94);
+ controller.setAppearance({...DEFAULT_APPEARANCE});assert.equal(skin.userData.drifCamo,false);assert.equal(skin.color.getHexString(),'ffffff');assert.equal(skin.roughness,source.roughness);
+ controller.dispose();geometry.dispose();source.dispose();
 });
 
 test('pumpkin, TV and crystal retain classic fins without losing the selected ear variant',()=>{
@@ -171,7 +207,7 @@ test('every shipped wardrobe option is skinned to the original rig and retains a
  assert.ok(values(photoPrimitive.attributes.TEXCOORD_0).every(Number.isFinite));
  assert.deepEqual(gltf.animations.filter(clip=>!clip.name.startsWith('Pose_')).map(clip=>clip.name).sort(),original.json.animations.map(clip=>clip.name).sort());
  const expectedNames=['Drif_Body','Drif_Ghost_Fuzz',...Object.entries(CATEGORIES).flatMap(([category,items])=>items.filter(item=>item.id!=='none').map(item=>`Drif_${category[0].toUpperCase()+category.slice(1)}_${item.id}`))];
- assert.equal(expectedNames.length,228);
+ assert.equal(expectedNames.length,237);
  assert.deepEqual(gltf.nodes.filter(node=>node.mesh!==undefined).map(node=>node.name).sort(),expectedNames.sort(),'every logical wardrobe option has exactly one mesh node');
  for(const [category,items] of Object.entries(CATEGORIES))for(const item of items.filter(item=>item.id!=='none')){
   const prefix=`Drif_${category[0].toUpperCase()+category.slice(1)}_${item.id}`;

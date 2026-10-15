@@ -1,4 +1,4 @@
-import {POSES,normalizePose,normalizePoseTime} from '../../drifmaker-poses.mjs';
+import {POSES,PORTRAIT_POSES,normalizePose,normalizePoseTime} from '../../drifmaker-poses.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -6,7 +6,8 @@ import vm from 'node:vm';
 import * as THREE from '../../vendor/three.module.min.js';
 import {createAvatarAppearance} from '../../drifmaker-avatar.mjs';
 import {DEFAULT_APPEARANCE} from '../../drifmaker-config.mjs';
-import {PORTRAIT_COMPOSITION,createPortraitAvatar,configurePortraitCamera,capturePortrait} from '../../drifmaker-portrait.mjs';
+import {PORTRAIT_COMPOSITION,portraitPoseComposition,createPortraitAvatar,configurePortraitCamera,capturePortrait} from '../../drifmaker-portrait.mjs';
+import {createHeldCard,createHeldCardFollower,disposeHeldCard} from '../../drifmaker-held-card.mjs';
 
 // Load actual shipped transforms and clips without a GPU or texture decoder.
 function avatarFactory(){
@@ -71,6 +72,46 @@ test('orthographic portrait framing preserves configured aspect without mutating
  assert.deepEqual(camera.position.toArray(),config.cameraPosition);assert.deepEqual(config.target,[.1,2.1,0]);
  assert.throws(()=>configurePortraitCamera(THREE,new THREE.PerspectiveCamera(),config),/orthographic/);
  assert.throws(()=>configurePortraitCamera(THREE,camera,{width:0}),/dimensions/);
+});
+
+test('every portrait pose keeps the neutral camera and model placement, including exported frames',async()=>{
+ const createAvatar=avatarFactory(),neutral=configurePortraitCamera(THREE,new THREE.OrthographicCamera());
+ for(const pose of PORTRAIT_POSES){
+  const composition=portraitPoseComposition(pose.id),camera=configurePortraitCamera(THREE,new THREE.OrthographicCamera(),composition);
+  assert.deepEqual(camera.matrixWorld,neutral.matrixWorld,pose.id);assert.deepEqual(camera.projectionMatrix,neutral.projectionMatrix,pose.id);
+  const portrait=await createPortraitAvatar({THREE,createAvatar,pose:pose.id,composition});
+  assert.deepEqual(portrait.model.position.toArray(),[0,0,0]);assert.deepEqual(portrait.model.scale.toArray(),[1,1,1]);
+  const fixture=rendererFixture();await capturePortrait({THREE,scene:new THREE.Scene(),camera,composition,rendererFactory:fixture.factory});
+  assert.deepEqual(fixture.calls.camera.matrixWorld,neutral.matrixWorld);assert.deepEqual(fixture.calls.camera.projectionMatrix,neutral.projectionMatrix);
+  portrait.dispose();
+ }
+});
+
+test('card portrait freezes Hold_Right at time zero, preserves wardrobe changes, and removes the prop for other poses',async()=>{
+ const createAvatar=avatarFactory(),a=await createPortraitAvatar({THREE,createAvatar,pose:'holdcard'}),b=await createPortraitAvatar({THREE,createAvatar});
+ const neutral=bonePose(b.model),card=a.model.getObjectByName('DrifmakerHeldCard');
+ assert.equal(a.model.userData.animation,'Hold_Right');assert.equal(card.visible,true);assert.notDeepEqual(bonePose(a.model),neutral);
+ b.setPose('bow');b.setPose('holdcard');assert.deepEqual(bonePose(a.model),bonePose(b.model));
+ assert.ok(card.position.distanceTo(b.model.getObjectByName('DrifmakerHeldCard').position)<1e-10);
+ assert.ok(new THREE.Vector3(0,0,1).applyQuaternion(card.quaternion).z>.95,'card front faces out, regardless of the hand bone twist');
+ const held=bonePose(a.model);await a.setAppearance({...DEFAULT_APPEARANCE,shirt:'wizardrobe'});assert.deepEqual(bonePose(a.model),held);
+ a.setPose('salute');assert.equal(card.visible,false);a.setPose('');assert.deepEqual(bonePose(a.model),neutral);
+ a.setPose('holdcard');assert.deepEqual(bonePose(a.model),held);assert.equal(card.visible,true);
+ let disposed=0;card.geometry.addEventListener('dispose',()=>disposed++);a.dispose();b.dispose();assert.equal(disposed,1);
+});
+
+test('held card follows hand movement and avatar yaw without inheriting sideways wrist rotation',()=>{
+ const scene=new THREE.Scene(),model=new THREE.Group(),socket=new THREE.Object3D(),parent=new THREE.Group(),card=createHeldCard(THREE);
+ scene.add(model,parent);parent.rotation.y=-.4;parent.position.set(2,1,3);parent.add(card);model.add(socket);socket.position.set(.5,1.3,.3);
+ const avatar={model,socket,handPitch:0},follow=createHeldCardFollower({THREE,card,avatar});
+ for(const yaw of [0,.7,Math.PI]){
+  model.rotation.y=yaw;model.position.y+=.5;socket.rotation.set(.9,Math.PI/2,1.8);follow();
+  const expected=new THREE.Vector3(0,0,1).applyEuler(new THREE.Euler(.16,yaw,0,'YXZ'));
+  assert.ok(new THREE.Vector3(0,0,1).applyQuaternion(card.getWorldQuaternion(new THREE.Quaternion())).distanceTo(expected)<1e-10);
+  const position=card.getWorldPosition(new THREE.Vector3()),rotation=card.getWorldQuaternion(new THREE.Quaternion());
+  socket.rotation.set(0,-1,2);follow();assert.ok(position.distanceTo(card.getWorldPosition(new THREE.Vector3()))<1e-10);assert.ok(rotation.angleTo(card.getWorldQuaternion(new THREE.Quaternion()))<1e-7);
+ }
+ disposeHeldCard(card);
 });
 
 function rendererFixture({blob=new Blob(['png'],{type:'image/png'}),error}={}){

@@ -1,7 +1,7 @@
 import {validPortraitBackground} from './drifmaker-background.mjs?v=1';
-import {normalizeAppearance} from './drifmaker-config.mjs?v=7';
-import {normalizePose} from './drifmaker-poses.mjs?v=1';
-import {PORTRAIT_COMPOSITION} from './drifmaker-portrait.mjs?v=4';
+import {normalizeAppearance} from './drifmaker-config.mjs?v=8';
+import {normalizePortraitPose} from './drifmaker-poses.mjs?v=2';
+import {PORTRAIT_COMPOSITION} from './drifmaker-portrait.mjs?v=5';
 import {createZipWriter} from './minotecurator/zip-writer.js';
 
 export const BOOKMARK_KEY='cards.art.drifmaker.bookmarks.v1';
@@ -10,7 +10,7 @@ export function normalizeLook(value={}){
  const portrait=value?.portrait||{};
  return {appearance:normalizeAppearance(value?.appearance),portrait:{
   background:validPortraitBackground(portrait.background)?portrait.background.toLowerCase():PORTRAIT_COMPOSITION.background,
-  posesEnabled:portrait.posesEnabled===true,pose:normalizePose(portrait.pose)||'salute',
+  posesEnabled:portrait.posesEnabled===true,pose:normalizePortraitPose(portrait.pose)||'salute',
  }};
 }
 export const lookKey=value=>JSON.stringify(normalizeLook(value));

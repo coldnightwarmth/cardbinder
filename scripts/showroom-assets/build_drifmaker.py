@@ -374,7 +374,7 @@ for obj in collection.objects:
         obj.data.update()
 
 # Expand the catalog with fitted lower-body/mouth sets and the additional wardrobe.
-for extension_name in ['extend_drifmaker_legs_mouth.py','extend_drifmaker_wardrobe.py','extend_drifmaker_spectral.py','extend_drifmaker_signature.py','extend_drifmaker_encore.py','extend_drifmaker_brows.py','refine_drifmaker_portraits.py']:
+for extension_name in ['extend_drifmaker_legs_mouth.py','extend_drifmaker_wardrobe.py','extend_drifmaker_spectral.py','extend_drifmaker_signature.py','extend_drifmaker_encore.py','extend_drifmaker_brows.py','refine_drifmaker_portraits.py','extend_drifmaker_holiday.py']:
     extension_path=ROOT/'scripts/showroom-assets'/extension_name
     exec(compile(extension_path.read_text(),str(extension_path),'exec'),globals())
 variant_catalog={
@@ -396,6 +396,9 @@ for category,ids in SIGNATURE_VARIANTS.items():
     variant_catalog[category].extend(ids)
 
 for category,ids in ENCORE_VARIANTS.items():
+    variant_catalog[category].extend(ids)
+
+for category,ids in HOLIDAY_VARIANTS.items():
     variant_catalog[category].extend(ids)
 
 exec(compile((ROOT/'scripts/showroom-assets/animate_drifmaker_poses.py').read_text(),'animate_drifmaker_poses.py','exec'),globals())
@@ -447,6 +450,8 @@ bpy.ops.export_scene.gltf(**kwargs)
 
 def selection(eyes='classic',shirt='original',hat='none',accessory='original',legs='original',mouth='original',head='original',extra='none',nose='original',ears='original',tattoo='none',brows='original'):
     names=['Drif_Body','Drif_Head_'+head,'Drif_Shirt_'+shirt,'Drif_Hat_'+hat,'Drif_Accessory_'+accessory,'Drif_Legs_'+legs,'Drif_Extra_'+extra]
+    if shirt=='wizardrobe':names.remove('Drif_Legs_'+legs)
+    if head in ['pumpkin','tv','crystal']:names.append('Drif_Ears_original')
     if head=='original':
         names+=['Drif_Eyes_'+eyes,'Drif_Mouth_'+mouth,'Drif_Nose_'+nose,'Drif_Ears_'+ears,'Drif_Tattoo_'+tattoo,'Drif_Brows_'+brows]
     for obj in pieces:
@@ -457,19 +462,20 @@ def selection(eyes='classic',shirt='original',hat='none',accessory='original',le
 selection()
 scene.frame_set(1)
 manifest={
-    'version':7,'asset':'drifella-customizable.glb','source':'drifella-customizable.blend',
+    'version':8,'asset':'drifella-customizable.glb','source':'drifella-customizable.blend',
     'bodyMaterial':'Drif_Body_Main','shirtMaterial':'Drif_Shirt_Main',
     'hatMaterial':'Drif_Hat_Main','accessoryMaterial':'Drif_Accessory_Main',
     'orientation':{'blenderUp':'+Z','blenderForward':'-Y','gltfUp':'+Y','gltfForward':'+Z'},
     'categories':{'eyes':variant_catalog['Eyes'],'shirts':variant_catalog['Shirt'],
                   'hats':['none']+variant_catalog['Hat'],'accessories':['none']+variant_catalog['Accessory'],
                   'legs':variant_catalog['Legs'],'mouth':variant_catalog['Mouth'],
-                  'head':variant_catalog['Head'],'extra':['none']+variant_catalog['Extra'],'nose':variant_catalog['Nose'],'ears':variant_catalog['Ears'],'tattoo':['none']+variant_catalog['Tattoo'],'brows':['none']+variant_catalog['Brows'],'bodyStyles':['solid','ghost','gold','silver','matteblack']},
+                  'head':variant_catalog['Head'],'extra':['none']+variant_catalog['Extra'],'nose':variant_catalog['Nose'],'ears':variant_catalog['Ears'],'tattoo':['none']+variant_catalog['Tattoo'],'brows':['none']+variant_catalog['Brows'],'bodyStyles':['solid','ghost','gold','silver','matteblack','camo']},
     'inspiration':{'collection':'Drifella 2','url':'https://www.tensor.trade/trade/drifella_2',
                    'traits':['jean jacket','white bomber','solana cap','doomer black beanie','rainbow party hat','sleppy','pixelady star','spiral','dark magician spiky headphones','pokeball necklace','warlax backpack']},
     'nodePrefixes':{'eyes':'Drif_Eyes_','shirts':'Drif_Shirt_','hats':'Drif_Hat_','accessories':'Drif_Accessory_','legs':'Drif_Legs_','mouth':'Drif_Mouth_','head':'Drif_Head_','extra':'Drif_Extra_','nose':'Drif_Nose_','ears':'Drif_Ears_','tattoo':'Drif_Tattoo_','brows':'Drif_Brows_'},
     'orbFreeEyes':ORB_FREE_EYES,'earringAnchor':list(sg_earring_anchor),
     'headFits':{name:{'scale':list(fit[:3]),'verticalOffset':fit[3],'pivot':[0,0,2.20]} for name,fit in HEAD_FITS.items()},
+    'legOverrideTops':['wizardrobe'],
     'classicFinHeads':['pumpkin','tv','crystal'],
     'poses':POSE_IDS,
     'clips':[{'name':a.name,'seconds':(a.frame_range[1]-a.frame_range[0])/30} for a in bpy.data.actions],
@@ -477,7 +483,7 @@ manifest={
     'parts':[{'name':o.name,'vertices':len(o.data.vertices),'triangles':sum(len(p.vertices)-2 for p in o.data.polygons)} for o in pieces],
     'originalParts':{name:len(polygons) for name,polygons in groups.items()},
     'extraLayout':'Portrait-aware satellite positions with front fin clearance and varied depth/tilt; a curved rear rainbow, visible storm, lowered halo, raised lantern, offset shield, and wider jetpack pods.',
-    'notes':'All components share the original 19-bone rest pose, 10 locomotion actions and 10 enter-and-hold pose actions. Alternate heads replace the original head and facial categories without discarding choices; pumpkin, TV and crystal retain the classic fin ears. Replacement heads fit the original collar height and silhouette. Extra is independent of accessories. Ghost color and rim transparency cover the entire body, facial surfaces and bare feet, with a skinned fuzz mesh. Gold coats all body and facial surfaces. The Swag World hoodie embeds the user-supplied photograph with torso and sleeve UVs.'
+    'notes':'All components share the original 19-bone rest pose, 10 locomotion actions and 10 enter-and-hold pose actions. Alternate heads replace the original head and facial categories without discarding choices; pumpkin, TV and crystal retain the classic fin ears. Replacement heads fit the original collar height and silhouette. Extra is independent of accessories. Ghost color and rim transparency cover the entire body, facial surfaces and bare feet, with a skinned fuzz mesh. Gold coats all body and facial surfaces. The Swag World hoodie embeds the user-supplied photograph with torso and sleeve UVs. The holiday extension adds mirrored Mog eyewear, a red VR headset, a Santa cap, a layered beard, four original-fin variations, and an ankle-length star robe that overrides legs while preserving the saved choice. Camo is a seamless rest-space runtime skin finish.'
 }
 (OUT/'manifest.json').write_text(json.dumps(manifest,indent=2))
 # Camera/view setup is scoped to the saved customization source.

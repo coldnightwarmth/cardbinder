@@ -5,6 +5,9 @@ export const POSES=Object.freeze([
  ['welcome','Welcome'],['heart','Heart hands'],
 ].map(([id,label])=>Object.freeze({id,label,clip:`Pose_${id}`,duration:2})));
 export const normalizePose=id=>POSES.some(pose=>pose.id===id)?id:'';
+// Card holding uses the existing showroom Hold_Right clip, with its card prop.
+export const PORTRAIT_POSES=Object.freeze([...POSES,Object.freeze({id:'holdcard',label:'Hold card'})]);
+export const normalizePortraitPose=id=>PORTRAIT_POSES.some(pose=>pose.id===id)?id:'';
 export const normalizePoseTime=time=>Number.isFinite(time)?Math.max(0,Math.min(2,time)):0;
 export function createPoseState(){
  let id='',time=0;

@@ -1,5 +1,5 @@
-import {BODY_COLORS,BODY_STYLES,PORTRAIT_BACKGROUNDS,CATEGORIES} from './drifmaker-config.mjs?v=7';
-import {POSES} from './drifmaker-poses.mjs?v=1';
+import {BODY_COLORS,BODY_STYLES,PORTRAIT_BACKGROUNDS,CATEGORIES} from './drifmaker-config.mjs?v=8';
+import {PORTRAIT_POSES} from './drifmaker-poses.mjs?v=2';
 
 export const RARITY_STORAGE_KEY='cards-art:drifmaker:rarity:v1';
 export const DEFAULT_WEIGHT=100;
@@ -9,7 +9,7 @@ export const RARITY_GROUPS=Object.freeze({
  bodyStyle:{label:'Body finishes',options:BODY_STYLES},
  ...Object.fromEntries(['head','eyes','brows','mouth','nose','ears','tattoo','shirt','legs','hat','accessory','extra'].map((key,index)=>[key,{label:['Heads','Eyes','Eyebrows','Mouth','Nose','Ears','Tattoos','Tops','Legs','Hats','Accessories','Extra'][index],options:CATEGORIES[key]}])),
  background:{label:'Backgrounds',options:PORTRAIT_BACKGROUNDS.map(color=>({...color,id:color.hex}))},
- pose:{label:'Portrait poses',options:POSES},
+ pose:{label:'Portrait poses',options:PORTRAIT_POSES},
 });
 
 export const validWeight=value=>Number.isInteger(value)&&value>=0&&value<=MAX_WEIGHT;

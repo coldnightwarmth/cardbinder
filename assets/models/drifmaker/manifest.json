@@ -1,5 +1,5 @@
 {
-  "version": 7,
+  "version": 8,
   "asset": "drifella-customizable.glb",
   "source": "drifella-customizable.blend",
   "bodyMaterial": "Drif_Body_Main",
@@ -40,7 +40,9 @@
       "stitched",
       "target",
       "petals",
-      "sleepmask"
+      "sleepmask",
+      "mog",
+      "virtualboy"
     ],
     "shirts": [
       "original",
@@ -70,7 +72,8 @@
       "swagworld",
       "cardigan",
       "flightjacket",
-      "sunburst"
+      "sunburst",
+      "wizardrobe"
     ],
     "hats": [
       "none",
@@ -100,7 +103,8 @@
       "mcdonalds",
       "chef",
       "straw",
-      "viking"
+      "viking",
+      "santa"
     ],
     "accessories": [
       "none",
@@ -184,7 +188,8 @@
       "respirator",
       "smirk",
       "buckteeth",
-      "whistle"
+      "whistle",
+      "fluffybeard"
     ],
     "head": [
       "original",
@@ -236,7 +241,11 @@
       "finlets",
       "fox",
       "axolotl",
-      "robot"
+      "robot",
+      "smallfins",
+      "largefins",
+      "blackfins",
+      "droopyfins"
     ],
     "tattoo": [
       "none",
@@ -273,7 +282,8 @@
       "ghost",
       "gold",
       "silver",
-      "matteblack"
+      "matteblack",
+      "camo"
     ]
   },
   "inspiration": {
@@ -441,6 +451,9 @@
       ]
     }
   },
+  "legOverrideTops": [
+    "wizardrobe"
+  ],
   "classicFinHeads": [
     "pumpkin",
     "tv",
@@ -708,6 +721,16 @@
       "triangles": 684
     },
     {
+      "name": "Drif_Eyes_mog",
+      "vertices": 1207,
+      "triangles": 2276
+    },
+    {
+      "name": "Drif_Eyes_virtualboy",
+      "vertices": 1300,
+      "triangles": 2536
+    },
+    {
       "name": "Drif_Shirt_original",
       "vertices": 578,
       "triangles": 1112
@@ -848,6 +871,11 @@
       "triangles": 1540
     },
     {
+      "name": "Drif_Shirt_wizardrobe",
+      "vertices": 2436,
+      "triangles": 4620
+    },
+    {
       "name": "Drif_Hat_cap",
       "vertices": 376,
       "triangles": 728
@@ -981,6 +1009,11 @@
       "name": "Drif_Hat_viking",
       "vertices": 350,
       "triangles": 684
+    },
+    {
+      "name": "Drif_Hat_santa",
+      "vertices": 3254,
+      "triangles": 6360
     },
     {
       "name": "Drif_Accessory_original",
@@ -1368,6 +1401,11 @@
       "triangles": 280
     },
     {
+      "name": "Drif_Mouth_fluffybeard",
+      "vertices": 4048,
+      "triangles": 7976
+    },
+    {
       "name": "Drif_Head_original",
       "vertices": 862,
       "triangles": 1680
@@ -1583,6 +1621,26 @@
       "triangles": 120
     },
     {
+      "name": "Drif_Ears_smallfins",
+      "vertices": 32,
+      "triangles": 56
+    },
+    {
+      "name": "Drif_Ears_largefins",
+      "vertices": 32,
+      "triangles": 56
+    },
+    {
+      "name": "Drif_Ears_blackfins",
+      "vertices": 32,
+      "triangles": 56
+    },
+    {
+      "name": "Drif_Ears_droopyfins",
+      "vertices": 32,
+      "triangles": 56
+    },
+    {
       "name": "Drif_Tattoo_teardrops",
       "vertices": 15,
       "triangles": 9
@@ -1716,5 +1774,5 @@
     "Drif_Brows_original": 2
   },
   "extraLayout": "Portrait-aware satellite positions with front fin clearance and varied depth/tilt; a curved rear rainbow, visible storm, lowered halo, raised lantern, offset shield, and wider jetpack pods.",
-  "notes": "All components share the original 19-bone rest pose, 10 locomotion actions and 10 enter-and-hold pose actions. Alternate heads replace the original head and facial categories without discarding choices; pumpkin, TV and crystal retain the classic fin ears. Replacement heads fit the original collar height and silhouette. Extra is independent of accessories. Ghost color and rim transparency cover the entire body, facial surfaces and bare feet, with a skinned fuzz mesh. Gold coats all body and facial surfaces. The Swag World hoodie embeds the user-supplied photograph with torso and sleeve UVs."
+  "notes": "All components share the original 19-bone rest pose, 10 locomotion actions and 10 enter-and-hold pose actions. Alternate heads replace the original head and facial categories without discarding choices; pumpkin, TV and crystal retain the classic fin ears. Replacement heads fit the original collar height and silhouette. Extra is independent of accessories. Ghost color and rim transparency cover the entire body, facial surfaces and bare feet, with a skinned fuzz mesh. Gold coats all body and facial surfaces. The Swag World hoodie embeds the user-supplied photograph with torso and sleeve UVs. The holiday extension adds mirrored Mog eyewear, a red VR headset, a Santa cap, a layered beard, four original-fin variations, and an ankle-length star robe that overrides legs while preserving the saved choice. Camo is a seamless rest-space runtime skin finish."
 }
