@@ -108,6 +108,26 @@ for style in SPECTRAL_VARIANTS['Eyes']:
     for t in [-.6,0,.6]:line(p+'_thread',[(x+t*.1-.02,-.569,2.17+t*diagonal*.13+.025),(x+t*.1+.02,-.569,2.17+t*diagonal*.13-.025)],.007,sp_hot,'Head',5)
  if style=='goggles':line(p+'_bridge',[(-.12,-.53,2.22),(0,-.50,2.25),(.12,-.53,2.22)],.022,dm_silver,'Head')
 
+# A tapered swept profile gives the handlebar a full center and fine curled tips.
+def sp_moustache(prefix, side):
+ controls=[(0,-.706,1.88,.034),(.095,-.735,1.86,.063),(.21,-.723,1.875,.057),(.29,-.705,1.92,.038),(.31,-.695,1.985,.024),(.27,-.71,2.008,.013),(.25,-.72,1.98,.002)]
+ controls=[Vector((side*x,y,z,r)) for x,y,z,r in controls]
+ samples=[]
+ for index in range(len(controls)-1):
+  a,b,c,d=controls[max(0,index-1)],controls[index],controls[index+1],controls[min(index+2,len(controls)-1)]
+  for j in range(8):
+   t=j/8;samples.append(.5*((2*b)+(-a+c)*t+(2*a-5*b+4*c-d)*t*t+(-a+3*b-3*c+d)*t*t*t))
+ samples.append(controls[-1]);verts=[];faces=[];sides=12
+ for i,sample in enumerate(samples):
+  center=Vector(sample[:3]);tangent=(Vector(samples[min(i+1,len(samples)-1)][:3])-Vector(samples[max(i-1,0)][:3])).normalized()
+  up=tangent.cross(Vector((0,1,0))).normalized();depth=tangent.cross(up).normalized();radius=max(.002,sample[3])
+  for j in range(sides):
+   angle=j*math.tau/sides;verts.append(center+radius*(math.cos(angle)*up+.72*math.sin(angle)*depth))
+  if i:
+   for j in range(sides):faces.append(((i-1)*sides+j,(i-1)*sides+(j+1)%sides,i*sides+(j+1)%sides,i*sides+j))
+ faces.extend([tuple(reversed(range(sides))),tuple((len(samples)-1)*sides+j for j in range(sides))])
+ mesh(prefix+'_curl',verts,faces,dm_leather,'Head')
+
 # Ten mouths fit the curved original muzzle.
 for style in SPECTRAL_VARIANTS['Mouth']:
  p='Drif_Mouth_'+style
@@ -117,7 +137,6 @@ for style in SPECTRAL_VARIANTS['Mouth']:
    x=(i-5)*.046;z=1.89-abs(x)*.13
    mouth_panel(p+'_uppertooth',[(x-.022,z),(x+.022,z),(x,1.79+abs(x)*.12)],sp_pearl,.037)
    mouth_panel(p+'_lowertooth',[(x-.019,1.755+abs(x)*.13),(x+.019,1.755+abs(x)*.13),(x,1.83)],sp_pearl,.039)
-  line(p+'_tongue',[(.10,-.69,1.78),(.17,-.78,1.72),(.27,-.82,1.73),(.32,-.79,1.80)],.034,sp_hot,'Head',9)
  elif style=='zipper':
   mouth_line(p+'_line',[(-.25,1.82),(0,1.81),(.25,1.82)],r=.019)
   for i in range(11):
@@ -132,7 +151,7 @@ for style in SPECTRAL_VARIANTS['Mouth']:
   dm_loop(p+'_lip',(0,-.674,1.82),(.085,.102),.012,pink,steps=24)
  elif style=='moustache':
   mouth_line(p+'_smile',[(-.12,1.79),(0,1.77),(.12,1.79)],r=.013)
-  for s in [-1,1]:line(p+'_curl',[(0,-.674,1.87),(s*.09,-.69,1.85),(s*.20,-.66,1.86),(s*.27,-.62,1.91),(s*.24,-.64,1.94)],.027,dm_leather,'Head',8)
+  for side in [-1,1]:sp_moustache(p,side)
  elif style=='beak':
   plaque(p+'_upper',[(-.16,1.88),(0,1.99),(.16,1.88),(0,1.80)],-.72,.09,sp_orange)
   plaque(p+'_lower',[(-.12,1.80),(.12,1.80),(0,1.72)],-.70,.06,dm_yellow)
@@ -346,11 +365,11 @@ for style in SPECTRAL_VARIANTS['Accessory']:
   dm_box(p+'_display',(0,-.45,1.01),(.11,.025,.07),sp_glowcyan,'Pelvis')
   line(p+'_strap',[(-.22,.1,1.50),(-.22,-.25,1.44),(0,-.40,1.12),(.22,-.25,1.44),(.22,.1,1.50)],.018,charcoal,torso_weights)
  elif style=='lantern':
-  line(p+'_hook',[(.35,.05,.99),(.50,-.10,.99),(.50,-.16,.88)],.014,gold,'Pelvis')
-  ell(p+'_flame',(.50,-.16,.72),(.045,.04,.075),sp_glowgold,'Pelvis',n=10,m=8)
-  for z in [.60,.84]:dm_box(p+'_cap',(.50,-.16,z),(.17,.14,.035),dm_steel,'Pelvis')
-  for dx in [-.07,.07]:
-   for dy in [-.055,.055]:line(p+'_rail',[(.50+dx,-.16+dy,.60),(.50+dx,-.16+dy,.84)],.009,gold,'Pelvis',5)
+  line(p+'_hook',[(.35,-.25,1.30),(.69,-.44,1.39),(.80,-.49,1.32)],.016,gold,'Chest')
+  ell(p+'_flame',(.80,-.49,1.12),(.055,.048,.09),sp_glowgold,'Chest',n=12,m=8)
+  for z in [.97,1.27]:dm_box(p+'_cap',(.80,-.49,z),(.21,.17,.04),dm_steel,'Chest')
+  for dx in [-.085,.085]:
+   for dy in [-.067,.067]:line(p+'_rail',[(.80+dx,-.49+dy,.97),(.80+dx,-.49+dy,1.27)],.011,gold,'Chest',6)
 
 # Alternate heads replace the whole original head, muzzle, fins, eyes and mouth.
 def sp_horns(p,mat,kind='curve'):
@@ -450,8 +469,8 @@ def sp_float_finish(start, pivot, position, degrees=(0,0,0), scale=1):
   for vertex in obj.data.vertices:vertex.co=position+rotation@((vertex.co-pivot)*scale)
   obj.data.update()
 
-# Left-side satellites tend behind the silhouette and right-side ones toward
-# the camera, leaving the collection portrait's face and fins unobstructed.
+# Satellites have independent depth and tilt. The closest pass in front of
+# the fins, with a clear gap, while rear effects wrap around the silhouette.
 for style in SPECTRAL_VARIANTS['Extra']:
  p='Drif_Extra_'+style
  if style=='mon':
@@ -488,13 +507,13 @@ for style in SPECTRAL_VARIANTS['Extra']:
    ell(p+'_spirit',(x,-.04,z),(.12,.095,.17),sp_glowcyan,'Chest',n=12,m=10)
    sp_cone(p+'_wisp',(x,-.04,z+.12),(x+.09,-.04,z+.38),.08,sp_glowcyan,'Chest')
    for dx in [-.035,.035]:ell(p+'_eye',(x+dx,-.135,z+.02),(.014,.008,.023),ink,'Chest',n=8,m=6)
-   sp_float_finish(start,(x,-.04,z),[(-1.04,.52,2.38),(1.03,-.45,1.99),(-.80,-.64,1.18)][i],[(8,-14,15),(-12,19,-20),(16,8,25)][i])
+   sp_float_finish(start,(x,-.04,z),[(-.77,-.76,2.42),(1.0,-.65,1.91),(-.68,-.95,1.18)][i],[(8,-14,15),(-12,19,-20),(16,8,25)][i],.85)
  elif style=='planets':
   for i,(x,z,r) in enumerate([(-.85,2.48,.16),(.84,2.0,.14),(-.74,1.20,.10)]):
    start=len(pieces)
    ell(p+'_planet',(x,0,z),(r,r,r),[dm_lilac,dm_sky,sp_orange][i],'Chest',n=16,m=10)
    dm_loop(p+'_ring',(x,0,z),(r*1.65,r*.45),.017,gold,'Chest',steps=24)
-   sp_float_finish(start,(x,0,z),[(-1.07,.58,2.51),(1.02,-.45,2.03),(-.83,-.66,1.16)][i],[(24,-20,-26),(-32,12,27),(18,28,-14)][i])
+   sp_float_finish(start,(x,0,z),[(-.66,-.88,2.70),(1.03,-.72,2.06),(-.70,-.75,1.20)][i],[(24,-20,-26),(-32,12,27),(18,28,-14)][i])
  elif style=='arcane':
   start=len(pieces)
   for r in [.89,.98]:dm_loop(p+'_circle',(0,.39,2.12),(r,r),.013,sp_glowcyan,steps=64)
@@ -507,14 +526,14 @@ for style in SPECTRAL_VARIANTS['Extra']:
   for x,y,z,r in [(-.23,.09,3.0,.21),(0,.28,3.09,.25),(.25,.39,3.0,.19)]:ell(p+'_cloud',(x,y,z),(r,.17,r*.55),dm_steel,'Head',n=14,m=8)
   for s in [-1,1]:line(p+'_bolt',[(s*.28,.28,2.98),(s*.49,.33,2.74),(s*.38,.42,2.73),(s*.68,.57,2.48)],.015,sp_glowgold,'Head',5)
   for j,x in enumerate([-.25,0,.25]):line(p+'_rain',[(x,.30+j*.11,2.84),(x-.025,.36+j*.11,2.70)],.008,dm_sky,'Head',5)
-  sp_float_finish(start,(0,.25,2.9),(-.40,1.08,3.01),(-8,0,-12))
+  sp_float_finish(start,(0,.25,2.9),(.05,-.55,2.86),(-8,0,-12),.72)
  elif style=='crystals':
   for i in range(7):
    a=i*math.tau/7;x=.85*math.cos(a);z=1.97+.85*math.sin(a);start=len(pieces)
    sp_cone(p+'_top',(x,.14,z),(x+.03,.14,z+.22),.085,[dm_lilac,sp_glowcyan,sp_hot][i%3],'Chest',5)
    sp_cone(p+'_base',(x,.14,z),(x-.03,.14,z-.14),.085,[dm_lilac,sp_glowcyan,sp_hot][i%3],'Chest',5)
-   depth=.58 if math.cos(a)<0 else -.56
-   sp_float_finish(start,(x,.14,z),(1.06*math.cos(a),depth+.18*math.sin(2*a),1.97+1.01*math.sin(a)),(i*13-30,i*19-40,i*11-25))
+   screen,depth,height=[(-.92,-.85,2.50),(-.52,-.65,2.88),(.30,-.55,2.90),(.94,-.68,2.58),(.98,-.85,1.55),(-.38,-.90,1.0),(-.95,-.70,1.47)][i]
+   sp_float_finish(start,(x,.14,z),(screen/.933-depth*.386,depth,height),(i*13-30,i*19-40,i*11-25),.8)
  elif style=='pixelstars':
   for i,(x,z) in enumerate([(-.82,2.50),(.80,2.63),(-.77,1.60),(.79,1.35),(0,3.12)]):
    start=len(pieces)
@@ -527,14 +546,21 @@ for style in SPECTRAL_VARIANTS['Extra']:
     line(p+'_tendril',pts,.032,sp_onyx,'Chest',7)
     for point in pts[2:]:ell(p+'_sucker',(point[0],point[1]-.028,point[2]),(.017,.012,.022),sp_hot,'Chest',n=8,m=6)
  elif style=='dragon':
-  pts=[(-.84,-.37,1.26),(-1.06,-.16,1.65),(-1.12,.19,2.03),(-.98,.52,2.28),(-1.10,.66,2.55),(-1.22,.58,2.51)]
-  line(p+'_serpent',pts,.075,dm_mint,'Chest',10)
+  orbit=[(-.92,-.82,1.18),(-.78,-.80,1.48),(-.91,-.90,1.78),(-1.01,-.85,2.12),(-.92,-.86,2.45),(-.78,-.96,2.55)]
+  pts=[Vector((screen/.933-depth*.386,depth,height)) for screen,depth,height in orbit];smooth=[]
+  for index in range(len(pts)-1):
+   a,b,c,d=pts[max(0,index-1)],pts[index],pts[index+1],pts[min(index+2,len(pts)-1)]
+   for j in range(6):
+    t=j/6;smooth.append(.5*((2*b)+(-a+c)*t+(2*a-5*b+4*c-d)*t*t+(-a+3*b-3*c+d)*t*t*t))
+  smooth.append(pts[-1]);line(p+'_serpent',smooth,.065,dm_mint,'Chest',10)
   start=len(pieces)
   ell(p+'_head',(-.91,-.03,2.49),(.15,.10,.11),dm_mint,'Chest',n=14,m=10)
   ell(p+'_eye',(-.94,-.13,2.52),(.023,.014,.025),dm_rose,'Chest',n=10,m=6)
+  for side in [-1,1]:sp_cone(p+'_horn',(-.91+side*.08,-.01,2.56),(-.91+side*.13,.015,2.72),.03,gold,'Chest')
+  ell(p+'_snout',(-.87,-.10,2.46),(.09,.055,.06),dm_mint,'Chest',n=12,m=8)
   sp_float_finish(start,(-.91,-.03,2.49),pts[-1],(8,-12,-22))
   for j in range(1,5):
-   x,y,z=pts[j];sp_cone(p+'_spine',(x,y+.04,z),(x-.05,y+.1,z+.15),.045,gold,'Chest')
+   x,y,z=pts[j];sp_cone(p+'_spine',(x-.04,y-.035,z),(x-.12,y-.075,z+.13),.04,gold,'Chest')
  elif style=='cards':
   for i,(x,z,a) in enumerate([(-.83,2.23,-.2),(.80,1.90,.2),(-.70,1.20,-.1)]):
    start=len(pieces)

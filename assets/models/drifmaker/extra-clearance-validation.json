@@ -2,57 +2,74 @@
   "method": "Surface-intersection pairs against classic body, head, fins, mouth, hoodie and legs at neutral and all 10 held pose endpoints. Occlusion is allowed; this is a clipping comparison, not a guarantee for every wardrobe combination.",
   "poses": {
     "Neutral": {
-      "before": 24,
+      "before": 0,
       "after": 0
     },
     "Pose_salute": {
-      "before": 26,
+      "before": 0,
       "after": 0
     },
     "Pose_tpose": {
-      "before": 27,
-      "after": 2
+      "before": 2,
+      "after": 1
     },
     "Pose_bow": {
-      "before": 17,
+      "before": 0,
       "after": 0
     },
     "Pose_victory": {
-      "before": 35,
+      "before": 0,
       "after": 0
     },
     "Pose_think": {
-      "before": 24,
-      "after": 1
+      "before": 1,
+      "after": 0
     },
     "Pose_point": {
-      "before": 26,
+      "before": 0,
       "after": 0
     },
     "Pose_summon": {
-      "before": 21,
-      "after": 4
+      "before": 4,
+      "after": 2
     },
     "Pose_flex": {
-      "before": 35,
+      "before": 0,
       "after": 0
     },
     "Pose_welcome": {
-      "before": 25,
-      "after": 3
+      "before": 3,
+      "after": 0
     },
     "Pose_heart": {
-      "before": 21,
+      "before": 0,
       "after": 0
     }
   },
+  "intersections": [
+    {
+      "pose": "Pose_tpose",
+      "extra": "Drif_Extra_saiyanaura",
+      "body": [
+        "Drif_Shirt_original"
+      ]
+    },
+    {
+      "pose": "Pose_summon",
+      "extra": "Drif_Extra_mon",
+      "body": [
+        "Drif_Body",
+        "Drif_Shirt_original"
+      ]
+    }
+  ],
   "byExtra": {
     "Drif_Extra_mon": {
-      "before": 27,
+      "before": 2,
       "after": 2
     },
     "Drif_Extra_saiyanaura": {
-      "before": 28,
+      "before": 1,
       "after": 1
     },
     "Drif_Extra_ornateframe": {
@@ -60,47 +77,47 @@
       "after": 0
     },
     "Drif_Extra_spiritflames": {
-      "before": 23,
-      "after": 2
+      "before": 2,
+      "after": 0
     },
     "Drif_Extra_planets": {
-      "before": 29,
+      "before": 0,
       "after": 0
     },
     "Drif_Extra_arcane": {
-      "before": 11,
+      "before": 0,
       "after": 0
     },
     "Drif_Extra_storm": {
-      "before": 11,
+      "before": 0,
       "after": 0
     },
     "Drif_Extra_crystals": {
-      "before": 32,
+      "before": 0,
       "after": 0
     },
     "Drif_Extra_pixelstars": {
-      "before": 14,
+      "before": 0,
       "after": 0
     },
     "Drif_Extra_tentacles": {
-      "before": 18,
+      "before": 0,
       "after": 0
     },
     "Drif_Extra_dragon": {
-      "before": 28,
-      "after": 4
+      "before": 4,
+      "after": 0
     },
     "Drif_Extra_cards": {
-      "before": 23,
+      "before": 0,
       "after": 0
     },
     "Drif_Extra_butterflies": {
-      "before": 18,
-      "after": 1
+      "before": 1,
+      "after": 0
     },
     "Drif_Extra_ufo": {
-      "before": 19,
+      "before": 0,
       "after": 0
     },
     "Drif_Extra_rainbow": {
@@ -109,7 +126,7 @@
     }
   },
   "total": {
-    "before": 281,
-    "after": 10
+    "before": 10,
+    "after": 3
   }
 }

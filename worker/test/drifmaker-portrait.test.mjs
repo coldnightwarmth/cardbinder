@@ -83,7 +83,7 @@ test('PNG export uses native dimensions, an isolated camera and renderer, and al
  const scene=new THREE.Scene(),camera=configurePortraitCamera(THREE,new THREE.OrthographicCamera(),{width:400,height:400}),originalProjection=camera.projectionMatrix.clone();
  const fixture=rendererFixture(),blob=await capturePortrait({THREE,scene,camera,composition:{width:1200,height:1295},rendererFactory:fixture.factory});
  assert.equal(blob.type,'image/png');assert.deepEqual(fixture.calls.size,[1200,1295,false]);assert.equal(fixture.calls.pixelRatio,1);assert.equal(fixture.calls.mime,'image/png');assert.equal(fixture.calls.options.alpha,false);
- assert.equal(fixture.calls.scene,scene);assert.notEqual(fixture.calls.camera,camera);assert.deepEqual(camera.projectionMatrix,originalProjection);
+ assert.notEqual(fixture.calls.scene,scene);assert.deepEqual(fixture.calls.scene.children,scene.children);assert.notEqual(fixture.calls.camera,camera);assert.deepEqual(camera.projectionMatrix,originalProjection);
  assert.equal(fixture.calls.disposed,true);assert.equal(fixture.calls.contextLost,true);
  for(const options of [{blob:null},{error:Error('Context unavailable')}]){
   const failure=rendererFixture(options);
@@ -136,4 +136,17 @@ test('remote pose time reproduces the same frame for late joiners and supports c
  }
  b.update(.1,1,false,0,{emote:'',emoteTime:0});assert.equal(b.model.userData.animation,'Walk');
  a.dispose();b.dispose();
+});
+
+test('rainbow PNG export uses an independent opaque gradient and releases its texture',async()=>{
+ const {setPortraitSceneBackground,disposePortraitBackground}=await import('../../drifmaker-background.mjs');
+ const scene=new THREE.Scene(),camera=new THREE.OrthographicCamera();setPortraitSceneBackground(THREE,scene,'rainbow');
+ const preview=scene.background;let previewDisposed=false;preview.addEventListener('dispose',()=>previewDisposed=true);
+ const fixture=rendererFixture();let exportDisposed=false;const render=fixture.renderer.render;
+ fixture.renderer.render=(scene,camera)=>{scene.background.addEventListener('dispose',()=>exportDisposed=true);render(scene,camera);};
+ await capturePortrait({THREE,scene,camera,composition:{background:'rainbow'},rendererFactory:fixture.factory});
+ const gradient=fixture.calls.scene.background;assert.notEqual(gradient,preview);assert.equal(gradient.isDataTexture,true);assert.equal(gradient.colorSpace,THREE.SRGBColorSpace);
+ const pixels=gradient.image.data;assert.equal(pixels.length,256*256*4);assert.notDeepEqual([...pixels.slice(255*4,255*4+3)],[...pixels.slice(255*256*4,255*256*4+3)]);
+ for(let i=3;i<pixels.length;i+=4)assert.equal(pixels[i],255);
+ assert.equal(exportDisposed,true);assert.equal(previewDisposed,false);disposePortraitBackground(scene);assert.equal(previewDisposed,true);
 });

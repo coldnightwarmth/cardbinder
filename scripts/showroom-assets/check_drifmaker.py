@@ -27,6 +27,17 @@ assert Counter(position_key(v) for v in source.data.vertices)==Counter(position_
 report={'normalizedWeights':True,'maxInfluences':4,'originalGeometryPreserved':True,
         'boneCount':len(rig.data.bones),'skinnedObjectCount':len(meshes),'clips':{},'neutralBounds':{},
         'verification':'Every frame of all 20 actions evaluated for finite vertices; original ten-component union compared to original mesh; includes all alternate heads, extras and ghost fibers.'}
+report['headFits']={}
+for name in manifest.get('headFits',{}):
+    obj=bpy.data.objects['Drif_Head_'+name]
+    lo=[min(v.co[i] for v in obj.data.vertices) for i in range(3)]
+    hi=[max(v.co[i] for v in obj.data.vertices) for i in range(3)]
+    # The original jaw reaches z=1.445. Replacements must cover the neck
+    # down to the same collar region and retain a comparably broad silhouette.
+    assert lo[2]<=1.50,(name,'replacement head exposes too much neck',lo[2])
+    assert hi[0]-lo[0]>=1.24,(name,'replacement head too narrow')
+    assert all(g.group==obj.vertex_groups['Head'].index for v in obj.data.vertices for g in v.groups if g.weight>0),(name,'face details must follow Head together')
+    report['headFits'][name]={'bindBounds':lo+hi,'collarCoverage':True,'rigidHeadWeights':True}
 for action in bpy.data.actions:
     rig.animation_data.action=action
     frames=range(int(action.frame_range[0]),int(action.frame_range[1])+1)
@@ -57,6 +68,7 @@ for action in bpy.data.actions:
 def look(eyes,shirt,hat,accessory,action,frame,legs='original',mouth='original',head='original',extra='none',nose='original',ears='original',tattoo='none',brows='original'):
     names=['Drif_Body','Drif_Head_'+head,'Drif_Extra_'+extra,'Drif_Eyes_'+eyes,'Drif_Shirt_'+shirt,'Drif_Hat_'+hat,'Drif_Accessory_'+accessory,'Drif_Legs_'+legs,'Drif_Mouth_'+mouth,'Drif_Nose_'+nose,'Drif_Ears_'+ears,'Drif_Tattoo_'+tattoo,'Drif_Brows_'+brows]
     if head!='original':names=[n for n in names if not n.startswith(('Drif_Eyes_','Drif_Mouth_','Drif_Nose_','Drif_Ears_','Drif_Tattoo_','Drif_Brows_'))]
+    if head in ['pumpkin','tv','crystal']:names.append('Drif_Ears_original')
     for obj in meshes:
         visible=obj.name in names
         obj.hide_set(not visible)

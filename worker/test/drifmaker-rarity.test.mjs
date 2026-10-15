@@ -64,3 +64,12 @@ test('saved/imported rarity is bounded, catalog-only, forward compatible and sur
  const full=Object.fromEntries(Object.entries(RARITY_GROUPS).map(([key,{options}])=>[key,Object.fromEntries(options.map(option=>[option.id,MAX_WEIGHT]))]));
  assert.ok(Buffer.byteLength(JSON.stringify({version:6,appearance:DEFAULT_APPEARANCE,rarity:full,portrait:{posesEnabled:true,pose:'salute',background:'#abcdef'}},null,2))<16384);
 });
+
+test('new finishes and rainbow gradient obey independent zero and exclusive weights',()=>{
+ const rarity={bodyStyle:{},background:{}};
+ for(const category of ['bodyStyle','background'])for(const option of RARITY_GROUPS[category].options)rarity[category][option.id]=0;
+ rarity.bodyStyle.silver=1;rarity.background.rainbow=1;
+ const state={rarity,appearance:DEFAULT_APPEARANCE,background:'#abcdef',pose:'salute'};
+ for(const value of [0,.4,.999]){const result=randomizeLook(state,()=>value);assert.equal(result.appearance.bodyStyle,'silver');assert.equal(result.background,'rainbow');}
+ rarity.bodyStyle.silver=0;rarity.bodyStyle.matteblack=1;assert.equal(randomizeLook(state).appearance.bodyStyle,'matteblack');
+});

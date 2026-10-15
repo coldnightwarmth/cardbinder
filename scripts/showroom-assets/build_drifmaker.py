@@ -374,7 +374,7 @@ for obj in collection.objects:
         obj.data.update()
 
 # Expand the catalog with fitted lower-body/mouth sets and the additional wardrobe.
-for extension_name in ['extend_drifmaker_legs_mouth.py','extend_drifmaker_wardrobe.py','extend_drifmaker_spectral.py','extend_drifmaker_signature.py','extend_drifmaker_encore.py','extend_drifmaker_brows.py']:
+for extension_name in ['extend_drifmaker_legs_mouth.py','extend_drifmaker_wardrobe.py','extend_drifmaker_spectral.py','extend_drifmaker_signature.py','extend_drifmaker_encore.py','extend_drifmaker_brows.py','refine_drifmaker_portraits.py']:
     extension_path=ROOT/'scripts/showroom-assets'/extension_name
     exec(compile(extension_path.read_text(),str(extension_path),'exec'),globals())
 variant_catalog={
@@ -457,25 +457,27 @@ def selection(eyes='classic',shirt='original',hat='none',accessory='original',le
 selection()
 scene.frame_set(1)
 manifest={
-    'version':6,'asset':'drifella-customizable.glb','source':'drifella-customizable.blend',
+    'version':7,'asset':'drifella-customizable.glb','source':'drifella-customizable.blend',
     'bodyMaterial':'Drif_Body_Main','shirtMaterial':'Drif_Shirt_Main',
     'hatMaterial':'Drif_Hat_Main','accessoryMaterial':'Drif_Accessory_Main',
     'orientation':{'blenderUp':'+Z','blenderForward':'-Y','gltfUp':'+Y','gltfForward':'+Z'},
     'categories':{'eyes':variant_catalog['Eyes'],'shirts':variant_catalog['Shirt'],
                   'hats':['none']+variant_catalog['Hat'],'accessories':['none']+variant_catalog['Accessory'],
                   'legs':variant_catalog['Legs'],'mouth':variant_catalog['Mouth'],
-                  'head':variant_catalog['Head'],'extra':['none']+variant_catalog['Extra'],'nose':variant_catalog['Nose'],'ears':variant_catalog['Ears'],'tattoo':['none']+variant_catalog['Tattoo'],'brows':['none']+variant_catalog['Brows'],'bodyStyles':['solid','ghost','gold']},
+                  'head':variant_catalog['Head'],'extra':['none']+variant_catalog['Extra'],'nose':variant_catalog['Nose'],'ears':variant_catalog['Ears'],'tattoo':['none']+variant_catalog['Tattoo'],'brows':['none']+variant_catalog['Brows'],'bodyStyles':['solid','ghost','gold','silver','matteblack']},
     'inspiration':{'collection':'Drifella 2','url':'https://www.tensor.trade/trade/drifella_2',
                    'traits':['jean jacket','white bomber','solana cap','doomer black beanie','rainbow party hat','sleppy','pixelady star','spiral','dark magician spiky headphones','pokeball necklace','warlax backpack']},
     'nodePrefixes':{'eyes':'Drif_Eyes_','shirts':'Drif_Shirt_','hats':'Drif_Hat_','accessories':'Drif_Accessory_','legs':'Drif_Legs_','mouth':'Drif_Mouth_','head':'Drif_Head_','extra':'Drif_Extra_','nose':'Drif_Nose_','ears':'Drif_Ears_','tattoo':'Drif_Tattoo_','brows':'Drif_Brows_'},
     'orbFreeEyes':ORB_FREE_EYES,'earringAnchor':list(sg_earring_anchor),
+    'headFits':{name:{'scale':list(fit[:3]),'verticalOffset':fit[3],'pivot':[0,0,2.20]} for name,fit in HEAD_FITS.items()},
+    'classicFinHeads':['pumpkin','tv','crystal'],
     'poses':POSE_IDS,
     'clips':[{'name':a.name,'seconds':(a.frame_range[1]-a.frame_range[0])/30} for a in bpy.data.actions],
     'bones':[b.name for b in rig.data.bones],
     'parts':[{'name':o.name,'vertices':len(o.data.vertices),'triangles':sum(len(p.vertices)-2 for p in o.data.polygons)} for o in pieces],
     'originalParts':{name:len(polygons) for name,polygons in groups.items()},
-    'extraLayout':'Staggered satellite depths and individual rotations; rear aura/frame clearance; folded butterfly wings and curved dragon/tendril paths.',
-    'notes':'All components share the original 19-bone rest pose, 10 locomotion actions and 10 enter-and-hold pose actions. Alternate heads replace the original head and all facial categories, including brows, without discarding choices. Extra is independent of accessories. Ghost color and rim transparency cover the entire body, facial surfaces and bare feet, with a skinned fuzz mesh. Gold coats all body and facial surfaces. The Swag World hoodie embeds the user-supplied photograph with torso and sleeve UVs.'
+    'extraLayout':'Portrait-aware satellite positions with front fin clearance and varied depth/tilt; a curved rear rainbow, visible storm, lowered halo, raised lantern, offset shield, and wider jetpack pods.',
+    'notes':'All components share the original 19-bone rest pose, 10 locomotion actions and 10 enter-and-hold pose actions. Alternate heads replace the original head and facial categories without discarding choices; pumpkin, TV and crystal retain the classic fin ears. Replacement heads fit the original collar height and silhouette. Extra is independent of accessories. Ghost color and rim transparency cover the entire body, facial surfaces and bare feet, with a skinned fuzz mesh. Gold coats all body and facial surfaces. The Swag World hoodie embeds the user-supplied photograph with torso and sleeve UVs.'
 }
 (OUT/'manifest.json').write_text(json.dumps(manifest,indent=2))
 # Camera/view setup is scoped to the saved customization source.

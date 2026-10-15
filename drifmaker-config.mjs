@@ -6,6 +6,7 @@ import {NEW_TRAITS} from './drifmaker-expansion.mjs?v=4';
 // and orange cream plush. Eye cues include sleppy, pixelady star and spiral;
 // clothing and accessories are independently modeled adaptations for this rig.
 const options=items=>Object.freeze(items.map(item=>Object.freeze(item)));
+export const CLASSIC_FIN_HEADS=Object.freeze(['pumpkin','tv','crystal']);
 const ORIGINAL_CATEGORIES=Object.freeze({
  eyes:options([
   {id:'classic',label:'Classic',description:'Bright glossy eyes.'},
@@ -100,11 +101,14 @@ const ORIGINAL_CATEGORIES=Object.freeze({
 });
 export const CATEGORIES=Object.freeze(Object.fromEntries([...new Set([...Object.keys(ORIGINAL_CATEGORIES),...Object.keys(NEW_TRAITS)])].map(category=>[category,options([...(ORIGINAL_CATEGORIES[category]||[]),...(NEW_TRAITS[category]||[])])])));
 export const GOLD_COLOR='#e2ad32';
-export const BODY_STYLES=options([{id:'solid',label:'Solid',description:'The familiar sculpted finish.'},{id:'ghost',label:'Ghost aura',description:'Clear, translucent skin with soft luminous fibers.'},{id:'gold',label:'Gold',description:'Polished gold across the whole body and face.'}]);
+export const FINISH_COLORS=Object.freeze({gold:GOLD_COLOR,silver:'#d7dee8',matteblack:'#08090b'});
+export const BODY_STYLES=options([{id:'solid',label:'Solid',description:'The familiar sculpted finish.'},{id:'ghost',label:'Ghost aura',description:'Clear, translucent skin with soft luminous fibers.'},{id:'gold',label:'Gold',description:'Polished gold across the whole body and face.'},{id:'silver',label:'Silver',description:'Polished silver across the whole body and face.'},{id:'matteblack',label:'Matte black',description:'A soft black finish across the whole body and face.'}]);
 export const BODY_COLORS=options([
  {id:'plasma',label:'Plasma purple',hex:'#c109ff'},
  {id:'papaya',label:'Papaya',hex:'#ff582e'},
  {id:'arctic',label:'Arctic blue',hex:'#63fff2'},
+ {id:'metallicsilver',label:'Metallic silver',hex:FINISH_COLORS.silver,style:'silver'},
+ {id:'matteblack',label:'Matte black',hex:FINISH_COLORS.matteblack,style:'matteblack'},
  {id:'metallicgold',label:'Metallic gold',hex:GOLD_COLOR,style:'gold'},
  {id:'azure',label:'Azure',hex:'#1d5dea'},
  {id:'mint',label:'Mint',hex:'#a4d8bd'},
@@ -144,6 +148,7 @@ export const BODY_COLORS=options([
  {id:'porcelain',label:'Porcelain',hex:'#f5f0e7'},
 ]);
 export const PORTRAIT_BACKGROUNDS=options([
+ {label:'Rainbow gradient',hex:'rainbow'},
  {label:'Plasma',hex:'#b20fff'},{label:'Papaya',hex:'#ff6c43'},{label:'Arctic',hex:'#5be8e8'},
  {label:'Silver',hex:'#dedfe5'},{label:'Cream',hex:'#e8dfcf'},{label:'Rose',hex:'#dfc6cf'},{label:'Sage',hex:'#c6d1c4'},{label:'Midnight',hex:'#252a35'},
  {label:'Electric blue',hex:'#087ef5'},{label:'Ultramarine',hex:'#3213d5'},{label:'Cyan',hex:'#16cbe7'},{label:'Turquoise',hex:'#0dc7a0'},
@@ -162,7 +167,7 @@ export function normalizeAppearance(value){
  const input=value&&typeof value==='object'&&!Array.isArray(value)?value:{};
  const result={bodyColor:typeof input.bodyColor==='string'&&/^#[0-9a-f]{6}$/i.test(input.bodyColor)?input.bodyColor.toLowerCase():DEFAULT_APPEARANCE.bodyColor};
  result.bodyStyle=BODY_STYLES.some(item=>item.id===input.bodyStyle)?input.bodyStyle:'solid';
- if(result.bodyStyle==='gold')result.bodyColor=GOLD_COLOR;
+ if(Object.hasOwn(FINISH_COLORS,result.bodyStyle))result.bodyColor=FINISH_COLORS[result.bodyStyle];
  for(const [category,items] of Object.entries(CATEGORIES))result[category]=items.some(item=>item.id===input[category])?input[category]:DEFAULT_APPEARANCE[category];
  return result;
 }

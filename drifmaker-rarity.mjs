@@ -1,4 +1,4 @@
-import {BODY_COLORS,BODY_STYLES,PORTRAIT_BACKGROUNDS,CATEGORIES} from './drifmaker-config.mjs?v=6';
+import {BODY_COLORS,BODY_STYLES,PORTRAIT_BACKGROUNDS,CATEGORIES} from './drifmaker-config.mjs?v=7';
 import {POSES} from './drifmaker-poses.mjs?v=1';
 
 export const RARITY_STORAGE_KEY='cards-art:drifmaker:rarity:v1';

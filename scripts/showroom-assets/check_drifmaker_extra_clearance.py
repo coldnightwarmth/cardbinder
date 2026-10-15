@@ -24,13 +24,14 @@ def tree(obj,deps):
  evaluated=obj.evaluated_get(deps);mesh=evaluated.to_mesh()
  result=BVHTree.FromPolygons([evaluated.matrix_world@v.co for v in mesh.vertices],[p.vertices[:] for p in mesh.polygons],all_triangles=False)
  evaluated.to_mesh_clear();return result
-report={'method':'Surface-intersection pairs against classic body, head, fins, mouth, hoodie and legs at neutral and all 10 held pose endpoints. Occlusion is allowed; this is a clipping comparison, not a guarantee for every wardrobe combination.','poses':{},'byExtra':{name:{'before':0,'after':0} for name in extras}}
+report={'method':'Surface-intersection pairs against classic body, head, fins, mouth, hoodie and legs at neutral and all 10 held pose endpoints. Occlusion is allowed; this is a clipping comparison, not a guarantee for every wardrobe combination.','poses':{},'intersections':[],'byExtra':{name:{'before':0,'after':0} for name in extras}}
 try:
  for action in ['Neutral']+['Pose_'+id for id in ['salute','tpose','bow','victory','think','point','summon','flex','welcome','heart']]:
   rig.animation_data.action=bpy.data.actions[action];scene.frame_set(1 if action=='Neutral' else 61);bpy.context.view_layer.update();deps=bpy.context.evaluated_depsgraph_get();bodies=[tree(obj,deps) for obj in body];counts={'before':0,'after':0}
   for name in extras:
    for phase,objects in [('before',old),('after',extras)]:
-    mesh=tree(objects[name],deps);n=sum(bool(mesh.overlap(b)) for b in bodies);counts[phase]+=n;report['byExtra'][name][phase]+=n
+    mesh=tree(objects[name],deps);hits=[obj.name for obj,b in zip(body,bodies) if mesh.overlap(b)];n=len(hits);counts[phase]+=n;report['byExtra'][name][phase]+=n
+    if hits and phase=='after':report['intersections'].append({'pose':action,'extra':name,'body':hits})
   report['poses'][action]=counts
  report['total']={phase:sum(value[phase] for value in report['poses'].values()) for phase in ['before','after']}
  Path('/Users/kyl/Documents/art mtg/assets/models/drifmaker/extra-clearance-validation.json').write_text(json.dumps(report,indent=2))

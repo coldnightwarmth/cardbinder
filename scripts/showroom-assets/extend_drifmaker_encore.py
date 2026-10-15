@@ -85,17 +85,23 @@ for style in ENCORE_VARIANTS['Hat']:
 for style in ENCORE_VARIANTS['Accessory']:
  p='Drif_Accessory_'+style
  if style=='jetpack':
-  dm_box(p+'_pack',(0,.35,1.22),(.47,.22,.55),dm_steel)
+  dm_box(p+'_pack',(-.18,.51,1.30),(.65,.26,.53),dm_steel,'Chest')
   for s in [-1,1]:
-   rings(p+'_tank',[(.91,.13,.13,s*.28,.38),(1.45,.13,.13,s*.28,.38),(1.53,.08,.08,s*.28,.38)],dm_silver,'Chest',16)
-   sp_cone(p+'_flame',(s*.28,.38,.90),(s*.28,.38,.62),.085,sp_glowcyan,'Chest')
+   x=-.18+s*.72
+   line(p+'_mount',[(-.18,.51,1.40),(x,.63,1.40)],.055,dm_steel,'Chest')
+   rings(p+'_tank',[(1.02,.15,.15,x,.63),(1.53,.15,.15,x,.63),(1.62,.085,.085,x,.63)],dm_silver,'Chest',16)
+   sp_cone(p+'_flame',(x,.63,1.0),(x,.63,.72),.10,sp_glowcyan,'Chest')
    line(p+'_strap',[(s*.23,.31,1.45),(s*.26,-.22,1.43),(s*.23,-.29,.98)],.021,navy,torso_weights)
  elif style=='shoulderpet':
-  c=Vector((.49,0,1.63));ell(p,c,(.17,.13,.18),sp_orange,'Chest',n=16,m=10)
+  start=len(pieces);c=Vector((.49,0,1.63));ell(p,c,(.17,.13,.18),sp_orange,'Chest',n=16,m=10)
   for s in [-1,1]:
    sp_cone(p,c+Vector((s*.10,0,.10)),c+Vector((s*.14,0,.29)),.08,sp_orange,'Chest')
    ell(p,c+Vector((s*.06,-.125,.03)),(.02,.01,.03),ink,'Chest',n=10,m=8)
   line(p+'_tail',[(.62,.08,1.53),(.79,.10,1.61),(.77,.10,1.78)],.055,sp_orange,'Chest')
+  for side in [-1,1]:ell(p+'_paw',c+Vector((side*.08,-.09,-.15)),(.055,.07,.04),dm_cream,'Chest',n=10,m=8)
+  ell(p+'_muzzle',c+Vector((0,-.12,-.015)),(.075,.035,.065),dm_cream,'Chest',n=12,m=8)
+  ell(p+'_nose',c+Vector((0,-.155,.01)),(.025,.014,.018),ink,'Chest',n=10,m=6)
+  sp_float_finish(start,c,(.76,-.43,1.57),(6,-8,-12),.85)
  else:
   line(p+'_strap',[(-.24,.1,1.48),(-.25,-.25,1.42),(.33,-.29,.92),(.39,.05,.91)],.025,navy,torso_weights)
   dm_box(p+'_bag',(.34,-.22,.92),(.29,.15,.24),dm_tan,torso_weights)
@@ -131,7 +137,7 @@ for style in ENCORE_VARIANTS['Extra']:
     ell(p,(x+s*.08*scale,0,z-.10*scale),(.09*scale,.025,.10*scale),dm_lilac,'Chest',n=12,m=8)
     sp_float_finish(wingstart,(x,0,z),(x,0,z),(0,0,s*(24+i*9)))
    line(p,[(x,-.03,z-.11*scale),(x,-.03,z+.12*scale)],.012,sg_ink,'Chest',5)
-   sp_float_finish(start,(x,0,z),[(-1.07,.57,2.48),(1.0,-.44,1.80),(-.85,-.57,1.08)][i],[(18,21,-18),(-25,18,26),(28,-16,-22)][i])
+   sp_float_finish(start,(x,0,z),[(-.70,-.86,2.55),(1.0,-.63,1.82),(-.66,-.9,1.13)][i],[(18,21,-18),(-25,18,26),(28,-16,-22)][i],.85)
  elif style=='ufo':
   start=len(pieces)
   ell(p,(.82,.14,2.80),(.32,.25,.065),dm_silver,'Chest',n=24,m=10)
@@ -143,10 +149,15 @@ for style in ENCORE_VARIANTS['Extra']:
  else:
   start=len(pieces)
   for i,mat in enumerate([sg_red,sp_orange,dm_yellow,sp_lime,sp_glowcyan,sp_violet]):
-   r=1.03-i*.045;line(p,[(r*math.cos(j*math.pi/40),.46+i*.025+.10*math.sin(j*math.pi/20),1.96+r*math.sin(j*math.pi/40)) for j in range(41)],.027,mat,'Chest',7)
-  for s in [-1,1]:
-   for j in range(3):ell(p,(s*(.86+j*.10),.43+j*.05,1.95+(.06 if j==1 else 0)),(.16,.10,.11),white,'Chest',n=12,m=8)
-  sp_float_finish(start,(0,.46,2.4),(-.38,.98,2.46),(-8,7,10))
+   points=[]
+   for j in range(41):
+    a=j*math.pi/40;screen=(.96-i*.027)*math.cos(a);depth=1.30+.30*math.sin(a)+.10*math.cos(2*a)+i*.015
+    points.append((screen/.933-depth*.386,depth,1.62+(1.38-i*.04)*math.sin(a)))
+   line(p,points,.027,mat,'Chest',8)
+  for side in [-1,1]:
+   for j in range(3):
+    screen=side*(.87+j*.07);depth=1.40+j*.045
+    ell(p,(screen/.933-depth*.386,depth,1.62+(.05 if j==1 else 0)),(.13,.10,.10),white,'Chest',n=12,m=8)
 for style in ENCORE_VARIANTS['Tattoo']:
  p='Drif_Tattoo_'+style
  for s in [-1,1]:

@@ -6,7 +6,7 @@ import {createShowroomRitualEffects,ritualPixelRatio} from './showroom-ritual-ef
 import { createExhibitBudget } from './showroom-exhibit-lod.js?v=2';
 import { createSceneIndex } from './showroom-scene-index.mjs';
 import { createShowroomPickupLayer } from './showroom-pickup-layer.mjs';
-import { createShowroomMultiplayer } from './showroom-multiplayer.js?v=26';
+import { createShowroomMultiplayer } from './showroom-multiplayer.js?v=27';
 import { createShowroomSky } from './showroom-sky.js?v=5';
 import * as THREE from 'three';
 import { createShowroomColumns } from './showroom-columns.js?v=12';

@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 import {GLTFLoader} from './vendor/GLTFLoader.js';
-import {createAvatarAppearance} from './drifmaker-avatar.mjs?v=6';
+import {createAvatarAppearance} from './drifmaker-avatar.mjs?v=7';
 import {normalizePose,normalizePoseTime} from './drifmaker-poses.mjs?v=1';
 let assetPromise;
-function asset(){return assetPromise ||= new GLTFLoader().loadAsync(new URL('./assets/models/drifmaker/drifella-customizable.glb?v=6',import.meta.url).href).catch(error=>{assetPromise=null;throw error;});}
+function asset(){return assetPromise ||= new GLTFLoader().loadAsync(new URL('./assets/models/drifmaker/drifella-customizable.glb?v=7',import.meta.url).href).catch(error=>{assetPromise=null;throw error;});}
 // Geometry and textures are shared; each visitor owns their bones and any
 // recolored materials. Wardrobe pieces on the same skin reuse that visitor's skeleton.
 export function cloneAvatar(source){

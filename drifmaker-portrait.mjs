@@ -1,3 +1,4 @@
+import {setPortraitSceneBackground,disposePortraitBackground} from './drifmaker-background.mjs?v=1';
 import {normalizePose} from './drifmaker-poses.mjs?v=1';
 // Composition is shared by the fixed preview and its PNG export. These framing
 // values remain explicit so matching collection references does not depend on
@@ -62,12 +63,13 @@ export async function capturePortrait({THREE,scene,camera,composition,rendererFa
  const framing=compositionWith(composition),exportCamera=configurePortraitCamera(THREE,camera.clone(),framing);
  const createRenderer=rendererFactory??(options=>new THREE.WebGLRenderer(options));
  let renderer,environment;
- const exportScene=environmentFactory?scene.clone(false):scene;
- if(environmentFactory)exportScene.children=[...scene.children];
+ const exportScene=scene.clone(false);
+ exportScene.children=[...scene.children];
  try{
   renderer=createRenderer({antialias:true,alpha:false,preserveDrawingBuffer:true});
   renderer.setPixelRatio(1);renderer.setSize(framing.width,framing.height,false);
-  renderer.setClearColor(framing.background,1);
+  renderer.setClearColor(framing.background==='rainbow'?0:framing.background,1);
+  setPortraitSceneBackground(THREE,exportScene,framing.background);
   renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=framing.exposure;
   if(environmentFactory){environment=environmentFactory(renderer);exportScene.environment=environment.texture;}
   renderer.render(exportScene,exportCamera);
@@ -75,7 +77,7 @@ export async function capturePortrait({THREE,scene,camera,composition,rendererFa
    renderer.domElement.toBlob(blob=>blob?resolve(blob):reject(Error('The portrait could not be encoded as a PNG. Please try again.')),'image/png');
   });
  }finally{
-  environment?.dispose();
+  disposePortraitBackground(exportScene);environment?.dispose();
   if(renderer){try{renderer.dispose();}finally{renderer.forceContextLoss?.();}}
  }
 }

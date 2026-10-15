@@ -1,4 +1,4 @@
-import {CATEGORIES,DEFAULT_APPEARANCE,GOLD_COLOR,normalizeAppearance} from './drifmaker-config.mjs?v=6';
+import {CATEGORIES,DEFAULT_APPEARANCE,FINISH_COLORS,CLASSIC_FIN_HEADS,normalizeAppearance} from './drifmaker-config.mjs?v=7';
 
 // Each character owns its surface finishes and visibility; geometry and textures
 // remain shared. A material shared by a face and a shirt must get separate roles.
@@ -40,17 +40,20 @@ outgoingLight += diffuse * drifRim * 0.7;
   setAppearance(value){
    if(disposed)throw Error('This character has been disposed.');
    current=normalizeAppearance(value);
-   for(const [category,parts] of Object.entries(categories))for(const {node,id} of parts)node.visible=id===current[category]&&(!['eyes','brows','mouth','nose','ears','tattoo'].includes(category)||current.head==='original');
+   for(const [category,parts] of Object.entries(categories))for(const {node,id} of parts){
+    if(category==='ears'&&CLASSIC_FIN_HEADS.includes(current.head))node.visible=id==='original';
+    else node.visible=id===current[category]&&(!['eyes','brows','mouth','nose','ears','tattoo'].includes(category)||current.head==='original');
+   }
    for(const node of fuzz)node.visible=current.bodyStyle==='ghost';
    for(const saved of surfaces){
-    const {material}=saved,ghost=current.bodyStyle==='ghost'&&saved.gilded,gold=current.bodyStyle==='gold'&&saved.gilded;
-    if(gold)material.color.set(GOLD_COLOR);else if(ghost)material.color.set(current.bodyColor);else if(saved.recolor&&current.bodyColor!==DEFAULT_APPEARANCE.bodyColor)material.color.set(current.bodyColor);else material.color.copy(saved.color);
-    const map=gold?null:saved.map;
+    const {material}=saved,ghost=current.bodyStyle==='ghost'&&saved.gilded,coated=Object.hasOwn(FINISH_COLORS,current.bodyStyle)&&saved.gilded,metallic=coated&&current.bodyStyle!=='matteblack',matte=coated&&!metallic;
+    if(coated)material.color.set(FINISH_COLORS[current.bodyStyle]);else if(ghost)material.color.set(current.bodyColor);else if(saved.recolor&&current.bodyColor!==DEFAULT_APPEARANCE.bodyColor)material.color.set(current.bodyColor);else material.color.copy(saved.color);
+    const map=coated?null:saved.map;
     if(material.map!==map){material.map=map;material.needsUpdate=true;}
     if(saved.gilded&&material.userData.drifGhost!==ghost){material.userData.drifGhost=ghost;material.needsUpdate=true;}
-    material.opacity=ghost?.52:saved.opacity;material.transparent=ghost||saved.transparent;material.depthWrite=ghost?false:saved.depthWrite;
-    material.metalness=gold?.94:saved.metalness;material.roughness=gold?.17:ghost?.95:saved.roughness;material.envMapIntensity=gold?1.4:saved.envMapIntensity;
-    if(material.emissive){if(gold)material.emissive.set(0);else if(ghost)material.emissive.set(current.bodyColor);else material.emissive.copy(saved.emissive);material.emissiveIntensity=gold?0:ghost?.35:saved.intensity;}
+    material.opacity=coated?1:ghost?.52:saved.opacity;material.transparent=coated?false:ghost||saved.transparent;material.depthWrite=coated?true:ghost?false:saved.depthWrite;
+    material.metalness=metallic?.94:matte?0:saved.metalness;material.roughness=metallic?.17:matte?1:ghost?.95:saved.roughness;material.envMapIntensity=metallic?1.4:matte?.3:saved.envMapIntensity;
+    if(material.emissive){if(coated)material.emissive.set(0);else if(ghost)material.emissive.set(current.bodyColor);else material.emissive.copy(saved.emissive);material.emissiveIntensity=coated?0:ghost?.35:saved.intensity;}
    }
    model.userData.appearance={...current};return {...current};
   },

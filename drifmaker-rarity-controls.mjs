@@ -1,4 +1,5 @@
-import {RARITY_GROUPS,MAX_WEIGHT,validWeight,traitWeight,traitChances,loadRarity,saveRarity,normalizeRarity} from './drifmaker-rarity.mjs?v=2';
+import {backgroundCSS} from './drifmaker-background.mjs?v=1';
+import {RARITY_GROUPS,MAX_WEIGHT,validWeight,traitWeight,traitChances,loadRarity,saveRarity,normalizeRarity} from './drifmaker-rarity.mjs?v=3';
 
 export function createRarityEditor({activeCategory,onError}){
  const $=selector=>document.querySelector(selector),dialog=$('#rarityDialog'),group=$('#rarityCategory'),rows=$('#rarityRows'),note=$('#rarityNote');
@@ -16,7 +17,7 @@ export function createRarityEditor({activeCategory,onError}){
   for(const option of RARITY_GROUPS[group.value].options){
    const row=document.createElement('tr');row.dataset.trait=option.id;
    const name=document.createElement('th');name.scope='row';const label=document.createElement('label');label.htmlFor=`rarity-${group.value}-${option.id}`;
-   if(option.hex){const swatch=document.createElement('span');swatch.className='rarity-swatch';swatch.style.background=option.hex;swatch.setAttribute('aria-hidden','true');label.append(swatch);}
+   if(option.hex){const swatch=document.createElement('span');swatch.className='rarity-swatch';swatch.style.background=backgroundCSS(option.hex);swatch.setAttribute('aria-hidden','true');label.append(swatch);}
    label.append(option.label);name.append(label);
    const control=document.createElement('td'),input=document.createElement('input');input.type='number';input.min='0';input.max=String(MAX_WEIGHT);input.step='1';input.inputMode='numeric';input.id=label.htmlFor;input.value=traitWeight(rarity,group.value,option.id);input.setAttribute('aria-label',`${option.label} weight`);input.setAttribute('aria-describedby','rarityHelp');
    input.oninput=()=>{if(!input.value.trim()||!validWeight(input.valueAsNumber))return;rarity[group.value]={...rarity[group.value],[option.id]:input.valueAsNumber};persist();updateChances();};

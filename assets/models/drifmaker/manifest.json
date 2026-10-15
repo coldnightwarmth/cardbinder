@@ -1,5 +1,5 @@
 {
-  "version": 6,
+  "version": 7,
   "asset": "drifella-customizable.glb",
   "source": "drifella-customizable.blend",
   "bodyMaterial": "Drif_Body_Main",
@@ -271,7 +271,9 @@
     "bodyStyles": [
       "solid",
       "ghost",
-      "gold"
+      "gold",
+      "silver",
+      "matteblack"
     ]
   },
   "inspiration": {
@@ -319,6 +321,130 @@
     0.8199999928474426,
     -0.11209229379892349,
     2.2899999618530273
+  ],
+  "headFits": {
+    "void": {
+      "scale": [
+        1.1,
+        1.24,
+        1.12
+      ],
+      "verticalOffset": -0.1,
+      "pivot": [
+        0,
+        0,
+        2.2
+      ]
+    },
+    "vortex": {
+      "scale": [
+        1.1,
+        1.24,
+        1.12
+      ],
+      "verticalOffset": -0.1,
+      "pivot": [
+        0,
+        0,
+        2.2
+      ]
+    },
+    "gasmask": {
+      "scale": [
+        1.14,
+        1.28,
+        1.14
+      ],
+      "verticalOffset": -0.11,
+      "pivot": [
+        0,
+        0,
+        2.2
+      ]
+    },
+    "glitch": {
+      "scale": [
+        1.1,
+        1.24,
+        1.12
+      ],
+      "verticalOffset": -0.1,
+      "pivot": [
+        0,
+        0,
+        2.2
+      ]
+    },
+    "hockey": {
+      "scale": [
+        1.14,
+        1.28,
+        1.18
+      ],
+      "verticalOffset": -0.11,
+      "pivot": [
+        0,
+        0,
+        2.2
+      ]
+    },
+    "hayabusa": {
+      "scale": [
+        1.1,
+        1.24,
+        1.12
+      ],
+      "verticalOffset": -0.11,
+      "pivot": [
+        0,
+        0,
+        2.2
+      ]
+    },
+    "pumpkin": {
+      "scale": [
+        1.12,
+        1.28,
+        1.12
+      ],
+      "verticalOffset": -0.1,
+      "pivot": [
+        0,
+        0,
+        2.2
+      ]
+    },
+    "tv": {
+      "scale": [
+        1.23,
+        1.36,
+        1.3
+      ],
+      "verticalOffset": -0.12,
+      "pivot": [
+        0,
+        0,
+        2.2
+      ]
+    },
+    "crystal": {
+      "scale": [
+        1.1,
+        1.25,
+        1.15
+      ],
+      "verticalOffset": -0.13,
+      "pivot": [
+        0,
+        0,
+        2.2
+      ]
+    }
+  },
+  "classicFinHeads": [
+    "pumpkin",
+    "tv",
+    "crystal"
   ],
   "poses": [
     "salute",
@@ -973,8 +1099,8 @@
     },
     {
       "name": "Drif_Accessory_lantern",
-      "vertices": 152,
-      "triangles": 272
+      "vertices": 174,
+      "triangles": 316
     },
     {
       "name": "Drif_Accessory_goldearring",
@@ -988,13 +1114,13 @@
     },
     {
       "name": "Drif_Accessory_jetpack",
-      "vertices": 170,
-      "triangles": 312
+      "vertices": 202,
+      "triangles": 368
     },
     {
       "name": "Drif_Accessory_shoulderpet",
-      "vertices": 332,
-      "triangles": 640
+      "vertices": 614,
+      "triangles": 1188
     },
     {
       "name": "Drif_Accessory_camerabag",
@@ -1178,8 +1304,8 @@
     },
     {
       "name": "Drif_Mouth_venom",
-      "vertices": 157,
-      "triangles": 166
+      "vertices": 121,
+      "triangles": 98
     },
     {
       "name": "Drif_Mouth_zipper",
@@ -1198,8 +1324,8 @@
     },
     {
       "name": "Drif_Mouth_moustache",
-      "vertices": 104,
-      "triangles": 196
+      "vertices": 1200,
+      "triangles": 2388
     },
     {
       "name": "Drif_Mouth_beak",
@@ -1343,8 +1469,8 @@
     },
     {
       "name": "Drif_Extra_dragon",
-      "vertices": 276,
-      "triangles": 524
+      "vertices": 630,
+      "triangles": 1220
     },
     {
       "name": "Drif_Extra_cards",
@@ -1363,8 +1489,8 @@
     },
     {
       "name": "Drif_Extra_rainbow",
-      "vertices": 2238,
-      "triangles": 4428
+      "vertices": 2484,
+      "triangles": 4920
     },
     {
       "name": "Drif_Nose_original",
@@ -1589,6 +1715,6 @@
     "Drif_Nose_original": 96,
     "Drif_Brows_original": 2
   },
-  "extraLayout": "Staggered satellite depths and individual rotations; rear aura/frame clearance; folded butterfly wings and curved dragon/tendril paths.",
-  "notes": "All components share the original 19-bone rest pose, 10 locomotion actions and 10 enter-and-hold pose actions. Alternate heads replace the original head and all facial categories, including brows, without discarding choices. Extra is independent of accessories. Ghost color and rim transparency cover the entire body, facial surfaces and bare feet, with a skinned fuzz mesh. Gold coats all body and facial surfaces. The Swag World hoodie embeds the user-supplied photograph with torso and sleeve UVs."
+  "extraLayout": "Portrait-aware satellite positions with front fin clearance and varied depth/tilt; a curved rear rainbow, visible storm, lowered halo, raised lantern, offset shield, and wider jetpack pods.",
+  "notes": "All components share the original 19-bone rest pose, 10 locomotion actions and 10 enter-and-hold pose actions. Alternate heads replace the original head and facial categories without discarding choices; pumpkin, TV and crystal retain the classic fin ears. Replacement heads fit the original collar height and silhouette. Extra is independent of accessories. Ghost color and rim transparency cover the entire body, facial surfaces and bare feet, with a skinned fuzz mesh. Gold coats all body and facial surfaces. The Swag World hoodie embeds the user-supplied photograph with torso and sleeve UVs."
 }
