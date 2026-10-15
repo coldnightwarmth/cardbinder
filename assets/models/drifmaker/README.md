@@ -10,16 +10,19 @@ the original joined model and adds compatible modeled wardrobe choices.
 | --- | --- | --- |
 | Eyes | `Drif_Eyes_` | 24 |
 | Mouth | `Drif_Mouth_` | 21 |
-| Shirts | `Drif_Shirt_` | 23 |
+| Shirts | `Drif_Shirt_` | 25 |
 | Pants / legs | `Drif_Legs_` | 21 |
-| Hats | `Drif_Hat_` | 24, including none |
-| Accessories | `Drif_Accessory_` | 25, including none |
-| Heads | `Drif_Head_` | Classic plus 5 replacements |
+| Hats | `Drif_Hat_` | 25, including none |
+| Accessories | `Drif_Accessory_` | 27, including none |
+| Heads | `Drif_Head_` | Classic plus 6 replacements |
 | Extra | `Drif_Extra_` | 12 scenes / companions plus none |
+| Tattoos | `Drif_Tattoo_` | 8 sets plus none |
+| Nose | `Drif_Nose_` | Original plus 5 replacements |
+| Ears | `Drif_Ears_` | Original plus 5 replacements |
 
 `drifmaker-config.mjs` and `drifmaker-expansion.mjs` contain the full catalog and
-labels. The editor also offers 36 body colors, 28 portrait backgrounds, custom
-color inputs for both, and solid or translucent ghost body finishes.
+labels. The editor also offers 37 body colors, 28 portrait backgrounds, custom
+color inputs for both, and solid, translucent ghost, or reflective gold body finishes.
 
 The original shirt is the artwork hoodie and the original accessory is the
 crossbody bag. New pieces take inspiration from the
@@ -41,14 +44,14 @@ the named motif rather than claiming exact reconstruction. Hat geometry fits
 between the fins, headphones sit below it, and necklaces/straps fit over all
 shirts. These choices can be combined independently.
 
-The latest expansion adds ten choices each to eyes, mouths, shirts, legs, hats,
+The spectral expansion adds ten choices each to eyes, mouths, shirts, legs, hats,
 and accessories. This includes Venom-inspired white eyes and a toothy tongue-out
 mouth, racer jackets, kimono, space suits, samurai armor, mushroom caps, jester
 hats, a sheathed back sword, angel/bat/mechanical wings, and a hanging lantern.
 
 Five alternate heads interpret the user-supplied Drifella 2 reference images:
 a hooded star, dragon vortex, horned gas mask, fuzzy glitch vortex, and perforated
-hockey mask. Their face is part of the head, so they override eyes and mouths.
+hockey mask. Their face is part of the head, so they override eyes, mouths, noses, ears, and tattoos.
 The selected facial traits are retained and return with the classic head.
 
 The independent Extra category adds a floating mon companion, golden aura,
@@ -56,19 +59,40 @@ ornate frame, spirit flames, orbiting planets, arcane circle, storm cloud,
 floating crystals, pixel stars, shadow tendrils, spirit dragon, and floating
 cards. These are actual skinned geometry and can accompany any accessory.
 
+The signature expansion adds a silver Hayabusa-style helmet with a navy hood,
+curved brow and raised scrollwork; a single gold hoop earring; a stylized machine
+gun with a back sling; and a red McDonald's visor and employee polo. Eight ink
+sets follow the face surface: teardrops, stars, lightning, tribal marks, rose,
+runes, freckles and skull marks. Five noses and five ear pairs replace the
+original nostrils and fins independently.
+
+The Swag World hoodie uses the exact user-supplied photograph, saved unchanged
+as `textures/swagworld-hoodie.png`. Tailored UVs sample the front character print,
+sleeve lettering and fabric; modeled hood, drawstrings, pocket seams and ribbing
+provide depth. The image is packed into both Blender and GLB, so runtime loading
+does not rely on a separate texture request. The Hayabusa reference was used to
+model the helmet, and is not redistributed as a texture.
+
 ## Runtime contract
 
-- `drifella-customizable.glb` contains 156 skinned mesh objects: `Drif_Body`,
+- `drifella-customizable.glb` contains 182 skinned mesh objects: `Drif_Body`,
   `Drif_Ghost_Fuzz`, and one object per modeled category choice. The file includes all alternatives; runtime
-  code selects exactly one choice per category and optionally no hat/accessory/extra.
+  code selects exactly one choice per category and optionally no hat/accessory/extra/tattoo.
 - The default leg set contains the original waist, denim, ankles and feet; the
   original mouth contains the mouth patch and two fangs. These components were
   removed from `Drif_Body`, so selected replacements never overlay duplicates.
-  The muzzle, fins, nostrils and brows are in `Drif_Head_original`; hands and
-  animated tail stay in the shared body.
+  The muzzle and forehead dot remain in `Drif_Head_original`. Original
+  fins and nostrils are separate `Drif_Ears_original` / `Drif_Nose_original`
+  meshes, so their replacements remove the old geometry. Hands and the animated
+  tail stay in the shared body.
 - Ghost mode uses isolated skin materials with a transparent rim shader and
   luminous skinned fibers. Clothing keeps its normal opacity. Switching back to
   solid restores the original material settings, without affecting other players.
+- Gold isolates and coats body, head, eyes, mouth, forehead dot, ears, nose and
+  exposed original feet with a metallic material. Clothing, accessories and ink
+  retain their colors. Switching finishes restores the original colors, texture
+  maps and material settings. Room-environment reflections are created separately
+  for the studio, thumbnails and PNG-export WebGL renderers.
 - Every component uses the same 19-bone rest pose and skin. Preserve the bones,
   bind matrices, vertex weights, and original ten animation names when editing.
 - `Drif_Body_Main` is the blue body material, also used by the sleepy eyelids.
@@ -96,7 +120,10 @@ local MCP bridge. The generator replaces only its own collection and saves to
 this folder. The builder loads `extend_drifmaker_wardrobe.py` for the forty new
 eye/shirt/hat/accessory choices and `extend_drifmaker_legs_mouth.py` for twenty
 new leg/mouth choices. `extend_drifmaker_spectral.py` builds the latest sixty
-wardrobe choices, five heads, twelve extras, and ghost fibers. Execute `scripts/showroom-assets/check_drifmaker.py`
+wardrobe choices, five heads, twelve extras, and ghost fibers.
+`extend_drifmaker_signature.py` builds the tattoos, noses, ears, Hayabusa helmet,
+earring, back prop, visor and shirts, embedding the supplied hoodie photograph.
+Execute `scripts/showroom-assets/check_drifmaker.py`
 afterward to validate all 456 animation frames and create the render previews.
 
 `animation-validation.json` confirms normalized weights, no more than four
@@ -104,7 +131,7 @@ influences per vertex, finite deformations on all 10 clips, and exact preservati
 of the original mesh vertices across the original component choices. The saved
 previews show mixed choices in neutral, walk/hold, and crouch/hold poses, plus a
 rear view of the plush backpack and expanded looks with the new legs/mouths.
-All 156 meshes passed the complete 456-frame sweep after the final geometry
+All 182 meshes passed the complete 456-frame sweep after the final geometry
 refinement. The final GLB also passed the runtime regression for mesh names,
 normalized weights, identical bind matrices and animation tracks, and exact
 original triangle coverage.
@@ -117,10 +144,10 @@ show floor. `drifmaker-config.mjs` defines the allowlisted appearance schema and
 local storage; `drifmaker-avatar.mjs` applies visibility and isolated body colors.
 The showroom publishes saved appearances in player poses, and its Worker
 normalizes them before broadcasting. Legacy players retain the original look.
-The editor has eight wardrobe category tabs with rendered option thumbnails, plus
-body colors and finish controls. Appearance exports use schema version 3. Imports
-from versions 1 and 2 retain their choices and fill missing categories with the
-classic head, original mouth/legs, no extra, and solid body finish. Randomize
+The editor has eleven trait tabs with rendered option thumbnails, plus a color
+and finish tab. Appearance exports use schema version 4. Imports from versions
+1–3 retain their choices and fill missing categories with original facial traits,
+no tattoos, the classic head, original mouth/legs, no extra, and solid body finish. Randomize
 chooses from every category and both the body and portrait background palettes.
 The expanded controls and preview were checked at desktop and 390-pixel mobile
 widths.
@@ -129,7 +156,7 @@ For local development, run `python3 scripts/serve-local.py --no-auth` and open
 `http://localhost:8000/drifmaker/`. Focused checks are:
 
 ```sh
-node --test worker/test/drifmaker.test.mjs worker/test/showroom-avatar.test.mjs
+node --test worker/test/drifmaker.test.mjs worker/test/drifmaker-portrait.test.mjs worker/test/showroom-avatar.test.mjs
 node scripts/verify-browser-runtime.mjs
 ```
 
@@ -177,3 +204,12 @@ The streamlined editor keeps only controls, trait names, and essential state tex
 `preview-spectral-colors.png` shows the ghost finish and expanded color controls;
 `preview-spectral-portrait.png` is an actual export with a vortex head, back sword
 and ornate frame.
+
+The signature expansion passed the full 456-frame sweep across all 182 meshes.
+Runtime checks also cover face-part suppression/restoration, full gold coverage,
+material isolation, embedded hoodie UVs and texture, and renderer-specific
+reflection cleanup on successful and failed PNG exports. Browser proof images:
+`preview-signature-editor.png` (helmet and hoodie), `preview-signature-face.png`
+(tattoos, heart nose, elf ears and earring), and `preview-signature-gold.png`
+(actual 1200 × 1295 reflective-gold export). `preview-signature-back.png` shows
+the back prop attached during the walk-and-hold animation.

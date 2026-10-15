@@ -1,4 +1,4 @@
-import {NEW_TRAITS} from './drifmaker-expansion.mjs?v=1';
+import {NEW_TRAITS} from './drifmaker-expansion.mjs?v=2';
 // Shared by the browser and the showroom worker: only these small, validated
 // appearance values cross the network. Models and materials always stay local.
 // Drifella 2 collection inspiration: https://www.tensor.trade/trade/drifella_2
@@ -99,8 +99,10 @@ const ORIGINAL_CATEGORIES=Object.freeze({
  ]),
 });
 export const CATEGORIES=Object.freeze(Object.fromEntries([...new Set([...Object.keys(ORIGINAL_CATEGORIES),...Object.keys(NEW_TRAITS)])].map(category=>[category,options([...(ORIGINAL_CATEGORIES[category]||[]),...(NEW_TRAITS[category]||[])])])));
-export const BODY_STYLES=options([{id:'solid',label:'Solid',description:'The familiar sculpted finish.'},{id:'ghost',label:'Ghost aura',description:'Clear, translucent skin with soft luminous fibers.'}]);
+export const GOLD_COLOR='#e2ad32';
+export const BODY_STYLES=options([{id:'solid',label:'Solid',description:'The familiar sculpted finish.'},{id:'ghost',label:'Ghost aura',description:'Clear, translucent skin with soft luminous fibers.'},{id:'gold',label:'Gold',description:'Polished gold across the whole body and face.'}]);
 export const BODY_COLORS=options([
+ {id:'metallicgold',label:'Metallic gold',hex:GOLD_COLOR,style:'gold'},
  {id:'azure',label:'Azure',hex:'#1d5dea'},
  {id:'mint',label:'Mint',hex:'#a4d8bd'},
  {id:'plush-pink',label:'Plush pink',hex:'#e8b4cd'},
@@ -147,7 +149,7 @@ export const PORTRAIT_BACKGROUNDS=options([
  {label:'Periwinkle',hex:'#8999e0'},{label:'Powder blue',hex:'#a4d5ed'},{label:'Mint',hex:'#a0eccb'},{label:'Peach',hex:'#f4b08c'},
  {label:'Pale lemon',hex:'#f1e3a0'},{label:'Ink',hex:'#131520'},{label:'Paper',hex:'#f4f0e6'},
 ]);
-export const DEFAULT_APPEARANCE=Object.freeze({bodyColor:BODY_COLORS[0].hex,eyes:'classic',mouth:'original',shirt:'original',legs:'original',hat:'none',accessory:'original',head:'original',extra:'none',bodyStyle:'solid'});
+export const DEFAULT_APPEARANCE=Object.freeze({bodyColor:'#1d5dea',eyes:'classic',mouth:'original',shirt:'original',legs:'original',hat:'none',accessory:'original',head:'original',extra:'none',nose:'original',ears:'original',tattoo:'none',bodyStyle:'solid'});
 // Keep the storage key: normalization supplies defaults for new categories
 // without resetting any existing selections in older saved looks.
 export const APPEARANCE_STORAGE_KEY='cards-art:drifmaker:appearance:v1';
@@ -156,6 +158,7 @@ export function normalizeAppearance(value){
  const input=value&&typeof value==='object'&&!Array.isArray(value)?value:{};
  const result={bodyColor:typeof input.bodyColor==='string'&&/^#[0-9a-f]{6}$/i.test(input.bodyColor)?input.bodyColor.toLowerCase():DEFAULT_APPEARANCE.bodyColor};
  result.bodyStyle=BODY_STYLES.some(item=>item.id===input.bodyStyle)?input.bodyStyle:'solid';
+ if(result.bodyStyle==='gold')result.bodyColor=GOLD_COLOR;
  for(const [category,items] of Object.entries(CATEGORIES))result[category]=items.some(item=>item.id===input[category])?input[category]:DEFAULT_APPEARANCE[category];
  return result;
 }

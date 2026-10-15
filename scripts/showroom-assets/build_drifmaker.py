@@ -150,7 +150,7 @@ for vertex in source.data.vertices:
                 todo.append(neighbor)
     centers.append(sum((source.data.vertices[i].co for i in ids), Vector()) / len(ids))
 groups = {'Drif_Body': [], 'Drif_Head_original': [], 'Drif_Eyes_classic': [], 'Drif_Shirt_original': [],
-          'Drif_Accessory_original': [], 'Drif_Legs_original': [], 'Drif_Mouth_original': []}
+          'Drif_Accessory_original': [], 'Drif_Legs_original': [], 'Drif_Mouth_original': [], 'Drif_Ears_original': [], 'Drif_Nose_original': []}
 for p in source.data.polygons:
     name = source.data.materials[p.material_index].name
     center = centers[component[p.vertices[0]]]
@@ -160,6 +160,10 @@ for p in source.data.polygons:
         target = 'Drif_Accessory_original'
     elif name.startswith('Denim weave') or (center.z < .4 and name.startswith(('Azure blue', 'Warm ivory'))):
         target = 'Drif_Legs_original'
+    elif name.startswith('Warm ivory') and abs(center.x)>.5 and center.z>1.65:
+        target = 'Drif_Ears_original'
+    elif name.startswith('Obsidian eyes') and 1.90<center.z<2 and center.y<-.60:
+        target = 'Drif_Nose_original'
     elif name.startswith('Mouth inset') or (name.startswith('White tips') and 1.76 < center.z < 1.84 and center.y < -.60):
         target = 'Drif_Mouth_original'
     elif name.startswith(('Obsidian eyes', 'White tips')) and 2 < center.z < 2.4:
@@ -368,7 +372,7 @@ for obj in collection.objects:
         obj.data.update()
 
 # Expand the catalog with fitted lower-body/mouth sets and the additional wardrobe.
-for extension_name in ['extend_drifmaker_legs_mouth.py','extend_drifmaker_wardrobe.py','extend_drifmaker_spectral.py']:
+for extension_name in ['extend_drifmaker_legs_mouth.py','extend_drifmaker_wardrobe.py','extend_drifmaker_spectral.py','extend_drifmaker_signature.py']:
     extension_path=ROOT/'scripts/showroom-assets'/extension_name
     exec(compile(extension_path.read_text(),str(extension_path),'exec'),globals())
 variant_catalog={
@@ -379,11 +383,14 @@ variant_catalog={
     'Legs':['original']+LEG_VARIANTS,
     'Mouth':['original']+MOUTH_VARIANTS,
     'Head':['original'],
-    'Extra':[],
+    'Extra':[], 'Nose':['original'], 'Ears':['original'], 'Tattoo':[],
 }
 for category,ids in EXTENDED_VARIANTS.items():
     variant_catalog[category].extend(ids)
 for category,ids in SPECTRAL_VARIANTS.items():
+    variant_catalog[category].extend(ids)
+
+for category,ids in SIGNATURE_VARIANTS.items():
     variant_catalog[category].extend(ids)
 
 def variant_matches(name,prefix):
@@ -431,10 +438,10 @@ if 'GLB' in formats:
     kwargs['export_format']='GLB'
 bpy.ops.export_scene.gltf(**kwargs)
 
-def selection(eyes='classic',shirt='original',hat='none',accessory='original',legs='original',mouth='original',head='original',extra='none'):
+def selection(eyes='classic',shirt='original',hat='none',accessory='original',legs='original',mouth='original',head='original',extra='none',nose='original',ears='original',tattoo='none'):
     names=['Drif_Body','Drif_Head_'+head,'Drif_Shirt_'+shirt,'Drif_Hat_'+hat,'Drif_Accessory_'+accessory,'Drif_Legs_'+legs,'Drif_Extra_'+extra]
     if head=='original':
-        names+=['Drif_Eyes_'+eyes,'Drif_Mouth_'+mouth]
+        names+=['Drif_Eyes_'+eyes,'Drif_Mouth_'+mouth,'Drif_Nose_'+nose,'Drif_Ears_'+ears,'Drif_Tattoo_'+tattoo]
     for obj in pieces:
         visible=obj.name in names
         obj.hide_set(not visible)
@@ -443,22 +450,22 @@ def selection(eyes='classic',shirt='original',hat='none',accessory='original',le
 selection()
 scene.frame_set(1)
 manifest={
-    'version':3,'asset':'drifella-customizable.glb','source':'drifella-customizable.blend',
+    'version':4,'asset':'drifella-customizable.glb','source':'drifella-customizable.blend',
     'bodyMaterial':'Drif_Body_Main','shirtMaterial':'Drif_Shirt_Main',
     'hatMaterial':'Drif_Hat_Main','accessoryMaterial':'Drif_Accessory_Main',
     'orientation':{'blenderUp':'+Z','blenderForward':'-Y','gltfUp':'+Y','gltfForward':'+Z'},
     'categories':{'eyes':variant_catalog['Eyes'],'shirts':variant_catalog['Shirt'],
                   'hats':['none']+variant_catalog['Hat'],'accessories':['none']+variant_catalog['Accessory'],
                   'legs':variant_catalog['Legs'],'mouth':variant_catalog['Mouth'],
-                  'head':variant_catalog['Head'],'extra':['none']+variant_catalog['Extra'],'bodyStyles':['solid','ghost']},
+                  'head':variant_catalog['Head'],'extra':['none']+variant_catalog['Extra'],'nose':variant_catalog['Nose'],'ears':variant_catalog['Ears'],'tattoo':['none']+variant_catalog['Tattoo'],'bodyStyles':['solid','ghost','gold']},
     'inspiration':{'collection':'Drifella 2','url':'https://www.tensor.trade/trade/drifella_2',
                    'traits':['jean jacket','white bomber','solana cap','doomer black beanie','rainbow party hat','sleppy','pixelady star','spiral','dark magician spiky headphones','pokeball necklace','warlax backpack']},
-    'nodePrefixes':{'eyes':'Drif_Eyes_','shirts':'Drif_Shirt_','hats':'Drif_Hat_','accessories':'Drif_Accessory_','legs':'Drif_Legs_','mouth':'Drif_Mouth_','head':'Drif_Head_','extra':'Drif_Extra_'},
+    'nodePrefixes':{'eyes':'Drif_Eyes_','shirts':'Drif_Shirt_','hats':'Drif_Hat_','accessories':'Drif_Accessory_','legs':'Drif_Legs_','mouth':'Drif_Mouth_','head':'Drif_Head_','extra':'Drif_Extra_','nose':'Drif_Nose_','ears':'Drif_Ears_','tattoo':'Drif_Tattoo_'},
     'clips':[{'name':a.name,'seconds':(a.frame_range[1]-a.frame_range[0])/30} for a in bpy.data.actions],
     'bones':[b.name for b in rig.data.bones],
     'parts':[{'name':o.name,'vertices':len(o.data.vertices),'triangles':sum(len(p.vertices)-2 for p in o.data.polygons)} for o in pieces],
     'originalParts':{name:len(polygons) for name,polygons in groups.items()},
-    'notes':'All components share the original 19-bone rest pose and 10 locomotion actions. Alternate heads replace the original head, eyes and mouth without discarding facial choices. Extra is independent of accessories. Ghost skin is applied by the runtime with the skinned fuzz mesh.'
+    'notes':'All components share the original 19-bone rest pose and 10 locomotion actions. Alternate heads replace the original head, eyes and mouth without discarding facial choices. Extra is independent of accessories. Ghost skin is applied by the runtime with the skinned fuzz mesh. Gold coats all body and facial surfaces. The Swag World hoodie embeds the user-supplied photograph with torso and sleeve UVs.'
 }
 (OUT/'manifest.json').write_text(json.dumps(manifest,indent=2))
 # Camera/view setup is scoped to the saved customization source.

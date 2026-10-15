@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "asset": "drifella-customizable.glb",
   "source": "drifella-customizable.blend",
   "bodyMaterial": "Drif_Body_Main",
@@ -62,7 +62,9 @@
       "poncho",
       "disco",
       "botanical",
-      "racer"
+      "racer",
+      "mcdonalds",
+      "swagworld"
     ],
     "hats": [
       "none",
@@ -88,7 +90,8 @@
       "lotus",
       "jester",
       "sharkhood",
-      "tiara"
+      "tiara",
+      "mcdonalds"
     ],
     "accessories": [
       "none",
@@ -115,7 +118,9 @@
       "potionbelt",
       "spellbook",
       "boombox",
-      "lantern"
+      "lantern",
+      "goldearring",
+      "machinegun"
     ],
     "legs": [
       "original",
@@ -169,7 +174,8 @@
       "vortex",
       "gasmask",
       "glitch",
-      "hockey"
+      "hockey",
+      "hayabusa"
     ],
     "extra": [
       "none",
@@ -186,9 +192,37 @@
       "dragon",
       "cards"
     ],
+    "nose": [
+      "original",
+      "button",
+      "heart",
+      "cat",
+      "pig",
+      "clown"
+    ],
+    "ears": [
+      "original",
+      "round",
+      "elf",
+      "bunny",
+      "bat",
+      "finlets"
+    ],
+    "tattoo": [
+      "none",
+      "teardrops",
+      "stars",
+      "lightning",
+      "tribal",
+      "rose",
+      "runes",
+      "freckles",
+      "skull"
+    ],
     "bodyStyles": [
       "solid",
-      "ghost"
+      "ghost",
+      "gold"
     ]
   },
   "inspiration": {
@@ -216,7 +250,10 @@
     "legs": "Drif_Legs_",
     "mouth": "Drif_Mouth_",
     "head": "Drif_Head_",
-    "extra": "Drif_Extra_"
+    "extra": "Drif_Extra_",
+    "nose": "Drif_Nose_",
+    "ears": "Drif_Ears_",
+    "tattoo": "Drif_Tattoo_"
   },
   "clips": [
     {
@@ -528,6 +565,16 @@
       "triangles": 1520
     },
     {
+      "name": "Drif_Shirt_mcdonalds",
+      "vertices": 924,
+      "triangles": 1800
+    },
+    {
+      "name": "Drif_Shirt_swagworld",
+      "vertices": 1110,
+      "triangles": 2124
+    },
+    {
       "name": "Drif_Hat_cap",
       "vertices": 376,
       "triangles": 728
@@ -641,6 +688,11 @@
       "name": "Drif_Hat_tiara",
       "vertices": 288,
       "triangles": 536
+    },
+    {
+      "name": "Drif_Hat_mcdonalds",
+      "vertices": 350,
+      "triangles": 544
     },
     {
       "name": "Drif_Accessory_original",
@@ -761,6 +813,16 @@
       "name": "Drif_Accessory_lantern",
       "vertices": 152,
       "triangles": 272
+    },
+    {
+      "name": "Drif_Accessory_goldearring",
+      "vertices": 284,
+      "triangles": 560
+    },
+    {
+      "name": "Drif_Accessory_machinegun",
+      "vertices": 186,
+      "triangles": 304
     },
     {
       "name": "Drif_Legs_original",
@@ -974,8 +1036,8 @@
     },
     {
       "name": "Drif_Head_original",
-      "vertices": 986,
-      "triangles": 1900
+      "vertices": 870,
+      "triangles": 1684
     },
     {
       "name": "Drif_Head_void",
@@ -1001,6 +1063,11 @@
       "name": "Drif_Head_hockey",
       "vertices": 3054,
       "triangles": 5932
+    },
+    {
+      "name": "Drif_Head_hayabusa",
+      "vertices": 1923,
+      "triangles": 3689
     },
     {
       "name": "Drif_Extra_mon",
@@ -1061,16 +1128,118 @@
       "name": "Drif_Extra_cards",
       "vertices": 120,
       "triangles": 192
+    },
+    {
+      "name": "Drif_Nose_original",
+      "vertices": 84,
+      "triangles": 160
+    },
+    {
+      "name": "Drif_Nose_button",
+      "vertices": 146,
+      "triangles": 288
+    },
+    {
+      "name": "Drif_Nose_heart",
+      "vertices": 20,
+      "triangles": 36
+    },
+    {
+      "name": "Drif_Nose_cat",
+      "vertices": 16,
+      "triangles": 24
+    },
+    {
+      "name": "Drif_Nose_pig",
+      "vertices": 344,
+      "triangles": 676
+    },
+    {
+      "name": "Drif_Nose_clown",
+      "vertices": 262,
+      "triangles": 520
+    },
+    {
+      "name": "Drif_Ears_original",
+      "vertices": 32,
+      "triangles": 56
+    },
+    {
+      "name": "Drif_Ears_round",
+      "vertices": 692,
+      "triangles": 1368
+    },
+    {
+      "name": "Drif_Ears_elf",
+      "vertices": 36,
+      "triangles": 56
+    },
+    {
+      "name": "Drif_Ears_bunny",
+      "vertices": 784,
+      "triangles": 1552
+    },
+    {
+      "name": "Drif_Ears_bat",
+      "vertices": 36,
+      "triangles": 56
+    },
+    {
+      "name": "Drif_Ears_finlets",
+      "vertices": 48,
+      "triangles": 72
+    },
+    {
+      "name": "Drif_Tattoo_teardrops",
+      "vertices": 15,
+      "triangles": 9
+    },
+    {
+      "name": "Drif_Tattoo_stars",
+      "vertices": 30,
+      "triangles": 24
+    },
+    {
+      "name": "Drif_Tattoo_lightning",
+      "vertices": 12,
+      "triangles": 8
+    },
+    {
+      "name": "Drif_Tattoo_tribal",
+      "vertices": 455,
+      "triangles": 882
+    },
+    {
+      "name": "Drif_Tattoo_rose",
+      "vertices": 2493,
+      "triangles": 4957
+    },
+    {
+      "name": "Drif_Tattoo_runes",
+      "vertices": 265,
+      "triangles": 510
+    },
+    {
+      "name": "Drif_Tattoo_freckles",
+      "vertices": 128,
+      "triangles": 96
+    },
+    {
+      "name": "Drif_Tattoo_skull",
+      "vertices": 465,
+      "triangles": 894
     }
   ],
   "originalParts": {
     "Drif_Body": 894,
-    "Drif_Head_original": 1044,
+    "Drif_Head_original": 906,
     "Drif_Eyes_classic": 840,
     "Drif_Shirt_original": 528,
     "Drif_Accessory_original": 210,
     "Drif_Legs_original": 594,
-    "Drif_Mouth_original": 3
+    "Drif_Mouth_original": 3,
+    "Drif_Ears_original": 42,
+    "Drif_Nose_original": 96
   },
-  "notes": "All components share the original 19-bone rest pose and 10 locomotion actions. Alternate heads replace the original head, eyes and mouth without discarding facial choices. Extra is independent of accessories. Ghost skin is applied by the runtime with the skinned fuzz mesh."
+  "notes": "All components share the original 19-bone rest pose and 10 locomotion actions. Alternate heads replace the original head, eyes and mouth without discarding facial choices. Extra is independent of accessories. Ghost skin is applied by the runtime with the skinned fuzz mesh. Gold coats all body and facial surfaces. The Swag World hoodie embeds the user-supplied photograph with torso and sleeve UVs."
 }

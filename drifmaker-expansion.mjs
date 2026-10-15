@@ -1,4 +1,4 @@
-// Modeled in extend_drifmaker_spectral.py; merged with the original catalog.
+// Modeled by the spectral and signature Blender extensions.
 export const NEW_TRAITS={
  "eyes": [
   {
@@ -154,6 +154,14 @@ export const NEW_TRAITS={
    "id": "racer",
    "label": "Racing jacket",
    "description": "Bright racing stripes and a checker patch."
+  },
+  {
+   "id": "mcdonalds",
+   "label": "McDonald’s shirt"
+  },
+  {
+   "id": "swagworld",
+   "label": "Swag World hoodie"
   }
  ],
  "legs": [
@@ -258,6 +266,10 @@ export const NEW_TRAITS={
    "id": "tiara",
    "label": "Crystal tiara",
    "description": "A silver band supporting five cyan crystals."
+  },
+  {
+   "id": "mcdonalds",
+   "label": "McDonald’s visor"
   }
  ],
  "accessory": [
@@ -310,6 +322,14 @@ export const NEW_TRAITS={
    "id": "lantern",
    "label": "Lantern",
    "description": "A small caged flame hanging from the hip."
+  },
+  {
+   "id": "goldearring",
+   "label": "Gold earring"
+  },
+  {
+   "id": "machinegun",
+   "label": "Back machine gun"
   }
  ],
  "head": [
@@ -342,6 +362,10 @@ export const NEW_TRAITS={
    "id": "hockey",
    "label": "Hockey mask",
    "description": "An ivory mask with real eye and breathing holes, framed by crimson fins."
+  },
+  {
+   "id": "hayabusa",
+   "label": "Hayabusa mask"
   }
  ],
  "extra": [
@@ -409,6 +433,96 @@ export const NEW_TRAITS={
    "id": "cards",
    "label": "Floating cards",
    "description": "Three playing cards suspended around the character."
+  }
+ ],
+ "tattoo": [
+  {
+   "id": "none",
+   "label": "No tattoos"
+  },
+  {
+   "id": "teardrops",
+   "label": "Teardrops"
+  },
+  {
+   "id": "stars",
+   "label": "Star tattoos"
+  },
+  {
+   "id": "lightning",
+   "label": "Lightning"
+  },
+  {
+   "id": "tribal",
+   "label": "Tribal marks"
+  },
+  {
+   "id": "rose",
+   "label": "Rose tattoo"
+  },
+  {
+   "id": "runes",
+   "label": "Runes"
+  },
+  {
+   "id": "freckles",
+   "label": "Freckles"
+  },
+  {
+   "id": "skull",
+   "label": "Skull marks"
+  }
+ ],
+ "nose": [
+  {
+   "id": "original",
+   "label": "Original nose"
+  },
+  {
+   "id": "button",
+   "label": "Button nose"
+  },
+  {
+   "id": "heart",
+   "label": "Heart nose"
+  },
+  {
+   "id": "cat",
+   "label": "Cat nose"
+  },
+  {
+   "id": "pig",
+   "label": "Pig snout"
+  },
+  {
+   "id": "clown",
+   "label": "Clown nose"
+  }
+ ],
+ "ears": [
+  {
+   "id": "original",
+   "label": "Original fins"
+  },
+  {
+   "id": "round",
+   "label": "Round ears"
+  },
+  {
+   "id": "elf",
+   "label": "Elf ears"
+  },
+  {
+   "id": "bunny",
+   "label": "Bunny ears"
+  },
+  {
+   "id": "bat",
+   "label": "Bat ears"
+  },
+  {
+   "id": "finlets",
+   "label": "Finlets"
   }
  ]
 };

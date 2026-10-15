@@ -90,3 +90,18 @@ test('PNG export uses native dimensions, an isolated camera and renderer, and al
   assert.equal(failure.calls.disposed,true);assert.equal(failure.calls.contextLost,true);
  }
 });
+
+test('reflective PNG exports build their own environment and preserve the live preview',async()=>{
+ const scene=new THREE.Scene(),liveEnvironment=new THREE.Texture(),child=new THREE.Group();scene.environment=liveEnvironment;scene.add(child);
+ const camera=configurePortraitCamera(THREE,new THREE.OrthographicCamera());
+ for(const error of [undefined,Error('Export render failed')]){
+  const fixture=rendererFixture({error}),texture=new THREE.Texture();let disposed=0;
+  const environmentFactory=renderer=>{assert.equal(renderer,fixture.renderer);return {texture,dispose(){disposed++;}};};
+  const work=capturePortrait({THREE,scene,camera,rendererFactory:fixture.factory,environmentFactory});
+  if(error)await assert.rejects(work,/Export render failed/);else await work;
+  assert.equal(scene.environment,liveEnvironment);assert.equal(child.parent,scene);assert.notEqual(fixture.calls.scene,scene);
+  assert.equal(fixture.calls.scene.children[0],child);assert.equal(fixture.calls.scene.environment,texture);assert.equal(disposed,1);assert.equal(fixture.calls.contextLost,true);
+  texture.dispose();
+ }
+ liveEnvironment.dispose();
+});

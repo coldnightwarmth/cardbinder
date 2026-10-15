@@ -48,20 +48,24 @@ export function configurePortraitCamera(THREE,camera,composition){
 
 // A dedicated renderer avoids resizing or resetting the live studio renderer.
 // Clone the camera too: exporting must not alter either visible preview mode.
-export async function capturePortrait({THREE,scene,camera,composition,rendererFactory}={}){
+export async function capturePortrait({THREE,scene,camera,composition,rendererFactory,environmentFactory}={}){
  const framing=compositionWith(composition),exportCamera=configurePortraitCamera(THREE,camera.clone(),framing);
  const createRenderer=rendererFactory??(options=>new THREE.WebGLRenderer(options));
- let renderer;
+ let renderer,environment;
+ const exportScene=environmentFactory?scene.clone(false):scene;
+ if(environmentFactory)exportScene.children=[...scene.children];
  try{
   renderer=createRenderer({antialias:true,alpha:false,preserveDrawingBuffer:true});
   renderer.setPixelRatio(1);renderer.setSize(framing.width,framing.height,false);
   renderer.setClearColor(framing.background,1);
   renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=framing.exposure;
-  renderer.render(scene,exportCamera);
+  if(environmentFactory){environment=environmentFactory(renderer);exportScene.environment=environment.texture;}
+  renderer.render(exportScene,exportCamera);
   return await new Promise((resolve,reject)=>{
    renderer.domElement.toBlob(blob=>blob?resolve(blob):reject(Error('The portrait could not be encoded as a PNG. Please try again.')),'image/png');
   });
  }finally{
+  environment?.dispose();
   if(renderer){try{renderer.dispose();}finally{renderer.forceContextLoss?.();}}
  }
 }

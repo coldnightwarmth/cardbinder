@@ -1,20 +1,21 @@
 import * as THREE from 'three';
-import {createShowroomAvatar} from './showroom-avatar.js?v=12';
-import {BODY_COLORS,BODY_STYLES,PORTRAIT_BACKGROUNDS,CATEGORIES,DEFAULT_APPEARANCE,normalizeAppearance,loadAppearance,saveAppearance} from './drifmaker-config.mjs?v=3';
-import {PORTRAIT_COMPOSITION,createPortraitAvatar,configurePortraitCamera,capturePortrait} from './drifmaker-portrait.mjs?v=1';
+import {createShowroomAvatar} from './showroom-avatar.js?v=13';
+import {BODY_COLORS,BODY_STYLES,PORTRAIT_BACKGROUNDS,CATEGORIES,DEFAULT_APPEARANCE,normalizeAppearance,loadAppearance,saveAppearance} from './drifmaker-config.mjs?v=4';
+import {PORTRAIT_COMPOSITION,createPortraitAvatar,configurePortraitCamera,capturePortrait} from './drifmaker-portrait.mjs?v=2';
+import {createDrifmakerEnvironment} from './drifmaker-lighting.mjs?v=1';
 import {jumpHeight} from './showroom-locomotion.mjs?v=2';
 
 const $=selector=>document.querySelector(selector);
 const canvas=$('#characterView'),stage=$('#stage'),controls=$('#editorControls');
 const saved=loadAppearance();
-let appearance={...saved},avatar,renderer,scene,camera,card;
+let appearance={...saved},avatar,renderer,scene,camera,card,environment;
 let motion='idle',holding=false,autoRotate=false,elapsed=0,settled=0,yaw=.18,pitch=.08,distance=7.0;
 let viewMode='studio',portraitAvatar,portraitScene,portraitCamera,portraitDirty=true,exporting=false;
 let portraitBackground=PORTRAIT_COMPOSITION.background;
 let toastTimer,changeVersion=0,disposed=false,frameId,previousTime=0;
 const target=new THREE.Vector3(0,1.55,0),reducedMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
-const titles={eyes:'Eyes',mouth:'Mouth',shirt:'Tops',legs:'Pants & legs',hat:'Hats',accessory:'Accessories',head:'Heads',extra:'Extra'};
-const categoryOrder=['body','head','eyes','mouth','shirt','legs','hat','accessory','extra'];
+const titles={eyes:'Eyes',mouth:'Mouth',shirt:'Tops',legs:'Pants & legs',hat:'Hats',accessory:'Accessories',head:'Heads',extra:'Extra',nose:'Nose',ears:'Ears',tattoo:'Tattoos'};
+const categoryOrder=['body','head','eyes','mouth','nose','ears','tattoo','shirt','legs','hat','accessory','extra'];
 let activeCategory='eyes';
 const iconPaths={
   spiral:'<path d="M10 11c0-5-9-5-9 0s9 6 9 1-6-4-6-1 3 2 3 0m16 0c0-5-9-5-9 0s9 6 9 1-6-4-6-1 3 2 3 0"/>',
@@ -59,14 +60,14 @@ function makeControls(){
  const panel=(category)=>{const section=document.createElement('section');section.className='control-section';section.id=`category-${category}`;section.setAttribute('role','tabpanel');section.setAttribute('aria-labelledby',`tab-${category}`);return section;};
  const body=panel('body');
  body.innerHTML='<div class="section-heading"><h3>Body color</h3><span class="selected-label" id="bodyLabel"></span></div><div class="palette" role="group" aria-label="Body color"></div>';
- for(const color of BODY_COLORS){const button=document.createElement('button');button.className='swatch';button.type='button';button.style.setProperty('--swatch',color.hex);button.dataset.color=color.hex;button.title=color.label;button.setAttribute('aria-label',`${color.label} body color`);button.onclick=()=>select({bodyColor:color.hex});body.querySelector('.palette').append(button);}
- const custom=document.createElement('label');custom.className='custom-color';custom.title='Custom body color';custom.innerHTML='<input type="color" id="customColor" aria-label="Custom body color"><span aria-hidden="true">+</span>';body.querySelector('.palette').append(custom);custom.querySelector('input').addEventListener('input',event=>select({bodyColor:event.target.value}));const finish=document.createElement('div');finish.className='body-finishes';finish.setAttribute('role','group');finish.setAttribute('aria-label','Body finish');
+ for(const color of BODY_COLORS){const button=document.createElement('button');button.className='swatch';button.type='button';button.style.setProperty('--swatch',color.hex);button.dataset.color=color.hex;button.title=color.label;button.setAttribute('aria-label',`${color.label} body color`);button.onclick=()=>select({bodyColor:color.hex,bodyStyle:color.style||(appearance.bodyStyle==='gold'?'solid':appearance.bodyStyle)});body.querySelector('.palette').append(button);}
+ const custom=document.createElement('label');custom.className='custom-color';custom.title='Custom body color';custom.innerHTML='<input type="color" id="customColor" aria-label="Custom body color"><span aria-hidden="true">+</span>';body.querySelector('.palette').append(custom);custom.querySelector('input').addEventListener('input',event=>select({bodyColor:event.target.value,bodyStyle:appearance.bodyStyle==='gold'?'solid':appearance.bodyStyle}));const finish=document.createElement('div');finish.className='body-finishes';finish.setAttribute('role','group');finish.setAttribute('aria-label','Body finish');
  for(const style of BODY_STYLES){const button=document.createElement('button');button.type='button';button.dataset.bodyStyle=style.id;button.textContent=style.label;button.title=style.label;button.onclick=()=>select({bodyStyle:style.id});finish.append(button);}
  body.append(finish);controls.append(body);
  for(const category of categoryOrder.filter(item=>item!=='body')){
   const options=CATEGORIES[category],section=panel(category);
   const heading=document.createElement('div');heading.className='section-heading';heading.innerHTML=`<h3>${titles[category]}</h3><span class="selected-label" data-label="${category}"></span>`;section.append(heading);
-  if(['eyes','mouth'].includes(category)){const note=document.createElement('p');note.className='head-override-note';note.dataset.overrideNotice=category;note.textContent='Head overrides eyes and mouth.';note.hidden=true;section.append(note);}
+  if(['eyes','mouth','nose','ears','tattoo'].includes(category)){const note=document.createElement('p');note.className='head-override-note';note.dataset.overrideNotice=category;note.textContent='Head overrides face traits.';note.hidden=true;section.append(note);}
   const grid=document.createElement('div');grid.className='options';grid.setAttribute('role','group');grid.setAttribute('aria-label',titles[category]);
   for(const option of options){const button=document.createElement('button');button.className='option';button.type='button';button.dataset.category=category;button.dataset.option=option.id;button.title=option.label;button.innerHTML=`<span class="option-art">${icon(category,option.id)}</span>`;const label=document.createElement('span');label.className='option-label';label.textContent=option.label;button.append(label);button.onclick=()=>select({[category]:option.id});grid.append(button);}
   section.append(grid);controls.append(section);
@@ -94,12 +95,12 @@ $('#applyLook').onclick=async()=>{
  try{await avatar.setAppearance(appearance);saveAppearance(appearance);updateControls();location.assign('/show');}
  catch(error){toast('Could not save this look. Check that browser storage is available.');console.error(error);button.disabled=false;}
 };
-$('#exportLook').onclick=()=>{download(new Blob([JSON.stringify({version:3,appearance},null,2)],{type:'application/json'}),'my-drifella.json');toast('Look exported.');};
+$('#exportLook').onclick=()=>{download(new Blob([JSON.stringify({version:4,appearance},null,2)],{type:'application/json'}),'my-drifella.json');toast('Look exported.');};
 $('#importLook').onclick=()=>$('#lookFile').click();
 $('#lookFile').onchange=async event=>{
  const file=event.target.files?.[0];event.target.value='';if(!file)return;
  try{if(file.size>16384)throw Error('Too large');const data=JSON.parse(await file.text()),value=data.appearance||data;
-  if((value?.bodyStyle!==undefined&&!BODY_STYLES.some(style=>style.id===value.bodyStyle))||!value||typeof value!=='object'||Array.isArray(value)||!/^#[a-f\d]{6}$/i.test(value.bodyColor)||!Object.entries(CATEGORIES).every(([key,options])=>(['legs','mouth','head','extra'].includes(key)&&!Object.hasOwn(value,key))||options.some(option=>option.id===value[key])))throw Error('Invalid look');
+  if((value?.bodyStyle!==undefined&&!BODY_STYLES.some(style=>style.id===value.bodyStyle))||!value||typeof value!=='object'||Array.isArray(value)||!/^#[a-f\d]{6}$/i.test(value.bodyColor)||!Object.entries(CATEGORIES).every(([key,options])=>(['legs','mouth','head','extra','nose','ears','tattoo'].includes(key)&&!Object.hasOwn(value,key))||options.some(option=>option.id===value[key])))throw Error('Invalid look');
   await select(normalizeAppearance(value));toast('Look imported.');
  }catch{toast('Choose a valid Drifmaker look exported from this editor.');}
 };
@@ -178,7 +179,7 @@ async function exportPortrait(){
  if(!portraitAvatar||exporting)return;
  exporting=true;$('#exportPortrait').disabled=true;$('#captureView').disabled=true;$('#exportPortrait').textContent='Preparing PNG…';
  try{
-  const blob=await capturePortrait({THREE,scene:portraitScene,camera:portraitCamera,composition:{background:portraitBackground}});
+  const blob=await capturePortrait({THREE,scene:portraitScene,camera:portraitCamera,composition:{background:portraitBackground},environmentFactory:createDrifmakerEnvironment});
   if(disposed)return;
   const dataURL=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(Error('Could not prepare the PNG.'));reader.readAsDataURL(blob);});
   if(disposed)return;
@@ -193,7 +194,7 @@ $('#exportPortrait').onclick=exportPortrait;$('#closePortraitDialog').onclick=()
 async function setupPortrait(){
  portraitAvatar=await createPortraitAvatar({createAvatar:createShowroomAvatar,appearance});if(disposed){portraitAvatar.dispose();return;}
  await portraitAvatar.setAppearance(appearance);
- portraitScene=new THREE.Scene();portraitScene.background=new THREE.Color(portraitBackground);portraitScene.add(portraitAvatar.model);
+ portraitScene=new THREE.Scene();portraitScene.environment=environment.texture;portraitScene.background=new THREE.Color(portraitBackground);portraitScene.add(portraitAvatar.model);
  portraitScene.add(new THREE.HemisphereLight(0xf7fcff,0x748b79,2.2));
  const key=new THREE.DirectionalLight(0xfff5df,3.2);key.position.set(-3,7,5);portraitScene.add(key);
  const fill=new THREE.DirectionalLight(0xa9d4ec,1.2);fill.position.set(4,3,-4);portraitScene.add(fill);
@@ -203,7 +204,7 @@ async function setupPortrait(){
 // Render catalog portraits with an independent avatar, so browsing and animation
 // remain responsive while thumbnails are prepared a few at a time.
 async function makeThumbnails(){
- let preview,previewRenderer;
+ let preview,previewRenderer,previewEnvironment;
  try{
   preview=await createShowroomAvatar();if(disposed){preview.dispose();return;}
   preview.model.position.set(0,0,0);preview.model.rotation.set(0,0,0);preview.model.scale.setScalar(1);preview.update(.001,0,false);
@@ -211,13 +212,14 @@ async function makeThumbnails(){
   const light=new THREE.DirectionalLight(0xfff5df,3.2);light.position.set(-3,7,5);thumbnailScene.add(light);
   const fill=new THREE.DirectionalLight(0xa9d4ec,1.2);fill.position.set(4,3,-4);thumbnailScene.add(fill);
   previewRenderer=new THREE.WebGLRenderer({alpha:true,antialias:true});previewRenderer.setSize(180,132);previewRenderer.outputColorSpace=THREE.SRGBColorSpace;previewRenderer.toneMapping=THREE.ACESFilmicToneMapping;previewRenderer.toneMappingExposure=1.1;
+  previewEnvironment=createDrifmakerEnvironment(previewRenderer);thumbnailScene.environment=previewEnvironment.texture;
   const portraitCamera=new THREE.OrthographicCamera(-1,1,1,-1,.05,20);
-  const views={eyes:{y:2.23,height:.70},mouth:{y:1.87,height:.60},shirt:{y:1.18,height:1.45},legs:{y:.47,height:1.08},hat:{y:2.82,height:1.68},accessory:{y:1.5,height:2.55},head:{y:2.25,height:2.05},extra:{y:1.80,height:3.25}};
+  const views={eyes:{y:2.23,height:.70},mouth:{y:1.87,height:.60},shirt:{y:1.18,height:1.45},legs:{y:.47,height:1.08},hat:{y:2.82,height:1.68},accessory:{y:1.5,height:2.55},head:{y:2.25,height:2.05},extra:{y:1.80,height:3.25},nose:{y:1.98,height:.40},ears:{y:2.35,height:2.0},tattoo:{y:2.22,height:1.25}};
   const remaining=[...controls.querySelectorAll('[data-option]')].filter(button=>button.dataset.option!=='none');
   while(remaining.length&&!disposed){
    for(let batch=0;batch<3&&remaining.length;batch++){
     const preferred=remaining.findIndex(button=>button.dataset.category===activeCategory),button=remaining.splice(preferred<0?0:preferred,1)[0],{category,option}=button.dataset;
-    const view=views[category],rear=category==='accessory'&&['backpack','wings','skateboard','sword','angelwings','batwings','mechwings','shield'].includes(option);
+    const view=views[category],rear=category==='accessory'&&['backpack','wings','skateboard','sword','angelwings','batwings','mechwings','shield','machinegun'].includes(option);
     await preview.setAppearance({...DEFAULT_APPEARANCE,accessory:'none',[category]:option});
     portraitCamera.top=view.height/2;portraitCamera.bottom=-view.height/2;portraitCamera.right=view.height*180/132/2;portraitCamera.left=-portraitCamera.right;portraitCamera.updateProjectionMatrix();
     portraitCamera.position.set(category==='accessory'?(rear?-.9:.7):0,view.y+.03,rear?-5:5);portraitCamera.lookAt(0,view.y,0);
@@ -227,12 +229,12 @@ async function makeThumbnails(){
    await new Promise(resolve=>requestAnimationFrame(resolve));
   }
  }catch(error){console.warn('Wardrobe thumbnails are unavailable; the 3D editor is still ready.',error);}
- finally{preview?.dispose();previewRenderer?.dispose();previewRenderer?.forceContextLoss();}
+ finally{preview?.dispose();previewEnvironment?.dispose();previewRenderer?.dispose();previewRenderer?.forceContextLoss();}
 }
 async function init(){
  try{
   renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true,preserveDrawingBuffer:false});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.1;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-  scene=new THREE.Scene();scene.background=new THREE.Color('#dfe7e5');scene.fog=new THREE.Fog('#dfe7e5',12,25);camera=new THREE.PerspectiveCamera(33,1,.05,40);
+  scene=new THREE.Scene();environment=createDrifmakerEnvironment(renderer);scene.environment=environment.texture;scene.background=new THREE.Color('#dfe7e5');scene.fog=new THREE.Fog('#dfe7e5',12,25);camera=new THREE.PerspectiveCamera(33,1,.05,40);
   scene.add(new THREE.HemisphereLight(0xf7fcff,0x748b79,2.2));
   const key=new THREE.DirectionalLight(0xfff5df,3.2);key.position.set(-3,7,5);key.castShadow=true;key.shadow.mapSize.set(2048,2048);key.shadow.camera.left=-4;key.shadow.camera.right=4;key.shadow.camera.top=5;key.shadow.camera.bottom=-3;key.shadow.normalBias=.025;key.shadow.bias=-.0001;scene.add(key);
   const fill=new THREE.DirectionalLight(0xa9d4ec,1.2);fill.position.set(4,3,-4);scene.add(fill);
@@ -248,7 +250,7 @@ async function init(){
  }catch(error){console.error(error);$('#loadState').replaceChildren();const message=document.createElement('strong');message.textContent='Model could not load.';const detail=document.createElement('span');detail.textContent='Check your connection and retry.';const retry=document.createElement('button');retry.textContent='Try again';retry.onclick=()=>location.reload();$('#loadState').append(message,detail,retry);}
 }
 canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();toast('The 3D preview was interrupted. Reload to restore it.');$('#applyLook').disabled=true;});
-function cleanup(){if(disposed)return;disposed=true;cancelAnimationFrame(frameId);clearTimeout(toastTimer);resizeObserver.disconnect();if(card){card.removeFromParent();card.geometry.dispose();for(const material of [].concat(card.material))material.dispose();}avatar?.dispose();portraitAvatar?.dispose();scene?.traverse(node=>{if(node===card||!node.isSkinnedMesh){node.geometry?.dispose();if(node.material)for(const material of [].concat(node.material))material.dispose();}});renderer?.dispose();}
+function cleanup(){if(disposed)return;disposed=true;cancelAnimationFrame(frameId);clearTimeout(toastTimer);resizeObserver.disconnect();if(card){card.removeFromParent();card.geometry.dispose();for(const material of [].concat(card.material))material.dispose();}avatar?.dispose();portraitAvatar?.dispose();scene?.traverse(node=>{if(node===card||!node.isSkinnedMesh){node.geometry?.dispose();if(node.material)for(const material of [].concat(node.material))material.dispose();}});environment?.dispose();renderer?.dispose();}
 addEventListener('pagehide',event=>{if(!event.persisted)cleanup();});
 makeControls();
 init();
