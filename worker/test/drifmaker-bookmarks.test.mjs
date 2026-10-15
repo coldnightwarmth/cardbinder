@@ -6,7 +6,7 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import * as THREE from '../../vendor/three.module.min.js';
 import {DEFAULT_APPEARANCE} from '../../drifmaker-config.mjs';
-import {BOOKMARK_KEY,createBookmarkStore,createLookHistory,normalizeLook,exportBookmarkZip} from '../../drifmaker-bookmarks.mjs';
+import {BOOKMARK_KEY,MAX_BOOKMARKS,createBookmarkStore,createLookHistory,normalizeLook,bookmarkMetadata,exportBookmarkZip} from '../../drifmaker-bookmarks.mjs';
 import {createBookmarkRenderer} from '../../drifmaker-bookmark-renderer.mjs';
 const look=(patch={},portrait={})=>normalizeLook({appearance:{...DEFAULT_APPEARANCE,...patch},portrait});
 function memory(){const data=new Map();return {getItem:key=>data.get(key)??null,setItem:(key,value)=>data.set(key,value)};}
@@ -34,15 +34,52 @@ test('Undo/redo restores complete randomizations, bookmark loads and portrait ch
  assert.deepEqual(history.redo(),b);history.commit(c);assert.equal(history.redo(),null);assert.deepEqual(history.undo(),b);
  const copy=history.current;copy.portrait.background='#ffffff';assert.equal(history.current.portrait.background,'#0000ff');
 });
-test('ZIP contains one valid stored PNG per bookmark with safe unique filenames and correct CRCs',async()=>{
+test('ZIP pairs each PNG with categorized JSON metadata in its own folder, with safe names and valid CRCs',async()=>{
  const png=new Blob([Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a3ioAAAAASUVORK5CYII=','base64')],{type:'image/png'});
  const entries=[{name:'../Look 1',look:look()},{name:'../Look 1',look:look({mouth:'venom'})}],received=[];
  const zip=await exportBookmarkZip(entries,{render:async value=>{received.push(value);return png;}});
  assert.deepEqual(received,entries.map(item=>item.look));
  const dir=mkdtempSync(join(tmpdir(),'drifmaker-zip-'));try{const path=join(dir,'bookmarks.zip');writeFileSync(path,Buffer.from(await zip.arrayBuffer()));
-  const result=JSON.parse(execFileSync('python3',['-c','import zipfile,json,sys; z=zipfile.ZipFile(sys.argv[1]); assert z.testzip() is None; assert all(z.read(n).startswith(bytes([137,80,78,71,13,10,26,10])) for n in z.namelist()); print(json.dumps(z.namelist()))',path],{encoding:'utf8'}));
-  assert.deepEqual(result,['001-Look-1.png','002-Look-1.png']);
+  const result=JSON.parse(execFileSync('python3',['-c','import zipfile,json,sys,posixpath; z=zipfile.ZipFile(sys.argv[1]); assert z.testzip() is None; pngs=[n for n in z.namelist() if n.endswith(".png")]; assert all(z.read(n).startswith(bytes([137,80,78,71,13,10,26,10])) for n in pngs); metadata=[json.loads(z.read(n)) for n in z.namelist() if n.endswith(".json")]; assert all(posixpath.normpath(posixpath.join("json",m["image"])) in pngs for m in metadata); print(json.dumps({"names":z.namelist(),"metadata":metadata}))',path],{encoding:'utf8'}));
+  assert.deepEqual(result.names,['001-Look-1.png','json/001-Look-1.json','002-Look-1.png','json/002-Look-1.json']);
+  result.metadata.forEach((metadata,index)=>{
+   assert.equal(metadata.id,index+1);assert.equal(metadata.name,entries[index].name);assert.deepEqual(normalizeLook(metadata),entries[index].look);
+   assert.deepEqual(metadata.properties,{files:[{uri:metadata.image,type:'image/png'}],category:'image'});
+   const categories=metadata.attributes.map(trait=>trait.trait_type);assert.deepEqual(categories,[...categories].sort());assert.equal(new Set(categories).size,16);
+   assert.equal(metadata.attributes.find(trait=>trait.trait_type==='mouth').value,index?'Venom mouth':'Original');
+  });
  }finally{rmSync(dir,{recursive:true,force:true});}
+});
+
+test('new bookmarks appear first, keep their order after reload, and restore at their former position',()=>{
+ const storage=memory();let next=0;const store=createBookmarkStore(storage,{id:()=>String(++next)});
+ const first=store.add(look()).entry,second=store.add(look({mouth:'venom'})).entry,third=store.add(look({shirt:'wizardrobe'})).entry;
+ assert.deepEqual(store.entries,[third,second,first]);assert.deepEqual(createBookmarkStore(storage).entries,store.entries);
+ assert.equal(store.add(second.look).duplicate,true);assert.deepEqual(store.entries,[third,second,first]);
+ const removed=store.remove(second.id);store.restore(removed);assert.deepEqual(store.entries,[third,second,first]);
+});
+
+test('500 bookmarks survive storage, reject a 501st unique look, and permit duplicates and recovery at capacity',()=>{
+ assert.equal(MAX_BOOKMARKS,500);
+ const storage=memory(),entries=Array.from({length:499},(_,i)=>({id:String(i),name:`Look ${i+1}`,look:look({bodyColor:`#${i.toString(16).padStart(6,'0')}`})}));
+ storage.setItem(BOOKMARK_KEY,JSON.stringify({version:1,entries}));
+ const store=createBookmarkStore(storage,{id:()=> 'last'}),last=store.add(look()).entry;
+ assert.equal(store.entries.length,500);assert.deepEqual(store.entries[0],last);assert.equal(last.name,'Look 500');
+ const reload=createBookmarkStore(storage);assert.deepEqual(reload.entries,store.entries);
+ assert.throws(()=>reload.add(look({shirt:'wizardrobe'})),/500 bookmarks/);assert.equal(reload.add(last.look).duplicate,true);
+ const removed=reload.remove('1');reload.restore(removed);assert.deepEqual(reload.entries,store.entries);
+});
+
+test('metadata uses readable visible trait names and preserves hidden selections for reimport',()=>{
+ const value=look({head:'pumpkin',ears:'droopyfins',eyes:'mog',shirt:'wizardrobe',legs:'denim',bodyStyle:'camo'},{background:'rainbow',pose:'holdcard',posesEnabled:true});
+ const metadata=bookmarkMetadata({name:'Wizard',look:value},{image:'../001-Wizard.png',id:1}),traits=Object.fromEntries(metadata.attributes.map(item=>[item.trait_type,item.value]));
+ assert.equal(traits.background,'Rainbow gradient');assert.equal(traits['body finish'],'Camo');assert.equal(traits['body color'],'Woodland camo');assert.equal(traits.pose,'Hold card');assert.equal(traits.top,'Star wizard robe');
+ for(const key of ['eyes','eyebrows','mouth','nose','tattoos','legs'])assert.equal(traits[key],'None');
+ assert.equal(traits.ears,'Original fins');assert.deepEqual(normalizeLook(metadata),value);
+ const custom=bookmarkMetadata({name:'Custom',look:look({bodyColor:'#123abc'},{background:'#abcdef',pose:'bow',posesEnabled:false})},{image:'../custom.png',id:2});
+ const customTraits=Object.fromEntries(custom.attributes.map(item=>[item.trait_type,item.value]));
+ assert.equal(customTraits['body color'],'Custom (#123abc)');assert.equal(customTraits.background,'Custom (#abcdef)');assert.equal(customTraits.pose,'Neutral');
+ assert.ok(custom.attributes.every(trait=>typeof trait.value==='string'&&trait.value.length));
 });
 test('ZIP cancellation aborts partial output and render failures propagate',async()=>{
  const controller=new AbortController(),calls=[];
