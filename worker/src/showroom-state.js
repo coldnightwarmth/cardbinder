@@ -1,5 +1,6 @@
 // Authoritative room transitions. No wallet holdings are changed by this state.
 import {DRIFELLA_IDS,PIXEL_MOSAIC_IDS} from './showroom-ritual-catalog.js';
+import {normalizeAppearance} from '../../drifmaker-config.mjs';
 export const RITUAL_MS = 6350;
 export const WALL_ART_MS = 60*60*1000;
 export function freshRoom() { return {revision:0, cards:{}, slots:[null,null,null], ritual:null, seats:[],wallArt:null,lastRitualEffect:null}; }
@@ -59,4 +60,4 @@ export function applyAction(state,player,action,now=Date.now(),players=[]) {
   } else throw Error('Unknown action');
   state.revision++;return result;
 }
-export function publicPlayer(p) {return {id:p.id,pose:p.pose,poseTime:p.lastMove||0};}
+export function publicPlayer(p) {return {id:p.id,pose:{...p.pose,appearance:normalizeAppearance(p.pose?.appearance)},poseTime:p.lastMove||0};}

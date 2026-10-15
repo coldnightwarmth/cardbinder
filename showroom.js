@@ -5,7 +5,7 @@ import {createShowroomRitualEffects,ritualPixelRatio} from './showroom-ritual-ef
 import { createExhibitBudget } from './showroom-exhibit-lod.js?v=2';
 import { createSceneIndex } from './showroom-scene-index.mjs';
 import { createShowroomPickupLayer } from './showroom-pickup-layer.mjs';
-import { createShowroomMultiplayer } from './showroom-multiplayer.js?v=20';
+import { createShowroomMultiplayer } from './showroom-multiplayer.js?v=22';
 import { createShowroomSky } from './showroom-sky.js?v=5';
 import * as THREE from 'three';
 import { createShowroomColumns } from './showroom-columns.js?v=12';
@@ -51,11 +51,19 @@ export async function initShowroom(bridge) {
     }
   } catch { /* Invalid return destinations go to the main page. */ }
   hud.append(leave);
+  const drifmaker = document.createElement('a');
+  drifmaker.id='showroomDrifmaker'; drifmaker.textContent='Edit Drifella';
+  drifmaker.href='/drifmaker';
+  hud.append(drifmaker);
   let resumeOnEscapeRelease=false;
   document.addEventListener('keyup',event=>{if(event.code==='Escape'&&resumeOnEscapeRelease){resumeOnEscapeRelease=false;if(!active&&!busy&&!columns?.selecting)lock();}},true);
   document.addEventListener('keydown',event=>{
     if(!['Escape','Tab','Enter'].includes(event.code)||active||busy||columns?.selecting||event.isComposing)return;
     const menuOpen=!leave.hidden;
+    // The open menu uses normal keyboard focus; Escape and Enter still resume.
+    if(menuOpen&&event.code==='Tab')return;
+    // Let focused menu links retain their native keyboard navigation.
+    if(menuOpen&&event.code==='Enter'&&event.target.closest?.('a[href]'))return;
     // Enter in the menu belongs to the focused chat input/send control.
     if(event.code==='Enter'&&menuOpen&&hud.querySelector('#showroomChat input')?.value.trim())return;
     event.preventDefault();event.stopPropagation();if(event.repeat)return;

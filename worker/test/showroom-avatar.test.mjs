@@ -4,11 +4,14 @@ import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import * as THREE from '../../vendor/three.module.min.js';
 import {jumpHeight} from '../../showroom-locomotion.mjs';
+import {createAvatarAppearance} from '../../drifmaker-avatar.mjs';
 const source=readFileSync(new URL('../../showroom-avatar.js',import.meta.url),'utf8');
 test('avatar clones share geometry but own their skeleton and pose',()=>{
  const context=vm.createContext({THREE});vm.runInContext(source.slice(source.indexOf('export function cloneAvatar'),source.indexOf('export async')).replaceAll('export ',''),context);
  const root=new THREE.Group(),bone=new THREE.Bone();root.add(bone);const geometry=new THREE.BoxGeometry();const mesh=new THREE.SkinnedMesh(geometry,new THREE.MeshStandardMaterial());root.add(mesh);mesh.bind(new THREE.Skeleton([bone]));
+ const shirt=new THREE.SkinnedMesh(geometry,mesh.material);root.add(shirt);shirt.bind(mesh.skeleton,mesh.bindMatrix);
  const a=context.cloneAvatar(root),b=context.cloneAvatar(root);assert.equal(a.children[1].geometry,geometry);assert.notEqual(a.children[1].skeleton,b.children[1].skeleton);assert.equal(a.children[1].skeleton.bones[0],a.children[0]);a.children[0].rotation.x=1;assert.ok(Math.abs(b.children[0].rotation.x)<1e-9);assert.equal(bone.rotation.x,0);
+ assert.equal(a.children[1].skeleton,a.children[2].skeleton,'one skeleton drives all wardrobe pieces for each visitor');
 });
 test('shipped character includes locomotion and holding clips, texture, and right-hand socket',()=>{
  const bytes=readFileSync(new URL('../../assets/models/showroom-character/blue-fin-character.glb',import.meta.url));const gltf=JSON.parse(bytes.subarray(20,20+bytes.readUInt32LE(12)).toString());
@@ -71,7 +74,7 @@ function animationPipeline(legacy){
  const rig=shippedAnimationRig();
  let code=source.slice(source.indexOf('export function cloneAvatar')).replaceAll('export ','');
  if(legacy)code=code.replace('model.getWorldQuaternion(parentRotation);','model.updateWorldMatrix(true,true);model.getWorldQuaternion(parentRotation);');
- const context=vm.createContext({THREE,asset:async()=>rig});vm.runInContext(code,context);
+ const context=vm.createContext({THREE,asset:async()=>rig,createAvatarAppearance});vm.runInContext(code,context);
  const multiplayer=readFileSync(new URL('../../showroom-multiplayer.js',import.meta.url),'utf8');
  let update=multiplayer.slice(multiplayer.indexOf('  if(p.avatar){'),multiplayer.indexOf('  if(p.layoutDirty)'));
  if(legacy)update=update.replace('p.avatar.update(dt,velocity,p.holding,sample.pitch,sample);','p.avatar.update(dt,velocity,p.holding,sample.pitch,sample);p.group.updateWorldMatrix(true,true);');

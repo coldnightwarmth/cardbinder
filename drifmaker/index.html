@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#eeede6">
+  <meta name="description" content="Make your own Drifella. Mix colors, eyes, mouths, clothing and accessories, then take your character onto the cards.art show floor.">
+  <title>Drifmaker — cards.art</title>
+  <link rel="icon" type="image/png" href="/cardnft.png">
+  <link rel="stylesheet" href="/drifmaker.css?v=3">
+  <script type="importmap">{"imports":{"three":"/vendor/three.module.min.js?v=three-r165-min-1"}}</script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="cards.art home">cards<span>✳</span>art</a>
+    <span class="header-divider"></span><a class="page-name" href="/drifmaker/">drifmaker <span class="edition">VOL. 02</span></a>
+    <a class="back-link" href="/show">Back to the showroom <span aria-hidden="true">↗</span></a>
+  </header>
+  <main class="maker">
+    <section class="studio" aria-label="Character preview">
+      <div class="studio-heading"><span class="eyebrow"><i></i> CHARACTER STUDIO</span><h1>A little more you.</h1><p>One Drifella. Endless possibilities.</p></div>
+      <div class="stage" id="stage" data-view="studio">
+        <canvas id="characterView" tabindex="0" aria-label="3D Drifella preview. Drag or use arrow keys to rotate. Scroll or use plus and minus to zoom."></canvas>
+        <div class="load-state" id="loadState" role="status"><span class="loader"></span><strong>Waking up your Drifella…</strong><span>Getting the wardrobe ready</span></div>
+        <div class="stage-tools" aria-label="Preview controls">
+          <button id="resetView" title="Reset camera" aria-label="Reset camera"><svg viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 2 8M3 4v6h6"/></svg></button>
+          <button id="rotateView" title="Auto rotate" aria-label="Auto rotate" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M7 7c-3 1-5 3-5 5s4 5 10 5 10-2 10-5c0-2-2-4-5-5M8 3l4 4-4 4M12 7H7"/></svg></button>
+          <button id="captureView" title="Download portrait" aria-label="Download portrait" disabled><svg viewBox="0 0 24 24"><path d="M3 8h4l2-3h6l2 3h4v12H3z"/><circle cx="12" cy="13" r="4"/></svg></button>
+        </div>
+        <span class="model-label">DRIFELLA <span id="cropLabel">001</span></span>
+        <span class="orbit-hint">Drag to rotate <span>·</span> <span class="zoom-desktop">Scroll to zoom</span><span class="zoom-touch">Pinch to zoom</span></span>
+      </div>
+      <div class="preview-bottom">
+        <div class="view-switch" role="group" aria-label="Character view"><button id="studioMode" aria-pressed="true" disabled><svg viewBox="0 0 24 24"><path d="m12 2 9 5v10l-9 5-9-5V7zm0 10 9-5M12 12 3 7m9 5v10"/></svg>3D studio</button><button id="portraitMode" aria-pressed="false" disabled><svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><circle cx="12" cy="9" r="3"/><path d="M7 19v-2a5 5 0 0 1 10 0v2"/></svg>Drifella 2 portrait</button></div>
+        <div class="portrait-controls" id="portraitControls" hidden><div class="portrait-background"><span class="eyebrow">BACKGROUND</span><div id="portraitPalette" class="portrait-palette" role="group" aria-label="Portrait background"></div></div><button id="exportPortrait" class="portrait-export" disabled>Export PNG <span aria-hidden="true">↗</span></button></div>
+        <div class="motion-panel"><span class="eyebrow">TRY A MOVE</span><div class="motion-buttons" role="group" aria-label="Animation preview"><button data-motion="idle" aria-pressed="true">Idle</button><button data-motion="walk" aria-pressed="false">Walk</button><button data-motion="crouch" aria-pressed="false">Crouch</button><button data-motion="sneak" aria-pressed="false">Sneak</button><button data-motion="jump" aria-pressed="false">Jump</button></div><label class="hold-toggle"><input type="checkbox" id="holdCard"><span>Hold a card</span></label></div>
+        <div class="studio-footnote"><span>Built for the show floor.</span><span id="animationLabel">Neutral</span></div>
+      </div>
+    </section>
+    <aside class="wardrobe" aria-labelledby="wardrobeTitle">
+      <div class="wardrobe-heading"><div><span class="eyebrow">MAKE IT YOURS</span><h2 id="wardrobeTitle">The dressing room</h2></div><button id="randomize" class="icon-button" title="Randomize look" aria-label="Randomize look" disabled><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4" transform="rotate(-12 12 12)"/><circle cx="8" cy="8" r=".7"/><circle cx="16" cy="8" r=".7"/><circle cx="12" cy="12" r=".7"/><circle cx="8" cy="16" r=".7"/><circle cx="16" cy="16" r=".7"/></svg></button></div>
+      <nav class="category-nav" role="tablist" aria-label="Customization categories"></nav>
+      <div id="editorControls" class="editor-controls" inert></div>
+      <div class="wardrobe-footer"><div class="look-status"><span class="status-dot" id="statusDot"></span><span id="saveStatus" role="status" aria-live="polite">Your look is saved on this device.</span><button id="resetLook" class="text-button" disabled>Reset</button></div><button id="applyLook" class="apply-button" disabled><span>Wear in the showroom</span><span aria-hidden="true">↗</span></button><div class="file-actions"><button id="exportLook" disabled>Export look</button><span>·</span><button id="importLook" disabled>Import look</button><input id="lookFile" type="file" accept="application/json,.json" hidden></div></div>
+    </aside>
+  </main>
+  <dialog id="portraitExportDialog" class="portrait-dialog" aria-labelledby="portraitExportTitle"><button id="closePortraitDialog" class="dialog-close" aria-label="Close PNG preview">×</button><span class="eyebrow">YOURS TO KEEP</span><h2 id="portraitExportTitle">Your Drifella portrait</h2><img id="exportedPortrait" alt="Your finished Drifella portrait PNG"><p id="portraitFileDetails"></p><a id="savePortraitFile" class="apply-button" download="my-drifella-portrait.png"><span>Save PNG</span><span aria-hidden="true">↓</span></a></dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+  <noscript><p class="noscript">Enable JavaScript to use the 3D character editor.</p></noscript>
+  <script type="module" src="/drifmaker.js?v=3"></script>
+</body>
+</html>

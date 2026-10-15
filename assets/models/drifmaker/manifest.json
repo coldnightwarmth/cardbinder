@@ -1,0 +1,591 @@
+{
+  "version": 2,
+  "asset": "drifella-customizable.glb",
+  "source": "drifella-customizable.blend",
+  "bodyMaterial": "Drif_Body_Main",
+  "shirtMaterial": "Drif_Shirt_Main",
+  "hatMaterial": "Drif_Hat_Main",
+  "accessoryMaterial": "Drif_Accessory_Main",
+  "orientation": {
+    "blenderUp": "+Z",
+    "blenderForward": "-Y",
+    "gltfUp": "+Y",
+    "gltfForward": "+Z"
+  },
+  "categories": {
+    "eyes": [
+      "classic",
+      "sleepy",
+      "star",
+      "spiral",
+      "hearts",
+      "buttons",
+      "wink",
+      "angry",
+      "bored",
+      "tears",
+      "dead",
+      "cyclops",
+      "pixel",
+      "lashes"
+    ],
+    "shirts": [
+      "original",
+      "denim",
+      "bomber",
+      "jersey",
+      "tiedye",
+      "skeleton",
+      "cloud",
+      "cloak",
+      "suit",
+      "raincoat",
+      "puffer",
+      "rugby",
+      "armor"
+    ],
+    "hats": [
+      "none",
+      "cap",
+      "beanie",
+      "party",
+      "tophat",
+      "wizard",
+      "crown",
+      "antlers",
+      "bunny",
+      "spinner",
+      "officer",
+      "bucket",
+      "horns",
+      "halo"
+    ],
+    "accessories": [
+      "none",
+      "original",
+      "headphones",
+      "necklace",
+      "backpack",
+      "scarf",
+      "medallion",
+      "wings",
+      "bowtie",
+      "satchel",
+      "camera",
+      "skateboard",
+      "flower",
+      "cassette",
+      "keychain"
+    ],
+    "legs": [
+      "original",
+      "denim",
+      "cargo",
+      "shorts",
+      "striped",
+      "patched",
+      "tech",
+      "skeleton",
+      "plush",
+      "boots",
+      "joggers"
+    ],
+    "mouth": [
+      "original",
+      "smile",
+      "sidesmile",
+      "fangs",
+      "goldgrill",
+      "braces",
+      "tongue",
+      "cat",
+      "drool",
+      "skull",
+      "grin"
+    ]
+  },
+  "inspiration": {
+    "collection": "Drifella 2",
+    "url": "https://www.tensor.trade/trade/drifella_2",
+    "traits": [
+      "jean jacket",
+      "white bomber",
+      "solana cap",
+      "doomer black beanie",
+      "rainbow party hat",
+      "sleppy",
+      "pixelady star",
+      "spiral",
+      "dark magician spiky headphones",
+      "pokeball necklace",
+      "warlax backpack"
+    ]
+  },
+  "nodePrefixes": {
+    "eyes": "Drif_Eyes_",
+    "shirts": "Drif_Shirt_",
+    "hats": "Drif_Hat_",
+    "accessories": "Drif_Accessory_",
+    "legs": "Drif_Legs_",
+    "mouth": "Drif_Mouth_"
+  },
+  "clips": [
+    {
+      "name": "Crouch",
+      "seconds": 2.0
+    },
+    {
+      "name": "Crouch_Hold_Right",
+      "seconds": 2.0
+    },
+    {
+      "name": "Crouch_Walk",
+      "seconds": 1.3333333333333333
+    },
+    {
+      "name": "Crouch_Walk_Hold_Right",
+      "seconds": 1.3333333333333333
+    },
+    {
+      "name": "Hold_Right",
+      "seconds": 2.0
+    },
+    {
+      "name": "Jump",
+      "seconds": 1.1
+    },
+    {
+      "name": "Jump_Hold_Right",
+      "seconds": 1.1
+    },
+    {
+      "name": "Neutral",
+      "seconds": 2.0
+    },
+    {
+      "name": "Walk",
+      "seconds": 1.0
+    },
+    {
+      "name": "Walk_Hold_Right",
+      "seconds": 1.0
+    }
+  ],
+  "bones": [
+    "Root",
+    "Pelvis",
+    "Chest",
+    "Head",
+    "UpperArm.R",
+    "Forearm.R",
+    "Hand.R",
+    "CardSocket.R",
+    "UpperArm.L",
+    "Forearm.L",
+    "Hand.L",
+    "Thigh.R",
+    "Shin.R",
+    "Foot.R",
+    "Thigh.L",
+    "Shin.L",
+    "Foot.L",
+    "Tail",
+    "TailTip"
+  ],
+  "parts": [
+    {
+      "name": "Drif_Body",
+      "vertices": 1808,
+      "triangles": 3512
+    },
+    {
+      "name": "Drif_Eyes_classic",
+      "vertices": 780,
+      "triangles": 1544
+    },
+    {
+      "name": "Drif_Eyes_sleepy",
+      "vertices": 1108,
+      "triangles": 2184
+    },
+    {
+      "name": "Drif_Eyes_star",
+      "vertices": 620,
+      "triangles": 1216
+    },
+    {
+      "name": "Drif_Eyes_spiral",
+      "vertices": 1354,
+      "triangles": 2692
+    },
+    {
+      "name": "Drif_Eyes_hearts",
+      "vertices": 416,
+      "triangles": 808
+    },
+    {
+      "name": "Drif_Eyes_buttons",
+      "vertices": 784,
+      "triangles": 1496
+    },
+    {
+      "name": "Drif_Eyes_wink",
+      "vertices": 338,
+      "triangles": 652
+    },
+    {
+      "name": "Drif_Eyes_angry",
+      "vertices": 588,
+      "triangles": 1136
+    },
+    {
+      "name": "Drif_Eyes_bored",
+      "vertices": 728,
+      "triangles": 1424
+    },
+    {
+      "name": "Drif_Eyes_tears",
+      "vertices": 1092,
+      "triangles": 2128
+    },
+    {
+      "name": "Drif_Eyes_dead",
+      "vertices": 340,
+      "triangles": 656
+    },
+    {
+      "name": "Drif_Eyes_cyclops",
+      "vertices": 584,
+      "triangles": 1152
+    },
+    {
+      "name": "Drif_Eyes_pixel",
+      "vertices": 96,
+      "triangles": 160
+    },
+    {
+      "name": "Drif_Eyes_lashes",
+      "vertices": 880,
+      "triangles": 1704
+    },
+    {
+      "name": "Drif_Shirt_original",
+      "vertices": 578,
+      "triangles": 1112
+    },
+    {
+      "name": "Drif_Shirt_denim",
+      "vertices": 1592,
+      "triangles": 3096
+    },
+    {
+      "name": "Drif_Shirt_bomber",
+      "vertices": 1268,
+      "triangles": 2476
+    },
+    {
+      "name": "Drif_Shirt_jersey",
+      "vertices": 1126,
+      "triangles": 2220
+    },
+    {
+      "name": "Drif_Shirt_tiedye",
+      "vertices": 1660,
+      "triangles": 3288
+    },
+    {
+      "name": "Drif_Shirt_skeleton",
+      "vertices": 934,
+      "triangles": 1792
+    },
+    {
+      "name": "Drif_Shirt_cloud",
+      "vertices": 1120,
+      "triangles": 2188
+    },
+    {
+      "name": "Drif_Shirt_cloak",
+      "vertices": 755,
+      "triangles": 1467
+    },
+    {
+      "name": "Drif_Shirt_suit",
+      "vertices": 752,
+      "triangles": 1456
+    },
+    {
+      "name": "Drif_Shirt_raincoat",
+      "vertices": 876,
+      "triangles": 1708
+    },
+    {
+      "name": "Drif_Shirt_puffer",
+      "vertices": 1296,
+      "triangles": 2564
+    },
+    {
+      "name": "Drif_Shirt_rugby",
+      "vertices": 704,
+      "triangles": 1372
+    },
+    {
+      "name": "Drif_Shirt_armor",
+      "vertices": 1072,
+      "triangles": 2108
+    },
+    {
+      "name": "Drif_Hat_cap",
+      "vertices": 376,
+      "triangles": 728
+    },
+    {
+      "name": "Drif_Hat_beanie",
+      "vertices": 280,
+      "triangles": 524
+    },
+    {
+      "name": "Drif_Hat_party",
+      "vertices": 586,
+      "triangles": 1144
+    },
+    {
+      "name": "Drif_Hat_tophat",
+      "vertices": 290,
+      "triangles": 564
+    },
+    {
+      "name": "Drif_Hat_wizard",
+      "vertices": 430,
+      "triangles": 840
+    },
+    {
+      "name": "Drif_Hat_crown",
+      "vertices": 206,
+      "triangles": 364
+    },
+    {
+      "name": "Drif_Hat_antlers",
+      "vertices": 468,
+      "triangles": 904
+    },
+    {
+      "name": "Drif_Hat_bunny",
+      "vertices": 780,
+      "triangles": 1540
+    },
+    {
+      "name": "Drif_Hat_spinner",
+      "vertices": 358,
+      "triangles": 696
+    },
+    {
+      "name": "Drif_Hat_officer",
+      "vertices": 326,
+      "triangles": 628
+    },
+    {
+      "name": "Drif_Hat_bucket",
+      "vertices": 488,
+      "triangles": 964
+    },
+    {
+      "name": "Drif_Hat_horns",
+      "vertices": 468,
+      "triangles": 928
+    },
+    {
+      "name": "Drif_Hat_halo",
+      "vertices": 400,
+      "triangles": 792
+    },
+    {
+      "name": "Drif_Accessory_original",
+      "vertices": 228,
+      "triangles": 420
+    },
+    {
+      "name": "Drif_Accessory_headphones",
+      "vertices": 1338,
+      "triangles": 2624
+    },
+    {
+      "name": "Drif_Accessory_necklace",
+      "vertices": 2436,
+      "triangles": 4784
+    },
+    {
+      "name": "Drif_Accessory_backpack",
+      "vertices": 1746,
+      "triangles": 3440
+    },
+    {
+      "name": "Drif_Accessory_scarf",
+      "vertices": 284,
+      "triangles": 520
+    },
+    {
+      "name": "Drif_Accessory_medallion",
+      "vertices": 310,
+      "triangles": 600
+    },
+    {
+      "name": "Drif_Accessory_wings",
+      "vertices": 280,
+      "triangles": 512
+    },
+    {
+      "name": "Drif_Accessory_bowtie",
+      "vertices": 250,
+      "triangles": 480
+    },
+    {
+      "name": "Drif_Accessory_satchel",
+      "vertices": 104,
+      "triangles": 184
+    },
+    {
+      "name": "Drif_Accessory_camera",
+      "vertices": 288,
+      "triangles": 536
+    },
+    {
+      "name": "Drif_Accessory_skateboard",
+      "vertices": 452,
+      "triangles": 860
+    },
+    {
+      "name": "Drif_Accessory_flower",
+      "vertices": 476,
+      "triangles": 912
+    },
+    {
+      "name": "Drif_Accessory_cassette",
+      "vertices": 198,
+      "triangles": 340
+    },
+    {
+      "name": "Drif_Accessory_keychain",
+      "vertices": 434,
+      "triangles": 832
+    },
+    {
+      "name": "Drif_Legs_original",
+      "vertices": 600,
+      "triangles": 1164
+    },
+    {
+      "name": "Drif_Legs_denim",
+      "vertices": 816,
+      "triangles": 1564
+    },
+    {
+      "name": "Drif_Legs_cargo",
+      "vertices": 968,
+      "triangles": 1876
+    },
+    {
+      "name": "Drif_Legs_shorts",
+      "vertices": 760,
+      "triangles": 1468
+    },
+    {
+      "name": "Drif_Legs_striped",
+      "vertices": 984,
+      "triangles": 1892
+    },
+    {
+      "name": "Drif_Legs_patched",
+      "vertices": 784,
+      "triangles": 1492
+    },
+    {
+      "name": "Drif_Legs_tech",
+      "vertices": 756,
+      "triangles": 1452
+    },
+    {
+      "name": "Drif_Legs_skeleton",
+      "vertices": 1732,
+      "triangles": 3340
+    },
+    {
+      "name": "Drif_Legs_plush",
+      "vertices": 1244,
+      "triangles": 2420
+    },
+    {
+      "name": "Drif_Legs_boots",
+      "vertices": 1160,
+      "triangles": 2252
+    },
+    {
+      "name": "Drif_Legs_joggers",
+      "vertices": 796,
+      "triangles": 1524
+    },
+    {
+      "name": "Drif_Mouth_original",
+      "vertices": 10,
+      "triangles": 4
+    },
+    {
+      "name": "Drif_Mouth_smile",
+      "vertices": 88,
+      "triangles": 164
+    },
+    {
+      "name": "Drif_Mouth_sidesmile",
+      "vertices": 64,
+      "triangles": 120
+    },
+    {
+      "name": "Drif_Mouth_fangs",
+      "vertices": 41,
+      "triangles": 38
+    },
+    {
+      "name": "Drif_Mouth_goldgrill",
+      "vertices": 201,
+      "triangles": 288
+    },
+    {
+      "name": "Drif_Mouth_braces",
+      "vertices": 141,
+      "triangles": 168
+    },
+    {
+      "name": "Drif_Mouth_tongue",
+      "vertices": 245,
+      "triangles": 448
+    },
+    {
+      "name": "Drif_Mouth_cat",
+      "vertices": 160,
+      "triangles": 288
+    },
+    {
+      "name": "Drif_Mouth_drool",
+      "vertices": 184,
+      "triangles": 356
+    },
+    {
+      "name": "Drif_Mouth_skull",
+      "vertices": 234,
+      "triangles": 368
+    },
+    {
+      "name": "Drif_Mouth_grin",
+      "vertices": 51,
+      "triangles": 42
+    }
+  ],
+  "originalParts": {
+    "Drif_Body": 1938,
+    "Drif_Eyes_classic": 840,
+    "Drif_Shirt_original": 528,
+    "Drif_Accessory_original": 210,
+    "Drif_Legs_original": 594,
+    "Drif_Mouth_original": 3
+  },
+  "notes": "All components share the original 19-bone rest pose and 10 locomotion actions. Select one variant per category; none is optional for hats and accessories."
+}

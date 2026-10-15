@@ -1,0 +1,209 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import vm from 'node:vm';
+import * as THREE from '../../vendor/three.module.min.js';
+import {CATEGORIES,BODY_COLORS,DEFAULT_APPEARANCE,APPEARANCE_STORAGE_KEY,normalizeAppearance,appearanceKey,loadAppearance,saveAppearance} from '../../drifmaker-config.mjs';
+import {createAvatarAppearance} from '../../drifmaker-avatar.mjs';
+import {Showroom} from '../src/showroom.js';
+import {freshRoom} from '../src/showroom-state.js';
+
+test('expanded wardrobe contains all six independent categories and bounded normalized values',()=>{
+ assert.deepEqual(Object.fromEntries(Object.entries(CATEGORIES).map(([category,items])=>[category,items.length])),{eyes:14,mouth:11,shirt:13,legs:11,hat:14,accessory:15});
+ for(const items of Object.values(CATEGORIES)){
+  assert.ok(items.filter(item=>item.id!=='none').length>=11);
+  assert.equal(new Set(items.map(item=>item.id)).size,items.length);
+  for(const item of items)assert.match(item.id,/^[a-z0-9]+$/);
+ }
+ assert.ok(BODY_COLORS.length>=3);
+ assert.deepEqual(normalizeAppearance(null),DEFAULT_APPEARANCE);
+ assert.deepEqual(normalizeAppearance([]),DEFAULT_APPEARANCE);
+ assert.deepEqual(normalizeAppearance({bodyColor:'url(https://example.com)',eyes:'__proto__',shirt:{id:'bomber'},hat:'toString',accessory:'x'.repeat(10000),legs:['cargo'],mouth:'constructor',extra:'ignored'}),DEFAULT_APPEARANCE);
+ const chosen={bodyColor:'#ABC123',eyes:'hearts',mouth:'fangs',shirt:'puffer',legs:'cargo',hat:'wizard',accessory:'wings'};
+ assert.deepEqual(normalizeAppearance(chosen),{...chosen,bodyColor:'#abc123'});
+ assert.equal(appearanceKey(chosen),appearanceKey({...chosen,bodyColor:'#abc123',unknown:true}));
+ assert.notEqual(appearanceKey(chosen),appearanceKey({...chosen,legs:'denim'}));
+ assert.notEqual(appearanceKey(chosen),appearanceKey({...chosen,mouth:'braces'}));
+ assert.deepEqual(Object.keys(normalizeAppearance({...chosen,unsafe:'ignored'})),['bodyColor',...Object.keys(CATEGORIES)]);
+ assert.ok(JSON.stringify(normalizeAppearance(chosen)).length<256,'appearance remains a compact fixed-shape pose field');
+});
+
+test('v1 looks and poses gain original legs and mouth without losing their selections',()=>{
+ const legacy={bodyColor:'#abcdef',eyes:'spiral',shirt:'denim',hat:'beanie',accessory:'backpack'};
+ const expected={...legacy,legs:'original',mouth:'original'};
+ assert.deepEqual(normalizeAppearance(legacy),expected);
+ assert.equal(appearanceKey(legacy),appearanceKey(expected));
+ const values=new Map([[APPEARANCE_STORAGE_KEY,JSON.stringify(legacy)]]),storage={getItem:key=>values.get(key),setItem:(key,value)=>values.set(key,value)};
+ assert.equal(APPEARANCE_STORAGE_KEY,'cards-art:drifmaker:appearance:v1');
+ assert.deepEqual(loadAppearance(storage),expected);
+ assert.deepEqual(saveAppearance(legacy,storage),expected);
+ assert.deepEqual(JSON.parse(values.get(APPEARANCE_STORAGE_KEY)),expected);
+ assert.deepEqual(normalizeAppearance({...legacy,mouth:'skull',legs:null}),{...expected,mouth:'skull'});
+});
+
+test('saved appearances survive reload, recover from malformed data, and report storage failures',()=>{
+ const values=new Map(),storage={getItem:key=>values.get(key),setItem:(key,value)=>values.set(key,value)};
+ const selected={...DEFAULT_APPEARANCE,bodyColor:'#a48aef',eyes:'star',hat:'beanie'};
+ assert.deepEqual(saveAppearance(selected,storage),selected);assert.deepEqual(loadAppearance(storage),selected);
+ values.set(APPEARANCE_STORAGE_KEY,'{broken');assert.deepEqual(loadAppearance(storage),DEFAULT_APPEARANCE);
+ values.set(APPEARANCE_STORAGE_KEY,JSON.stringify({eyes:'classic',hat:'<script>'}));assert.deepEqual(loadAppearance(storage),DEFAULT_APPEARANCE);
+ const denied={getItem(){throw Error('denied');},setItem(){throw Error('quota');}};
+ assert.deepEqual(loadAppearance(denied),DEFAULT_APPEARANCE);assert.throws(()=>saveAppearance(selected,denied),/quota/);
+ assert.throws(()=>saveAppearance(selected,{}),/cannot save/);
+});
+
+test('mixing wardrobe parts isolates body color and visibility while sharing immutable assets',()=>{
+ const source=new THREE.Group(),geometry=new THREE.BoxGeometry(),bodyMaterial=new THREE.MeshStandardMaterial({color:0x1d5dea}),wardrobeMaterial=new THREE.MeshStandardMaterial({color:0xffffff});
+ bodyMaterial.name='Drif_Body_Main';
+ const body=new THREE.Mesh(geometry,bodyMaterial);body.name='Drif_Body';source.add(body);
+ for(const [category,items] of Object.entries(CATEGORIES))for(const item of items.filter(item=>item.id!=='none')){
+  const part=new THREE.Mesh(geometry,category==='eyes'?[wardrobeMaterial,bodyMaterial]:wardrobeMaterial);
+  part.name=`Drif_${category[0].toUpperCase()+category.slice(1)}_${item.id}`;source.add(part);
+ }
+ const a=source.clone(true),b=source.clone(true),wardrobeA=createAvatarAppearance(a),wardrobeB=createAvatarAppearance(b);
+ const selected={bodyColor:'#e67d9b',eyes:'star',mouth:'goldgrill',shirt:'bomber',legs:'patched',hat:'party',accessory:'headphones'};
+ wardrobeA.setAppearance(selected);wardrobeB.setAppearance();
+ assert.equal(a.children[0].geometry,geometry);assert.notEqual(a.children[0].material,bodyMaterial);assert.notEqual(a.children[0].material,b.children[0].material);
+ assert.equal(a.children[0].material.color.getHexString(),'e67d9b');assert.equal(b.children[0].material.color.getHexString(),'1d5dea');assert.equal(bodyMaterial.color.getHexString(),'1d5dea');
+ for(const [category,items] of Object.entries(CATEGORIES))for(const item of items.filter(item=>item.id!=='none')){
+  const name=`Drif_${category[0].toUpperCase()+category.slice(1)}_${item.id}`;
+  assert.equal(a.getObjectByName(name).visible,item.id===selected[category]);
+  assert.equal(b.getObjectByName(name).visible,item.id===DEFAULT_APPEARANCE[category]);
+ }
+ // Each new category swaps only its own meshes, with no effect on another
+ // category or another player's clone.
+ for(const category of ['mouth','legs'])for(const item of CATEGORIES[category]){
+  const look={...selected,[category]:item.id};wardrobeA.setAppearance(look);
+  for(const [other,items] of Object.entries(CATEGORIES))for(const option of items.filter(option=>option.id!=='none')){
+   const name=`Drif_${other[0].toUpperCase()+other.slice(1)}_${option.id}`;
+   assert.equal(a.getObjectByName(name).visible,option.id===look[other],`${category}:${item.id} must leave ${other} independent`);
+   assert.equal(b.getObjectByName(name).visible,option.id===DEFAULT_APPEARANCE[other]);
+  }
+ }
+ const localMaterial=a.children[0].material;let localDisposed=0,sharedDisposed=0;
+ localMaterial.addEventListener('dispose',()=>localDisposed++);bodyMaterial.addEventListener('dispose',()=>sharedDisposed++);wardrobeMaterial.addEventListener('dispose',()=>sharedDisposed++);
+ for(let i=0;i<20;i++)wardrobeA.setAppearance({...selected,bodyColor:i%2?'#28b8ae':'#e67d9b'});
+ assert.equal(a.children[0].material,localMaterial);
+ wardrobeA.dispose();wardrobeA.dispose();assert.equal(localDisposed,1);assert.equal(sharedDisposed,0);
+ assert.throws(()=>wardrobeA.setAppearance(selected),/disposed/);wardrobeB.dispose();geometry.dispose();bodyMaterial.dispose();wardrobeMaterial.dispose();
+});
+
+test('every shipped wardrobe option is skinned to the original rig and retains all showroom clips',()=>{
+ const readAsset=path=>{
+  const bytes=readFileSync(new URL(path,import.meta.url)),length=bytes.readUInt32LE(12),json=JSON.parse(bytes.subarray(20,20+length).toString()),binaryStart=28+length;
+  const values=index=>{
+   const accessor=json.accessors[index],view=json.bufferViews[accessor.bufferView],size={SCALAR:1,VEC2:2,VEC3:3,VEC4:4,MAT4:16}[accessor.type];
+   const components={5121:[1,'readUInt8',255],5123:[2,'readUInt16LE',65535],5125:[4,'readUInt32LE',4294967295],5126:[4,'readFloatLE',1]},[bytesPer,method,denominator]=components[accessor.componentType];
+   const offset=binaryStart+(view.byteOffset||0)+(accessor.byteOffset||0),stride=view.byteStride||size*bytesPer,result=[];
+   for(let i=0;i<accessor.count;i++)for(let j=0;j<size;j++){const value=bytes[method](offset+i*stride+j*bytesPer);result.push(accessor.normalized?value/denominator:value);}return result;
+  };return {json,values};
+ };
+ const current=readAsset('../../assets/models/drifmaker/drifella-customizable.glb'),original=readAsset('../../assets/models/showroom-character/blue-fin-character.glb');
+ const {json:gltf,values}=current;
+ assert.equal(gltf.skins.length,1);assert.deepEqual(gltf.skins[0].joints.map(index=>gltf.nodes[index].name),original.json.skins[0].joints.map(index=>original.json.nodes[index].name));
+ const bind=values(gltf.skins[0].inverseBindMatrices),originalBind=original.values(original.json.skins[0].inverseBindMatrices);
+ assert.equal(bind.length,originalBind.length);bind.forEach((value,index)=>assert.ok(Math.abs(value-originalBind[index])<.00001,'wardrobe must preserve the original bind pose'));
+ assert.ok(gltf.nodes.some(node=>node.name==='CardSocket.R'));
+ assert.deepEqual(gltf.animations.map(clip=>clip.name).sort(),original.json.animations.map(clip=>clip.name).sort());
+ const expectedNames=['Drif_Body',...Object.entries(CATEGORIES).flatMap(([category,items])=>items.filter(item=>item.id!=='none').map(item=>`Drif_${category[0].toUpperCase()+category.slice(1)}_${item.id}`))];
+ assert.equal(expectedNames.length,77);
+ assert.deepEqual(gltf.nodes.filter(node=>node.mesh!==undefined).map(node=>node.name).sort(),expectedNames.sort(),'every logical wardrobe option has exactly one mesh node');
+ for(const [category,items] of Object.entries(CATEGORIES))for(const item of items.filter(item=>item.id!=='none')){
+  const prefix=`Drif_${category[0].toUpperCase()+category.slice(1)}_${item.id}`;
+  const parts=gltf.nodes.filter(node=>node.name===prefix||node.name?.startsWith(`${prefix}_`));
+  assert.ok(parts.length,`missing ${prefix}`);
+  for(const node of parts){
+   assert.equal(node.skin,0,`${node.name} must use the common animated skeleton`);
+   for(const primitive of gltf.meshes[node.mesh].primitives){
+    const joints=values(primitive.attributes.JOINTS_0),weights=values(primitive.attributes.WEIGHTS_0);
+    assert.equal(joints.length,weights.length);assert.equal(weights.length,gltf.accessors[primitive.attributes.POSITION].count*4);
+    for(let i=0;i<weights.length;i+=4){
+     assert.ok(Math.abs(weights[i]+weights[i+1]+weights[i+2]+weights[i+3]-1)<.001,`${node.name} has an unweighted vertex`);
+     for(let j=0;j<4;j++){assert.ok(weights[i+j]>=0&&Number.isFinite(weights[i+j]));assert.ok(Number.isInteger(joints[i+j])&&joints[i+j]>=0&&joints[i+j]<gltf.skins[0].joints.length);}
+    }
+   }
+  }
+ }
+ // Splitting legs and mouth out of the joined character must neither lose
+ // nor duplicate any original surface. Compare triangles independent of
+ // exporter vertex order and per-material vertex duplication.
+ const triangles=(asset,names)=>{
+  const result=new Map();
+  for(const node of asset.json.nodes.filter(node=>node.mesh!==undefined&&(!names||names.includes(node.name)))){
+   assert.equal(node.matrix,undefined);assert.equal(node.translation,undefined);assert.equal(node.rotation,undefined);assert.equal(node.scale,undefined);
+   for(const primitive of asset.json.meshes[node.mesh].primitives){
+    const positions=asset.values(primitive.attributes.POSITION),indices=primitive.indices===undefined?Array.from({length:positions.length/3},(_,index)=>index):asset.values(primitive.indices);
+    for(let index=0;index<indices.length;index+=3){
+     const key=indices.slice(index,index+3).map(vertex=>positions.slice(vertex*3,vertex*3+3).map(value=>Math.round(value*100000)).join(',')).sort().join('|');
+     result.set(key,(result.get(key)||0)+1);
+    }
+   }
+  }
+  return [...result].sort(([a],[b])=>a.localeCompare(b));
+ };
+ const originalParts=['Drif_Body','Drif_Eyes_classic','Drif_Mouth_original','Drif_Shirt_original','Drif_Legs_original','Drif_Accessory_original'];
+ assert.deepEqual(triangles(current,originalParts),triangles(original),'the original body, eyes, mouth, shirt, legs and bag must reconstruct the original surface');
+ // Compare actual animation sampler data, not just their display names.
+ for(const clip of gltf.animations){
+  const baseline=original.json.animations.find(item=>item.name===clip.name);
+  assert.equal(clip.channels.length,baseline.channels.length);
+  for(const channel of clip.channels){
+   const name=gltf.nodes[channel.target.node].name,path=channel.target.path;
+   const expected=baseline.channels.find(item=>original.json.nodes[item.target.node].name===name&&item.target.path===path);
+   assert.ok(expected,`${clip.name}: ${name}.${path}`);
+   const sampler=clip.samplers[channel.sampler],expectedSampler=baseline.samplers[expected.sampler];
+   for(const key of ['input','output']){
+    const actualValues=values(sampler[key]),expectedValues=original.values(expectedSampler[key]);assert.equal(actualValues.length,expectedValues.length);
+    actualValues.forEach((value,index)=>assert.ok(Math.abs(value-expectedValues[index])<.00001,`${clip.name}: ${name}.${path} changed`));
+   }
+  }
+ }
+});
+
+function serverFixture(){
+ const player={id:'a',pose:{x:0,y:1.65,z:3.5,yaw:0,pitch:0,room:'showroom'},lastActive:1,lastMove:0,seen:[]},messages=[];
+ const ws={deserializeAttachment:()=>structuredClone(player),serializeAttachment:value=>Object.assign(player,value),send:value=>messages.push(JSON.parse(value))};
+ const server=Object.create(Showroom.prototype);server.room=freshRoom();server.ctx={getWebSockets:()=>[ws],storage:{put:async()=>{},setAlarm:async()=>{}}};return {server,player,ws,messages};
+}
+test('showroom broadcasts and snapshots carry validated appearance, including stationary changes',async()=>{
+ const {server,player,ws,messages}=serverFixture(),chosen={...DEFAULT_APPEARANCE,eyes:'hearts',mouth:'braces',hat:'halo',shirt:'rugby',legs:'tech',accessory:'skateboard'};
+ await server.webSocketMessage(ws,JSON.stringify({type:'pose',pose:{...player.pose,appearance:chosen}}));
+ assert.deepEqual(player.pose.appearance,chosen);assert.deepEqual(messages.at(-1).pose.appearance,chosen);assert.deepEqual(server.snapshot().players[0].pose.appearance,chosen);assert.ok(player.lastActive>1);
+ const lastActive=player.lastActive;player.lastMove=0;
+ await server.webSocketMessage(ws,JSON.stringify({type:'pose',pose:player.pose}));assert.equal(player.lastActive,lastActive);
+ // New-category changes alone must be broadcast and count as activity.
+ for(const patch of [{mouth:'tongue'},{legs:'shorts'}]){
+  player.lastMove=0;player.lastActive=1;
+  const updated={...player.pose.appearance,...patch};
+  await server.webSocketMessage(ws,JSON.stringify({type:'pose',pose:{...player.pose,appearance:updated}}));
+  assert.ok(player.lastActive>1);assert.deepEqual(messages.at(-1).pose.appearance,updated);assert.deepEqual(server.snapshot().players[0].pose.appearance,updated);
+ }
+ player.lastMove=0;
+ await server.webSocketMessage(ws,JSON.stringify({type:'pose',pose:{...player.pose,appearance:{bodyColor:'red',eyes:'bad',hat:'none',legs:{asset:'remote'},mouth:'__proto__',shader:'https://example.com'}}}));
+ assert.deepEqual(player.pose.appearance,DEFAULT_APPEARANCE);assert.equal(JSON.stringify(messages.at(-1)).includes('example.com'),false);
+ player.lastMove=0;
+ const legacy={bodyColor:'#abc123',eyes:'sleepy',hat:'cap',shirt:'original',accessory:'none'};
+ await server.webSocketMessage(ws,JSON.stringify({type:'pose',pose:{...player.pose,appearance:legacy}}));
+ assert.deepEqual(messages.at(-1).pose.appearance,{...legacy,legs:'original',mouth:'original'});
+});
+
+test('multiplayer publishes saved appearance and uses the newest choice after avatar loading',async()=>{
+ const source=readFileSync(new URL('../../showroom-multiplayer.js',import.meta.url),'utf8').replace(/^import .*;\n/gm,'').replace('export function','function');
+ const saved={...DEFAULT_APPEARANCE,bodyColor:'#e9b84c',hat:'beanie'},scene=new THREE.Scene(),room=new THREE.Group(),camera=new THREE.PerspectiveCamera();camera.position.y=1.65;
+ let handlers,finishLoad,changeSaved;const sent=[],applied=[];
+ const avatar={model:new THREE.Group(),async setAppearance(value){applied.push({...value});},dispose(){}};
+ const network={id:'local',send:value=>sent.push(value),now:()=>Date.now(),close(){}};
+ const context=vm.createContext({THREE,appearanceKey,normalizeAppearance,loadAppearance:()=>saved,subscribeAppearance:fn=>{changeSaved=fn;return ()=>{};},
+  createShowroomAvatar:()=>new Promise(resolve=>{finishLoad=()=>resolve(avatar);}),createPoseBuffer:()=>({push(){},sample:()=>null}),connectShowroom:value=>{handlers=value;return network;},
+  location:{hostname:'example.com'},performance:{now:()=>100},console,setTimeout,clearTimeout});
+ vm.runInContext(source,context);
+ const multiplayer=context.createShowroomMultiplayer({scene,room,camera,portal:{inside:false},bridge:{},columns:{setNetwork(){}},ripples:{forget(){}},onDirty(){}});
+ multiplayer.update(100);assert.deepEqual(sent[0].pose.appearance,saved);
+ const pose={x:0,y:1.65,z:0,yaw:0,pitch:0,room:'showroom',appearance:{...DEFAULT_APPEARANCE,eyes:'sleepy'}};
+ handlers.onPose({type:'pose',id:'remote',pose,time:1});
+ const latest={...DEFAULT_APPEARANCE,eyes:'buttons',mouth:'cat',shirt:'tiedye',legs:'striped',hat:'bunny',accessory:'cassette'};
+ handlers.onPose({type:'pose',id:'remote',pose:{...pose,appearance:latest},time:2});finishLoad();
+ await new Promise(resolve=>setImmediate(resolve));assert.deepEqual(applied.at(-1),latest);
+ changeSaved(latest);multiplayer.update(200);assert.deepEqual(sent.at(-1).pose.appearance,latest);
+ multiplayer.dispose();
+});

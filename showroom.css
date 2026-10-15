@@ -60,6 +60,17 @@ body.showroom { background:#151718; }
   white-space: nowrap;
 }
 #showroomLeave[hidden] { display: none !important; }
+#showroomDrifmaker {
+  display: none;
+  position: absolute;
+  top: calc(max(28px, env(safe-area-inset-top)) + 54px);
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+.showroom.showroom-walking:has(#showroomLeave:not([hidden])) #showroomDrifmaker {
+  display: block;
+}
 
 #showroomTouchJoystick {
   position: absolute;

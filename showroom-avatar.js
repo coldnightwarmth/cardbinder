@@ -1,12 +1,14 @@
 import * as THREE from 'three';
 import {GLTFLoader} from './vendor/GLTFLoader.js';
+import {createAvatarAppearance} from './drifmaker-avatar.mjs?v=2';
 let assetPromise;
-function asset(){return assetPromise ||= new GLTFLoader().loadAsync(new URL('./assets/models/showroom-character/blue-fin-character.glb?v=6',import.meta.url).href).catch(error=>{assetPromise=null;throw error;});}
-// Geometry, materials, and textures are shared; each visitor owns their bones.
+function asset(){return assetPromise ||= new GLTFLoader().loadAsync(new URL('./assets/models/drifmaker/drifella-customizable.glb?v=2',import.meta.url).href).catch(error=>{assetPromise=null;throw error;});}
+// Geometry and textures are shared; each visitor owns their bones and any
+// recolored materials. Wardrobe pieces on the same skin reuse that visitor's skeleton.
 export function cloneAvatar(source){
- const clone=source.clone(true),lookup=new Map();
+ const clone=source.clone(true),lookup=new Map(),skeletons=new Map();
  function pair(a,b){lookup.set(a,b);for(let i=0;i<a.children.length;i++)pair(a.children[i],b.children[i]);}pair(source,clone);
- source.traverse(original=>{if(!original.isSkinnedMesh)return;const mesh=lookup.get(original);mesh.skeleton=original.skeleton.clone();mesh.skeleton.bones=original.skeleton.bones.map(bone=>lookup.get(bone));mesh.bind(mesh.skeleton,original.bindMatrix);mesh.frustumCulled=false;});
+ source.traverse(original=>{if(!original.isSkinnedMesh)return;const mesh=lookup.get(original);if(!skeletons.has(original.skeleton)){const skeleton=original.skeleton.clone();skeleton.bones=original.skeleton.bones.map(bone=>lookup.get(bone));skeletons.set(original.skeleton,skeleton);}mesh.bind(skeletons.get(original.skeleton),original.bindMatrix);mesh.frustumCulled=false;});
  return clone;
 }
 // Apply camera aim after the clip mixer, and restore its untouched pose before
@@ -40,14 +42,15 @@ export function createAvatarLookPose(model){
   },
  };
 }
-export async function createShowroomAvatar(){
+export async function createShowroomAvatar({appearance}={}){
  const gltf=await asset(),model=cloneAvatar(gltf.scene);model.name='showroom-player-character';model.scale.setScalar(.75);model.position.y=-1.65;model.rotation.y=Math.PI;
+ const wardrobe=createAvatarAppearance(model);wardrobe.setAppearance(appearance);
  const mixer=new THREE.AnimationMixer(model),actions=new Map(gltf.animations.map(clip=>[clip.name,mixer.clipAction(clip)]));
  const socket=model.getObjectByName('CardSocketR')||model.getObjectByName('CardSocket.R');
  const look=createAvatarLookPose(model);
  let moving=false,speed=0,handPitch=0,holdBlend=0,walkBlend=0;
  for(const [name,action] of actions){action.play().setEffectiveWeight(0);if(name.startsWith('Jump'))action.paused=true;}
- return {model,socket,get handPitch(){return handPitch;},update(dt,velocity,holding,pitch=0,locomotion={}){
+ return {model,socket,get appearance(){return wardrobe.appearance;},async setAppearance(value){return wardrobe.setAppearance(value);},get handPitch(){return handPitch;},update(dt,velocity,holding,pitch=0,locomotion={}){
   look.restore();
   speed+=(Math.min(velocity,5)-speed)*(1-Math.exp(-dt*14));moving=speed>(moving?.045:.10);
   const blend=1-Math.exp(-dt*16);holdBlend+=((holding?1:0)-holdBlend)*blend;walkBlend+=((moving?1:0)-walkBlend)*blend;
@@ -63,5 +66,5 @@ export async function createShowroomAvatar(){
   }
   model.userData.animation=airborne?(holding?'Jump_Hold_Right':'Jump'):(crouch>.5?'Crouch'+(moving?'_Walk':'')+(holding?'_Hold_Right':''):(moving?(holding?'Walk_Hold_Right':'Walk'):(holding?'Hold_Right':'Neutral')));
   mixer.update(dt);handPitch=look.apply(dt,pitch,holding);
- },dispose(){mixer.stopAllAction();mixer.uncacheRoot(model);model.traverse(o=>{if(o.isSkinnedMesh)o.skeleton.dispose();});model.removeFromParent();}};
+ },dispose(){mixer.stopAllAction();mixer.uncacheRoot(model);wardrobe.dispose();const skeletons=new Set();model.traverse(o=>{if(o.isSkinnedMesh)skeletons.add(o.skeleton);});for(const skeleton of skeletons)skeleton.dispose();model.removeFromParent();}};
 }
