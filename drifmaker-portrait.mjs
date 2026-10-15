@@ -1,7 +1,7 @@
-import {setPortraitOverlay,renderPortraitScene,disposePortraitOverlay} from './drifmaker-portrait-art.mjs?v=1';
-import {setPortraitSceneBackground,disposePortraitBackground} from './drifmaker-background.mjs?v=2';
+import {setPortraitOverlay,renderPortraitScene,disposePortraitOverlay} from './drifmaker-portrait-art.mjs?v=2';
+import {setPortraitSceneBackground,disposePortraitBackground} from './drifmaker-background.mjs?v=3';
 import {createHeldCard,createHeldCardFollower,disposeHeldCard} from './drifmaker-held-card.mjs?v=1';
-import {normalizePortraitPose} from './drifmaker-poses.mjs?v=4';
+import {normalizePortraitPose} from './drifmaker-poses.mjs?v=5';
 // Composition is shared by the fixed preview and its PNG export. These framing
 // values remain explicit so matching collection references does not depend on
 // the studio canvas size, orbit controls, animation time, or selected wardrobe.

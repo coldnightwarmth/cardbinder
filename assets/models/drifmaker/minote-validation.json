@@ -1,0 +1,320 @@
+{
+  "skinnedParts": 644,
+  "newParts": 108,
+  "bones": 19,
+  "normalizedWeights": true,
+  "newGearChestOnly": true,
+  "actions": {
+    "Crouch": {
+      "finiteBoneFrames": 61
+    },
+    "Crouch_Hold_Right": {
+      "finiteBoneFrames": 61
+    },
+    "Crouch_Walk": {
+      "finiteBoneFrames": 41
+    },
+    "Crouch_Walk_Hold_Right": {
+      "finiteBoneFrames": 41
+    },
+    "Hold_Right": {
+      "finiteBoneFrames": 61
+    },
+    "Jump": {
+      "finiteBoneFrames": 34
+    },
+    "Jump_Hold_Right": {
+      "finiteBoneFrames": 34
+    },
+    "Neutral": {
+      "finiteBoneFrames": 61
+    },
+    "Pose_airguitar": {
+      "finiteBoneFrames": 61
+    },
+    "Pose_balancekick": {
+      "finiteBoneFrames": 61
+    },
+    "Pose_bow": {
+      "finiteBoneFrames": 61
+    },
+    "Pose_boxer": {
+      "finiteBoneFrames": 61
+    },
+    "Pose_conductor": {
+      "finiteBoneFrames": 61
+    },
+    "Pose_crane": {
+      "finiteBoneFrames": 61
+    },
+    "Pose_crossarms": {
+      "finiteBoneFrames": 61
+    },
+    "Pose_curtsey": {
+      "finiteBoneFrames": 61
+    },
+    "Pose_dab": {
+      "finiteBoneFrames": 61
+    },
+    "Pose_fistbump": {
+      "finiteBoneFrames": 61
+    },
+    "Pose_flex": {
+      "finiteBoneFrames": 61
+    },
+    "Pose_heart": {
+      "finiteBoneFrames": 61
+    },
+    "Pose_highfive": {
+      "finiteBoneFrames": 61
+    },
+    "Pose_kneel": {
+      "finiteBoneFrames": 61
+    },
+    "Pose_leanback": {
+      "finiteBoneFrames": 61
+    },
+    "Pose_lookout": {
+      "finiteBoneFrames": 61
+    },
+    "Pose_lunge": {
+      "finiteBoneFrames": 61
+    },
+    "Pose_micdrop": {
+      "finiteBoneFrames": 61
+    },
+    "Pose_mnangelspread": {
+      "finiteBoneFrames": 61
+    },
+    "Pose_mnartistlean": {
+      "finiteBoneFrames": 61
+    },
+    "Pose_mnbehindback": {
+      "finiteBoneFrames": 61
+    },
+    "Pose_mncheekrest": {
+      "finiteBoneFrames": 61
+    },
+    "Pose_mnlistening": {
+      "finiteBoneFrames": 61
+    },
+    "Pose_mnprayer": {
+      "finiteBoneFrames": 61
+    },
+    "Pose_mnreverie": {
+      "finiteBoneFrames": 61
+    },
+    "Pose_mnshy": {
+      "finiteBoneFrames": 61
+    },
+    "Pose_mnstepturn": {
+      "finiteBoneFrames": 61
+    },
+    "Pose_oath": {
+      "finiteBoneFrames": 61
+    },
+    "Pose_point": {
+      "finiteBoneFrames": 61
+    },
+    "Pose_powerpunch": {
+      "finiteBoneFrames": 61
+    },
+    "Pose_present": {
+      "finiteBoneFrames": 61
+    },
+    "Pose_salute": {
+      "finiteBoneFrames": 61
+    },
+    "Pose_shrug": {
+      "finiteBoneFrames": 61
+    },
+    "Pose_summon": {
+      "finiteBoneFrames": 61
+    },
+    "Pose_think": {
+      "finiteBoneFrames": 61
+    },
+    "Pose_tpose": {
+      "finiteBoneFrames": 61
+    },
+    "Pose_victory": {
+      "finiteBoneFrames": 61
+    },
+    "Pose_wave": {
+      "finiteBoneFrames": 61
+    },
+    "Pose_welcome": {
+      "finiteBoneFrames": 61
+    },
+    "Walk": {
+      "finiteBoneFrames": 31
+    },
+    "Walk_Hold_Right": {
+      "finiteBoneFrames": 31
+    }
+  },
+  "newPoseSurfaces": {
+    "Pose_mnangelspread": {
+      "sampledFrames": [
+        1,
+        20,
+        45,
+        61
+      ],
+      "finiteSurfaces": true,
+      "heldEndpoint": true,
+      "bounds": [
+        -1.4210566282272339,
+        -0.9770209789276123,
+        -1.862645149230957e-09,
+        1.4223039150238037,
+        0.8801357746124268,
+        3.364000082015991
+      ]
+    },
+    "Pose_mnartistlean": {
+      "sampledFrames": [
+        1,
+        20,
+        45,
+        61
+      ],
+      "finiteSurfaces": true,
+      "heldEndpoint": true,
+      "bounds": [
+        -1.4210566282272339,
+        -0.9900000095367432,
+        -1.862645149230957e-09,
+        1.4223039150238037,
+        0.8500000238418579,
+        3.364000082015991
+      ]
+    },
+    "Pose_mnbehindback": {
+      "sampledFrames": [
+        1,
+        20,
+        45,
+        61
+      ],
+      "finiteSurfaces": true,
+      "heldEndpoint": true,
+      "bounds": [
+        -1.4210566282272339,
+        -1.083640456199646,
+        -1.862645149230957e-09,
+        1.4223039150238037,
+        0.8500000238418579,
+        3.364000082015991
+      ]
+    },
+    "Pose_mncheekrest": {
+      "sampledFrames": [
+        1,
+        20,
+        45,
+        61
+      ],
+      "finiteSurfaces": true,
+      "heldEndpoint": true,
+      "bounds": [
+        -1.4210566282272339,
+        -0.9900000095367432,
+        -1.862645149230957e-09,
+        1.4223039150238037,
+        0.8500000238418579,
+        3.364000082015991
+      ]
+    },
+    "Pose_mnlistening": {
+      "sampledFrames": [
+        1,
+        20,
+        45,
+        61
+      ],
+      "finiteSurfaces": true,
+      "heldEndpoint": true,
+      "bounds": [
+        -1.4210566282272339,
+        -0.9770209789276123,
+        -1.862645149230957e-09,
+        1.4223039150238037,
+        0.8500000238418579,
+        3.364000082015991
+      ]
+    },
+    "Pose_mnprayer": {
+      "sampledFrames": [
+        1,
+        20,
+        45,
+        61
+      ],
+      "finiteSurfaces": true,
+      "heldEndpoint": true,
+      "bounds": [
+        -1.4210566282272339,
+        -1.0379749536514282,
+        -1.862645149230957e-09,
+        1.4223039150238037,
+        0.8500000238418579,
+        3.364000082015991
+      ]
+    },
+    "Pose_mnreverie": {
+      "sampledFrames": [
+        1,
+        20,
+        45,
+        61
+      ],
+      "finiteSurfaces": true,
+      "heldEndpoint": true,
+      "bounds": [
+        -1.4210566282272339,
+        -0.9770209789276123,
+        -1.862645149230957e-09,
+        1.4223039150238037,
+        0.942432165145874,
+        3.364000082015991
+      ]
+    },
+    "Pose_mnshy": {
+      "sampledFrames": [
+        1,
+        20,
+        45,
+        61
+      ],
+      "finiteSurfaces": true,
+      "heldEndpoint": true,
+      "bounds": [
+        -1.4210566282272339,
+        -1.0296717882156372,
+        -1.862645149230957e-09,
+        1.4223039150238037,
+        0.8500000238418579,
+        3.364000082015991
+      ]
+    },
+    "Pose_mnstepturn": {
+      "sampledFrames": [
+        1,
+        20,
+        45,
+        61
+      ],
+      "finiteSurfaces": true,
+      "heldEndpoint": true,
+      "bounds": [
+        -1.4210566282272339,
+        -0.9815294742584229,
+        -0.012564113363623619,
+        1.4223039150238037,
+        0.8500000238418579,
+        3.364000082015991
+      ]
+    }
+  }
+}

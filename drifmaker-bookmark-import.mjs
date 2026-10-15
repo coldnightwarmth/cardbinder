@@ -1,8 +1,8 @@
-import {normalizeLook} from './drifmaker-bookmarks.mjs?v=12';
-import {CATEGORIES,BODY_STYLES,BODY_COLORS,PORTRAIT_BACKGROUNDS} from './drifmaker-config.mjs?v=15';
-import {PORTRAIT_POSES} from './drifmaker-poses.mjs?v=4';
-import {PORTRAIT_OVERLAYS} from './drifmaker-portrait-art.mjs?v=1';
-import {validPortraitBackground} from './drifmaker-background.mjs?v=2';
+import {normalizeLook} from './drifmaker-bookmarks.mjs?v=13';
+import {CATEGORIES,BODY_STYLES,BODY_COLORS,PORTRAIT_BACKGROUNDS} from './drifmaker-config.mjs?v=16';
+import {PORTRAIT_POSES} from './drifmaker-poses.mjs?v=5';
+import {PORTRAIT_OVERLAYS} from './drifmaker-portrait-art.mjs?v=2';
+import {validPortraitBackground} from './drifmaker-background.mjs?v=3';
 
 const object=value=>value!==null&&typeof value==='object'&&!Array.isArray(value);
 const match=(options,value)=>typeof value==='string'?options.find(option=>option.id===value||option.label.toLowerCase()===value.toLowerCase()):undefined;

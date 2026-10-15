@@ -1,7 +1,7 @@
-import {CATEGORIES,DEFAULT_APPEARANCE,FINISH_COLORS,EAR_COMPATIBLE_HEADS,LEG_OVERRIDE_TOPS,HEAD_SCALES,isOriginalHead,normalizeAppearance} from './drifmaker-config.mjs?v=15';
+import {CATEGORIES,DEFAULT_APPEARANCE,FINISH_COLORS,EAR_COMPATIBLE_HEADS,LEG_OVERRIDE_TOPS,HEAD_SCALES,isOriginalHead,normalizeAppearance} from './drifmaker-config.mjs?v=16';
 import {applyHoloShader} from './drifmaker-holo.mjs?v=1';
 import {applyCamoShader} from './drifmaker-camo.mjs?v=1';
-import {COLLECTION_FINISHES,applyCollectionFinishShader} from './drifmaker-finishes.mjs?v=2';
+import {COLLECTION_FINISHES,applyCollectionFinishShader} from './drifmaker-finishes.mjs?v=3';
 
 // The original tail shares the body mesh with the hands. Filter its complete
 // Tail/TailTip-weighted triangles without changing shared geometry or the rig.

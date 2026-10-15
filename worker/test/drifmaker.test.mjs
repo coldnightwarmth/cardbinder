@@ -25,17 +25,17 @@ const meshOptions=(category,items)=>items.filter(item=>item.id!=='none'&&!(categ
  };
 
 test('expanded wardrobe contains twelve independent categories and bounded normalized values',()=>{
- assert.deepEqual(Object.fromEntries(Object.entries(CATEGORIES).map(([category,items])=>[category,items.length])),{eyes:57,mouth:53,shirt:55,legs:46,hat:60,accessory:62,head:35,extra:38,tattoo:34,nose:31,ears:35,brows:36});
+ assert.deepEqual(Object.fromEntries(Object.entries(CATEGORIES).map(([category,items])=>[category,items.length])),{eyes:66,mouth:62,shirt:64,legs:55,hat:69,accessory:71,head:44,extra:47,tattoo:43,nose:40,ears:44,brows:45});
  for(const items of Object.values(CATEGORIES)){
   assert.ok(items.filter(item=>item.id!=='none').length>=5);
   assert.equal(new Set(items.map(item=>item.id)).size,items.length);
   for(const item of items)assert.match(item.id,/^[a-z0-9]+$/);
  }
- assert.equal(BODY_COLORS.length,69);
- assert.equal(PORTRAIT_BACKGROUNDS.length,52);
+ assert.equal(BODY_COLORS.length,87);
+ assert.equal(PORTRAIT_BACKGROUNDS.length,61);
  for(const palette of [BODY_COLORS,PORTRAIT_BACKGROUNDS]){
   assert.equal(new Set(palette.map(color=>color.hex)).size,palette.length);
-  for(const color of palette)if(!['rainbow','spiral','blackops'].includes(color.hex))assert.match(color.hex,/^#[a-f0-9]{6}$/);
+  for(const color of palette)if(!['rainbow','spiral','blackops'].includes(color.hex)&&!color.hex.startsWith('mn'))assert.match(color.hex,/^#[a-f0-9]{6}$/);
  }
  assert.deepEqual(normalizeAppearance(null),DEFAULT_APPEARANCE);
  assert.deepEqual(normalizeAppearance([]),DEFAULT_APPEARANCE);
@@ -133,7 +133,7 @@ test('camo covers skin and feet, preserves eyewear and clothes, and restores oth
 });
 
 test('all ear-compatible replacement heads support every ear pair without exposing hidden face traits',()=>{
- const expected=['cobaltmecha','bonsaipot','discoball','paperbag','moonface','divingbell','embroidereddoll','copperoni','cloudhead','dicehead','pumpkin','tv','crystal','ceramiccarapace','masonryidol','candywhorl','mossrelic','ashimp','opartmask','berrybust','orbitdemon'];
+ const expected=['cobaltmecha','bonsaipot','discoball','paperbag','moonface','divingbell','embroidereddoll','copperoni','cloudhead','dicehead','pumpkin','tv','crystal','ceramiccarapace','masonryidol','candywhorl','mossrelic','ashimp','opartmask','berrybust','orbitdemon','mnangelmask','mnbellhead','mnjokermask','mnvoxelhead','mnduckhead','mnsharkhead','mnmitrehead','mncakehead'];
  assert.deepEqual(EAR_COMPATIBLE_HEADS,expected);
  const manifest=JSON.parse(readFileSync(new URL('../../assets/models/drifmaker/manifest.json',import.meta.url)));
  assert.deepEqual(manifest.earCompatibleHeads,expected);
@@ -354,7 +354,7 @@ test('every shipped wardrobe option is skinned to the original rig and retains a
  assert.ok(readFileSync(new URL('../../assets/models/drifmaker/drifella-customizable.glb',import.meta.url)).byteLength<50*1024*1024,'model stays within the 50 MiB transfer budget');
  assert.deepEqual(gltf.animations.filter(clip=>!clip.name.startsWith('Pose_')).map(clip=>clip.name).sort(),original.json.animations.map(clip=>clip.name).sort());
  const expectedNames=['Drif_Body','Drif_Ghost_Fuzz',...Object.entries(CATEGORIES).flatMap(([category,items])=>meshOptions(category,items).map(item=>`Drif_${category[0].toUpperCase()+category.slice(1)}_${item.id}`))];
- assert.equal(expectedNames.length,536);
+ assert.equal(expectedNames.length,644);
  assert.deepEqual(gltf.nodes.filter(node=>node.mesh!==undefined).map(node=>node.name).sort(),expectedNames.sort(),'every logical wardrobe option has exactly one mesh node');
  for(const head of Object.keys(HEAD_SCALES).filter(id=>id!=='original'))assert.equal(gltf.nodes.some(node=>node.name==='Drif_Head_'+head),false,'head size aliases must reuse the original mesh');
  for(const [category,items] of Object.entries(CATEGORIES))for(const item of meshOptions(category,items)){

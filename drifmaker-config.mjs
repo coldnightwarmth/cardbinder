@@ -1,3 +1,4 @@
+import {MINOTE_CATALOG} from './drifmaker-minote.mjs?v=1';
 import {NEW_TRAITS} from './drifmaker-expansion.mjs?v=9';
 // Shared by the browser and the showroom worker: only these small, validated
 // appearance values cross the network. Models and materials always stay local.
@@ -8,10 +9,10 @@ import {NEW_TRAITS} from './drifmaker-expansion.mjs?v=9';
 const options=items=>Object.freeze(items.map(item=>Object.freeze(item)));
 // Replacement heads without built-in ears retain their own face and accept the
 // selected ear pair. Onyx cat and Lilac drake keep their built-in ears/fins.
-export const EAR_COMPATIBLE_HEADS=Object.freeze(["cobaltmecha","bonsaipot","discoball","paperbag","moonface","divingbell","embroidereddoll","copperoni","cloudhead","dicehead","pumpkin","tv","crystal","ceramiccarapace","masonryidol","candywhorl","mossrelic","ashimp","opartmask","berrybust","orbitdemon"]);
+export const EAR_COMPATIBLE_HEADS=Object.freeze(["cobaltmecha","bonsaipot","discoball","paperbag","moonface","divingbell","embroidereddoll","copperoni","cloudhead","dicehead","pumpkin","tv","crystal","ceramiccarapace","masonryidol","candywhorl","mossrelic","ashimp","opartmask","berrybust","orbitdemon",'mnangelmask','mnbellhead','mnjokermask','mnvoxelhead','mnduckhead','mnsharkhead','mnmitrehead','mncakehead']);
 export const HEAD_SCALES=Object.freeze({original:1,bighead:1.2,gianthead:1.4,smallhead:.76});
 export const isOriginalHead=id=>Object.hasOwn(HEAD_SCALES,id);
-export const LEG_OVERRIDE_TOPS=Object.freeze(['wizardrobe','raincape','monasticrobe','flightcoverall','dinosaursuit']);
+export const LEG_OVERRIDE_TOPS=Object.freeze(['wizardrobe','raincape','monasticrobe','flightcoverall','dinosaursuit','mnchoirrobe','mnrainponcho','mnsainttabard','mnpetaldress']);
 const ORIGINAL_CATEGORIES=Object.freeze({
  eyes:options([
   {id:'classic',label:'Classic',description:'Bright glossy eyes.'},
@@ -104,13 +105,13 @@ const ORIGINAL_CATEGORIES=Object.freeze({
   {id:'keychain',label:'Keychain',description:'A dangling charm and key ring.'},
  ]),
 });
-export const CATEGORIES=Object.freeze(Object.fromEntries([...new Set([...Object.keys(ORIGINAL_CATEGORIES),...Object.keys(NEW_TRAITS)])].map(category=>[category,options([...(ORIGINAL_CATEGORIES[category]||[]),...(NEW_TRAITS[category]||[])])])));
+export const CATEGORIES=Object.freeze(Object.fromEntries([...new Set([...Object.keys(ORIGINAL_CATEGORIES),...Object.keys(NEW_TRAITS)])].map(category=>[category,options([...(ORIGINAL_CATEGORIES[category]||[]),...(NEW_TRAITS[category]||[]),...(MINOTE_CATALOG[category]||[])])])));
 export const GOLD_COLOR='#e2ad32';
 export const FINISH_COLORS=Object.freeze({gold:GOLD_COLOR,silver:'#d7dee8',matteblack:'#08090b'});
-export const BODY_STYLE_COLORS=Object.freeze({...FINISH_COLORS,camo:'#62734a',marble:'#ffffff',holographic:'#d8d6f4',blackgem:'#151722',lava:'#dd4818',woods:'#926442',mossy:'#73833f',pinklatex:'#e785ad',cowhide:'#decbb0',blueporcelain:'#e0e8ef',verdigris:'#49a68d',pearl:'#e9d6ee',amethyst:'#8d4ac3',carbonfiber:'#252b35',candyglaze:'#ff7d45'});
+export const BODY_STYLE_COLORS=Object.freeze({...FINISH_COLORS,mnwatercolor:'#b2bed4',mnruledpaper:'#eee3cc',mngraphite:'#bcb5ad',mnroseglaze:'#e8b7bc',mninkmarble:'#d0dce4',mngoldleaf:'#b59b4e',mnpastelchalk:'#d8c3b9',mnwetgouache:'#5b859e',mnlinenpaper:'#e8dfcb',camo:'#62734a',marble:'#ffffff',holographic:'#d8d6f4',blackgem:'#151722',lava:'#dd4818',woods:'#926442',mossy:'#73833f',pinklatex:'#e785ad',cowhide:'#decbb0',blueporcelain:'#e0e8ef',verdigris:'#49a68d',pearl:'#e9d6ee',amethyst:'#8d4ac3',carbonfiber:'#252b35',candyglaze:'#ff7d45'});
 // Studied original 3drifellabody layers: black gem.PNG, lava.PNG, woods.PNG,
 // mossy.PNG, pink leather latex.PNG, cow hide.PNG. See drifmaker-finishes.mjs.
-export const BODY_STYLES=options([{"id": "blueporcelain", "label": "Blue porcelain"},{"id": "verdigris", "label": "Verdigris copper"},{"id": "pearl", "label": "Mother of pearl"},{"id": "amethyst", "label": "Amethyst"},{"id": "carbonfiber", "label": "Carbon fiber"},{"id": "candyglaze", "label": "Candy glaze"},{id:'marble',label:'Marble',description:'Matte white across all visible parts.'},{id:'holographic',label:'Holographic',description:'Rainbow interference and sparkling trading-card foil.'},{id:'solid',label:'Solid',description:'The familiar sculpted finish.'},{id:'ghost',label:'Ghost aura',description:'Clear, translucent skin with soft luminous fibers.'},{id:'gold',label:'Gold',description:'Polished gold across the whole body and face.'},{id:'silver',label:'Silver',description:'Polished silver across the whole body and face.'},{id:'matteblack',label:'Matte black',description:'A soft black finish across the whole body and face.'},{id:'camo',label:'Camo',description:'Woodland camouflage across the body and fins.'},
+export const BODY_STYLES=options([...MINOTE_CATALOG.bodyStyle,{"id": "blueporcelain", "label": "Blue porcelain"},{"id": "verdigris", "label": "Verdigris copper"},{"id": "pearl", "label": "Mother of pearl"},{"id": "amethyst", "label": "Amethyst"},{"id": "carbonfiber", "label": "Carbon fiber"},{"id": "candyglaze", "label": "Candy glaze"},{id:'marble',label:'Marble',description:'Matte white across all visible parts.'},{id:'holographic',label:'Holographic',description:'Rainbow interference and sparkling trading-card foil.'},{id:'solid',label:'Solid',description:'The familiar sculpted finish.'},{id:'ghost',label:'Ghost aura',description:'Clear, translucent skin with soft luminous fibers.'},{id:'gold',label:'Gold',description:'Polished gold across the whole body and face.'},{id:'silver',label:'Silver',description:'Polished silver across the whole body and face.'},{id:'matteblack',label:'Matte black',description:'A soft black finish across the whole body and face.'},{id:'camo',label:'Camo',description:'Woodland camouflage across the body and fins.'},
  {id:'blackgem',label:'Black gem',description:'Deep glossy resin inspired by the collection’s black gem body.'},
  {id:'lava',label:'Lava',description:'Glowing molten channels through a rough charcoal crust.'},
  {id:'woods',label:'Woods',description:'Warm carved timber with layered directional grain.'},
@@ -118,7 +119,7 @@ export const BODY_STYLES=options([{"id": "blueporcelain", "label": "Blue porcela
  {id:'pinklatex',label:'Pink latex',description:'A glossy pink coating with a fine pebbled texture.'},
  {id:'cowhide',label:'Cow hide',description:'Cream and brown hide patches with directional fibers.'},
 ]);
-export const BODY_COLORS=options([{"id": "blueporcelain", "label": "Blue porcelain", "hex": "#e0e8ef", "style": "blueporcelain"},{"id": "verdigris", "label": "Verdigris copper", "hex": "#49a68d", "style": "verdigris"},{"id": "pearl", "label": "Mother of pearl", "hex": "#e9d6ee", "style": "pearl"},{"id": "amethyst", "label": "Amethyst", "hex": "#8d4ac3", "style": "amethyst"},{"id": "carbonfiber", "label": "Carbon fiber", "hex": "#252b35", "style": "carbonfiber"},{"id": "candyglaze", "label": "Candy glaze", "hex": "#ff7d45", "style": "candyglaze"},
+export const BODY_COLORS=options([...MINOTE_CATALOG.bodyColor,...MINOTE_CATALOG.bodyStyle.map(({id,label})=>({id,label,hex:BODY_STYLE_COLORS[id],style:id})),{"id": "blueporcelain", "label": "Blue porcelain", "hex": "#e0e8ef", "style": "blueporcelain"},{"id": "verdigris", "label": "Verdigris copper", "hex": "#49a68d", "style": "verdigris"},{"id": "pearl", "label": "Mother of pearl", "hex": "#e9d6ee", "style": "pearl"},{"id": "amethyst", "label": "Amethyst", "hex": "#8d4ac3", "style": "amethyst"},{"id": "carbonfiber", "label": "Carbon fiber", "hex": "#252b35", "style": "carbonfiber"},{"id": "candyglaze", "label": "Candy glaze", "hex": "#ff7d45", "style": "candyglaze"},
  {id:'blackgem',label:'Black gem',hex:BODY_STYLE_COLORS.blackgem,style:'blackgem'},
  {id:'lava',label:'Lava',hex:BODY_STYLE_COLORS.lava,style:'lava'},
  {id:'woods',label:'Woods',hex:BODY_STYLE_COLORS.woods,style:'woods'},
@@ -184,7 +185,7 @@ export const BODY_COLORS=options([{"id": "blueporcelain", "label": "Blue porcela
  {id:'charcoal',label:'Charcoal',hex:'#303344'},
  {id:'porcelain',label:'Porcelain',hex:'#f5f0e7'},
 ]);
-export const PORTRAIT_BACKGROUNDS=options([
+export const PORTRAIT_BACKGROUNDS=options([...MINOTE_CATALOG.background.map(({id,label})=>({hex:id,label})),
  {label:'Spiral',hex:'spiral'},
  {label:'Black Ops',hex:'blackops'},
  {label:'Obsidian mist',hex:'#909ba8'},

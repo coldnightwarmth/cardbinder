@@ -1,16 +1,16 @@
-import {PORTRAIT_OVERLAYS,setPortraitOverlay,renderPortraitScene,disposePortraitOverlay} from './drifmaker-portrait-art.mjs?v=1';
+import {PORTRAIT_OVERLAYS,setPortraitOverlay,renderPortraitScene,disposePortraitOverlay} from './drifmaker-portrait-art.mjs?v=2';
 import {createHeldCard,createHeldCardFollower,disposeHeldCard} from './drifmaker-held-card.mjs?v=1';
-import {validPortraitBackground,backgroundCSS,setPortraitSceneBackground,disposePortraitBackground} from './drifmaker-background.mjs?v=2';
-import {createLookHistory,normalizeLook} from './drifmaker-bookmarks.mjs?v=12';
-import {createBookmarkControls} from './drifmaker-bookmark-controls.mjs?v=12';
-import {createBookmarkRenderer} from './drifmaker-bookmark-renderer.mjs?v=12';
-import {POSES,PORTRAIT_POSES,normalizePose,normalizePortraitPose} from './drifmaker-poses.mjs?v=4';
-import {randomizeLook,exportRarity,importRarity} from './drifmaker-rarity.mjs?v=13';
-import {createRarityEditor} from './drifmaker-rarity-controls.mjs?v=13';
+import {validPortraitBackground,backgroundCSS,setPortraitSceneBackground,disposePortraitBackground} from './drifmaker-background.mjs?v=3';
+import {createLookHistory,normalizeLook} from './drifmaker-bookmarks.mjs?v=13';
+import {createBookmarkControls} from './drifmaker-bookmark-controls.mjs?v=13';
+import {createBookmarkRenderer} from './drifmaker-bookmark-renderer.mjs?v=13';
+import {POSES,PORTRAIT_POSES,normalizePose,normalizePortraitPose} from './drifmaker-poses.mjs?v=5';
+import {randomizeLook,exportRarity,importRarity} from './drifmaker-rarity.mjs?v=14';
+import {createRarityEditor} from './drifmaker-rarity-controls.mjs?v=14';
 import * as THREE from 'three';
-import {createShowroomAvatar} from './showroom-avatar.js?v=27';
-import {BODY_COLORS,BODY_STYLES,BODY_STYLE_COLORS,LEG_OVERRIDE_TOPS,isOriginalHead,EAR_COMPATIBLE_HEADS,PORTRAIT_BACKGROUNDS,CATEGORIES,DEFAULT_APPEARANCE,normalizeAppearance,loadAppearance} from './drifmaker-config.mjs?v=15';
-import {PORTRAIT_COMPOSITION,createPortraitAvatar,configurePortraitCamera,capturePortrait,portraitPoseComposition} from './drifmaker-portrait.mjs?v=8';
+import {createShowroomAvatar} from './showroom-avatar.js?v=28';
+import {BODY_COLORS,BODY_STYLES,BODY_STYLE_COLORS,LEG_OVERRIDE_TOPS,isOriginalHead,EAR_COMPATIBLE_HEADS,PORTRAIT_BACKGROUNDS,CATEGORIES,DEFAULT_APPEARANCE,normalizeAppearance,loadAppearance} from './drifmaker-config.mjs?v=16';
+import {PORTRAIT_COMPOSITION,createPortraitAvatar,configurePortraitCamera,capturePortrait,portraitPoseComposition} from './drifmaker-portrait.mjs?v=9';
 import {createDrifmakerEnvironment} from './drifmaker-lighting.mjs?v=1';
 import {jumpHeight} from './showroom-locomotion.mjs?v=2';
 

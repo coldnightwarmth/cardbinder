@@ -1,6 +1,6 @@
-import {readBookmarkFiles} from './drifmaker-bookmark-import.mjs?v=1';
-import {backgroundCSS} from './drifmaker-background.mjs?v=2';
-import {MAX_BOOKMARKS,createBookmarkStore,lookKey,exportBookmarkZip} from './drifmaker-bookmarks.mjs?v=12';
+import {readBookmarkFiles} from './drifmaker-bookmark-import.mjs?v=2';
+import {backgroundCSS} from './drifmaker-background.mjs?v=3';
+import {MAX_BOOKMARKS,createBookmarkStore,lookKey,exportBookmarkZip} from './drifmaker-bookmarks.mjs?v=13';
 
 export function createBookmarkControls({panel,saveButton,getLook,loadLook,render,download,toast}){
  let storage;try{storage=localStorage;}catch{storage={getItem(){throw Error();},setItem(){throw Error();}};}

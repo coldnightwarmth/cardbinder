@@ -1,6 +1,6 @@
-import {PORTRAIT_OVERLAYS} from './drifmaker-portrait-art.mjs?v=1';
-import {BODY_COLORS,BODY_STYLES,PORTRAIT_BACKGROUNDS,CATEGORIES} from './drifmaker-config.mjs?v=15';
-import {PORTRAIT_POSES} from './drifmaker-poses.mjs?v=4';
+import {PORTRAIT_OVERLAYS} from './drifmaker-portrait-art.mjs?v=2';
+import {BODY_COLORS,BODY_STYLES,PORTRAIT_BACKGROUNDS,CATEGORIES} from './drifmaker-config.mjs?v=16';
+import {PORTRAIT_POSES} from './drifmaker-poses.mjs?v=5';
 
 export const RARITY_STORAGE_KEY='cards-art:drifmaker:rarity:v1';
 export const DEFAULT_WEIGHT=100;

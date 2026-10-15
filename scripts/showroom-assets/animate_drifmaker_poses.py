@@ -1,8 +1,8 @@
-"""Thirty enter-and-hold actions on the unmodified 19-bone Drifella skeleton.
+"""Thirty-nine enter-and-hold actions on the unmodified 19-bone Drifella skeleton.
 Executed by build_drifmaker.py. Original locomotion actions are never edited.
 """
 from mathutils import Quaternion, Matrix
-POSE_IDS=['salute','tpose','bow','victory','think','point','summon','flex','welcome','heart','wave','dab','lunge','crane','airguitar','kneel','boxer','shrug','leanback','lookout','conductor','curtsey','fistbump','highfive','crossarms','powerpunch','balancekick','oath','present','micdrop']
+POSE_IDS=['salute','tpose','bow','victory','think','point','summon','flex','welcome','heart','wave','dab','lunge','crane','airguitar','kneel','boxer','shrug','leanback','lookout','conductor','curtsey','fistbump','highfive','crossarms','powerpunch','balancekick','oath','present','micdrop','mnprayer','mncheekrest','mnshy','mnartistlean','mnangelspread','mnbehindback','mnlistening','mnstepturn','mnreverie']
 for old_action in list(bpy.data.actions):
  if old_action.name.startswith('Pose_'):bpy.data.actions.remove(old_action,do_unlink=True)
 rig.animation_data.action=bpy.data.actions['Neutral'];scene.frame_set(1)
@@ -116,6 +116,29 @@ def pose_target(kind):
   pose_arm('L',(.65,-.4,-.25),(.7,-.5,.30),(.75,-.35,.1));pose_arm('R',(-.3,.1,-1),(-.1,.2,-1));pose_turn('Head',(0,1,0),-12)
  elif kind=='micdrop':
   pose_arm('R',(-.9,-.3,-.05),(-.95,-.3,-.05),(-.5,-.2,-.7));pose_arm('L',(.4,.1,-.75),(-.3,.1,-.5));pose_turn('Chest',(0,0,1),8);pose_turn('Head',(1,0,0),14)
+ elif kind=='mnprayer':
+  for side,s in [('R',-1),('L',1)]:pose_arm(side,(s*.10,-.55,-.45),(-s*.72,-.36,.65),(-s*.15,0,.9))
+  pose_turn('Head',(1,0,0),12)
+ elif kind=='mncheekrest':
+  pose_arm('L',(.4,-.35,-.2),(-.1,-.36,.9),(-.1,0,.8));pose_turn('Head',(0,0,1),-12)
+ elif kind=='mnshy':
+  for side,s in [('R',-1),('L',1)]:pose_arm(side,(s*.18,-.30,-1),(-s*.5,-.65,-.3))
+  pose_turn('Head',(1,0,0),14);pose_turn('Head',(0,1,0),-10)
+ elif kind=='mnartistlean':
+  pose_turn('Chest',(0,0,1),-11);pose_arm('L',(.65,-.2,-.5),(-.2,-.65,.55));pose_turn('Head',(0,0,1),9)
+ elif kind=='mnangelspread':
+  for side,s in [('R',-1),('L',1)]:pose_arm(side,(s*.85,.05,.4),(s*.7,-.25,.3))
+  pose_turn('Head',(1,0,0),-9)
+ elif kind=='mnbehindback':
+  for side,s in [('R',-1),('L',1)]:pose_arm(side,(s*.3,.3,-.85),(-s*.4,.85,-.2))
+  pose_turn('Chest',(1,0,0),7);pose_turn('Head',(0,0,1),-10)
+ elif kind=='mnlistening':
+  pose_arm('R',(-.7,0,.3),(.05,-.28,1),(.2,-.1,.8));pose_turn('Head',(0,1,0),16)
+ elif kind=='mnstepturn':
+  pose_aim('Thigh.L',(.15,-.35,-.9));pose_aim('Shin.L',(0,.2,-1));pose_turn('Chest',(0,1,0),18);pose_turn('Head',(0,1,0),-10)
+  pose_arm('L',(.5,-.25,-.7),(.3,-.6,-.5));pose_arm('R',(-.3,.15,-.9),(-.15,.4,-.8))
+ elif kind=='mnreverie':
+  pose_turn('Head',(1,0,0),-14);pose_turn('Head',(0,0,1),7);pose_arm('L',(.4,-.2,-.65),(-.6,-.45,.6));pose_arm('R',(-.3,.05,-1),(-.1,-.35,-.9))
  return {b.name:(b.location.copy(),b.rotation_quaternion.copy(),b.scale.copy()) for b in rig.pose.bones}
 
 for kind in POSE_IDS:
@@ -126,7 +149,7 @@ for kind in POSE_IDS:
  target=pose_target(kind)
  # New emotes have a deliberate passing gesture before reaching their held pose.
  waypoint=None
- if kind in ['wave','dab','lunge','crane','airguitar','kneel','boxer','shrug','leanback','lookout','conductor','curtsey','fistbump','highfive','crossarms','powerpunch','balancekick','oath','present','micdrop']:
+ if kind in ['wave','dab','lunge','crane','airguitar','kneel','boxer','shrug','leanback','lookout','conductor','curtsey','fistbump','highfive','crossarms','powerpunch','balancekick','oath','present','micdrop','mnprayer','mncheekrest','mnshy','mnartistlean','mnangelspread','mnbehindback','mnlistening','mnstepturn','mnreverie']:
   pose_target(kind)
   if kind in ['fistbump','powerpunch']:pose_arm('R',(-.5,-.25,-.2),(.15,-.25,.95))
   elif kind=='highfive':pose_arm('L',(.8,-.1,.1),(.1,-.4,.8))

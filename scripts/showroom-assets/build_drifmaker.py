@@ -374,7 +374,7 @@ for obj in collection.objects:
         obj.data.update()
 
 # Expand the catalog with fitted lower-body/mouth sets and the additional wardrobe.
-for extension_name in ['extend_drifmaker_legs_mouth.py','extend_drifmaker_wardrobe.py','extend_drifmaker_spectral.py','extend_drifmaker_signature.py','extend_drifmaker_encore.py','extend_drifmaker_brows.py','refine_drifmaker_portraits.py','extend_drifmaker_holiday.py','extend_drifmaker_collection.py','extend_drifmaker_atelier.py','extend_drifmaker_sculpt_faces.py','extend_drifmaker_sculpt_wardrobe.py','extend_drifmaker_sculpt_ears_extra.py','extend_drifmaker_stagecraft.py']:
+for extension_name in ['extend_drifmaker_legs_mouth.py','extend_drifmaker_wardrobe.py','extend_drifmaker_spectral.py','extend_drifmaker_signature.py','extend_drifmaker_encore.py','extend_drifmaker_brows.py','refine_drifmaker_portraits.py','extend_drifmaker_holiday.py','extend_drifmaker_collection.py','extend_drifmaker_atelier.py','extend_drifmaker_sculpt_faces.py','extend_drifmaker_sculpt_wardrobe.py','extend_drifmaker_sculpt_ears_extra.py','extend_drifmaker_stagecraft.py','extend_drifmaker_minote.py']:
     extension_path=ROOT/'scripts/showroom-assets'/extension_name
     exec(compile(extension_path.read_text(),str(extension_path),'exec'),globals())
 variant_catalog={
@@ -407,7 +407,7 @@ for category,ids in COLLECTION_VARIANTS.items():
 for category,ids in ATELIER_VARIANTS.items():
     variant_catalog[category].extend(ids)
 
-for batch in [SCULPT_FACE_VARIANTS,SCULPT_WARDROBE_VARIANTS,SCULPT_EAR_EXTRA_VARIANTS,STAGECRAFT_VARIANTS]:
+for batch in [SCULPT_FACE_VARIANTS,SCULPT_WARDROBE_VARIANTS,SCULPT_EAR_EXTRA_VARIANTS,STAGECRAFT_VARIANTS,MN_VARIANTS]:
     for category,ids in batch.items():variant_catalog[category].extend(ids)
 
 exec(compile((ROOT/'scripts/showroom-assets/animate_drifmaker_poses.py').read_text(),'animate_drifmaker_poses.py','exec'),globals())
@@ -436,6 +436,7 @@ pieces=[bpy.data.objects['Drif_Body'],bpy.data.objects['Drif_Ghost_Fuzz']]+joine
 # Export all alternatives in the same bind space. Runtime enables exactly one
 # name prefix in each category and shares the cloned skeleton across all meshes.
 for obj in pieces:
+    if obj.data.uv_layers:obj.data.uv_layers[0].active_render=True
     obj['drifmaker_part'] = obj.name.split('.')[0]
     obj.hide_set(False)
     obj.hide_render = False
@@ -466,11 +467,11 @@ asset_path.write_bytes(optimized)
 (OUT/'optimization-report.json').write_text(json.dumps(optimization_report,indent=2))
 print('GLB_OPTIMIZED',json.dumps(optimization_report))
 
-EAR_COMPATIBLE_HEADS=['cobaltmecha', 'bonsaipot', 'discoball', 'paperbag', 'moonface', 'divingbell', 'embroidereddoll', 'copperoni', 'cloudhead', 'dicehead', 'pumpkin', 'tv', 'crystal', 'ceramiccarapace', 'masonryidol', 'candywhorl', 'mossrelic', 'ashimp', 'opartmask', 'berrybust', 'orbitdemon']
+EAR_COMPATIBLE_HEADS=['cobaltmecha', 'bonsaipot', 'discoball', 'paperbag', 'moonface', 'divingbell', 'embroidereddoll', 'copperoni', 'cloudhead', 'dicehead', 'pumpkin', 'tv', 'crystal', 'ceramiccarapace', 'masonryidol', 'candywhorl', 'mossrelic', 'ashimp', 'opartmask', 'berrybust', 'orbitdemon']+MN_EAR_HEADS
 
 def selection(eyes='classic',shirt='original',hat='none',accessory='original',legs='original',mouth='original',head='original',extra='none',nose='original',ears='original',tattoo='none',brows='original'):
     names=['Drif_Body','Drif_Head_'+head,'Drif_Shirt_'+shirt,'Drif_Hat_'+hat,'Drif_Accessory_'+accessory,'Drif_Legs_'+legs,'Drif_Extra_'+extra]
-    if shirt in ['wizardrobe']+ATELIER_FULLBODY:names.remove('Drif_Legs_'+legs)
+    if shirt in ['wizardrobe']+ATELIER_FULLBODY+MN_FULLBODY:names.remove('Drif_Legs_'+legs)
     if head in EAR_COMPATIBLE_HEADS:names.append('Drif_Ears_'+ears)
     if head=='original':
         names+=['Drif_Eyes_'+eyes,'Drif_Mouth_'+mouth,'Drif_Nose_'+nose,'Drif_Ears_'+ears,'Drif_Tattoo_'+tattoo,'Drif_Brows_'+brows]
@@ -482,14 +483,15 @@ def selection(eyes='classic',shirt='original',hat='none',accessory='original',le
 selection()
 scene.frame_set(1)
 manifest={
-    'version':12,'asset':'drifella-customizable.glb','source':'drifella-customizable.blend',
+    'minoteSource':'https://cards.art/minotecurator/',
+    'version':13,'asset':'drifella-customizable.glb','source':'drifella-customizable.blend',
     'bodyMaterial':'Drif_Body_Main','shirtMaterial':'Drif_Shirt_Main',
     'hatMaterial':'Drif_Hat_Main','accessoryMaterial':'Drif_Accessory_Main',
     'orientation':{'blenderUp':'+Z','blenderForward':'-Y','gltfUp':'+Y','gltfForward':'+Z'},
     'categories':{'eyes':variant_catalog['Eyes'],'shirts':variant_catalog['Shirt'],
                   'hats':['none']+variant_catalog['Hat'],'accessories':['none']+variant_catalog['Accessory'],
                   'legs':variant_catalog['Legs'],'mouth':variant_catalog['Mouth'],
-                  'head':variant_catalog['Head']+['bighead','gianthead','smallhead'],'extra':['none']+variant_catalog['Extra'],'nose':variant_catalog['Nose'],'ears':variant_catalog['Ears'],'tattoo':['none']+variant_catalog['Tattoo'],'brows':['none']+variant_catalog['Brows'],'bodyStyles':['solid','ghost','gold','silver','matteblack','camo','marble','holographic','blackgem','lava','woods','mossy','pinklatex','cowhide','blueporcelain','verdigris','pearl','amethyst','carbonfiber','candyglaze']},
+                  'head':variant_catalog['Head']+['bighead','gianthead','smallhead'],'extra':['none']+variant_catalog['Extra'],'nose':variant_catalog['Nose'],'ears':variant_catalog['Ears'],'tattoo':['none']+variant_catalog['Tattoo'],'brows':['none']+variant_catalog['Brows'],'bodyStyles':['solid','ghost','gold','silver','matteblack','camo','marble','holographic','blackgem','lava','woods','mossy','pinklatex','cowhide','blueporcelain','verdigris','pearl','amethyst','carbonfiber','candyglaze']+[r['id'] for r in MN_CATALOG['bodyStyle']]},
     'inspiration':{'collection':'Drifella 2','url':'https://www.tensor.trade/trade/drifella_2',
                    'traits':['jean jacket','white bomber','solana cap','doomer black beanie','rainbow party hat','sleppy','pixelady star','spiral','dark magician spiky headphones','pokeball necklace','warlax backpack']},
     'nodePrefixes':{'eyes':'Drif_Eyes_','shirts':'Drif_Shirt_','hats':'Drif_Hat_','accessories':'Drif_Accessory_','legs':'Drif_Legs_','mouth':'Drif_Mouth_','head':'Drif_Head_','extra':'Drif_Extra_','nose':'Drif_Nose_','ears':'Drif_Ears_','tattoo':'Drif_Tattoo_','brows':'Drif_Brows_'},
@@ -497,7 +499,7 @@ manifest={
     'collectionTraitReferences':COLLECTION_REFERENCES,
     'atelierSources':{'drifella2':['9eyes/3 eye.PNG','9eyes/astro boy$5.PNG','9eyes/geek.PNG','9eyes/beat n bruised.PNG','9eyes/ghost angry.PNG','9eyes/bloodshot tv hearts$6.PNG','7mouth/cubone.PNG','7mouth/deaths head moth.PNG','7mouth/manga missing tooth.PNG','7mouth/murakami.PNG','7mouth/biting lip.PNG','7mouth/snoot bubble.PNG','5cloth/duck camo.PNG','5cloth/ornate jacket.PNG','91head/jpop hair.PNG'], 'littleSwagWorld':'https://nftranker.io/rankings/little-swag-world','notes':'Visual studies of textile layering, collectible mask silhouettes and toy proportions; includes original designs. All twelve extras are objects or effects, not companions.'},
     'headFits':{name:{'scale':list(fit[:3]),'verticalOffset':fit[3],'pivot':[0,0,2.20]} for name,fit in HEAD_FITS.items()},
-    'legOverrideTops':['wizardrobe']+ATELIER_FULLBODY,
+    'legOverrideTops':['wizardrobe']+ATELIER_FULLBODY+MN_FULLBODY,
     'earCompatibleHeads':EAR_COMPATIBLE_HEADS,
     'poses':POSE_IDS,
     'stagecraftSources':STAGECRAFT_SOURCES,

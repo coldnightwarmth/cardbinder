@@ -1,3 +1,4 @@
+import {MINOTE_CATALOG} from '../../drifmaker-minote.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -9,7 +10,7 @@ import {BODY_COLORS,BODY_STYLES,BODY_STYLE_COLORS,HEAD_SCALES,isOriginalHead,DEF
 import {normalizePose,normalizePoseTime} from '../../drifmaker-poses.mjs';
 import {createPortraitAvatar} from '../../drifmaker-portrait.mjs';
 
-const finishIds=['blueporcelain','verdigris','pearl','amethyst','carbonfiber','candyglaze','blackgem','lava','woods','mossy','pinklatex','cowhide'];
+const finishIds=[...MINOTE_CATALOG.bodyStyle.map(({id})=>id),'blueporcelain','verdigris','pearl','amethyst','carbonfiber','candyglaze','blackgem','lava','woods','mossy','pinklatex','cowhide'];
 function fixture(){
  const geometry=new THREE.BoxGeometry(),texture=new THREE.Texture();
  const source=new THREE.MeshStandardMaterial({color:'#dbbd96',map:texture,normalMap:texture,bumpMap:texture,roughnessMap:texture,metalnessMap:texture,alphaMap:texture,emissiveMap:texture,alphaTest:.35,vertexColors:true,emissive:'#351724',emissiveIntensity:.7,metalness:.19,roughness:.61,transparent:true,opacity:.6,depthWrite:false});
@@ -22,7 +23,7 @@ function fixture(){
 }
 const state=material=>({color:material.color.getHex(),metalness:material.metalness,roughness:material.roughness,envMapIntensity:material.envMapIntensity,opacity:material.opacity,transparent:material.transparent,depthWrite:material.depthWrite,alphaTest:material.alphaTest,vertexColors:material.vertexColors,emissive:material.emissive.getHex(),emissiveIntensity:material.emissiveIntensity,...Object.fromEntries(['map','normalMap','bumpMap','roughnessMap','metalnessMap','alphaMap','emissiveMap'].map(key=>[key,material[key]]))});
 
-test('six source-inspired finishes are normalized and exposed by the shared palettes',()=>{
+test('source-inspired finishes are normalized and exposed by the shared palettes',()=>{
  assert.deepEqual(Object.keys(COLLECTION_FINISHES),finishIds);
  for(const id of finishIds){
   const finish=COLLECTION_FINISHES[id];
@@ -31,7 +32,7 @@ test('six source-inspired finishes are normalized and exposed by the shared pale
   assert.equal(BODY_STYLE_COLORS[id],finish.color);
   const selected=normalizeAppearance({...DEFAULT_APPEARANCE,bodyStyle:id,bodyColor:'#ffffff'});
   assert.equal(selected.bodyStyle,id);assert.equal(selected.bodyColor,finish.color);
-  assert.match(finish.source,/\.PNG$|Original stagecraft material/);
+  assert.match(finish.source,/\.PNG$|Original stagecraft material|Mi Note #\d+/);
  }
  assert.equal(normalizeAppearance({...DEFAULT_APPEARANCE,bodyStyle:'constructor'}).bodyStyle,'solid');
 });
@@ -55,7 +56,7 @@ test('all new finishes cover skin, ears, nose and bare feet while preserving exp
   assert.deepEqual(state(other.getObjectByName('Drif_Body').children[0].material),original,'other character stays isolated');
   assert.deepEqual(state(f.source),original,'shared loaded material remains untouched');
  }
- assert.equal(cacheKeys.size,12,'each shader has a separate Three program cache key');
+ assert.equal(cacheKeys.size,21,'each shader has a separate Three program cache key');
  a.dispose();b.dispose();f.dispose();
 });
 
@@ -88,7 +89,7 @@ test('finish shaders use real Standard chunks, stable bind coordinates and disti
   assert.equal((shader.fragmentShader.match(/void drifFinishSample/g)||[]).length,1);
   results.push(shader.fragmentShader);
  }
- assert.equal(new Set(results).size,12);
+ assert.equal(new Set(results).size,21);
  assert.equal(applyCollectionFinishShader({},'unknown'),false);
  assert.throws(()=>applyCollectionFinishShader({vertexShader:'',fragmentShader:''},'lava'),/Unsupported Three shader/);
 });

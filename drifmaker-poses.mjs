@@ -1,5 +1,6 @@
+import {MINOTE_CATALOG} from './drifmaker-minote.mjs?v=1';
 // Shared allowlist for Blender clips, editor controls and multiplayer packets.
-export const POSES=Object.freeze([
+export const POSES=Object.freeze([...MINOTE_CATALOG.pose.map(({id,label})=>[id,label]),
  ['salute','Salute'],['tpose','T-pose'],['bow','Deep bow'],['victory','Victory'],
  ['think','Thinking'],['point','Point'],['summon','Spellcast'],['flex','Flex'],
  ['welcome','Welcome'],['heart','Heart hands'],

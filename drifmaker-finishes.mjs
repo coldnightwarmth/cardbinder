@@ -6,6 +6,15 @@
 // without extra textures, world-space swimming, or changes to silhouette/rigging.
 const finish=(color,roughness,metalness,envMapIntensity,source)=>Object.freeze({color,roughness,metalness,envMapIntensity,source});
 export const COLLECTION_FINISHES=Object.freeze({
+ mnwatercolor:finish('#b2bed4',0.88,0,0.6,'Mi Note #2'),
+ mnruledpaper:finish('#eee3cc',0.96,0,0.4,'Mi Note #1'),
+ mngraphite:finish('#bcb5ad',0.89,0.05,0.6,'Mi Note #1'),
+ mnroseglaze:finish('#e8b7bc',0.22,0.02,1.2,'Mi Note #49'),
+ mninkmarble:finish('#d0dce4',0.48,0.05,0.9,'Mi Note #53'),
+ mngoldleaf:finish('#b59b4e',0.37,0.82,1.4,'Mi Note #35'),
+ mnpastelchalk:finish('#d8c3b9',0.99,0,0.4,'Mi Note #79'),
+ mnwetgouache:finish('#5b859e',0.32,0.03,0.8,'Mi Note #13'),
+ mnlinenpaper:finish('#e8dfcb',0.97,0,0.4,'Mi Note #24'),
  blueporcelain:finish('#e0e8ef',0.2,0.03,1.0,'Original stagecraft material'),
  verdigris:finish('#49a68d',0.62,0.65,1.25,'Original stagecraft material'),
  pearl:finish('#e9d6ee',0.19,0.35,1.65,'Original stagecraft material'),
@@ -46,6 +55,15 @@ vec3 drifSurfaceNormal(vec3 n,float height,vec3 viewPosition,float faceDirection
 // Broad bands/patches remain readable at portrait size; fine detail is filtered
 // through derivatives rather than screen-space noise or decorative line meshes.
 const samples={
+ mnwatercolor:`float wash=drifSurfaceFbm(p*5.0);float edge=abs(wash-.5);vec3 pigment=mix(vec3(.27,.39,.60),vec3(.82,.67,.74),drifSurfaceNoise(p*2.0));color=drifSurfaceLinear(mix(vec3(.94,.91,.83),pigment,(1.0-smoothstep(.0,.09,edge))*.72+wash*.25));roughness=.86;height=drifSurfaceNoise(p*130.0)*.0012;`,
+ mnruledpaper:`float ruled=1.0-smoothstep(.018,.05,abs(fract(p.y*15.0)-.5));float margin=1.0-smoothstep(.005,.014,abs(p.x+.31));vec3 paper=mix(vec3(.94,.90,.80),vec3(.81,.79,.73),drifSurfaceNoise(p*150.0)*.25);paper=mix(paper,vec3(.48,.62,.69),ruled*.4);paper=mix(paper,vec3(.80,.34,.38),margin*.55);color=drifSurfaceLinear(paper);roughness=.96;height=drifSurfaceNoise(p*160.0)*.0008;`,
+ mngraphite:`float strokes=.5+.5*sin((p.x+p.y*.33)*210.0+drifSurfaceFbm(p*18.0)*12.0);float shade=drifSurfaceFbm(p*5.0);color=drifSurfaceLinear(mix(vec3(.90,.86,.80),vec3(.23,.24,.27),shade*.7+strokes*.15));roughness=.90;height=strokes*.0004;`,
+ mnroseglaze:`vec3 q=p*18.0+drifSurfaceFbm(p*6.0);float crack=pow(abs(sin(q.x+sin(q.y))*sin(q.y+sin(q.z))),.12);color=drifSurfaceLinear(mix(vec3(.36,.15,.21),vec3(.91,.65,.70),smoothstep(.45,.72,crack)));roughness=.18+drifSurfaceNoise(p*65.0)*.09;height=(1.0-crack)*-.001;`,
+ mninkmarble:`float flow=p.y*12.0+drifSurfaceFbm(p*3.0)*13.0;float ink=pow(.5+.5*sin(flow),5.0);color=drifSurfaceLinear(mix(vec3(.85,.89,.91),vec3(.075,.16,.32),ink));roughness=.40+ink*.15;height=ink*.0004;`,
+ mngoldleaf:`float leafField=drifSurfaceFbm(p*18.0);float wear=smoothstep(.54,.65,leafField);color=drifSurfaceLinear(mix(mix(vec3(.46,.28,.045),vec3(.91,.72,.27),drifSurfaceNoise(p*40.0)),vec3(.21,.25,.21),wear));roughness=.23+.4*wear;height=drifSurfaceNoise(p*90.0)*.0012;`,
+ mnpastelchalk:`float wash=drifSurfaceFbm(p*4.0);vec3 chalk=mix(vec3(.89,.69,.74),vec3(.61,.75,.80),wash);chalk=mix(chalk,vec3(.96,.88,.67),smoothstep(.48,.66,drifSurfaceFbm(p*5.0+13.0)));color=drifSurfaceLinear(chalk);roughness=.99;height=drifSurfaceNoise(p*190.0)*.0015;`,
+ mnwetgouache:`float stroke=drifSurfaceFbm(p*vec3(16.0,3.0,12.0));vec3 pigment=mix(vec3(.10,.27,.37),vec3(.35,.65,.65),stroke);color=drifSurfaceLinear(pigment);roughness=.22+stroke*.35;height=stroke*.003;`,
+ mnlinenpaper:`vec3 q=p*145.0;float weave=sin(q.x)*sin(q.y);float fiber=drifSurfaceNoise(p*240.0);color=drifSurfaceLinear(mix(vec3(.81,.76,.64),vec3(.96,.93,.84),.45+weave*.12+fiber*.2));roughness=.97;height=weave*.001+fiber*.0004;`,
  blueporcelain:`float swirls=sin(p.y*21.0+sin(p.x*13.0)*2.0+sin(p.z*12.0));
  float flower=sin(atan(p.z,p.x)*8.0+length(p.xz)*19.0);
  float ink=smoothstep(.65,.90,swirls*flower);

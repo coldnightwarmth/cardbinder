@@ -1,0 +1,168 @@
+{
+  "collection": "Mi Note",
+  "url": "https://cards.art/minotecurator/",
+  "referenceMethod": "Visual studies of the original card artwork; catalog entries record the card behind each adaptation. Cloth folds, shells, fins and objects are modeled in Blender. Backgrounds and overlays are original vector interpretations of watercolor and notebook motifs.",
+  "reusedTextureCards": [
+    1,
+    2,
+    4,
+    6,
+    24,
+    49,
+    58,
+    65,
+    83
+  ],
+  "cards": [
+    {
+      "id": 1,
+      "name": "Angel Lady",
+      "image": "https://cards.art/minotecurator/assets/thumbs/1.webp"
+    },
+    {
+      "id": 2,
+      "name": "watercolor milady",
+      "image": "https://cards.art/minotecurator/assets/thumbs/2.webp"
+    },
+    {
+      "id": 3,
+      "name": "painted washi",
+      "image": "https://cards.art/minotecurator/assets/thumbs/3.webp"
+    },
+    {
+      "id": 4,
+      "name": "Watercolor Mimilady",
+      "image": "https://cards.art/minotecurator/assets/thumbs/4.webp"
+    },
+    {
+      "id": 6,
+      "name": "Milady with strawberry shirt",
+      "image": "https://cards.art/minotecurator/assets/thumbs/6.webp"
+    },
+    {
+      "id": 7,
+      "name": "lady crown notbook",
+      "image": "https://cards.art/minotecurator/assets/thumbs/7.webp"
+    },
+    {
+      "id": 13,
+      "name": "Milady's Strawberry Hat Notebook",
+      "image": "https://cards.art/minotecurator/assets/thumbs/13.webp"
+    },
+    {
+      "id": 14,
+      "name": "milady notebook - hat cake",
+      "image": "https://cards.art/minotecurator/assets/thumbs/14.webp"
+    },
+    {
+      "id": 24,
+      "name": "Saint",
+      "image": "https://cards.art/minotecurator/assets/thumbs/24.webp"
+    },
+    {
+      "id": 30,
+      "name": "watercolor joker",
+      "image": "https://cards.art/minotecurator/assets/thumbs/30.webp"
+    },
+    {
+      "id": 35,
+      "name": "Angel 444",
+      "image": "https://cards.art/minotecurator/assets/thumbs/35.webp"
+    },
+    {
+      "id": 38,
+      "name": "nun\u271e",
+      "image": "https://cards.art/minotecurator/assets/thumbs/38.webp"
+    },
+    {
+      "id": 41,
+      "name": "sailor milady",
+      "image": "https://cards.art/minotecurator/assets/thumbs/41.webp"
+    },
+    {
+      "id": 49,
+      "name": "spring",
+      "image": "https://cards.art/minotecurator/assets/thumbs/49.webp"
+    },
+    {
+      "id": 53,
+      "name": "diamondrealm!!!",
+      "image": "https://cards.art/minotecurator/assets/thumbs/53.webp"
+    },
+    {
+      "id": 55,
+      "name": "STRAWBERRY MILADY",
+      "image": "https://cards.art/minotecurator/assets/thumbs/55.webp"
+    },
+    {
+      "id": 58,
+      "name": "Milady\u2606Kossphones",
+      "image": "https://cards.art/minotecurator/assets/thumbs/58.webp"
+    },
+    {
+      "id": 62,
+      "name": "Bubble kid",
+      "image": "https://cards.art/minotecurator/assets/thumbs/62.webp"
+    },
+    {
+      "id": 65,
+      "name": "Lapras Hoodie Notebook",
+      "image": "https://cards.art/minotecurator/assets/thumbs/65.webp"
+    },
+    {
+      "id": 79,
+      "name": "\u2606Milady Rei\u2606",
+      "image": "https://cards.art/minotecurator/assets/thumbs/79.webp"
+    },
+    {
+      "id": 83,
+      "name": "Drifella Raincoat",
+      "image": "https://cards.art/minotecurator/assets/thumbs/83.webp"
+    },
+    {
+      "id": 93,
+      "name": "Stanczyk notebook",
+      "image": "https://cards.art/minotecurator/assets/thumbs/93.webp"
+    },
+    {
+      "id": 94,
+      "name": "Rad Nun",
+      "image": "https://cards.art/minotecurator/assets/thumbs/94.webp"
+    },
+    {
+      "id": 120,
+      "name": "ANGEL BELL",
+      "image": "https://cards.art/minotecurator/assets/thumbs/120.webp"
+    },
+    {
+      "id": 134,
+      "name": "The Heart of Angel",
+      "image": "https://cards.art/minotecurator/assets/thumbs/134.webp"
+    },
+    {
+      "id": 135,
+      "name": "Duck Raincoat",
+      "image": "https://cards.art/minotecurator/assets/thumbs/135.webp"
+    },
+    {
+      "id": 136,
+      "name": "Shark Raincoat",
+      "image": "https://cards.art/minotecurator/assets/thumbs/136.webp"
+    },
+    {
+      "id": 144,
+      "name": "I'm Injured",
+      "image": "https://cards.art/minotecurator/assets/thumbs/144.webp"
+    },
+    {
+      "id": 145,
+      "name": "White Rabbit",
+      "image": "https://cards.art/minotecurator/assets/thumbs/145.webp"
+    },
+    {
+      "id": 147,
+      "name": "Milady\u2606Creeper head",
+      "image": "https://cards.art/minotecurator/assets/thumbs/147.webp"
+    }
+  ]
+}
