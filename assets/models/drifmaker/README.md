@@ -262,3 +262,25 @@ target eyes, and `preview-poses-portrait.png` is their actual 1200 × 1295 PNG
 export. Browser checks also confirmed dice-based pose randomization, switching
 poses off and on, alternate-head compatibility, and a 390-pixel mobile layout
 without horizontal overflow. All 48 focused runtime tests passed.
+
+## Custom randomization rarity
+
+The **Rarity** button next to Randomize opens independent weights for all eleven
+trait categories, body colors, body finishes, backgrounds and portrait poses.
+Every option defaults to weight 100. Higher weights are more common; 0 removes
+an option from dice rolls. Displayed chances normalize the weights within that
+category. If all its weights are zero, randomization retains the current value.
+Manual trait selection remains available regardless of a trait's weight.
+
+Settings save locally under `cards-art:drifmaker:rarity:v1`. Only non-default
+values are stored, so newly added traits retain equal default eligibility.
+Exported look JSON version 6 includes rarity settings; importing older looks
+leaves current rarity settings intact. Reset category / Reset all restore equal
+weights without changing the current character. Pose weights apply when portrait
+Poses is enabled. Face-trait visibility and Gold's fixed body color retain their
+existing override behavior.
+
+`worker/test/drifmaker-rarity.test.mjs` covers the complete catalog, weighted
+selection boundaries, zero exclusion, all-off retention, portrait pose gating,
+storage recovery and bounded import/export. Browser checks cover persistence,
+live percentages, weighted finish/pose rolls and the mobile dialog layout.

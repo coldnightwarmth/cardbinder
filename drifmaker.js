@@ -1,4 +1,6 @@
 import {POSES,normalizePose} from './drifmaker-poses.mjs?v=1';
+import {randomizeLook} from './drifmaker-rarity.mjs?v=1';
+import {createRarityEditor} from './drifmaker-rarity-controls.mjs?v=1';
 import * as THREE from 'three';
 import {createShowroomAvatar} from './showroom-avatar.js?v=14';
 import {BODY_COLORS,BODY_STYLES,PORTRAIT_BACKGROUNDS,CATEGORIES,DEFAULT_APPEARANCE,normalizeAppearance,loadAppearance,saveAppearance} from './drifmaker-config.mjs?v=5';
@@ -19,6 +21,7 @@ const target=new THREE.Vector3(0,1.55,0),reducedMotion=matchMedia('(prefers-redu
 const titles={eyes:'Eyes',mouth:'Mouth',shirt:'Tops',legs:'Pants & legs',hat:'Hats',accessory:'Accessories',head:'Heads',extra:'Extra',nose:'Nose',ears:'Ears',tattoo:'Tattoos'};
 const categoryOrder=['body','head','eyes','mouth','nose','ears','tattoo','shirt','legs','hat','accessory','extra'];
 let activeCategory='eyes';
+const rarityEditor=createRarityEditor({activeCategory:()=>activeCategory,onError:toast});
 const iconPaths={
   spiral:'<path d="M10 11c0-5-9-5-9 0s9 6 9 1-6-4-6-1 3 2 3 0m16 0c0-5-9-5-9 0s9 6 9 1-6-4-6-1 3 2 3 0"/>',
   backpack:'<path d="M7 7V5c0-4 10-4 10 0v2M4 8c0-3 16-3 16 0v12H4zM7 14h10v6H7zM2 10v8m20-8v8M9 10h1m4 0h1"/>',
@@ -90,20 +93,20 @@ async function select(patch){
  try{await avatar.setAppearance(appearance);if(portraitAvatar)await portraitAvatar.setAppearance(appearance);portraitDirty=true;}catch(error){if(version!==changeVersion)return;appearance=previous;updateControls();toast('That look could not load. Please try again.');console.error(error);}
 }
 function download(blob,name){const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=name;link.hidden=true;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);}
-$('#randomize').onclick=()=>{if(portraitPosesEnabled){portraitPose=POSES[Math.floor(Math.random()*POSES.length)].id;$('#portraitPose').value=portraitPose;applyPortraitPose();}const random=items=>items[Math.floor(Math.random()*items.length)];setPortraitBackground(random(PORTRAIT_BACKGROUNDS).hex);select({bodyStyle:random(BODY_STYLES).id,bodyColor:random(BODY_COLORS).hex,...Object.fromEntries(Object.entries(CATEGORIES).map(([key,options])=>[key,random(options).id]))});};
+$('#randomize').onclick=()=>{const next=randomizeLook({rarity:rarityEditor.value,appearance,background:portraitBackground,pose:portraitPose,posesEnabled:portraitPosesEnabled});if(portraitPosesEnabled){portraitPose=next.pose;$('#portraitPose').value=portraitPose;applyPortraitPose();}setPortraitBackground(next.background);select(next.appearance);};
 $('#resetLook').onclick=()=>{select(DEFAULT_APPEARANCE);toast('Look reset.');};
 $('#applyLook').onclick=async()=>{
  const button=$('#applyLook');button.disabled=true;
  try{await avatar.setAppearance(appearance);saveAppearance(appearance);updateControls();location.assign('/show');}
  catch(error){toast('Could not save this look. Check that browser storage is available.');console.error(error);button.disabled=false;}
 };
-$('#exportLook').onclick=()=>{download(new Blob([JSON.stringify({version:5,appearance,portrait:{posesEnabled:portraitPosesEnabled,pose:portraitPose,background:portraitBackground}},null,2)],{type:'application/json'}),'my-drifella.json');toast('Look exported.');};
+$('#exportLook').onclick=()=>{download(new Blob([JSON.stringify({version:6,appearance,rarity:rarityEditor.value,portrait:{posesEnabled:portraitPosesEnabled,pose:portraitPose,background:portraitBackground}},null,2)],{type:'application/json'}),'my-drifella.json');toast('Look exported.');};
 $('#importLook').onclick=()=>$('#lookFile').click();
 $('#lookFile').onchange=async event=>{
  const file=event.target.files?.[0];event.target.value='';if(!file)return;
  try{if(file.size>16384)throw Error('Too large');const data=JSON.parse(await file.text()),value=data.appearance||data;
   if((value?.bodyStyle!==undefined&&!BODY_STYLES.some(style=>style.id===value.bodyStyle))||!value||typeof value!=='object'||Array.isArray(value)||!/^#[a-f\d]{6}$/i.test(value.bodyColor)||!Object.entries(CATEGORIES).every(([key,options])=>(['legs','mouth','head','extra','nose','ears','tattoo'].includes(key)&&!Object.hasOwn(value,key))||options.some(option=>option.id===value[key])))throw Error('Invalid look');
-  await select(normalizeAppearance(value));if(data.portrait){portraitPosesEnabled=data.portrait.posesEnabled===true;portraitPose=normalizePose(data.portrait.pose)||'salute';$('#enablePortraitPoses').checked=portraitPosesEnabled;$('#portraitPose').hidden=!portraitPosesEnabled;$('#portraitPose').value=portraitPose;if(/^#[a-f\d]{6}$/i.test(data.portrait.background))setPortraitBackground(data.portrait.background);applyPortraitPose();}toast('Look imported.');
+  await select(normalizeAppearance(value));if(Object.hasOwn(data,'rarity'))rarityEditor.replace(data.rarity);if(data.portrait){portraitPosesEnabled=data.portrait.posesEnabled===true;portraitPose=normalizePose(data.portrait.pose)||'salute';$('#enablePortraitPoses').checked=portraitPosesEnabled;$('#portraitPose').hidden=!portraitPosesEnabled;$('#portraitPose').value=portraitPose;if(/^#[a-f\d]{6}$/i.test(data.portrait.background))setPortraitBackground(data.portrait.background);applyPortraitPose();}toast('Look imported.');
  }catch{toast('Choose a valid Drifmaker look exported from this editor.');}
 };
 for(const button of document.querySelectorAll('[data-motion]'))button.onclick=()=>{avatar?.setPose('');$('#studioPose').value='';motion=button.dataset.motion;elapsed=0;settled=0;for(const option of document.querySelectorAll('[data-motion]'))option.setAttribute('aria-pressed',String(option===button));};

@@ -7,7 +7,7 @@
   <meta name="description" content="Make your own Drifella. Mix colors, eyes, mouths, clothing and accessories, then take your character onto the cards.art show floor.">
   <title>Drifmaker — cards.art</title>
   <link rel="icon" type="image/png" href="/cardnft.png">
-  <link rel="stylesheet" href="/drifmaker.css?v=7">
+  <link rel="stylesheet" href="/drifmaker.css?v=8">
   <script type="importmap">{"imports":{"three":"/vendor/three.module.min.js?v=three-r165-min-1"}}</script>
 </head>
 <body>
@@ -35,15 +35,22 @@
       </div>
     </section>
     <aside class="wardrobe" aria-label="Traits">
-      <div class="wardrobe-heading"><button id="resetLook" class="text-button" disabled>Reset</button><button id="randomize" class="randomize-button" title="Randomize look" aria-label="Randomize look" disabled><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4" transform="rotate(-12 12 12)"/><circle cx="8" cy="8" r=".7"/><circle cx="16" cy="8" r=".7"/><circle cx="12" cy="12" r=".7"/><circle cx="8" cy="16" r=".7"/><circle cx="16" cy="16" r=".7"/></svg>Randomize</button></div>
+      <div class="wardrobe-heading"><button id="resetLook" class="text-button" disabled>Reset</button><div class="randomize-actions"><button id="editRarity" class="randomize-button" aria-haspopup="dialog">Rarity</button><button id="randomize" class="randomize-button" title="Randomize look" aria-label="Randomize look" disabled><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4" transform="rotate(-12 12 12)"/><circle cx="8" cy="8" r=".7"/><circle cx="16" cy="8" r=".7"/><circle cx="12" cy="12" r=".7"/><circle cx="8" cy="16" r=".7"/><circle cx="16" cy="16" r=".7"/></svg>Randomize</button></div></div>
       <nav class="category-nav" role="tablist" aria-label="Customization categories"></nav>
       <div id="editorControls" class="editor-controls" inert></div>
       <div class="wardrobe-footer"><button id="applyLook" class="apply-button" disabled><span>Use in showroom</span><span aria-hidden="true">↗</span></button><div class="file-actions"><button id="exportLook" disabled>Export look</button><span>·</span><button id="importLook" disabled>Import look</button><input id="lookFile" type="file" accept="application/json,.json" hidden></div></div>
     </aside>
   </main>
+  <dialog id="rarityDialog" class="rarity-dialog" aria-labelledby="rarityTitle" aria-describedby="rarityHelp">
+    <header><h2 id="rarityTitle">Rarity</h2><button id="closeRarity" aria-label="Close rarity settings">×</button></header>
+    <p id="rarityHelp">Higher weight = more common. 0 = off. Chances are per category.</p>
+    <div class="rarity-toolbar"><select id="rarityCategory" aria-label="Rarity category"></select><button id="resetRarityCategory" class="text-button">Reset category</button></div>
+    <div class="rarity-table-scroll"><table><thead><tr><th scope="col">Trait</th><th scope="col">Weight</th><th scope="col">Chance</th></tr></thead><tbody id="rarityRows"></tbody></table></div>
+    <p id="rarityNote" role="status" hidden></p><footer><span id="raritySaveState" role="status">Saved on this device</span><button id="resetAllRarity" class="text-button">Reset all</button></footer>
+  </dialog>
   <dialog id="portraitExportDialog" class="portrait-dialog" aria-labelledby="portraitExportTitle"><button id="closePortraitDialog" class="dialog-close" aria-label="Close PNG preview">×</button><h2 id="portraitExportTitle">PNG preview</h2><img id="exportedPortrait" alt="Drifella portrait PNG"><p id="portraitFileDetails"></p><a id="savePortraitFile" class="apply-button" download="my-drifella-portrait.png"><span>Save PNG</span><span aria-hidden="true">↓</span></a></dialog>
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
   <noscript><p class="noscript">Enable JavaScript to use the 3D character editor.</p></noscript>
-  <script type="module" src="/drifmaker.js?v=7"></script>
+  <script type="module" src="/drifmaker.js?v=8"></script>
 </body>
 </html>
