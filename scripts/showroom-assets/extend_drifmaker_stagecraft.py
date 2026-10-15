@@ -44,29 +44,38 @@ def st_bill(p,mat,z=2.78,width=.65,depth=.30):
  mod=ob.modifiers.new('Layered bill','SOLIDIFY');mod.thickness=.045;sc_apply(ob,mod)
  return ob
 
+def st_hood(p,mat,cable=False):
+ # A continuous lined shell follows the round skull, with an open face and
+ # side ports for the original fins. The lower back gathers above the collar.
+ n=96;rows=32;verts=[];faces=[]
+ for i in range(rows+1):
+  f=i/rows
+  for j in range(n):
+   a=j*math.tau/n;opening=.98+.025*math.sin(a)
+   t=opening+(math.pi-opening)*f
+   wave=.010*math.cos(a*11+t*15)*math.sin(t)**2
+   if cable:wave+=.014*math.cos(a*34+1.4*math.sin(t*25))*math.sin(t)**2
+   # The rolled face opening is part of the fabric surface.
+   roll=.023*math.exp(-((f-.018)/.026)**2)
+   x=(.670+wave+roll)*math.sin(t)*math.cos(a)
+   y=.085-(.635+wave+roll)*math.cos(t)
+   z=2.10+(.710+wave+roll)*math.sin(t)*math.sin(a)
+   if z<1.80:z=1.80+(z-1.80)*.45
+   verts.append((x,y,z))
+ for i in range(rows):
+  for j in range(n):
+   ids=(i*n+j,i*n+(j+1)%n,(i+1)*n+(j+1)%n,(i+1)*n+j)
+   x,y,z=[sum(verts[k][axis] for k in ids)/4 for axis in range(3)]
+   if abs(x)>.49 and -.04<y<.16 and 2.00<z<2.62:continue
+   faces.append(ids)
+ o=mesh(p+'_fittedhood',verts,faces,mat,'Head')
+ mod=o.modifiers.new('Lined hood and rolled openings','SOLIDIFY');mod.thickness=.030;sc_apply(o,mod)
+ return o
+
 for style in STAGECRAFT_VARIANTS['Hat']:
  p='Drif_Hat_'+style
  if style in ['lavendercowl','cablesnood']:
-  mat=st_lilac if style=='lavendercowl' else st_cream
-  st_dome(p,mat,.69,.62,2.73,.46,.024)
-  # Open face, draped crown and side panels: fins remain outside the hood.
-  for side in [-1,1]:
-   verts=[];rows=26;cols=18
-   for i in range(rows):
-    t=i/(rows-1);z=1.72+t*1.10
-    for j in range(cols):
-     u=j/(cols-1);x=side*(.59+.10*math.sin(u*math.pi)+.045*math.sin(t*10+u*3));y=-.30+u*.77
-     fold=.025*math.cos(t*17+u*11)
-     if style=='cablesnood':fold+=.022*math.cos(u*math.pi*12+math.sin(t*24))
-     verts.append((x+side*fold,y,z))
-   o=mesh(p+'_drape',verts,[(i*cols+j,i*cols+j+1,(i+1)*cols+j+1,(i+1)*cols+j) for i in range(rows-1) for j in range(cols-1)],mat,'Head')
-   mod=o.modifiers.new('Thick folded cloth','SOLIDIFY');mod.thickness=.055;sc_apply(o,mod)
-  if style=='cablesnood':
-   # Cable ridges are formed in the crown surface, rather than attached curves.
-   o=next(o for o in collection.objects if o.name==p+'_crown')
-   for v in o.data.vertices:
-    a=math.atan2(v.co.y-.02,v.co.x);t=(v.co.z-2.73)/.46
-    v.co.z+=.015*math.cos(a*26+math.sin(t*20))*max(0,t)
+  st_hood(p,st_lilac if style=='lavendercowl' else st_cream,style=='cablesnood')
  elif style=='officerpeak':
   st_dome(p,st_blackleather,.68,.59,2.79,.29,.015);st_bill(p,sw_ink)
   sw_loft(p+'_band',[(2.76,.63,.56,0,.02),(2.82,.65,.58,0,.02),(2.87,.65,.57,0,.02)],sw_ink,'Head',48,0,0,.03)
@@ -94,19 +103,40 @@ for style in STAGECRAFT_VARIANTS['Hat']:
    a=j*2.4;r=.51*math.sqrt((j+.5)/24);x=r*math.cos(a);y=.02+r*.84*math.sin(a);z=3.10+.23*math.sqrt(max(0,1-(r/.64)**2))
    o=ell(p+'_sesame',(x,y,z+.008),(.026,.011,.009),st_cream,'Head',n=10,m=6);sc_transform([o],(x,y,z),(0,0,a))
  else:
-  # Headband and thick folded ribbon loops, inspired by the Snow White source.
-  sc_ring(p+'_band',(0,.02,2.72),.64,.54,.043,sw_blue,'Head',axis='xy',n=64)
+  # The band arches over the forehead and crown, rather than floating as
+  # a horizontal ring. Its depth follows the head's ellipsoidal cross section.
+  verts=[];n=64
+  for y in [-.25,-.18,-.10]:
+   f=math.sqrt(1-((y-.085)/.635)**2)
+   for j in range(n+1):
+    a=-1.36+j/n*2.72
+    verts.append((.655*f*math.sin(a),y,2.10+.685*f*math.cos(a)))
+  o=mesh(p+'_headband',verts,[(i*(n+1)+j,i*(n+1)+j+1,(i+1)*(n+1)+j+1,(i+1)*(n+1)+j) for i in range(2) for j in range(n)],sw_blue,'Head')
+  mod=o.modifiers.new('Padded headband','SOLIDIFY');mod.thickness=.030;sc_apply(o,mod)
   for side in [-1,1]:
-   sc_profile(p+'_bow',[(side*.03,3.01),(side*.17,3.25),(side*.42,3.20),(side*.38,2.94),(side*.12,2.92)],-.14,.16,sw_red,'Head',.038)
-   sc_profile(p+'_fold',[(side*.08,3.03),(side*.34,3.15),(side*.30,2.99)],-.23,.02,sw_wine,'Head',.008)
-   sc_profile(p+'_tail',[(side*.06,2.99),(side*.17,2.94),(side*.27,2.76),(side*.15,2.79),(side*.09,2.72)],-.08,.06,sw_red,'Head',.015)
-  ell(p+'_knot',(0,-.18,3.02),(.105,.11,.10),sw_red,'Head',n=24,m=16)
+   sc_profile(p+'_bow',[(side*.025,2.84),(side*.14,3.045),(side*.34,3.00),(side*.31,2.79),(side*.10,2.77)],-.17,.14,sw_red,'Head',.032)
+   sc_profile(p+'_fold',[(side*.07,2.86),(side*.28,2.96),(side*.25,2.83)],-.25,.018,sw_wine,'Head',.007)
+   sc_profile(p+'_tail',[(side*.05,2.83),(side*.14,2.79),(side*.22,2.65),(side*.12,2.67),(side*.075,2.62)],-.10,.05,sw_red,'Head',.012)
+  ell(p+'_knot',(0,-.19,2.84),(.09,.10,.09),sw_red,'Head',n=24,m=16)
 
-# Seat crown/band bottoms against the original round head.
-for style,dz in {'officerpeak':-.04,'kettlevisor':-.04,'parchmentwitch':-.08,'burgerstack':-.10,'storybookbow':-.16}.items():
+# Lower the actual seating planes into the curved crown and reduce overhang.
+# Values are applied to freshly authored geometry, never cumulatively.
+STAGECRAFT_HAT_FITS={
+ 'officerpeak':(.82,.85,1.10,2.78,2.60),
+ 'kettlevisor':(.86,.88,.95,2.78,2.50),
+ 'parchmentwitch':(.84,.86,.90,2.78,2.61),
+ 'burgerstack':(.80,.90,.85,2.80,2.59),
+}
+for style,(sx,sy,sz,pivot,seat) in STAGECRAFT_HAT_FITS.items():
  for o in collection.objects:
   if o.type=='MESH' and o.name.startswith('Drif_Hat_'+style+'_'):
-   for v in o.data.vertices:v.co.z+=dz
+   for v in o.data.vertices:
+    v.co.x*=sx;v.co.y=.065+(v.co.y-.02)*sy;v.co.z=seat+(v.co.z-pivot)*sz
+    if style=='parchmentwitch' and '_brim' in o.name:
+     # The fin ports scallop only the outside of the brim. Keep the inner
+     # opening broad enough for the skull; the cone covers the upper crown.
+     edge=max(0,min(1,(abs(v.co.x)-.48)/.20))
+     v.co.x*=1-.28*edge*math.exp(-((v.co.y-.065)/.19)**2)
 
 for style in STAGECRAFT_VARIANTS['Accessory']:
  p='Drif_Accessory_'+style

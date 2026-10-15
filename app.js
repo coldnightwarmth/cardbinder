@@ -1848,7 +1848,7 @@ async function init() {
 
 async function initShowroomExperience() {
   const [{ initShowroom }, { createShowroomHand }, bridge] = await Promise.all([
-    import("./showroom.js?v=showroom-controls-27"),
+    import("./showroom.js?v=showroom-controls-28"),
     import("./showroom-hand.js?v=10"),
     createShowroomBridge(),
   ]);

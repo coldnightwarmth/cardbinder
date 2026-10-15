@@ -279,13 +279,10 @@ for style in SCULPT_FACE_VARIANTS['Mouth']:
             sf_tooth(p+'_lower',x,1.72+abs(x)*.12,.043,-.091,y=-.768)
     elif style=='sillycurl':
         sf_cavity(p,sf_outline(0,1.84,.24,.094,36,.55),-.69,sf_ink,sf_gum,.13,.055)
-        sf_blob(p+'_tongue',(-.08,-.765,1.74),(.105,.06,.07),sf_rose)
-        sf_lid(p+'_fold',-.09,1.74,.085,.03,sf_flesh,False,y=-.811)
     elif style=='sweeperbite':
         sf_cavity(p,sf_outline(0,1.83,.26,.14,48,.6),-.69,sf_white,sf_ink,.22,.09)
         for j in range(7):
             x=(j-3)*.058;sf_tooth(p+'_upper',x,1.915,.056,.097,y=-.771,pointed=True);sf_tooth(p+'_lower',x,1.737,.05,-.083,y=-.771,pointed=True)
-        sf_solid(p+'_tongue',[(.055,1.82),(.25,1.77),(.34,1.72),(.35,1.66),(.29,1.64),(.11,1.73)],-.788,.055,sf_flesh,.15,bulge=.019)
     elif style=='tigermaw':
         sf_cavity(p,sf_outline(0,1.81,.25,.18,48),-.68,sf_flesh,sf_gum,.18,.12)
         for x in [-.18,.18]:

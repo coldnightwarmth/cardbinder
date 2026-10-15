@@ -167,9 +167,14 @@ for style in ATELIER_VARIANTS['Mouth'][:8]:
   tooth(p+'_tooth',.08,1.868,.055,.058,a_porcelain)
  elif style=='partyhorn':
   mouth_oval(p+'_mouth',.065,.055,1.82,a_ink)
-  at_tube(p+'_horn',[(0,-.67,1.82,.035),(.09,-.77,1.79,.045),(.20,-.84,1.81,.052),(.25,-.86,1.88,.061)],a_orange,depth=.8)
-  for j in range(4):line(p+'_stripe',[(.055+j*.048,-.81-j*.013,1.77+j*.012),(.085+j*.048,-.83-j*.013,1.84+j*.012)],.009,a_cream,'Head')
-  dm_loop(p+'_roll',(.25,-.885,1.88),(.045,.054),.014,a_cyan,steps=20)
+  # Rolled paper extends forward from the lips with a gentle upward tip.
+  controls=[(0,-.675,1.82,.030),(.008,-.80,1.81,.034),(.018,-1.00,1.80,.043),(.025,-1.17,1.84,.060)]
+  obj=at_tube(p+'_horn',controls,a_orange,sides=24,steps=10,depth=.85)
+  obj.data.materials.append(a_cream)
+  for face in obj.data.polygons:face.material_index=int(max(0,(-face.center.y-.675)*22))%2
+  # Open rolled lip, perpendicular to the forward axis.
+  dm_loop(p+'_roll',(.025,-1.177,1.84),(.062,.052),.012,a_cyan,steps=32)
+  ell(p+'_opening',(.025,-1.183,1.84),(.047,.006,.037),a_ink,n=24,m=12)
  elif style=='sleepbubble':
   mouth_line(p+'_sleep',[(-.11,1.81),(0,1.79),(.09,1.80)],a_ink,.009)
   ell(p+'_bubble',(.15,-.73,1.86),(.112,.105,.13),a_glass,n=28,m=18)
@@ -205,10 +210,21 @@ for style in ['prismeyes','visorslit','sakurapupils','closedjoy']:
 for style in ['bandana','tusks','pixelsmile','fortunepaper']:
  p='Drif_Mouth_'+style
  if style=='bandana':
-  mouth_panel(p+'_cloth',[(-.32,1.94),(-.27,1.76),(0,1.62),(.27,1.76),(.32,1.94),(0,1.98)],a_blue,.045)
-  for s in [-1,1]:
-   mouth_line(p+'_edge',[(s*.29,1.92),(s*.23,1.76),(0,1.65)],a_cream,.007,.06)
-   for j in range(3):mouth_line(p+'_stitch',[(s*(.11+j*.05),1.88),(s*(.12+j*.05),1.84)],a_porcelain,.006,.065)
+  # A full lower-face wrap: broad cheek coverage and a gathered chin point.
+  verts=[];faces=[];rows=24;columns=40
+  for row in range(rows+1):
+   t=row/rows;width=.09+.44*t**.33
+   for col in range(columns+1):
+    u=2*col/columns-1;x=u*width
+    z=1.53+.61*t+.10*abs(u)*(1-t)
+    y=-.78+.25*(x/.53)**2-.032*math.sin(t*math.pi)+.010*math.cos(u*math.pi*5)*(1-t)
+    verts.append((x,y,z))
+   if row:
+    for col in range(columns):
+     k=row*(columns+1)+col;faces.append((k-columns-1,k-columns,k+1,k))
+  obj=mesh(p+'_cloth',verts,faces,a_blue,'Head')
+  mod=obj.modifiers.new('Woven cloth thickness','SOLIDIFY');mod.thickness=.016
+  bpy.context.view_layer.objects.active=obj;bpy.ops.object.modifier_apply(modifier=mod.name)
  elif style=='tusks':
   mouth_oval(p+'_mouth',.20,.055,1.79,a_ink)
   for s in [-1,1]:at_tube(p+'_tusk',[(s*.16,-.68,1.77,.043),(s*.23,-.74,1.83,.032),(s*.25,-.77,1.96,.004)],a_cream)

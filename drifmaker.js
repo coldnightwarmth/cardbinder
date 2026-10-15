@@ -5,10 +5,10 @@ import {createLookHistory,normalizeLook} from './drifmaker-bookmarks.mjs?v=12';
 import {createBookmarkControls} from './drifmaker-bookmark-controls.mjs?v=12';
 import {createBookmarkRenderer} from './drifmaker-bookmark-renderer.mjs?v=12';
 import {POSES,PORTRAIT_POSES,normalizePose,normalizePortraitPose} from './drifmaker-poses.mjs?v=4';
-import {randomizeLook} from './drifmaker-rarity.mjs?v=12';
-import {createRarityEditor} from './drifmaker-rarity-controls.mjs?v=12';
+import {randomizeLook,exportRarity,importRarity} from './drifmaker-rarity.mjs?v=13';
+import {createRarityEditor} from './drifmaker-rarity-controls.mjs?v=13';
 import * as THREE from 'three';
-import {createShowroomAvatar} from './showroom-avatar.js?v=26';
+import {createShowroomAvatar} from './showroom-avatar.js?v=27';
 import {BODY_COLORS,BODY_STYLES,BODY_STYLE_COLORS,LEG_OVERRIDE_TOPS,isOriginalHead,EAR_COMPATIBLE_HEADS,PORTRAIT_BACKGROUNDS,CATEGORIES,DEFAULT_APPEARANCE,normalizeAppearance,loadAppearance} from './drifmaker-config.mjs?v=15';
 import {PORTRAIT_COMPOSITION,createPortraitAvatar,configurePortraitCamera,capturePortrait,portraitPoseComposition} from './drifmaker-portrait.mjs?v=8';
 import {createDrifmakerEnvironment} from './drifmaker-lighting.mjs?v=1';
@@ -152,14 +152,12 @@ addEventListener('keydown',event=>{
 });
 function download(blob,name){const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=name;link.hidden=true;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);}
 $('#randomize').onclick=()=>{const next=randomizeLook({rarity:rarityEditor.value,appearance,background:portraitBackground,overlay:portraitOverlay,pose:portraitPose,posesEnabled:portraitPosesEnabled});changeLook({appearance:next.appearance,portrait:{posesEnabled:portraitPosesEnabled,pose:portraitPosesEnabled?next.pose:portraitPose,background:next.background,overlay:next.overlay}});};
-$('#exportLook').onclick=()=>{download(new Blob([JSON.stringify({version:6,appearance,rarity:rarityEditor.value,portrait:{posesEnabled:portraitPosesEnabled,pose:portraitPose,background:portraitBackground,overlay:portraitOverlay}},null,2)],{type:'application/json'}),'my-drifella.json');toast('Look exported.');};
-$('#importLook').onclick=()=>$('#lookFile').click();
-$('#lookFile').onchange=async event=>{
+$('#exportRarity').onclick=()=>{download(new Blob([JSON.stringify(exportRarity(rarityEditor.value),null,2)],{type:'application/json'}),'drifmaker-rarity.json');toast('Rarity exported.');};
+$('#importRarity').onclick=()=>$('#rarityFile').click();
+$('#rarityFile').onchange=async event=>{
  const file=event.target.files?.[0];event.target.value='';if(!file)return;
- try{if(file.size>32768)throw Error('Too large');const data=JSON.parse(await file.text()),value=data.appearance||data;
-  if((value?.bodyStyle!==undefined&&!BODY_STYLES.some(style=>style.id===value.bodyStyle))||!value||typeof value!=='object'||Array.isArray(value)||!/^#[a-f\d]{6}$/i.test(value.bodyColor)||!Object.entries(CATEGORIES).every(([key,options])=>(['legs','mouth','head','extra','nose','ears','tattoo','brows'].includes(key)&&!Object.hasOwn(value,key))||options.some(option=>option.id===value[key])))throw Error('Invalid look');
-  await changeLook({appearance:normalizeAppearance(value),portrait:data.portrait?{...currentLook().portrait,...data.portrait}:currentLook().portrait});if(Object.hasOwn(data,'rarity'))rarityEditor.replace(data.rarity);toast('Look imported.');
- }catch{toast('Choose a valid Drifmaker look exported from this editor.');}
+ try{if(file.size>131072)throw Error('Too large');const rarity=importRarity(JSON.parse(await file.text()));rarityEditor.replace(rarity);toast('Rarity imported.');}
+ catch{toast('Choose a valid Drifmaker rarity settings JSON.');}
 };
 for(const button of document.querySelectorAll('[data-motion]'))button.onclick=()=>{avatar?.setPose('');$('#studioPose').value='';motion=button.dataset.motion;elapsed=0;settled=0;for(const option of document.querySelectorAll('[data-motion]'))option.setAttribute('aria-pressed',String(option===button));};
 $('#holdCard').onchange=event=>{avatar?.setPose('');$('#studioPose').value='';holding=event.target.checked;settled=0;if(card)card.visible=holding;};
@@ -304,7 +302,7 @@ async function init(){
   avatar=await createShowroomAvatar({appearance});if(disposed){avatar.dispose();return;}avatar.model.position.set(0,0,0);avatar.model.rotation.y=0;avatar.model.scale.setScalar(1);scene.add(avatar.model);
   avatar.model.traverse(node=>{if(node.isMesh){node.castShadow=true;node.receiveShadow=true;}});
   card=createHeldCard(THREE);card.visible=holding;card.castShadow=true;scene.add(card);followHeldCard=createHeldCardFollower({THREE,card,avatar});followHeldCard();
-  settled=0;$('#loadState').hidden=true;controls.inert=false;$('#bookmarksPanel').inert=false;for(const id of ['randomize','saveBookmark','exportLook','importLook','captureView','studioMode','studioPose'])$(`#${id}`).disabled=false;
+  settled=0;$('#loadState').hidden=true;controls.inert=false;$('#bookmarksPanel').inert=false;for(const id of ['randomize','saveBookmark','exportRarity','importRarity','captureView','studioMode','studioPose'])$(`#${id}`).disabled=false;
   void setupPortrait().catch(error=>{console.error(error);toast('Portrait mode could not load. Reload to try again.');});
   void makeThumbnails();
  }catch(error){console.error(error);$('#loadState').replaceChildren();const message=document.createElement('strong');message.textContent='Model could not load.';const detail=document.createElement('span');detail.textContent='Check your connection and retry.';const retry=document.createElement('button');retry.textContent='Try again';retry.onclick=()=>location.reload();$('#loadState').append(message,detail,retry);}

@@ -62,13 +62,12 @@ test('saved/imported rarity is bounded, catalog-only, forward compatible and sur
  values.set(RARITY_STORAGE_KEY,'{broken');assert.deepEqual(loadRarity(storage),{});
  const denied={getItem(){throw Error('denied');},setItem(){throw Error('quota');}};
  assert.deepEqual(loadRarity(denied),{});assert.throws(()=>saveRarity(expected,denied),/quota/);
- // A fully configured exported look must fit the editor's real import guard;
- // adding 120 options pushed the previous 16 KiB allowance over its limit.
+ // A full rarity catalog must fit the editor's bounded file import guard.
  const full=Object.fromEntries(Object.entries(RARITY_GROUPS).map(([key,{options}])=>[key,Object.fromEntries(options.map(option=>[option.id,MAX_WEIGHT]))]));
  const editor=readFileSync(new URL('../../drifmaker.js',import.meta.url),'utf8'),guard=/file\.size\s*>\s*(\d+(?:\s*\*\s*\d+)*)/.exec(editor);
- assert.ok(guard,'editor keeps an explicit bounded look import guard');
+ assert.ok(guard,'editor keeps an explicit bounded rarity import guard');
  const importLimit=guard[1].split('*').reduce((value,factor)=>value*Number(factor),1);
- assert.equal(importLimit,32*1024);
+ assert.equal(importLimit,128*1024);
  assert.ok(Buffer.byteLength(JSON.stringify({version:6,appearance:DEFAULT_APPEARANCE,rarity:full,portrait:{posesEnabled:true,pose:'salute',background:'#abcdef'}},null,2))<importLimit);
 });
 

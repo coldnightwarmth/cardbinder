@@ -5,7 +5,7 @@ import * as THREE from '../../vendor/three.module.min.js';
 import {PORTRAIT_OVERLAYS,IMAGE_BACKGROUNDS,setPortraitOverlay,renderPortraitScene,disposePortraitOverlay} from '../../drifmaker-portrait-art.mjs?v=1';
 import {setPortraitSceneBackground,validPortraitBackground,disposePortraitBackground} from '../../drifmaker-background.mjs?v=2';
 import {normalizeLook,createLookHistory,bookmarkMetadata} from '../../drifmaker-bookmarks.mjs?v=12';
-import {RARITY_GROUPS,randomizeLook} from '../../drifmaker-rarity.mjs?v=12';
+import {RARITY_GROUPS,randomizeLook} from '../../drifmaker-rarity.mjs?v=13';
 import {capturePortrait} from '../../drifmaker-portrait.mjs?v=8';
 
 const loaded=[];

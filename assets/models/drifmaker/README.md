@@ -453,3 +453,5 @@ thumbnails and selection, eyebrow rarity controls, full-head overrides, whole-bo
 ghost tint, Salute/T-pose/Deep bow, 390-pixel layout, and an actual 1200 × 1295
 PNG export. `preview-brows-editor.png`, `preview-brows-ghost.png`,
 `preview-brows-poses.png` and `preview-ghost-portrait.png` record those checks.
+
+The seven stagecraft hats now use fitted skull shells, fin openings, or a curved headband; the four rigid crowns have per-hat bind-space seating transforms. Rainbow tongue and Party horn project forward from the muzzle, Bandana covers the lower face, and Silly curl / Sweeper bite omit the protruding tongue pieces. All remain weighted to Head.

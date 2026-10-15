@@ -2642,11 +2642,6 @@
       "triangles": 852
     },
     {
-      "name": "Drif_Mouth_rainbowtongue",
-      "vertices": 141,
-      "triangles": 244
-    },
-    {
       "name": "Drif_Shirt_militaryvest",
       "vertices": 1072,
       "triangles": 1952
@@ -2727,11 +2722,6 @@
       "triangles": 72
     },
     {
-      "name": "Drif_Mouth_partyhorn",
-      "vertices": 415,
-      "triangles": 772
-    },
-    {
       "name": "Drif_Mouth_sleepbubble",
       "vertices": 526,
       "triangles": 1040
@@ -2760,11 +2750,6 @@
       "name": "Drif_Eyes_closedjoy",
       "vertices": 176,
       "triangles": 320
-    },
-    {
-      "name": "Drif_Mouth_bandana",
-      "vertices": 151,
-      "triangles": 262
     },
     {
       "name": "Drif_Mouth_tusks",
@@ -3360,16 +3345,6 @@
       "name": "Drif_Mouth_greedclamp",
       "vertices": 1030,
       "triangles": 1968
-    },
-    {
-      "name": "Drif_Mouth_sillycurl",
-      "vertices": 1547,
-      "triangles": 3082
-    },
-    {
-      "name": "Drif_Mouth_sweeperbite",
-      "vertices": 720,
-      "triangles": 1376
     },
     {
       "name": "Drif_Mouth_tigermaw",
@@ -3977,41 +3952,6 @@
       "triangles": 3472
     },
     {
-      "name": "Drif_Hat_lavendercowl",
-      "vertices": 4434,
-      "triangles": 8856
-    },
-    {
-      "name": "Drif_Hat_cablesnood",
-      "vertices": 4434,
-      "triangles": 8856
-    },
-    {
-      "name": "Drif_Hat_officerpeak",
-      "vertices": 3370,
-      "triangles": 6720
-    },
-    {
-      "name": "Drif_Hat_kettlevisor",
-      "vertices": 3458,
-      "triangles": 6884
-    },
-    {
-      "name": "Drif_Hat_parchmentwitch",
-      "vertices": 1440,
-      "triangles": 2872
-    },
-    {
-      "name": "Drif_Hat_burgerstack",
-      "vertices": 5250,
-      "triangles": 10400
-    },
-    {
-      "name": "Drif_Hat_storybookbow",
-      "vertices": 1626,
-      "triangles": 3224
-    },
-    {
       "name": "Drif_Accessory_arcadegauntlet",
       "vertices": 892,
       "triangles": 1756
@@ -4080,6 +4020,66 @@
       "name": "Drif_Extra_coinshower",
       "vertices": 23808,
       "triangles": 46848
+    },
+    {
+      "name": "Drif_Hat_lavendercowl",
+      "vertices": 6146,
+      "triangles": 11992
+    },
+    {
+      "name": "Drif_Hat_cablesnood",
+      "vertices": 6146,
+      "triangles": 11988
+    },
+    {
+      "name": "Drif_Hat_officerpeak",
+      "vertices": 3370,
+      "triangles": 6720
+    },
+    {
+      "name": "Drif_Hat_kettlevisor",
+      "vertices": 3458,
+      "triangles": 6884
+    },
+    {
+      "name": "Drif_Hat_parchmentwitch",
+      "vertices": 1440,
+      "triangles": 2872
+    },
+    {
+      "name": "Drif_Hat_burgerstack",
+      "vertices": 5250,
+      "triangles": 10400
+    },
+    {
+      "name": "Drif_Hat_storybookbow",
+      "vertices": 1376,
+      "triangles": 2720
+    },
+    {
+      "name": "Drif_Mouth_rainbowtongue",
+      "vertices": 1345,
+      "triangles": 2652
+    },
+    {
+      "name": "Drif_Mouth_partyhorn",
+      "vertices": 1241,
+      "triangles": 2436
+    },
+    {
+      "name": "Drif_Mouth_bandana",
+      "vertices": 2050,
+      "triangles": 4096
+    },
+    {
+      "name": "Drif_Mouth_sillycurl",
+      "vertices": 360,
+      "triangles": 716
+    },
+    {
+      "name": "Drif_Mouth_sweeperbite",
+      "vertices": 690,
+      "triangles": 1320
     }
   ],
   "originalParts": {
@@ -4795,5 +4795,35 @@
     "hardcoretechno": "hardcore-techno-reference.jpg",
     "seedoilfree": "seed-oil-free-reference.jpg",
     "ainsliejersey": "ainslie-football-reference.jpg"
+  },
+  "stagecraftHatFits": {
+    "officerpeak": [
+      0.82,
+      0.85,
+      1.1,
+      2.78,
+      2.6
+    ],
+    "kettlevisor": [
+      0.86,
+      0.88,
+      0.95,
+      2.78,
+      2.5
+    ],
+    "parchmentwitch": [
+      0.84,
+      0.86,
+      0.9,
+      2.78,
+      2.61
+    ],
+    "burgerstack": [
+      0.8,
+      0.9,
+      0.85,
+      2.8,
+      2.59
+    ]
   }
 }

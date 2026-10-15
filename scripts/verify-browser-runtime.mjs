@@ -28,7 +28,7 @@ async function stat(filename) {
     return { size: Number(execFileSync("git", ["cat-file", "-s", `HEAD:${relative}`], { cwd: ROOT, encoding: "utf8" })) };
   }
 }
-const APP_VERSION = "cardnft-499";
+const APP_VERSION = "cardnft-500";
 const STYLE_VERSION = "cardnft-170";
 const THREE_VERSION = "three-r165-min-1";
 
@@ -582,7 +582,7 @@ assert(
   "app does not lazy-load packed browser traits",
 );
 assert(
-  app.includes('./showroom.js?v=showroom-controls-27'),
+  app.includes('./showroom.js?v=showroom-controls-28'),
   "showroom runtime cache key is stale",
 );
 assert(

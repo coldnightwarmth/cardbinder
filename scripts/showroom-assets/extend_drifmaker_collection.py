@@ -126,19 +126,21 @@ for s in [-1,1]:mouth_panel(p+'_fang',[(s*.152,1.85),(s*.199,1.858),(s*.174,1.80
 
 p='Drif_Mouth_rainbowtongue'
 mouth_oval(p+'_opening',.17,.045,1.83,mouth_cavity,.021)
-path=[(.12,-.673,1.83),(.075,-.704,1.785),(0,-.734,1.758),(-.09,-.753,1.765),(-.18,-.752,1.79),(-.23,-.739,1.84),(-.24,-.731,1.89),(-.22,-.735,1.93),(-.19,-.742,1.936)]
-obj=line(p+'_tongue',path,.04,co_red,'Head',12)
+# Broad, flattened tongue projects from the mouth along the forward (-Y)
+# axis, then droops gently and turns up at the rounded tip.
 colors=[material('Drif_Collection_Rainbow_'+str(i),rgb,.42) for i,rgb in enumerate(rainbow)]
-for mat in colors:obj.data.materials.append(mat)
-for polygon in obj.data.polygons:
- center=polygon.center;polygon.material_index=1+int((center.x+.28)*41+center.z*37)%len(colors)
-# Widen the root into a flattened tongue while retaining its curled tip.
-for i,point in enumerate(path):
- for j in range(12):
-  v=obj.data.vertices[i*12+j];taper=1 if i<4 else 1-.12*(i-3)
-  v.co=Vector(point)+(v.co-Vector(point))*taper
-  v.co.y=point[1]+(v.co.y-point[1])*.4
-  v.co.z=point[2]+(v.co.z-point[2])*(1.8 if i<3 else 1.0)
+verts=[];faces=[];steps=40;sides=32
+for i in range(steps+1):
+ t=i/steps;y=-.675-.49*t;z=1.823-.10*math.sin(t*math.pi*.8)+.035*t**5
+ width=.078*(1-.10*t)*min(1,math.sqrt(max(.001,(1-t)*12)))
+ for j in range(sides):
+  a=j*math.tau/sides;verts.append((.025*t+width*math.cos(a),y,z+.021*math.sin(a)))
+ if i:
+  for j in range(sides):faces.append(((i-1)*sides+j,(i-1)*sides+(j+1)%sides,i*sides+(j+1)%sides,i*sides+j))
+faces.extend([tuple(reversed(range(sides))),tuple(steps*sides+j for j in range(sides))])
+obj=mesh(p+'_tongue',verts,faces,colors[0],'Head')
+for mat in colors[1:]:obj.data.materials.append(mat)
+for polygon in obj.data.polygons:polygon.material_index=min(len(colors)-1,int(max(0,(-polygon.center.y-.675)/.49)*len(colors)))
 
 # MILITARY VEST: cloth underlayer, fitted carrier plates, straps and MOLLE rows.
 p='Drif_Shirt_militaryvest'

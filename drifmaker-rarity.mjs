@@ -55,3 +55,21 @@ export function randomizeLook({rarity,appearance,background,overlay='none',pose,
  if(color)next.bodyColor=color.hex;
  return {appearance:next,overlay:pickTrait(rarity,'overlay',random)?.id??overlay,background:backdrop?.hex??background,pose:posesEnabled?(pickTrait(rarity,'pose',random)?.id??pose):pose};
 }
+
+// Portable rarity files contain weights only, never the current character.
+export function exportRarity(value){
+ return {type:'drifmaker-rarity',version:1,rarity:normalizeRarity(value)};
+}
+export function importRarity(data){
+ if(!data||typeof data!=='object'||Array.isArray(data))throw Error('Invalid rarity file');
+ if(data.type!==undefined&&(data.type!=='drifmaker-rarity'||data.version!==1))throw Error('Unsupported rarity file');
+ const value=data.rarity;
+ if(!value||typeof value!=='object'||Array.isArray(value))throw Error('Missing rarity settings');
+ for(const [category,weights] of Object.entries(value)){
+  if(!Object.hasOwn(RARITY_GROUPS,category)||!weights||typeof weights!=='object'||Array.isArray(weights))throw Error('Invalid rarity category');
+  // Unknown trait IDs from newer catalogs are ignored by normalization, but
+  // malformed weights are rejected before replacing any saved settings.
+  if(Object.values(weights).some(weight=>!validWeight(weight)))throw Error('Invalid rarity weight');
+ }
+ return normalizeRarity(value);
+}

@@ -501,6 +501,7 @@ manifest={
     'earCompatibleHeads':EAR_COMPATIBLE_HEADS,
     'poses':POSE_IDS,
     'stagecraftSources':STAGECRAFT_SOURCES,
+    'stagecraftHatFits':STAGECRAFT_HAT_FITS,
     'stagecraftShirtSources':{id:info[0] for id,info in STAGECRAFT_SHIRTS.items()},
     'restoredFirstPassExtras':['neondoor','confettiburst','solareclipse','ribbonvortex'],
     'coinShower':{'centers':COIN_SHOWER_CENTERS,'count':64,'boundingRadius':.096,'minimumClearance':COIN_SHOWER_CLEARANCE},

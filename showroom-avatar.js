@@ -3,7 +3,7 @@ import {GLTFLoader} from './vendor/GLTFLoader.js';
 import {createAvatarAppearance} from './drifmaker-avatar.mjs?v=16';
 import {normalizePose,normalizePoseTime} from './drifmaker-poses.mjs?v=4';
 let assetPromise;
-function asset(){return assetPromise ||= new GLTFLoader().loadAsync(new URL('./assets/models/drifmaker/drifella-customizable.glb?v=13',import.meta.url).href).catch(error=>{assetPromise=null;throw error;});}
+function asset(){return assetPromise ||= new GLTFLoader().loadAsync(new URL('./assets/models/drifmaker/drifella-customizable.glb?v=14',import.meta.url).href).catch(error=>{assetPromise=null;throw error;});}
 // Geometry and textures are shared; each visitor owns their bones and any
 // recolored materials. Wardrobe pieces on the same skin reuse that visitor's skeleton.
 export function cloneAvatar(source){
