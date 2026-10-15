@@ -9,7 +9,8 @@ OUT=ROOT/'assets/models/drifmaker'
 scene=bpy.context.scene
 rig=bpy.data.objects['DrifellaRig']
 meshes=[o for o in bpy.data.collections['DrifmakerLibrary'].objects if o.type=='MESH']
-assert len(meshes)==77, ('expected 77 catalog meshes',len(meshes))
+manifest=json.loads((OUT/'manifest.json').read_text())
+assert len(meshes)==len(manifest['parts']), ('catalog mesh count',len(meshes))
 for obj in meshes:
     obj.hide_set(False)
     for vertex in obj.data.vertices:
@@ -21,11 +22,11 @@ for obj in meshes:
 def position_key(vertex):
     return tuple(round(v,6) for v in vertex.co)
 source=bpy.data.objects['BlueFinCharacterMesh']
-original_names=['Drif_Body','Drif_Eyes_classic','Drif_Shirt_original','Drif_Accessory_original','Drif_Legs_original','Drif_Mouth_original']
+original_names=['Drif_Body','Drif_Head_original','Drif_Eyes_classic','Drif_Shirt_original','Drif_Accessory_original','Drif_Legs_original','Drif_Mouth_original']
 assert Counter(position_key(v) for v in source.data.vertices)==Counter(position_key(v) for name in original_names for v in bpy.data.objects[name].data.vertices)
 report={'normalizedWeights':True,'maxInfluences':4,'originalGeometryPreserved':True,
         'boneCount':len(rig.data.bones),'skinnedObjectCount':len(meshes),'clips':{},'neutralBounds':{},
-        'verification':'Every frame of all 10 actions evaluated for finite vertices; original six-component union compared to original mesh; mixed old/new looks including legs and mouths rendered.'}
+        'verification':'Every frame of all 10 actions evaluated for finite vertices; original seven-component union compared to original mesh; includes all alternate heads, extras and ghost fibers.'}
 for action in bpy.data.actions:
     rig.animation_data.action=action
     frames=range(int(action.frame_range[0]),int(action.frame_range[1])+1)
@@ -53,8 +54,9 @@ for action in bpy.data.actions:
     print('Validated',action.name,len(frames),'frames')
 (OUT/'animation-validation.json').write_text(json.dumps(report,indent=2))
 
-def look(eyes,shirt,hat,accessory,action,frame,legs='original',mouth='original'):
-    names=['Drif_Body','Drif_Eyes_'+eyes,'Drif_Shirt_'+shirt,'Drif_Hat_'+hat,'Drif_Accessory_'+accessory,'Drif_Legs_'+legs,'Drif_Mouth_'+mouth]
+def look(eyes,shirt,hat,accessory,action,frame,legs='original',mouth='original',head='original',extra='none'):
+    names=['Drif_Body','Drif_Head_'+head,'Drif_Extra_'+extra,'Drif_Eyes_'+eyes,'Drif_Shirt_'+shirt,'Drif_Hat_'+hat,'Drif_Accessory_'+accessory,'Drif_Legs_'+legs,'Drif_Mouth_'+mouth]
+    if head!='original':names=[n for n in names if not n.startswith(('Drif_Eyes_','Drif_Mouth_'))]
     for obj in meshes:
         visible=obj.name in names
         obj.hide_set(not visible)

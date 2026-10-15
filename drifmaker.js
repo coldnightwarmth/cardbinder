@@ -1,21 +1,20 @@
 import * as THREE from 'three';
-import {createShowroomAvatar} from './showroom-avatar.js?v=11';
-import {BODY_COLORS,CATEGORIES,DEFAULT_APPEARANCE,normalizeAppearance,loadAppearance,saveAppearance,appearanceKey} from './drifmaker-config.mjs?v=2';
+import {createShowroomAvatar} from './showroom-avatar.js?v=12';
+import {BODY_COLORS,BODY_STYLES,PORTRAIT_BACKGROUNDS,CATEGORIES,DEFAULT_APPEARANCE,normalizeAppearance,loadAppearance,saveAppearance} from './drifmaker-config.mjs?v=3';
 import {PORTRAIT_COMPOSITION,createPortraitAvatar,configurePortraitCamera,capturePortrait} from './drifmaker-portrait.mjs?v=1';
 import {jumpHeight} from './showroom-locomotion.mjs?v=2';
 
 const $=selector=>document.querySelector(selector);
 const canvas=$('#characterView'),stage=$('#stage'),controls=$('#editorControls');
 const saved=loadAppearance();
-let appearance={...saved},savedKey=appearanceKey(saved),avatar,renderer,scene,camera,card;
+let appearance={...saved},avatar,renderer,scene,camera,card;
 let motion='idle',holding=false,autoRotate=false,elapsed=0,settled=0,yaw=.18,pitch=.08,distance=7.0;
 let viewMode='studio',portraitAvatar,portraitScene,portraitCamera,portraitDirty=true,exporting=false;
 let portraitBackground=PORTRAIT_COMPOSITION.background;
-const portraitBackgrounds=[{label:'Silver',hex:PORTRAIT_COMPOSITION.background},{label:'Cream',hex:'#e8dfcf'},{label:'Rose',hex:'#dfc6cf'},{label:'Sage',hex:'#c6d1c4'},{label:'Midnight',hex:'#252a35'}];
 let toastTimer,changeVersion=0,disposed=false,frameId,previousTime=0;
 const target=new THREE.Vector3(0,1.55,0),reducedMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
-const titles={eyes:'Eyes',mouth:'Mouth',shirt:'Tops',legs:'Pants & legs',hat:'Hats',accessory:'Accessories'};
-const categoryOrder=['body','eyes','mouth','shirt','legs','hat','accessory'];
+const titles={eyes:'Eyes',mouth:'Mouth',shirt:'Tops',legs:'Pants & legs',hat:'Hats',accessory:'Accessories',head:'Heads',extra:'Extra'};
+const categoryOrder=['body','head','eyes','mouth','shirt','legs','hat','accessory','extra'];
 let activeCategory='eyes';
 const iconPaths={
   spiral:'<path d="M10 11c0-5-9-5-9 0s9 6 9 1-6-4-6-1 3 2 3 0m16 0c0-5-9-5-9 0s9 6 9 1-6-4-6-1 3 2 3 0"/>',
@@ -50,7 +49,7 @@ function makeControls(){
  for(const category of categoryOrder){
   const button=document.createElement('button');button.type='button';button.dataset.categoryTab=category;button.id=`tab-${category}`;button.setAttribute('role','tab');button.setAttribute('aria-controls',`category-${category}`);
   const label=category==='body'?'Color':category==='accessory'?'Gear':category==='legs'?'Legs':titles[category];
-  button.innerHTML=`${label}<span>${category==='body'?BODY_COLORS.length+'+':CATEGORIES[category].length}</span>`;
+  button.textContent=label;
   button.onclick=()=>activateCategory(category);nav.append(button);
  }
  nav.addEventListener('keydown',event=>{
@@ -59,26 +58,28 @@ function makeControls(){
  });
  const panel=(category)=>{const section=document.createElement('section');section.className='control-section';section.id=`category-${category}`;section.setAttribute('role','tabpanel');section.setAttribute('aria-labelledby',`tab-${category}`);return section;};
  const body=panel('body');
- body.innerHTML='<div class="section-heading"><h3>Body color</h3><span class="selected-label" id="bodyLabel"></span></div><p class="option-description">A familiar blue, a soft plush shade, or a color that’s entirely yours.</p><div class="palette" role="group" aria-label="Body color"></div>';
+ body.innerHTML='<div class="section-heading"><h3>Body color</h3><span class="selected-label" id="bodyLabel"></span></div><div class="palette" role="group" aria-label="Body color"></div>';
  for(const color of BODY_COLORS){const button=document.createElement('button');button.className='swatch';button.type='button';button.style.setProperty('--swatch',color.hex);button.dataset.color=color.hex;button.title=color.label;button.setAttribute('aria-label',`${color.label} body color`);button.onclick=()=>select({bodyColor:color.hex});body.querySelector('.palette').append(button);}
- const custom=document.createElement('label');custom.className='custom-color';custom.title='Custom body color';custom.innerHTML='<input type="color" id="customColor" aria-label="Custom body color"><span aria-hidden="true">+</span>';body.querySelector('.palette').append(custom);custom.querySelector('input').addEventListener('input',event=>select({bodyColor:event.target.value}));controls.append(body);
+ const custom=document.createElement('label');custom.className='custom-color';custom.title='Custom body color';custom.innerHTML='<input type="color" id="customColor" aria-label="Custom body color"><span aria-hidden="true">+</span>';body.querySelector('.palette').append(custom);custom.querySelector('input').addEventListener('input',event=>select({bodyColor:event.target.value}));const finish=document.createElement('div');finish.className='body-finishes';finish.setAttribute('role','group');finish.setAttribute('aria-label','Body finish');
+ for(const style of BODY_STYLES){const button=document.createElement('button');button.type='button';button.dataset.bodyStyle=style.id;button.textContent=style.label;button.title=style.label;button.onclick=()=>select({bodyStyle:style.id});finish.append(button);}
+ body.append(finish);controls.append(body);
  for(const category of categoryOrder.filter(item=>item!=='body')){
   const options=CATEGORIES[category],section=panel(category);
-  const heading=document.createElement('div');heading.className='section-heading';heading.innerHTML=`<h3>${titles[category]} <span>${options.length} choices</span></h3><span class="selected-label" data-label="${category}"></span>`;section.append(heading);
-  const detail=document.createElement('p');detail.className='option-description';detail.dataset.description=category;section.append(detail);
+  const heading=document.createElement('div');heading.className='section-heading';heading.innerHTML=`<h3>${titles[category]}</h3><span class="selected-label" data-label="${category}"></span>`;section.append(heading);
+  if(['eyes','mouth'].includes(category)){const note=document.createElement('p');note.className='head-override-note';note.dataset.overrideNotice=category;note.textContent='Head overrides eyes and mouth.';note.hidden=true;section.append(note);}
   const grid=document.createElement('div');grid.className='options';grid.setAttribute('role','group');grid.setAttribute('aria-label',titles[category]);
-  for(const option of options){const button=document.createElement('button');button.className='option';button.type='button';button.dataset.category=category;button.dataset.option=option.id;button.title=option.description||option.label;button.innerHTML=`<span class="option-art">${icon(category,option.id)}</span>`;const label=document.createElement('span');label.className='option-label';label.textContent=option.label;button.append(label);button.onclick=()=>select({[category]:option.id});grid.append(button);}
+  for(const option of options){const button=document.createElement('button');button.className='option';button.type='button';button.dataset.category=category;button.dataset.option=option.id;button.title=option.label;button.innerHTML=`<span class="option-art">${icon(category,option.id)}</span>`;const label=document.createElement('span');label.className='option-label';label.textContent=option.label;button.append(label);button.onclick=()=>select({[category]:option.id});grid.append(button);}
   section.append(grid);controls.append(section);
  }
- const reference=document.createElement('p');reference.className='collection-reference';reference.innerHTML='Wardrobe inspired by <a href="https://www.tensor.trade/trade/drifella_2" target="_blank" rel="noopener noreferrer">Drifella 2 ↗</a>';controls.append(reference);
  updateControls();activateCategory(activeCategory);
 }
 function updateControls(){
+ for(const button of controls.querySelectorAll('[data-body-style]'))button.setAttribute('aria-pressed',String(button.dataset.bodyStyle===appearance.bodyStyle));
+ for(const notice of controls.querySelectorAll('[data-override-notice]'))notice.hidden=appearance.head==='original';
  for(const button of controls.querySelectorAll('[data-color]'))button.setAttribute('aria-pressed',String(button.dataset.color.toLowerCase()===appearance.bodyColor.toLowerCase()));
  $('#bodyLabel').textContent=BODY_COLORS.find(color=>color.hex.toLowerCase()===appearance.bodyColor.toLowerCase())?.label||'Custom';$('#customColor').value=appearance.bodyColor;
  for(const button of controls.querySelectorAll('[data-option]'))button.setAttribute('aria-pressed',String(appearance[button.dataset.category]===button.dataset.option));
- for(const [category,options] of Object.entries(CATEGORIES)){const option=options.find(option=>option.id===appearance[category]);controls.querySelector(`[data-label="${category}"]`).textContent=option?.label||'';controls.querySelector(`[data-description="${category}"]`).textContent=option?.description||'';}
- const dirty=appearanceKey(appearance)!==savedKey;$('#statusDot').classList.toggle('dirty',dirty);$('#saveStatus').textContent=dirty?'Looking good. Ready to wear?':'Ready for the show floor.';
+ for(const [category,options] of Object.entries(CATEGORIES)){const option=options.find(option=>option.id===appearance[category]);controls.querySelector(`[data-label="${category}"]`).textContent=option?.label||'';}
 }
 async function select(patch){
  const version=++changeVersion,previous=appearance;appearance=normalizeAppearance({...appearance,...patch});updateControls();
@@ -86,20 +87,20 @@ async function select(patch){
  try{await avatar.setAppearance(appearance);if(portraitAvatar)await portraitAvatar.setAppearance(appearance);portraitDirty=true;}catch(error){if(version!==changeVersion)return;appearance=previous;updateControls();toast('That look could not load. Please try again.');console.error(error);}
 }
 function download(blob,name){const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=name;link.hidden=true;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);}
-$('#randomize').onclick=()=>{const random=items=>items[Math.floor(Math.random()*items.length)];select({bodyColor:random(BODY_COLORS).hex,...Object.fromEntries(Object.entries(CATEGORIES).map(([key,options])=>[key,random(options).id]))});};
-$('#resetLook').onclick=()=>{select(DEFAULT_APPEARANCE);toast('Back to the original Drifella.');};
+$('#randomize').onclick=()=>{const random=items=>items[Math.floor(Math.random()*items.length)];setPortraitBackground(random(PORTRAIT_BACKGROUNDS).hex);select({bodyStyle:random(BODY_STYLES).id,bodyColor:random(BODY_COLORS).hex,...Object.fromEntries(Object.entries(CATEGORIES).map(([key,options])=>[key,random(options).id]))});};
+$('#resetLook').onclick=()=>{select(DEFAULT_APPEARANCE);toast('Look reset.');};
 $('#applyLook').onclick=async()=>{
  const button=$('#applyLook');button.disabled=true;
- try{await avatar.setAppearance(appearance);saveAppearance(appearance);savedKey=appearanceKey(appearance);updateControls();location.assign('/show');}
+ try{await avatar.setAppearance(appearance);saveAppearance(appearance);updateControls();location.assign('/show');}
  catch(error){toast('Could not save this look. Check that browser storage is available.');console.error(error);button.disabled=false;}
 };
-$('#exportLook').onclick=()=>{download(new Blob([JSON.stringify({version:2,appearance},null,2)],{type:'application/json'}),'my-drifella.json');toast('Your look is ready to keep.');};
+$('#exportLook').onclick=()=>{download(new Blob([JSON.stringify({version:3,appearance},null,2)],{type:'application/json'}),'my-drifella.json');toast('Look exported.');};
 $('#importLook').onclick=()=>$('#lookFile').click();
 $('#lookFile').onchange=async event=>{
  const file=event.target.files?.[0];event.target.value='';if(!file)return;
  try{if(file.size>16384)throw Error('Too large');const data=JSON.parse(await file.text()),value=data.appearance||data;
-  if(!value||typeof value!=='object'||Array.isArray(value)||!/^#[a-f\d]{6}$/i.test(value.bodyColor)||!Object.entries(CATEGORIES).every(([key,options])=>(['legs','mouth'].includes(key)&&!Object.hasOwn(value,key))||options.some(option=>option.id===value[key])))throw Error('Invalid look');
-  await select(normalizeAppearance(value));toast('Look imported. Make it your own.');
+  if((value?.bodyStyle!==undefined&&!BODY_STYLES.some(style=>style.id===value.bodyStyle))||!value||typeof value!=='object'||Array.isArray(value)||!/^#[a-f\d]{6}$/i.test(value.bodyColor)||!Object.entries(CATEGORIES).every(([key,options])=>(['legs','mouth','head','extra'].includes(key)&&!Object.hasOwn(value,key))||options.some(option=>option.id===value[key])))throw Error('Invalid look');
+  await select(normalizeAppearance(value));toast('Look imported.');
  }catch{toast('Choose a valid Drifmaker look exported from this editor.');}
 };
 for(const button of document.querySelectorAll('[data-motion]'))button.onclick=()=>{motion=button.dataset.motion;elapsed=0;settled=0;for(const option of document.querySelectorAll('[data-motion]'))option.setAttribute('aria-pressed',String(option===button));};
@@ -143,7 +144,7 @@ function frame(now){
  if(viewMode==='portrait'){if(portraitDirty&&portraitScene){renderer.render(portraitScene,portraitCamera);portraitDirty=false;}return;}
  elapsed+=dt;settled+=dt;if(autoRotate&&pointers.size===0)yaw+=dt*.3;
  if(avatar){const jumpTime=motion==='jump'?((elapsed%2.4)<1.1?elapsed%2.4:-1):-1,crouch=['crouch','sneak'].includes(motion)?1:0,velocity=motion==='walk'?1.25:motion==='sneak'?.65:0;
-  avatar.update(reducedMotion&&motion==='idle'&&settled>.8?0:dt,velocity,holding,0,{crouch,jumpTime});avatar.model.position.y=jumpHeight(jumpTime);$('#animationLabel').textContent=avatar.model.userData.animation.replaceAll('_',' ');
+  avatar.update(reducedMotion&&motion==='idle'&&settled>.8?0:dt,velocity,holding,0,{crouch,jumpTime});avatar.model.position.y=jumpHeight(jumpTime);
  }
  cameraPose();renderer.render(scene,camera);
 }
@@ -154,19 +155,25 @@ function setViewMode(mode){
  $('#studioMode').setAttribute('aria-pressed',String(!fixed));$('#portraitMode').setAttribute('aria-pressed',String(fixed));
  $('.motion-panel').hidden=fixed;$('#portraitControls').hidden=!fixed;
  $('#resetView').hidden=fixed;$('#rotateView').hidden=fixed;
- canvas.setAttribute('aria-label',fixed?'Drifella 2 portrait preview. Fixed pose and camera; change your outfit in the dressing room.':'3D Drifella preview. Drag or use arrow keys to rotate. Scroll or use plus and minus to zoom.');
+ canvas.setAttribute('aria-label',fixed?'Drifella portrait preview. Fixed pose and camera.':'3D Drifella preview. Drag or use arrow keys to rotate. Scroll or use plus and minus to zoom.');
  canvas.tabIndex=fixed?-1:0;
- $('#cropLabel').textContent=fixed?'COLLECTION CROP':'001';
- $('.orbit-hint').hidden=fixed;
- $('.studio-footnote span:first-child').textContent=fixed?'Fixed pose · Collection framing':'Built for the show floor.';
- $('#animationLabel').textContent=fixed?`${PORTRAIT_COMPOSITION.width} × ${PORTRAIT_COMPOSITION.height} PNG`:avatar?.model.userData.animation.replaceAll('_',' ')||'Neutral';
  previousTime=0;resize();
 }
 $('#studioMode').onclick=()=>setViewMode('studio');$('#portraitMode').onclick=()=>setViewMode('portrait');
-for(const background of portraitBackgrounds){
- const button=document.createElement('button');button.className='swatch';button.style.setProperty('--swatch',background.hex);button.setAttribute('aria-label',`${background.label} portrait background`);button.title=background.label;button.setAttribute('aria-pressed',String(background.hex===portraitBackground));
- button.onclick=()=>{portraitBackground=background.hex;portraitScene?.background.set(background.hex);portraitDirty=true;for(const swatch of $('#portraitPalette').children)swatch.setAttribute('aria-pressed',String(swatch===button));};$('#portraitPalette').append(button);
+function setPortraitBackground(hex){
+ if(!/^#[a-f\d]{6}$/i.test(hex))return;
+ portraitBackground=hex.toLowerCase();portraitScene?.background.set(portraitBackground);portraitDirty=true;
+ for(const swatch of $('#portraitPalette').children)swatch.setAttribute('aria-pressed',String(swatch.dataset.background===portraitBackground));
+ $('#backgroundPreview').style.background=portraitBackground;
+ $('#backgroundPreview').title=PORTRAIT_BACKGROUNDS.find(color=>color.hex===portraitBackground)?.label||'Custom';
+ $('#customBackground').value=portraitBackground;
 }
+for(const background of PORTRAIT_BACKGROUNDS){
+ const button=document.createElement('button');button.type='button';button.className='swatch';button.dataset.background=background.hex;button.style.setProperty('--swatch',background.hex);button.setAttribute('aria-label',`${background.label} portrait background`);button.title=background.label;
+ button.onclick=()=>setPortraitBackground(background.hex);$('#portraitPalette').append(button);
+}
+$('#customBackground').addEventListener('input',event=>setPortraitBackground(event.target.value));
+setPortraitBackground(portraitBackground);
 async function exportPortrait(){
  if(!portraitAvatar||exporting)return;
  exporting=true;$('#exportPortrait').disabled=true;$('#captureView').disabled=true;$('#exportPortrait').textContent='Preparing PNG…';
@@ -205,12 +212,12 @@ async function makeThumbnails(){
   const fill=new THREE.DirectionalLight(0xa9d4ec,1.2);fill.position.set(4,3,-4);thumbnailScene.add(fill);
   previewRenderer=new THREE.WebGLRenderer({alpha:true,antialias:true});previewRenderer.setSize(180,132);previewRenderer.outputColorSpace=THREE.SRGBColorSpace;previewRenderer.toneMapping=THREE.ACESFilmicToneMapping;previewRenderer.toneMappingExposure=1.1;
   const portraitCamera=new THREE.OrthographicCamera(-1,1,1,-1,.05,20);
-  const views={eyes:{y:2.23,height:.70},mouth:{y:1.87,height:.60},shirt:{y:1.18,height:1.45},legs:{y:.47,height:1.08},hat:{y:2.82,height:1.68},accessory:{y:1.4,height:1.80}};
+  const views={eyes:{y:2.23,height:.70},mouth:{y:1.87,height:.60},shirt:{y:1.18,height:1.45},legs:{y:.47,height:1.08},hat:{y:2.82,height:1.68},accessory:{y:1.5,height:2.55},head:{y:2.25,height:2.05},extra:{y:1.80,height:3.25}};
   const remaining=[...controls.querySelectorAll('[data-option]')].filter(button=>button.dataset.option!=='none');
   while(remaining.length&&!disposed){
    for(let batch=0;batch<3&&remaining.length;batch++){
     const preferred=remaining.findIndex(button=>button.dataset.category===activeCategory),button=remaining.splice(preferred<0?0:preferred,1)[0],{category,option}=button.dataset;
-    const view=views[category],rear=category==='accessory'&&['backpack','wings','skateboard'].includes(option);
+    const view=views[category],rear=category==='accessory'&&['backpack','wings','skateboard','sword','angelwings','batwings','mechwings','shield'].includes(option);
     await preview.setAppearance({...DEFAULT_APPEARANCE,accessory:'none',[category]:option});
     portraitCamera.top=view.height/2;portraitCamera.bottom=-view.height/2;portraitCamera.right=view.height*180/132/2;portraitCamera.left=-portraitCamera.right;portraitCamera.updateProjectionMatrix();
     portraitCamera.position.set(category==='accessory'?(rear?-.9:.7):0,view.y+.03,rear?-5:5);portraitCamera.lookAt(0,view.y,0);
@@ -238,7 +245,7 @@ async function init(){
   settled=0;$('#loadState').hidden=true;controls.inert=false;for(const id of ['randomize','resetLook','applyLook','exportLook','importLook','captureView','studioMode'])$(`#${id}`).disabled=false;
   void setupPortrait().catch(error=>{console.error(error);toast('Portrait mode could not load. Reload to try again.');});
   void makeThumbnails();
- }catch(error){console.error(error);$('#loadState').replaceChildren();const message=document.createElement('strong');message.textContent='Your Drifella couldn’t load.';const detail=document.createElement('span');detail.textContent='Check your connection and give it another try.';const retry=document.createElement('button');retry.textContent='Try again';retry.onclick=()=>location.reload();$('#loadState').append(message,detail,retry);}
+ }catch(error){console.error(error);$('#loadState').replaceChildren();const message=document.createElement('strong');message.textContent='Model could not load.';const detail=document.createElement('span');detail.textContent='Check your connection and retry.';const retry=document.createElement('button');retry.textContent='Try again';retry.onclick=()=>location.reload();$('#loadState').append(message,detail,retry);}
 }
 canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();toast('The 3D preview was interrupted. Reload to restore it.');$('#applyLook').disabled=true;});
 function cleanup(){if(disposed)return;disposed=true;cancelAnimationFrame(frameId);clearTimeout(toastTimer);resizeObserver.disconnect();if(card){card.removeFromParent();card.geometry.dispose();for(const material of [].concat(card.material))material.dispose();}avatar?.dispose();portraitAvatar?.dispose();scene?.traverse(node=>{if(node===card||!node.isSkinnedMesh){node.geometry?.dispose();if(node.material)for(const material of [].concat(node.material))material.dispose();}});renderer?.dispose();}

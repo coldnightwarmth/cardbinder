@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "asset": "drifella-customizable.glb",
   "source": "drifella-customizable.blend",
   "bodyMaterial": "Drif_Body_Main",
@@ -27,7 +27,17 @@
       "dead",
       "cyclops",
       "pixel",
-      "lashes"
+      "lashes",
+      "venom",
+      "anime",
+      "galaxy",
+      "dice",
+      "gears",
+      "crescent",
+      "bolts",
+      "goggles",
+      "robot",
+      "stitched"
     ],
     "shirts": [
       "original",
@@ -42,7 +52,17 @@
       "raincoat",
       "puffer",
       "rugby",
-      "armor"
+      "armor",
+      "varsity",
+      "sailor",
+      "kimono",
+      "punkvest",
+      "spacesuit",
+      "knight",
+      "poncho",
+      "disco",
+      "botanical",
+      "racer"
     ],
     "hats": [
       "none",
@@ -58,7 +78,17 @@
       "officer",
       "bucket",
       "horns",
-      "halo"
+      "halo",
+      "beret",
+      "cowboy",
+      "mushroom",
+      "ushanka",
+      "flowercrown",
+      "samurai",
+      "lotus",
+      "jester",
+      "sharkhood",
+      "tiara"
     ],
     "accessories": [
       "none",
@@ -75,7 +105,17 @@
       "skateboard",
       "flower",
       "cassette",
-      "keychain"
+      "keychain",
+      "sword",
+      "angelwings",
+      "batwings",
+      "mechwings",
+      "shield",
+      "prayerbeads",
+      "potionbelt",
+      "spellbook",
+      "boombox",
+      "lantern"
     ],
     "legs": [
       "original",
@@ -88,7 +128,17 @@
       "skeleton",
       "plush",
       "boots",
-      "joggers"
+      "joggers",
+      "flare",
+      "plaid",
+      "greaves",
+      "cyber",
+      "fishnet",
+      "rainbow",
+      "samurai",
+      "pajamas",
+      "skateshorts",
+      "harem"
     ],
     "mouth": [
       "original",
@@ -101,7 +151,44 @@
       "cat",
       "drool",
       "skull",
-      "grin"
+      "grin",
+      "venom",
+      "zipper",
+      "bubblegum",
+      "ooh",
+      "moustache",
+      "beak",
+      "pacifier",
+      "stitches",
+      "candy",
+      "respirator"
+    ],
+    "head": [
+      "original",
+      "void",
+      "vortex",
+      "gasmask",
+      "glitch",
+      "hockey"
+    ],
+    "extra": [
+      "none",
+      "mon",
+      "saiyanaura",
+      "ornateframe",
+      "spiritflames",
+      "planets",
+      "arcane",
+      "storm",
+      "crystals",
+      "pixelstars",
+      "tentacles",
+      "dragon",
+      "cards"
+    ],
+    "bodyStyles": [
+      "solid",
+      "ghost"
     ]
   },
   "inspiration": {
@@ -127,7 +214,9 @@
     "hats": "Drif_Hat_",
     "accessories": "Drif_Accessory_",
     "legs": "Drif_Legs_",
-    "mouth": "Drif_Mouth_"
+    "mouth": "Drif_Mouth_",
+    "head": "Drif_Head_",
+    "extra": "Drif_Extra_"
   },
   "clips": [
     {
@@ -195,8 +284,13 @@
   "parts": [
     {
       "name": "Drif_Body",
-      "vertices": 1808,
-      "triangles": 3512
+      "vertices": 822,
+      "triangles": 1612
+    },
+    {
+      "name": "Drif_Ghost_Fuzz",
+      "vertices": 1300,
+      "triangles": 520
     },
     {
       "name": "Drif_Eyes_classic",
@@ -269,6 +363,56 @@
       "triangles": 1704
     },
     {
+      "name": "Drif_Eyes_venom",
+      "vertices": 40,
+      "triangles": 72
+    },
+    {
+      "name": "Drif_Eyes_anime",
+      "vertices": 1180,
+      "triangles": 2312
+    },
+    {
+      "name": "Drif_Eyes_galaxy",
+      "vertices": 736,
+      "triangles": 1416
+    },
+    {
+      "name": "Drif_Eyes_dice",
+      "vertices": 420,
+      "triangles": 796
+    },
+    {
+      "name": "Drif_Eyes_gears",
+      "vertices": 516,
+      "triangles": 1000
+    },
+    {
+      "name": "Drif_Eyes_crescent",
+      "vertices": 452,
+      "triangles": 872
+    },
+    {
+      "name": "Drif_Eyes_bolts",
+      "vertices": 316,
+      "triangles": 616
+    },
+    {
+      "name": "Drif_Eyes_goggles",
+      "vertices": 884,
+      "triangles": 1732
+    },
+    {
+      "name": "Drif_Eyes_robot",
+      "vertices": 356,
+      "triangles": 672
+    },
+    {
+      "name": "Drif_Eyes_stitched",
+      "vertices": 460,
+      "triangles": 848
+    },
+    {
       "name": "Drif_Shirt_original",
       "vertices": 578,
       "triangles": 1112
@@ -334,6 +478,56 @@
       "triangles": 2108
     },
     {
+      "name": "Drif_Shirt_varsity",
+      "vertices": 796,
+      "triangles": 1556
+    },
+    {
+      "name": "Drif_Shirt_sailor",
+      "vertices": 678,
+      "triangles": 1328
+    },
+    {
+      "name": "Drif_Shirt_kimono",
+      "vertices": 776,
+      "triangles": 1516
+    },
+    {
+      "name": "Drif_Shirt_punkvest",
+      "vertices": 756,
+      "triangles": 1452
+    },
+    {
+      "name": "Drif_Shirt_spacesuit",
+      "vertices": 752,
+      "triangles": 1468
+    },
+    {
+      "name": "Drif_Shirt_knight",
+      "vertices": 696,
+      "triangles": 1364
+    },
+    {
+      "name": "Drif_Shirt_poncho",
+      "vertices": 789,
+      "triangles": 1515
+    },
+    {
+      "name": "Drif_Shirt_disco",
+      "vertices": 1156,
+      "triangles": 2128
+    },
+    {
+      "name": "Drif_Shirt_botanical",
+      "vertices": 1116,
+      "triangles": 2176
+    },
+    {
+      "name": "Drif_Shirt_racer",
+      "vertices": 796,
+      "triangles": 1520
+    },
+    {
       "name": "Drif_Hat_cap",
       "vertices": 376,
       "triangles": 728
@@ -397,6 +591,56 @@
       "name": "Drif_Hat_halo",
       "vertices": 400,
       "triangles": 792
+    },
+    {
+      "name": "Drif_Hat_beret",
+      "vertices": 282,
+      "triangles": 552
+    },
+    {
+      "name": "Drif_Hat_cowboy",
+      "vertices": 378,
+      "triangles": 748
+    },
+    {
+      "name": "Drif_Hat_mushroom",
+      "vertices": 554,
+      "triangles": 1084
+    },
+    {
+      "name": "Drif_Hat_ushanka",
+      "vertices": 466,
+      "triangles": 912
+    },
+    {
+      "name": "Drif_Hat_flowercrown",
+      "vertices": 2416,
+      "triangles": 4616
+    },
+    {
+      "name": "Drif_Hat_samurai",
+      "vertices": 124,
+      "triangles": 232
+    },
+    {
+      "name": "Drif_Hat_lotus",
+      "vertices": 301,
+      "triangles": 562
+    },
+    {
+      "name": "Drif_Hat_jester",
+      "vertices": 408,
+      "triangles": 788
+    },
+    {
+      "name": "Drif_Hat_sharkhood",
+      "vertices": 297,
+      "triangles": 546
+    },
+    {
+      "name": "Drif_Hat_tiara",
+      "vertices": 288,
+      "triangles": 536
     },
     {
       "name": "Drif_Accessory_original",
@@ -469,6 +713,56 @@
       "triangles": 832
     },
     {
+      "name": "Drif_Accessory_sword",
+      "vertices": 180,
+      "triangles": 332
+    },
+    {
+      "name": "Drif_Accessory_angelwings",
+      "vertices": 1056,
+      "triangles": 2048
+    },
+    {
+      "name": "Drif_Accessory_batwings",
+      "vertices": 110,
+      "triangles": 178
+    },
+    {
+      "name": "Drif_Accessory_mechwings",
+      "vertices": 232,
+      "triangles": 376
+    },
+    {
+      "name": "Drif_Accessory_shield",
+      "vertices": 82,
+      "triangles": 156
+    },
+    {
+      "name": "Drif_Accessory_prayerbeads",
+      "vertices": 1404,
+      "triangles": 2720
+    },
+    {
+      "name": "Drif_Accessory_potionbelt",
+      "vertices": 430,
+      "triangles": 836
+    },
+    {
+      "name": "Drif_Accessory_spellbook",
+      "vertices": 68,
+      "triangles": 116
+    },
+    {
+      "name": "Drif_Accessory_boombox",
+      "vertices": 372,
+      "triangles": 716
+    },
+    {
+      "name": "Drif_Accessory_lantern",
+      "vertices": 152,
+      "triangles": 272
+    },
+    {
       "name": "Drif_Legs_original",
       "vertices": 600,
       "triangles": 1164
@@ -524,6 +818,56 @@
       "triangles": 1524
     },
     {
+      "name": "Drif_Legs_flare",
+      "vertices": 632,
+      "triangles": 1220
+    },
+    {
+      "name": "Drif_Legs_plaid",
+      "vertices": 1432,
+      "triangles": 2820
+    },
+    {
+      "name": "Drif_Legs_greaves",
+      "vertices": 620,
+      "triangles": 1196
+    },
+    {
+      "name": "Drif_Legs_cyber",
+      "vertices": 680,
+      "triangles": 1308
+    },
+    {
+      "name": "Drif_Legs_fishnet",
+      "vertices": 808,
+      "triangles": 1492
+    },
+    {
+      "name": "Drif_Legs_rainbow",
+      "vertices": 952,
+      "triangles": 1828
+    },
+    {
+      "name": "Drif_Legs_samurai",
+      "vertices": 712,
+      "triangles": 1332
+    },
+    {
+      "name": "Drif_Legs_pajamas",
+      "vertices": 688,
+      "triangles": 1324
+    },
+    {
+      "name": "Drif_Legs_skateshorts",
+      "vertices": 1232,
+      "triangles": 2428
+    },
+    {
+      "name": "Drif_Legs_harem",
+      "vertices": 816,
+      "triangles": 1596
+    },
+    {
       "name": "Drif_Mouth_original",
       "vertices": 10,
       "triangles": 4
@@ -577,15 +921,156 @@
       "name": "Drif_Mouth_grin",
       "vertices": 51,
       "triangles": 42
+    },
+    {
+      "name": "Drif_Mouth_venom",
+      "vertices": 157,
+      "triangles": 166
+    },
+    {
+      "name": "Drif_Mouth_zipper",
+      "vertices": 157,
+      "triangles": 240
+    },
+    {
+      "name": "Drif_Mouth_bubblegum",
+      "vertices": 367,
+      "triangles": 692
+    },
+    {
+      "name": "Drif_Mouth_ooh",
+      "vertices": 183,
+      "triangles": 328
+    },
+    {
+      "name": "Drif_Mouth_moustache",
+      "vertices": 104,
+      "triangles": 196
+    },
+    {
+      "name": "Drif_Mouth_beak",
+      "vertices": 14,
+      "triangles": 20
+    },
+    {
+      "name": "Drif_Mouth_pacifier",
+      "vertices": 316,
+      "triangles": 620
+    },
+    {
+      "name": "Drif_Mouth_stitches",
+      "vertices": 168,
+      "triangles": 300
+    },
+    {
+      "name": "Drif_Mouth_candy",
+      "vertices": 125,
+      "triangles": 192
+    },
+    {
+      "name": "Drif_Mouth_respirator",
+      "vertices": 270,
+      "triangles": 504
+    },
+    {
+      "name": "Drif_Head_original",
+      "vertices": 986,
+      "triangles": 1900
+    },
+    {
+      "name": "Drif_Head_void",
+      "vertices": 962,
+      "triangles": 1896
+    },
+    {
+      "name": "Drif_Head_vortex",
+      "vertices": 2320,
+      "triangles": 4592
+    },
+    {
+      "name": "Drif_Head_gasmask",
+      "vertices": 1956,
+      "triangles": 3848
+    },
+    {
+      "name": "Drif_Head_glitch",
+      "vertices": 2746,
+      "triangles": 5060
+    },
+    {
+      "name": "Drif_Head_hockey",
+      "vertices": 3054,
+      "triangles": 5932
+    },
+    {
+      "name": "Drif_Extra_mon",
+      "vertices": 774,
+      "triangles": 1504
+    },
+    {
+      "name": "Drif_Extra_saiyanaura",
+      "vertices": 266,
+      "triangles": 452
+    },
+    {
+      "name": "Drif_Extra_ornateframe",
+      "vertices": 738,
+      "triangles": 1456
+    },
+    {
+      "name": "Drif_Extra_spiritflames",
+      "vertices": 609,
+      "triangles": 1170
+    },
+    {
+      "name": "Drif_Extra_planets",
+      "vertices": 888,
+      "triangles": 1752
+    },
+    {
+      "name": "Drif_Extra_arcane",
+      "vertices": 996,
+      "triangles": 1932
+    },
+    {
+      "name": "Drif_Extra_storm",
+      "vertices": 370,
+      "triangles": 708
+    },
+    {
+      "name": "Drif_Extra_crystals",
+      "vertices": 84,
+      "triangles": 112
+    },
+    {
+      "name": "Drif_Extra_pixelstars",
+      "vertices": 200,
+      "triangles": 300
+    },
+    {
+      "name": "Drif_Extra_tentacles",
+      "vertices": 966,
+      "triangles": 1836
+    },
+    {
+      "name": "Drif_Extra_dragon",
+      "vertices": 276,
+      "triangles": 524
+    },
+    {
+      "name": "Drif_Extra_cards",
+      "vertices": 120,
+      "triangles": 192
     }
   ],
   "originalParts": {
-    "Drif_Body": 1938,
+    "Drif_Body": 894,
+    "Drif_Head_original": 1044,
     "Drif_Eyes_classic": 840,
     "Drif_Shirt_original": 528,
     "Drif_Accessory_original": 210,
     "Drif_Legs_original": 594,
     "Drif_Mouth_original": 3
   },
-  "notes": "All components share the original 19-bone rest pose and 10 locomotion actions. Select one variant per category; none is optional for hats and accessories."
+  "notes": "All components share the original 19-bone rest pose and 10 locomotion actions. Alternate heads replace the original head, eyes and mouth without discarding facial choices. Extra is independent of accessories. Ghost skin is applied by the runtime with the skinned fuzz mesh."
 }

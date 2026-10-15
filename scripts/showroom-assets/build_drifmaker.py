@@ -149,7 +149,7 @@ for vertex in source.data.vertices:
                 component[neighbor] = ci
                 todo.append(neighbor)
     centers.append(sum((source.data.vertices[i].co for i in ids), Vector()) / len(ids))
-groups = {'Drif_Body': [], 'Drif_Eyes_classic': [], 'Drif_Shirt_original': [],
+groups = {'Drif_Body': [], 'Drif_Head_original': [], 'Drif_Eyes_classic': [], 'Drif_Shirt_original': [],
           'Drif_Accessory_original': [], 'Drif_Legs_original': [], 'Drif_Mouth_original': []}
 for p in source.data.polygons:
     name = source.data.materials[p.material_index].name
@@ -165,7 +165,7 @@ for p in source.data.polygons:
     elif name.startswith(('Obsidian eyes', 'White tips')) and 2 < center.z < 2.4:
         target = 'Drif_Eyes_classic'
     else:
-        target = 'Drif_Body'
+        target = 'Drif_Head_original' if center.z > 1.65 else 'Drif_Body'
     groups[target].append(p)
 for name, polygons in groups.items():
     subset(name, polygons)
@@ -368,7 +368,7 @@ for obj in collection.objects:
         obj.data.update()
 
 # Expand the catalog with fitted lower-body/mouth sets and the additional wardrobe.
-for extension_name in ['extend_drifmaker_legs_mouth.py','extend_drifmaker_wardrobe.py']:
+for extension_name in ['extend_drifmaker_legs_mouth.py','extend_drifmaker_wardrobe.py','extend_drifmaker_spectral.py']:
     extension_path=ROOT/'scripts/showroom-assets'/extension_name
     exec(compile(extension_path.read_text(),str(extension_path),'exec'),globals())
 variant_catalog={
@@ -378,8 +378,12 @@ variant_catalog={
     'Accessory':['original','headphones','necklace','backpack'],
     'Legs':['original']+LEG_VARIANTS,
     'Mouth':['original']+MOUTH_VARIANTS,
+    'Head':['original'],
+    'Extra':[],
 }
 for category,ids in EXTENDED_VARIANTS.items():
+    variant_catalog[category].extend(ids)
+for category,ids in SPECTRAL_VARIANTS.items():
     variant_catalog[category].extend(ids)
 
 def variant_matches(name,prefix):
@@ -401,7 +405,7 @@ for category, variants in variant_catalog.items():
             bpy.ops.object.join()
         members[0].name=prefix
         joined.append(members[0])
-pieces=[bpy.data.objects['Drif_Body']]+joined
+pieces=[bpy.data.objects['Drif_Body'],bpy.data.objects['Drif_Ghost_Fuzz']]+joined
 
 # Export all alternatives in the same bind space. Runtime enables exactly one
 # name prefix in each category and shares the cloned skeleton across all meshes.
@@ -427,8 +431,10 @@ if 'GLB' in formats:
     kwargs['export_format']='GLB'
 bpy.ops.export_scene.gltf(**kwargs)
 
-def selection(eyes='classic',shirt='original',hat='none',accessory='original',legs='original',mouth='original'):
-    names=['Drif_Body','Drif_Eyes_'+eyes,'Drif_Shirt_'+shirt,'Drif_Hat_'+hat,'Drif_Accessory_'+accessory,'Drif_Legs_'+legs,'Drif_Mouth_'+mouth]
+def selection(eyes='classic',shirt='original',hat='none',accessory='original',legs='original',mouth='original',head='original',extra='none'):
+    names=['Drif_Body','Drif_Head_'+head,'Drif_Shirt_'+shirt,'Drif_Hat_'+hat,'Drif_Accessory_'+accessory,'Drif_Legs_'+legs,'Drif_Extra_'+extra]
+    if head=='original':
+        names+=['Drif_Eyes_'+eyes,'Drif_Mouth_'+mouth]
     for obj in pieces:
         visible=obj.name in names
         obj.hide_set(not visible)
@@ -437,21 +443,22 @@ def selection(eyes='classic',shirt='original',hat='none',accessory='original',le
 selection()
 scene.frame_set(1)
 manifest={
-    'version':2,'asset':'drifella-customizable.glb','source':'drifella-customizable.blend',
+    'version':3,'asset':'drifella-customizable.glb','source':'drifella-customizable.blend',
     'bodyMaterial':'Drif_Body_Main','shirtMaterial':'Drif_Shirt_Main',
     'hatMaterial':'Drif_Hat_Main','accessoryMaterial':'Drif_Accessory_Main',
     'orientation':{'blenderUp':'+Z','blenderForward':'-Y','gltfUp':'+Y','gltfForward':'+Z'},
     'categories':{'eyes':variant_catalog['Eyes'],'shirts':variant_catalog['Shirt'],
                   'hats':['none']+variant_catalog['Hat'],'accessories':['none']+variant_catalog['Accessory'],
-                  'legs':variant_catalog['Legs'],'mouth':variant_catalog['Mouth']},
+                  'legs':variant_catalog['Legs'],'mouth':variant_catalog['Mouth'],
+                  'head':variant_catalog['Head'],'extra':['none']+variant_catalog['Extra'],'bodyStyles':['solid','ghost']},
     'inspiration':{'collection':'Drifella 2','url':'https://www.tensor.trade/trade/drifella_2',
                    'traits':['jean jacket','white bomber','solana cap','doomer black beanie','rainbow party hat','sleppy','pixelady star','spiral','dark magician spiky headphones','pokeball necklace','warlax backpack']},
-    'nodePrefixes':{'eyes':'Drif_Eyes_','shirts':'Drif_Shirt_','hats':'Drif_Hat_','accessories':'Drif_Accessory_','legs':'Drif_Legs_','mouth':'Drif_Mouth_'},
+    'nodePrefixes':{'eyes':'Drif_Eyes_','shirts':'Drif_Shirt_','hats':'Drif_Hat_','accessories':'Drif_Accessory_','legs':'Drif_Legs_','mouth':'Drif_Mouth_','head':'Drif_Head_','extra':'Drif_Extra_'},
     'clips':[{'name':a.name,'seconds':(a.frame_range[1]-a.frame_range[0])/30} for a in bpy.data.actions],
     'bones':[b.name for b in rig.data.bones],
     'parts':[{'name':o.name,'vertices':len(o.data.vertices),'triangles':sum(len(p.vertices)-2 for p in o.data.polygons)} for o in pieces],
     'originalParts':{name:len(polygons) for name,polygons in groups.items()},
-    'notes':'All components share the original 19-bone rest pose and 10 locomotion actions. Select one variant per category; none is optional for hats and accessories.'
+    'notes':'All components share the original 19-bone rest pose and 10 locomotion actions. Alternate heads replace the original head, eyes and mouth without discarding facial choices. Extra is independent of accessories. Ghost skin is applied by the runtime with the skinned fuzz mesh.'
 }
 (OUT/'manifest.json').write_text(json.dumps(manifest,indent=2))
 # Camera/view setup is scoped to the saved customization source.

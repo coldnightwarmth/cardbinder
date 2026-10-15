@@ -1,3 +1,4 @@
+import {NEW_TRAITS} from './drifmaker-expansion.mjs?v=1';
 // Shared by the browser and the showroom worker: only these small, validated
 // appearance values cross the network. Models and materials always stay local.
 // Drifella 2 collection inspiration: https://www.tensor.trade/trade/drifella_2
@@ -5,7 +6,7 @@
 // and orange cream plush. Eye cues include sleppy, pixelady star and spiral;
 // clothing and accessories are independently modeled adaptations for this rig.
 const options=items=>Object.freeze(items.map(item=>Object.freeze(item)));
-export const CATEGORIES=Object.freeze({
+const ORIGINAL_CATEGORIES=Object.freeze({
  eyes:options([
   {id:'classic',label:'Classic',description:'Bright eyes and the original crimson brows.'},
   {id:'sleepy',label:'Sleepy',description:'A half-lidded expression inspired by the collection’s sleppy eyes.'},
@@ -97,6 +98,8 @@ export const CATEGORIES=Object.freeze({
   {id:'keychain',label:'Keychain',description:'A dangling charm and key ring.'},
  ]),
 });
+export const CATEGORIES=Object.freeze(Object.fromEntries([...new Set([...Object.keys(ORIGINAL_CATEGORIES),...Object.keys(NEW_TRAITS)])].map(category=>[category,options([...(ORIGINAL_CATEGORIES[category]||[]),...(NEW_TRAITS[category]||[])])])));
+export const BODY_STYLES=options([{id:'solid',label:'Solid',description:'The familiar sculpted finish.'},{id:'ghost',label:'Ghost aura',description:'Clear, translucent skin with soft luminous fibers.'}]);
 export const BODY_COLORS=options([
  {id:'azure',label:'Azure',hex:'#1d5dea'},
  {id:'mint',label:'Mint',hex:'#a4d8bd'},
@@ -104,15 +107,55 @@ export const BODY_COLORS=options([
  {id:'plush-lilac',label:'Plush lilac',hex:'#c4b0e2'},
  {id:'yellow',label:'Yellow',hex:'#f0d66f'},
  {id:'orange-cream',label:'Orange cream',hex:'#efbc94'},
+ {id:'scarlet',label:'Scarlet',hex:'#f52b35'},
+ {id:'tangerine',label:'Tangerine',hex:'#ff730f'},
+ {id:'acid',label:'Acid green',hex:'#b5f522'},
+ {id:'emerald',label:'Emerald',hex:'#13cf79'},
+ {id:'cyan',label:'Electric cyan',hex:'#00ccef'},
+ {id:'cobalt',label:'Cobalt',hex:'#2345f7'},
+ {id:'violet',label:'Vivid violet',hex:'#8734f5'},
+ {id:'fuchsia',label:'Fuchsia',hex:'#f02cce'},
+ {id:'hotpink',label:'Hot pink',hex:'#ff3d8b'},
+ {id:'phantom',label:'Phantom ice',hex:'#c0f7ff'},
+ {id:'ultraviolet',label:'Ultraviolet',hex:'#5b00ff'},
+ {id:'laserpink',label:'Laser pink',hex:'#ff00b8'},
+ {id:'cherry',label:'Cherry',hex:'#d50a48'},
+ {id:'bloodorange',label:'Blood orange',hex:'#f03a12'},
+ {id:'electricgold',label:'Electric gold',hex:'#ffcc00'},
+ {id:'lemon',label:'Lemon',hex:'#edff28'},
+ {id:'slime',label:'Slime',hex:'#47ed09'},
+ {id:'jade',label:'Jade',hex:'#00a98b'},
+ {id:'turquoise',label:'Turquoise',hex:'#00edb4'},
+ {id:'lagoon',label:'Lagoon',hex:'#009fae'},
+ {id:'cerulean',label:'Cerulean',hex:'#008eff'},
+ {id:'indigo',label:'Indigo',hex:'#4020c4'},
+ {id:'grape',label:'Grape',hex:'#ab24da'},
+ {id:'orchid',label:'Orchid',hex:'#e35bff'},
+ {id:'coral',label:'Coral',hex:'#ff7971'},
+ {id:'butter',label:'Butter',hex:'#ffe8a3'},
+ {id:'pistachio',label:'Pistachio',hex:'#c4e4a5'},
+ {id:'periwinkle',label:'Periwinkle',hex:'#8c9bff'},
+ {id:'charcoal',label:'Charcoal',hex:'#303344'},
+ {id:'porcelain',label:'Porcelain',hex:'#f5f0e7'},
 ]);
-export const DEFAULT_APPEARANCE=Object.freeze({bodyColor:BODY_COLORS[0].hex,eyes:'classic',mouth:'original',shirt:'original',legs:'original',hat:'none',accessory:'original'});
-// Keep the storage key: older looks gain the original mouth and legs during
-// normalization, without resetting any of their existing selections.
+export const PORTRAIT_BACKGROUNDS=options([
+ {label:'Silver',hex:'#dedfe5'},{label:'Cream',hex:'#e8dfcf'},{label:'Rose',hex:'#dfc6cf'},{label:'Sage',hex:'#c6d1c4'},{label:'Midnight',hex:'#252a35'},
+ {label:'Electric blue',hex:'#087ef5'},{label:'Ultramarine',hex:'#3213d5'},{label:'Cyan',hex:'#16cbe7'},{label:'Turquoise',hex:'#0dc7a0'},
+ {label:'Emerald',hex:'#1fc36c'},{label:'Lime',hex:'#7fde1a'},{label:'Acid yellow',hex:'#d6ee16'},{label:'Goldenrod',hex:'#dfa51a'},
+ {label:'Tangerine',hex:'#ff7d25'},{label:'Vermilion',hex:'#e74322'},{label:'Crimson',hex:'#cd144d'},{label:'Hot pink',hex:'#e62f99'},
+ {label:'Magenta',hex:'#e867df'},{label:'Violet',hex:'#9c43e5'},{label:'Grape',hex:'#7025b5'},{label:'Lavender',hex:'#b6a1ed'},
+ {label:'Periwinkle',hex:'#8999e0'},{label:'Powder blue',hex:'#a4d5ed'},{label:'Mint',hex:'#a0eccb'},{label:'Peach',hex:'#f4b08c'},
+ {label:'Pale lemon',hex:'#f1e3a0'},{label:'Ink',hex:'#131520'},{label:'Paper',hex:'#f4f0e6'},
+]);
+export const DEFAULT_APPEARANCE=Object.freeze({bodyColor:BODY_COLORS[0].hex,eyes:'classic',mouth:'original',shirt:'original',legs:'original',hat:'none',accessory:'original',head:'original',extra:'none',bodyStyle:'solid'});
+// Keep the storage key: normalization supplies defaults for new categories
+// without resetting any existing selections in older saved looks.
 export const APPEARANCE_STORAGE_KEY='cards-art:drifmaker:appearance:v1';
 export const APPEARANCE_EVENT='drifmaker:appearance';
 export function normalizeAppearance(value){
  const input=value&&typeof value==='object'&&!Array.isArray(value)?value:{};
  const result={bodyColor:typeof input.bodyColor==='string'&&/^#[0-9a-f]{6}$/i.test(input.bodyColor)?input.bodyColor.toLowerCase():DEFAULT_APPEARANCE.bodyColor};
+ result.bodyStyle=BODY_STYLES.some(item=>item.id===input.bodyStyle)?input.bodyStyle:'solid';
  for(const [category,items] of Object.entries(CATEGORIES))result[category]=items.some(item=>item.id===input[category])?input[category]:DEFAULT_APPEARANCE[category];
  return result;
 }

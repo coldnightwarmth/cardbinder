@@ -6,14 +6,20 @@ the original joined model and adds compatible modeled wardrobe choices.
 
 ## Choices
 
-| Category | Mesh IDs | Options |
+| Category | Mesh prefix | Total choices |
 | --- | --- | --- |
-| Eyes | `Drif_Eyes_…` | `classic`, `sleepy`, `star`, `spiral`, `hearts`, `buttons`, `wink`, `angry`, `bored`, `tears`, `dead`, `cyclops`, `pixel`, `lashes` |
-| Shirts | `Drif_Shirt_…` | `original`, `denim`, `bomber`, `jersey`, `tiedye`, `skeleton`, `cloud`, `cloak`, `suit`, `raincoat`, `puffer`, `rugby`, `armor` |
-| Hats | `Drif_Hat_…` | `cap`, `beanie`, `party`, `tophat`, `wizard`, `crown`, `antlers`, `bunny`, `spinner`, `officer`, `bucket`, `horns`, `halo` (or none) |
-| Accessories | `Drif_Accessory_…` | `original`, `headphones`, `necklace`, `backpack`, `scarf`, `medallion`, `wings`, `bowtie`, `satchel`, `camera`, `skateboard`, `flower`, `cassette`, `keychain` (or none) |
-| Pants / legs | `Drif_Legs_…` | `original`, `denim`, `cargo`, `shorts`, `striped`, `patched`, `tech`, `skeleton`, `plush`, `boots`, `joggers` |
-| Mouth | `Drif_Mouth_…` | `original`, `smile`, `sidesmile`, `fangs`, `goldgrill`, `braces`, `tongue`, `cat`, `drool`, `skull`, `grin` |
+| Eyes | `Drif_Eyes_` | 24 |
+| Mouth | `Drif_Mouth_` | 21 |
+| Shirts | `Drif_Shirt_` | 23 |
+| Pants / legs | `Drif_Legs_` | 21 |
+| Hats | `Drif_Hat_` | 24, including none |
+| Accessories | `Drif_Accessory_` | 25, including none |
+| Heads | `Drif_Head_` | Classic plus 5 replacements |
+| Extra | `Drif_Extra_` | 12 scenes / companions plus none |
+
+`drifmaker-config.mjs` and `drifmaker-expansion.mjs` contain the full catalog and
+labels. The editor also offers 36 body colors, 28 portrait backgrounds, custom
+color inputs for both, and solid or translucent ghost body finishes.
 
 The original shirt is the artwork hoodie and the original accessory is the
 crossbody bag. New pieces take inspiration from the
@@ -35,22 +41,34 @@ the named motif rather than claiming exact reconstruction. Hat geometry fits
 between the fins, headphones sit below it, and necklaces/straps fit over all
 shirts. These choices can be combined independently.
 
-The expanded wardrobe adds ten more choices to each original category, plus ten
-new complete leg sets and ten new mouth styles. New motifs combine the
-collection's plush/streetwear palette with original playful designs: stitched
-button eyes, wizard hats, technical trousers, skeleton patterns, toy cameras,
-braces and fanged grins. These are separate modeled choices, including sleeve,
-pocket, cuff, trim, zipper, face and accessory geometry.
+The latest expansion adds ten choices each to eyes, mouths, shirts, legs, hats,
+and accessories. This includes Venom-inspired white eyes and a toothy tongue-out
+mouth, racer jackets, kimono, space suits, samurai armor, mushroom caps, jester
+hats, a sheathed back sword, angel/bat/mechanical wings, and a hanging lantern.
+
+Five alternate heads interpret the user-supplied Drifella 2 reference images:
+a hooded star, dragon vortex, horned gas mask, fuzzy glitch vortex, and perforated
+hockey mask. Their face is part of the head, so they override eyes and mouths.
+The selected facial traits are retained and return with the classic head.
+
+The independent Extra category adds a floating mon companion, golden aura,
+ornate frame, spirit flames, orbiting planets, arcane circle, storm cloud,
+floating crystals, pixel stars, shadow tendrils, spirit dragon, and floating
+cards. These are actual skinned geometry and can accompany any accessory.
 
 ## Runtime contract
 
-- `drifella-customizable.glb` contains 77 skinned mesh objects: `Drif_Body` and
-  one object per category choice. The file includes all alternatives; runtime
-  code selects exactly one choice per category and optionally no hat/accessory.
+- `drifella-customizable.glb` contains 156 skinned mesh objects: `Drif_Body`,
+  `Drif_Ghost_Fuzz`, and one object per modeled category choice. The file includes all alternatives; runtime
+  code selects exactly one choice per category and optionally no hat/accessory/extra.
 - The default leg set contains the original waist, denim, ankles and feet; the
   original mouth contains the mouth patch and two fangs. These components were
   removed from `Drif_Body`, so selected replacements never overlay duplicates.
-  The muzzle, nostrils and animated tail stay in the shared body.
+  The muzzle, fins, nostrils and brows are in `Drif_Head_original`; hands and
+  animated tail stay in the shared body.
+- Ghost mode uses isolated skin materials with a transparent rim shader and
+  luminous skinned fibers. Clothing keeps its normal opacity. Switching back to
+  solid restores the original material settings, without affecting other players.
 - Every component uses the same 19-bone rest pose and skin. Preserve the bones,
   bind matrices, vertex weights, and original ten animation names when editing.
 - `Drif_Body_Main` is the blue body material, also used by the sleepy eyelids.
@@ -77,7 +95,8 @@ Blender, then execute `scripts/showroom-assets/build_drifmaker.py` through the
 local MCP bridge. The generator replaces only its own collection and saves to
 this folder. The builder loads `extend_drifmaker_wardrobe.py` for the forty new
 eye/shirt/hat/accessory choices and `extend_drifmaker_legs_mouth.py` for twenty
-new leg/mouth choices. Execute `scripts/showroom-assets/check_drifmaker.py`
+new leg/mouth choices. `extend_drifmaker_spectral.py` builds the latest sixty
+wardrobe choices, five heads, twelve extras, and ghost fibers. Execute `scripts/showroom-assets/check_drifmaker.py`
 afterward to validate all 456 animation frames and create the render previews.
 
 `animation-validation.json` confirms normalized weights, no more than four
@@ -85,11 +104,10 @@ influences per vertex, finite deformations on all 10 clips, and exact preservati
 of the original mesh vertices across the original component choices. The saved
 previews show mixed choices in neutral, walk/hold, and crouch/hold poses, plus a
 rear view of the plush backpack and expanded looks with the new legs/mouths.
-All 77 meshes passed the complete 456-frame sweep. A subsequent bunny-headband
-refinement lowered the band onto the scalp and connected both ear roots with an
-arch; that rigid Head-bound mesh passed all 456 frames again. The final GLB also
-passed the runtime regression for mesh names, normalized weights, identical bind
-matrices and animation tracks, and exact original triangle coverage.
+All 156 meshes passed the complete 456-frame sweep after the final geometry
+refinement. The final GLB also passed the runtime regression for mesh names,
+normalized weights, identical bind matrices and animation tracks, and exact
+original triangle coverage.
 
 ## Editor and showroom integration
 
@@ -99,9 +117,11 @@ show floor. `drifmaker-config.mjs` defines the allowlisted appearance schema and
 local storage; `drifmaker-avatar.mjs` applies visibility and isolated body colors.
 The showroom publishes saved appearances in player poses, and its Worker
 normalizes them before broadcasting. Legacy players retain the original look.
-The editor has six wardrobe category tabs with rendered option thumbnails, plus
-body colors. Appearance exports use schema version 2; importing a version 1 look
-keeps its existing choices and defaults the new legs and mouth to `original`.
+The editor has eight wardrobe category tabs with rendered option thumbnails, plus
+body colors and finish controls. Appearance exports use schema version 3. Imports
+from versions 1 and 2 retain their choices and fill missing categories with the
+classic head, original mouth/legs, no extra, and solid body finish. Randomize
+chooses from every category and both the body and portrait background palettes.
 The expanded controls and preview were checked at desktop and 390-pixel mobile
 widths.
 
@@ -113,8 +133,8 @@ node --test worker/test/drifmaker.test.mjs worker/test/showroom-avatar.test.mjs
 node scripts/verify-browser-runtime.mjs
 ```
 
-Release the static site and the showroom Worker together: an older Worker drops
-the new appearance field. This change has been verified locally, not deployed.
+Release the static site and the showroom Worker together: an older Worker normalizes
+unknown trait IDs back to older defaults and drops new categories. This change has been verified locally, not deployed.
 `preview-editor.jpg` shows the browser editor with a mixed collection-inspired look.
 
 ## Collection portrait mode
@@ -149,3 +169,11 @@ the studio animation advanced. `preview-portrait.png` is an actual 1200 × 1295
 export; `preview-portrait-editor.jpg` shows the new controls. PNG generation and
 the export preview were verified, but the desktop app's in-app browser did not
 report a completed download from the Save PNG link during automated checking.
+
+The latest browser checks cover ghost shader compilation, alternate-head facial
+overrides, companion/aura/frame combinations, back accessories, both expanded
+color pickers, custom background color, randomization, and native-size PNG export.
+The streamlined editor keeps only controls, trait names, and essential state text.
+`preview-spectral-colors.png` shows the ghost finish and expanded color controls;
+`preview-spectral-portrait.png` is an actual export with a vortex head, back sword
+and ornate frame.

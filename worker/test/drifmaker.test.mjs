@@ -3,34 +3,67 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import * as THREE from '../../vendor/three.module.min.js';
-import {CATEGORIES,BODY_COLORS,DEFAULT_APPEARANCE,APPEARANCE_STORAGE_KEY,normalizeAppearance,appearanceKey,loadAppearance,saveAppearance} from '../../drifmaker-config.mjs';
+import {CATEGORIES,BODY_COLORS,PORTRAIT_BACKGROUNDS,DEFAULT_APPEARANCE,APPEARANCE_STORAGE_KEY,normalizeAppearance,appearanceKey,loadAppearance,saveAppearance} from '../../drifmaker-config.mjs';
 import {createAvatarAppearance} from '../../drifmaker-avatar.mjs';
 import {Showroom} from '../src/showroom.js';
 import {freshRoom} from '../src/showroom-state.js';
 
-test('expanded wardrobe contains all six independent categories and bounded normalized values',()=>{
- assert.deepEqual(Object.fromEntries(Object.entries(CATEGORIES).map(([category,items])=>[category,items.length])),{eyes:14,mouth:11,shirt:13,legs:11,hat:14,accessory:15});
+test('expanded wardrobe contains eight independent categories and bounded normalized values',()=>{
+ assert.deepEqual(Object.fromEntries(Object.entries(CATEGORIES).map(([category,items])=>[category,items.length])),{eyes:24,mouth:21,shirt:23,legs:21,hat:24,accessory:25,head:6,extra:13});
  for(const items of Object.values(CATEGORIES)){
-  assert.ok(items.filter(item=>item.id!=='none').length>=11);
+  assert.ok(items.filter(item=>item.id!=='none').length>=5);
   assert.equal(new Set(items.map(item=>item.id)).size,items.length);
   for(const item of items)assert.match(item.id,/^[a-z0-9]+$/);
  }
- assert.ok(BODY_COLORS.length>=3);
+ assert.equal(BODY_COLORS.length,36);
+ assert.equal(PORTRAIT_BACKGROUNDS.length,28);
+ for(const palette of [BODY_COLORS,PORTRAIT_BACKGROUNDS]){
+  assert.equal(new Set(palette.map(color=>color.hex)).size,palette.length);
+  for(const color of palette)assert.match(color.hex,/^#[a-f0-9]{6}$/);
+ }
  assert.deepEqual(normalizeAppearance(null),DEFAULT_APPEARANCE);
  assert.deepEqual(normalizeAppearance([]),DEFAULT_APPEARANCE);
  assert.deepEqual(normalizeAppearance({bodyColor:'url(https://example.com)',eyes:'__proto__',shirt:{id:'bomber'},hat:'toString',accessory:'x'.repeat(10000),legs:['cargo'],mouth:'constructor',extra:'ignored'}),DEFAULT_APPEARANCE);
- const chosen={bodyColor:'#ABC123',eyes:'hearts',mouth:'fangs',shirt:'puffer',legs:'cargo',hat:'wizard',accessory:'wings'};
+ const chosen={...DEFAULT_APPEARANCE,bodyColor:'#ABC123',eyes:'hearts',mouth:'fangs',shirt:'puffer',legs:'cargo',hat:'wizard',accessory:'wings'};
  assert.deepEqual(normalizeAppearance(chosen),{...chosen,bodyColor:'#abc123'});
  assert.equal(appearanceKey(chosen),appearanceKey({...chosen,bodyColor:'#abc123',unknown:true}));
  assert.notEqual(appearanceKey(chosen),appearanceKey({...chosen,legs:'denim'}));
  assert.notEqual(appearanceKey(chosen),appearanceKey({...chosen,mouth:'braces'}));
- assert.deepEqual(Object.keys(normalizeAppearance({...chosen,unsafe:'ignored'})),['bodyColor',...Object.keys(CATEGORIES)]);
+ assert.deepEqual(Object.keys(normalizeAppearance({...chosen,unsafe:'ignored'})),['bodyColor','bodyStyle',...Object.keys(CATEGORIES)]);
  assert.ok(JSON.stringify(normalizeAppearance(chosen)).length<256,'appearance remains a compact fixed-shape pose field');
+});
+
+test('alternate heads override facial meshes and ghost materials stay isolated and reversible',()=>{
+ const geometry=new THREE.SphereGeometry(1,8,6),skin=new THREE.MeshStandardMaterial({color:0x1d5dea}),ivory=new THREE.MeshStandardMaterial({color:0xffeedd});
+ skin.name='Drif_Body_Main';ivory.name='shared-ivory';
+ const source=new THREE.Group();
+ for(const [name,material] of [['Drif_Body',skin],['Drif_Head_original',ivory],['Drif_Head_hockey',ivory],['Drif_Eyes_venom',ivory],['Drif_Mouth_venom',ivory],['Drif_Shirt_original',ivory],['Drif_Extra_mon',ivory],['Drif_Ghost_Fuzz',ivory]]){
+  const mesh=new THREE.Mesh(geometry,material);mesh.name=name;source.add(mesh);
+ }
+ const a=source.clone(true),b=source.clone(true),appearanceA=createAvatarAppearance(a),appearanceB=createAvatarAppearance(b);
+ const selected={...DEFAULT_APPEARANCE,eyes:'venom',mouth:'venom',extra:'mon'};
+ appearanceA.setAppearance(selected);appearanceB.setAppearance(selected);
+ appearanceA.setAppearance({...selected,head:'hockey',bodyStyle:'ghost',bodyColor:'#00ccef'});
+ assert.equal(a.getObjectByName('Drif_Head_original').visible,false);
+ assert.equal(a.getObjectByName('Drif_Head_hockey').visible,true);
+ assert.equal(a.getObjectByName('Drif_Eyes_venom').visible,false);assert.equal(a.getObjectByName('Drif_Mouth_venom').visible,false);
+ assert.equal(a.getObjectByName('Drif_Extra_mon').visible,true);assert.equal(a.getObjectByName('Drif_Ghost_Fuzz').visible,true);
+ assert.equal(appearanceA.appearance.eyes,'venom');assert.equal(appearanceA.appearance.mouth,'venom');
+ const ghost=a.getObjectByName('Drif_Head_hockey').material;
+ assert.equal(ghost.transparent,true);assert.equal(ghost.depthWrite,false);assert.ok(ghost.opacity<1);assert.equal(ghost.userData.drifGhost,true);
+ assert.equal(a.getObjectByName('Drif_Shirt_original').material,ivory,'clothes sharing a head material keep the opaque shared original');
+ assert.equal(ivory.transparent,false);assert.equal(b.getObjectByName('Drif_Head_original').material.opacity,1);
+ const fragment={fragmentShader:'#include <opaque_fragment>'};ghost.onBeforeCompile(fragment);assert.match(fragment.fragmentShader,/drifRim/);
+ appearanceA.setAppearance(selected);
+ assert.equal(a.getObjectByName('Drif_Head_original').visible,true);assert.equal(a.getObjectByName('Drif_Head_hockey').visible,false);
+ assert.equal(a.getObjectByName('Drif_Eyes_venom').visible,true);assert.equal(a.getObjectByName('Drif_Mouth_venom').visible,true);assert.equal(a.getObjectByName('Drif_Ghost_Fuzz').visible,false);
+ assert.equal(ghost.transparent,false);assert.equal(ghost.depthWrite,true);assert.equal(ghost.opacity,1);assert.equal(ghost.emissive.getHex(),0);
+ appearanceA.dispose();appearanceB.dispose();geometry.dispose();skin.dispose();ivory.dispose();
 });
 
 test('v1 looks and poses gain original legs and mouth without losing their selections',()=>{
  const legacy={bodyColor:'#abcdef',eyes:'spiral',shirt:'denim',hat:'beanie',accessory:'backpack'};
- const expected={...legacy,legs:'original',mouth:'original'};
+ const expected={...DEFAULT_APPEARANCE,...legacy};
  assert.deepEqual(normalizeAppearance(legacy),expected);
  assert.equal(appearanceKey(legacy),appearanceKey(expected));
  const values=new Map([[APPEARANCE_STORAGE_KEY,JSON.stringify(legacy)]]),storage={getItem:key=>values.get(key),setItem:(key,value)=>values.set(key,value)};
@@ -61,7 +94,7 @@ test('mixing wardrobe parts isolates body color and visibility while sharing imm
   part.name=`Drif_${category[0].toUpperCase()+category.slice(1)}_${item.id}`;source.add(part);
  }
  const a=source.clone(true),b=source.clone(true),wardrobeA=createAvatarAppearance(a),wardrobeB=createAvatarAppearance(b);
- const selected={bodyColor:'#e67d9b',eyes:'star',mouth:'goldgrill',shirt:'bomber',legs:'patched',hat:'party',accessory:'headphones'};
+ const selected={...DEFAULT_APPEARANCE,bodyColor:'#e67d9b',eyes:'star',mouth:'goldgrill',shirt:'bomber',legs:'patched',hat:'party',accessory:'headphones'};
  wardrobeA.setAppearance(selected);wardrobeB.setAppearance();
  assert.equal(a.children[0].geometry,geometry);assert.notEqual(a.children[0].material,bodyMaterial);assert.notEqual(a.children[0].material,b.children[0].material);
  assert.equal(a.children[0].material.color.getHexString(),'e67d9b');assert.equal(b.children[0].material.color.getHexString(),'1d5dea');assert.equal(bodyMaterial.color.getHexString(),'1d5dea');
@@ -105,8 +138,8 @@ test('every shipped wardrobe option is skinned to the original rig and retains a
  assert.equal(bind.length,originalBind.length);bind.forEach((value,index)=>assert.ok(Math.abs(value-originalBind[index])<.00001,'wardrobe must preserve the original bind pose'));
  assert.ok(gltf.nodes.some(node=>node.name==='CardSocket.R'));
  assert.deepEqual(gltf.animations.map(clip=>clip.name).sort(),original.json.animations.map(clip=>clip.name).sort());
- const expectedNames=['Drif_Body',...Object.entries(CATEGORIES).flatMap(([category,items])=>items.filter(item=>item.id!=='none').map(item=>`Drif_${category[0].toUpperCase()+category.slice(1)}_${item.id}`))];
- assert.equal(expectedNames.length,77);
+ const expectedNames=['Drif_Body','Drif_Ghost_Fuzz',...Object.entries(CATEGORIES).flatMap(([category,items])=>items.filter(item=>item.id!=='none').map(item=>`Drif_${category[0].toUpperCase()+category.slice(1)}_${item.id}`))];
+ assert.equal(expectedNames.length,156);
  assert.deepEqual(gltf.nodes.filter(node=>node.mesh!==undefined).map(node=>node.name).sort(),expectedNames.sort(),'every logical wardrobe option has exactly one mesh node');
  for(const [category,items] of Object.entries(CATEGORIES))for(const item of items.filter(item=>item.id!=='none')){
   const prefix=`Drif_${category[0].toUpperCase()+category.slice(1)}_${item.id}`;
@@ -141,7 +174,7 @@ test('every shipped wardrobe option is skinned to the original rig and retains a
   }
   return [...result].sort(([a],[b])=>a.localeCompare(b));
  };
- const originalParts=['Drif_Body','Drif_Eyes_classic','Drif_Mouth_original','Drif_Shirt_original','Drif_Legs_original','Drif_Accessory_original'];
+ const originalParts=['Drif_Body','Drif_Head_original','Drif_Eyes_classic','Drif_Mouth_original','Drif_Shirt_original','Drif_Legs_original','Drif_Accessory_original'];
  assert.deepEqual(triangles(current,originalParts),triangles(original),'the original body, eyes, mouth, shirt, legs and bag must reconstruct the original surface');
  // Compare actual animation sampler data, not just their display names.
  for(const clip of gltf.animations){
@@ -172,7 +205,7 @@ test('showroom broadcasts and snapshots carry validated appearance, including st
  const lastActive=player.lastActive;player.lastMove=0;
  await server.webSocketMessage(ws,JSON.stringify({type:'pose',pose:player.pose}));assert.equal(player.lastActive,lastActive);
  // New-category changes alone must be broadcast and count as activity.
- for(const patch of [{mouth:'tongue'},{legs:'shorts'}]){
+ for(const patch of [{mouth:'venom'},{legs:'rainbow'},{head:'hockey'},{extra:'mon'},{bodyStyle:'ghost'}]){
   player.lastMove=0;player.lastActive=1;
   const updated={...player.pose.appearance,...patch};
   await server.webSocketMessage(ws,JSON.stringify({type:'pose',pose:{...player.pose,appearance:updated}}));
@@ -184,7 +217,7 @@ test('showroom broadcasts and snapshots carry validated appearance, including st
  player.lastMove=0;
  const legacy={bodyColor:'#abc123',eyes:'sleepy',hat:'cap',shirt:'original',accessory:'none'};
  await server.webSocketMessage(ws,JSON.stringify({type:'pose',pose:{...player.pose,appearance:legacy}}));
- assert.deepEqual(messages.at(-1).pose.appearance,{...legacy,legs:'original',mouth:'original'});
+ assert.deepEqual(messages.at(-1).pose.appearance,{...DEFAULT_APPEARANCE,...legacy});
 });
 
 test('multiplayer publishes saved appearance and uses the newest choice after avatar loading',async()=>{
