@@ -25,17 +25,17 @@ const meshOptions=(category,items)=>items.filter(item=>item.id!=='none'&&!(categ
  };
 
 test('expanded wardrobe contains twelve independent categories and bounded normalized values',()=>{
- assert.deepEqual(Object.fromEntries(Object.entries(CATEGORIES).map(([category,items])=>[category,items.length])),{eyes:66,mouth:62,shirt:64,legs:55,hat:69,accessory:71,head:44,extra:47,tattoo:43,nose:40,ears:44,brows:45});
+ assert.deepEqual(Object.fromEntries(Object.entries(CATEGORIES).map(([category,items])=>[category,items.length])),{eyes:86,mouth:82,shirt:84,legs:75,hat:89,accessory:91,head:64,extra:67,tattoo:63,nose:60,ears:64,brows:65});
  for(const items of Object.values(CATEGORIES)){
   assert.ok(items.filter(item=>item.id!=='none').length>=5);
   assert.equal(new Set(items.map(item=>item.id)).size,items.length);
   for(const item of items)assert.match(item.id,/^[a-z0-9]+$/);
  }
- assert.equal(BODY_COLORS.length,87);
- assert.equal(PORTRAIT_BACKGROUNDS.length,61);
+ assert.equal(BODY_COLORS.length,99);
+ assert.equal(PORTRAIT_BACKGROUNDS.length,73);
  for(const palette of [BODY_COLORS,PORTRAIT_BACKGROUNDS]){
   assert.equal(new Set(palette.map(color=>color.hex)).size,palette.length);
-  for(const color of palette)if(!['rainbow','spiral','blackops'].includes(color.hex)&&!color.hex.startsWith('mn'))assert.match(color.hex,/^#[a-f0-9]{6}$/);
+  for(const color of palette)if(!['rainbow','spiral','blackops'].includes(color.hex)&&!color.hex.startsWith('mn')&&!color.hex.startsWith('cxbg'))assert.match(color.hex,/^#[a-f0-9]{6}$/);
  }
  assert.deepEqual(normalizeAppearance(null),DEFAULT_APPEARANCE);
  assert.deepEqual(normalizeAppearance([]),DEFAULT_APPEARANCE);
@@ -315,6 +315,8 @@ test('dinosaur onesie hides only original tail surfaces, restores them, and isol
 
 test('every shipped wardrobe option is skinned to the original rig and retains all showroom clips',()=>{
 
+ // The independently validated crossover pack keeps the original base asset unchanged.
+ const baseCategories=Object.fromEntries(Object.entries(CATEGORIES).map(([key,items])=>[key,items.filter(item=>!item.id.startsWith('cf'))]));
  const current=readAsset('../../assets/models/drifmaker/drifella-customizable.glb'),original=readAsset('../../assets/models/showroom-character/blue-fin-character.glb');
  const {json:gltf,values}=current;
  assert.equal(gltf.skins.length,1);assert.deepEqual(gltf.skins[0].joints.map(index=>gltf.nodes[index].name),original.json.skins[0].joints.map(index=>original.json.nodes[index].name));
@@ -353,11 +355,11 @@ test('every shipped wardrobe option is skinned to the original rig and retains a
  // Pages project. Keep a deliberate loading budget below GitHub's file cap.
  assert.ok(readFileSync(new URL('../../assets/models/drifmaker/drifella-customizable.glb',import.meta.url)).byteLength<50*1024*1024,'model stays within the 50 MiB transfer budget');
  assert.deepEqual(gltf.animations.filter(clip=>!clip.name.startsWith('Pose_')).map(clip=>clip.name).sort(),original.json.animations.map(clip=>clip.name).sort());
- const expectedNames=['Drif_Body','Drif_Ghost_Fuzz',...Object.entries(CATEGORIES).flatMap(([category,items])=>meshOptions(category,items).map(item=>`Drif_${category[0].toUpperCase()+category.slice(1)}_${item.id}`))];
+ const expectedNames=['Drif_Body','Drif_Ghost_Fuzz',...Object.entries(baseCategories).flatMap(([category,items])=>meshOptions(category,items).map(item=>`Drif_${category[0].toUpperCase()+category.slice(1)}_${item.id}`))];
  assert.equal(expectedNames.length,644);
  assert.deepEqual(gltf.nodes.filter(node=>node.mesh!==undefined).map(node=>node.name).sort(),expectedNames.sort(),'every logical wardrobe option has exactly one mesh node');
  for(const head of Object.keys(HEAD_SCALES).filter(id=>id!=='original'))assert.equal(gltf.nodes.some(node=>node.name==='Drif_Head_'+head),false,'head size aliases must reuse the original mesh');
- for(const [category,items] of Object.entries(CATEGORIES))for(const item of meshOptions(category,items)){
+ for(const [category,items] of Object.entries(baseCategories))for(const item of meshOptions(category,items)){
   const prefix=`Drif_${category[0].toUpperCase()+category.slice(1)}_${item.id}`;
   const parts=gltf.nodes.filter(node=>node.name===prefix||node.name?.startsWith(`${prefix}_`));
   assert.ok(parts.length,`missing ${prefix}`);

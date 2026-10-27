@@ -10,3 +10,19 @@ node_modules/
 worker/dist/
 worker/pages-dist/
 rendered-clips/
+__pycache__/
+*.pyc
+*.blend1
+*.blend2
+# Local export results, reference studies, and browser screenshots.
+/exports/*
+!/exports/trait-layers/
+/exports/trait-layers/*
+!/exports/trait-layers/index.html
+!/exports/trait-layers/export.mjs
+!/exports/character-trait-review/
+/exports/character-trait-review/*
+!/exports/character-trait-review/index.html
+!/exports/drilady-review/
+/exports/drilady-review/*
+!/exports/drilady-review/index.html

@@ -1,8 +1,8 @@
-import {normalizeOverlay,PORTRAIT_OVERLAYS} from './drifmaker-portrait-art.mjs?v=2';
-import {validPortraitBackground} from './drifmaker-background.mjs?v=3';
-import {normalizeAppearance,BODY_COLORS,BODY_STYLES,PORTRAIT_BACKGROUNDS,CATEGORIES,isOriginalHead,EAR_COMPATIBLE_HEADS,LEG_OVERRIDE_TOPS} from './drifmaker-config.mjs?v=16';
+import {normalizeOverlay,PORTRAIT_OVERLAYS} from './drifmaker-portrait-art.mjs?v=3';
+import {validPortraitBackground} from './drifmaker-background.mjs?v=4';
+import {normalizeAppearance,BODY_COLORS,BODY_STYLES,PORTRAIT_BACKGROUNDS,CATEGORIES,isOriginalHead,EAR_COMPATIBLE_HEADS,LEG_OVERRIDE_TOPS,characterId,characterCategories,CHARACTERS,usesBaseHead,headAllowsEars,topOverridesLegs} from './drifmaker-config.mjs?v=22';
 import {normalizePortraitPose,PORTRAIT_POSES} from './drifmaker-poses.mjs?v=5';
-import {PORTRAIT_COMPOSITION} from './drifmaker-portrait.mjs?v=9';
+import {PORTRAIT_COMPOSITION} from './drifmaker-portrait.mjs?v=10';
 import {createZipWriter} from './minotecurator/zip-writer.js';
 
 export const BOOKMARK_KEY='cards.art.drifmaker.bookmarks.v1';
@@ -67,6 +67,7 @@ export function bookmarkMetadata(item,{image,id}={}){
  const look=normalizeLook(item.look),{appearance,portrait}=look;
  const label=(options,value)=>options.find(option=>option.id===value)?.label;
  const values={
+  character:CHARACTERS.find(c=>c.id===characterId(appearance)).label,
   background:PORTRAIT_BACKGROUNDS.find(color=>color.hex===portrait.background)?.label||`Custom (${portrait.background})`,
   'body color':BODY_COLORS.find(color=>color.hex===appearance.bodyColor)?.label||`Custom (${appearance.bodyColor})`,
   'body finish':label(BODY_STYLES,appearance.bodyStyle),
@@ -76,10 +77,10 @@ export function bookmarkMetadata(item,{image,id}={}){
  const categories={accessory:'accessories',brows:'eyebrows',ears:'ears',extra:'extra',eyes:'eyes',hat:'hat',head:'head',legs:'legs',mouth:'mouth',nose:'nose',shirt:'top',tattoo:'tattoos'};
  for(const [category,title] of Object.entries(categories)){
   let selected=appearance[category];
-  if(category==='ears'&&EAR_COMPATIBLE_HEADS.includes(appearance.head))selected=appearance.ears;
-  else if(!isOriginalHead(appearance.head)&&['eyes','brows','mouth','nose','ears','tattoo'].includes(category))selected=null;
-  if(category==='legs'&&LEG_OVERRIDE_TOPS.includes(appearance.shirt))selected=null;
-  values[title]=selected===null?'None':label(CATEGORIES[category],selected);
+  if(category==='ears'&&headAllowsEars(appearance))selected=appearance.ears;
+  else if(!usesBaseHead(appearance)&&['eyes','brows','mouth','nose','ears','tattoo'].includes(category))selected=null;
+  if(category==='legs'&&topOverridesLegs(appearance))selected=null;
+  values[title]=selected===null?'None':label(characterCategories(appearance)[category],selected);
  }
  return {
   id,name:item.name,description:'Drifmaker character portrait',image,external_url:'https://cards.art/drifmaker/',

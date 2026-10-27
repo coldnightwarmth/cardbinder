@@ -1,16 +1,16 @@
-import {PORTRAIT_OVERLAYS,setPortraitOverlay,renderPortraitScene,disposePortraitOverlay} from './drifmaker-portrait-art.mjs?v=2';
+import {PORTRAIT_OVERLAYS,setPortraitOverlay,renderPortraitScene,disposePortraitOverlay} from './drifmaker-portrait-art.mjs?v=3';
 import {createHeldCard,createHeldCardFollower,disposeHeldCard} from './drifmaker-held-card.mjs?v=1';
-import {validPortraitBackground,backgroundCSS,setPortraitSceneBackground,disposePortraitBackground} from './drifmaker-background.mjs?v=3';
-import {createLookHistory,normalizeLook} from './drifmaker-bookmarks.mjs?v=13';
-import {createBookmarkControls} from './drifmaker-bookmark-controls.mjs?v=13';
-import {createBookmarkRenderer} from './drifmaker-bookmark-renderer.mjs?v=13';
+import {validPortraitBackground,backgroundCSS,setPortraitSceneBackground,disposePortraitBackground} from './drifmaker-background.mjs?v=4';
+import {createLookHistory,normalizeLook} from './drifmaker-bookmarks.mjs?v=19';
+import {createBookmarkControls} from './drifmaker-bookmark-controls.mjs?v=19';
+import {createBookmarkRenderer} from './drifmaker-bookmark-renderer.mjs?v=19';
 import {POSES,PORTRAIT_POSES,normalizePose,normalizePortraitPose} from './drifmaker-poses.mjs?v=5';
-import {randomizeLook,exportRarity,importRarity} from './drifmaker-rarity.mjs?v=15';
-import {createRarityEditor} from './drifmaker-rarity-controls.mjs?v=15';
+import {randomizeLook,exportRarity,importRarity,rarityCategory} from './drifmaker-rarity.mjs?v=21';
+import {createRarityEditor} from './drifmaker-rarity-controls.mjs?v=21';
 import * as THREE from 'three';
-import {createShowroomAvatar} from './showroom-avatar.js?v=29';
-import {BODY_COLORS,BODY_STYLES,BODY_STYLE_COLORS,LEG_OVERRIDE_TOPS,isOriginalHead,EAR_COMPATIBLE_HEADS,PORTRAIT_BACKGROUNDS,CATEGORIES,DEFAULT_APPEARANCE,normalizeAppearance,loadAppearance} from './drifmaker-config.mjs?v=16';
-import {PORTRAIT_COMPOSITION,createPortraitAvatar,configurePortraitCamera,capturePortrait,portraitPoseComposition} from './drifmaker-portrait.mjs?v=9';
+import {createShowroomAvatar} from './showroom-avatar.js?v=40';
+import {BODY_COLORS,BODY_STYLES,BODY_STYLE_COLORS,LEG_OVERRIDE_TOPS,isOriginalHead,EAR_COMPATIBLE_HEADS,PORTRAIT_BACKGROUNDS,CATEGORIES,DEFAULT_APPEARANCE,normalizeAppearance,loadAppearance,characterId,characterCategories,characterDefaults,DRILADY_DEFAULT_APPEARANCE,usesBaseHead,headAllowsEars,topOverridesLegs} from './drifmaker-config.mjs?v=22';
+import {PORTRAIT_COMPOSITION,createPortraitAvatar,configurePortraitCamera,capturePortrait,portraitPoseComposition} from './drifmaker-portrait.mjs?v=10';
 import {createDrifmakerEnvironment} from './drifmaker-lighting.mjs?v=1';
 import {jumpHeight} from './showroom-locomotion.mjs?v=2';
 
@@ -36,7 +36,13 @@ function currentLook(){return {appearance,portrait:{background:portraitBackgroun
 const history=createLookHistory(currentLook());
 const titles={brows:'Eyebrows',eyes:'Eyes',mouth:'Mouth',shirt:'Tops',legs:'Pants & legs',hat:'Hats',accessory:'Accessories',head:'Heads',extra:'Extra',nose:'Nose',ears:'Ears',tattoo:'Tattoos',overlay:'Overlay',background:'Background',pose:'Poses'};
 const categoryOrder=['body','head','eyes','brows','mouth','nose','ears','tattoo','shirt','legs','hat','accessory','extra','background','overlay','pose'];
-let activeCategory='eyes';
+let activeCategory='eyes',controlsCharacter='',thumbnailGeneration=0;
+const characterLooks=new Map([[characterId(appearance),{...appearance}]]);
+for(const button of document.querySelectorAll('[data-character]'))button.onclick=()=>{
+ const id=button.dataset.character;if(id===characterId(appearance))return;
+ characterLooks.set(characterId(appearance),{...appearance});
+ void changeLook({...currentLook(),appearance:characterLooks.get(id)||(id==='drilady'?DRILADY_DEFAULT_APPEARANCE:DEFAULT_APPEARANCE)});
+};
 const rarityEditor=createRarityEditor({onError:toast});
 const iconPaths={
   spiral:'<path d="M10 11c0-5-9-5-9 0s9 6 9 1-6-4-6-1 3 2 3 0m16 0c0-5-9-5-9 0s9 6 9 1-6-4-6-1 3 2 3 0"/>',
@@ -67,17 +73,18 @@ function activateCategory(category,focus=false){
  controls.scrollTop=0;
 }
 function makeControls(){
- const nav=$('.category-nav');
+ controlsCharacter=characterId(appearance);const catalog=characterCategories(appearance);
+ rarityEditor.clear();controls.replaceChildren();const nav=$('.category-nav');nav.replaceChildren();
  for(const category of categoryOrder){
   const button=document.createElement('button');button.type='button';button.dataset.categoryTab=category;button.id=`tab-${category}`;button.setAttribute('role','tab');button.setAttribute('aria-controls',`category-${category}`);
   const label=category==='body'?'Color':category==='accessory'?'Gear':category==='legs'?'Legs':titles[category];
   button.textContent=label;
   button.onclick=()=>activateCategory(category);nav.append(button);
  }
- nav.addEventListener('keydown',event=>{
+ nav.onkeydown=event=>{
   const index=categoryOrder.indexOf(activeCategory),next={ArrowRight:(index+1)%categoryOrder.length,ArrowLeft:(index+categoryOrder.length-1)%categoryOrder.length,Home:0,End:categoryOrder.length-1}[event.key];
   if(next!==undefined){event.preventDefault();activateCategory(categoryOrder[next],true);}
- });
+ };
  const panel=(category)=>{const section=document.createElement('section');section.className='control-section';section.id=`category-${category}`;section.setAttribute('role','tabpanel');section.setAttribute('aria-labelledby',`tab-${category}`);return section;};
  const body=panel('body');
  body.innerHTML='<div class="section-heading"><h3>Body color</h3><span class="selected-label" id="bodyLabel"></span></div><div class="palette" role="group" aria-label="Body color"></div>';
@@ -85,13 +92,13 @@ function makeControls(){
  const custom=document.createElement('label');custom.className='custom-color';custom.title='Custom body color';custom.innerHTML='<input type="color" id="customColor" aria-label="Custom body color"><span aria-hidden="true">+</span>';body.querySelector('.palette').append(custom);custom.querySelector('input').addEventListener('change',event=>select({bodyColor:event.target.value,bodyStyle:Object.hasOwn(BODY_STYLE_COLORS,appearance.bodyStyle)?'solid':appearance.bodyStyle}));const finish=document.createElement('div');finish.className='body-finishes';finish.setAttribute('role','group');finish.setAttribute('aria-label','Body finish');
  for(const style of BODY_STYLES){const button=document.createElement('button');button.type='button';button.dataset.bodyStyle=style.id;button.textContent=style.label;button.title=style.label;button.onclick=()=>select({bodyStyle:style.id});finish.append(button);rarityEditor.mount(button,'bodyStyle',style.id);}
  body.append(finish);controls.append(body);
- for(const category of Object.keys(CATEGORIES)){
-  const options=CATEGORIES[category],section=panel(category);
+ for(const category of Object.keys(catalog)){
+  const options=catalog[category],section=panel(category);
   const heading=document.createElement('div');heading.className='section-heading';heading.innerHTML=`<h3>${titles[category]}</h3><span class="selected-label" data-label="${category}"></span>`;section.append(heading);
   if(category==='legs'){const note=document.createElement('p');note.className='head-override-note';note.dataset.legOverride='';note.textContent='Robe overrides legs.';note.hidden=true;section.append(note);}
   if(['eyes','brows','mouth','nose','ears','tattoo'].includes(category)){const note=document.createElement('p');note.className='head-override-note';note.dataset.overrideNotice=category;note.textContent='Head overrides face traits.';note.hidden=true;section.append(note);}
   const grid=document.createElement('div');grid.className='options';grid.setAttribute('role','group');grid.setAttribute('aria-label',titles[category]);
-  for(const option of options){const button=document.createElement('button');button.className='option';button.type='button';button.dataset.category=category;button.dataset.option=option.id;button.title=option.label;button.innerHTML=`<span class="option-art">${icon(category,option.id)}</span>`;const label=document.createElement('span');label.className='option-label';label.textContent=option.label;button.append(label);button.onclick=()=>select({[category]:option.id});grid.append(button);rarityEditor.mount(button,category,option.id);}
+  for(const option of options){const button=document.createElement('button');button.className='option';button.type='button';button.dataset.category=category;button.dataset.option=option.id;button.title=option.label;button.innerHTML=`<span class="option-art">${icon(category,option.id)}</span>`;const label=document.createElement('span');label.className='option-label';label.textContent=option.label;button.append(label);button.onclick=()=>select({[category]:option.id});grid.append(button);rarityEditor.mount(button,rarityCategory(appearance,category),option.id);}
   section.append(grid);controls.append(section);
  }
  for(const [category,options] of [['background',PORTRAIT_BACKGROUNDS.map(item=>({...item,id:item.hex}))],['overlay',PORTRAIT_OVERLAYS],['pose',PORTRAIT_POSES]]){
@@ -112,18 +119,19 @@ function makeControls(){
   controls.append(section);
  }
  const bookmarks=$('#bookmarksPanel');
- bookmarkControls=createBookmarkControls({panel:bookmarks,saveButton:$('#saveBookmark'),getLook:currentLook,loadLook:async look=>{await changeLook(look);setViewMode('portrait');},render:(...args)=>bookmarkRenderer.render(...args),download,toast});
+ bookmarkControls ||=createBookmarkControls({panel:bookmarks,saveButton:$('#saveBookmark'),getLook:currentLook,loadLook:async look=>{await changeLook(look);setViewMode('portrait');},render:(...args)=>bookmarkRenderer.render(...args),download,toast});
  updateControls();activateCategory(activeCategory);
 }
 function updateControls(){
+ for(const button of document.querySelectorAll('[data-character]'))button.setAttribute('aria-pressed',String(button.dataset.character===characterId(appearance)));
  for(const button of controls.querySelectorAll('[data-portrait-option]'))button.setAttribute('aria-pressed',String(currentLook().portrait[button.dataset.portraitCategory]===button.dataset.portraitOption&&(button.dataset.portraitCategory!=='pose'||portraitPosesEnabled)));
- for(const notice of controls.querySelectorAll('[data-leg-override]'))notice.hidden=!LEG_OVERRIDE_TOPS.includes(appearance.shirt);
+ for(const notice of controls.querySelectorAll('[data-leg-override]'))notice.hidden=!topOverridesLegs(appearance);
  for(const button of controls.querySelectorAll('[data-body-style]'))button.setAttribute('aria-pressed',String(button.dataset.bodyStyle===appearance.bodyStyle));
- for(const notice of controls.querySelectorAll('[data-override-notice]')){const ears=notice.dataset.overrideNotice==='ears';notice.hidden=isOriginalHead(appearance.head)||(ears&&EAR_COMPATIBLE_HEADS.includes(appearance.head));notice.textContent='Head overrides face traits.';}
+ for(const notice of controls.querySelectorAll('[data-override-notice]')){const ears=notice.dataset.overrideNotice==='ears';notice.hidden=usesBaseHead(appearance)||(ears&&headAllowsEars(appearance));notice.textContent='Head overrides face traits.';}
  for(const button of controls.querySelectorAll('[data-color]'))button.setAttribute('aria-pressed',String(button.dataset.color.toLowerCase()===appearance.bodyColor.toLowerCase()));
  $('#bodyLabel').textContent=BODY_COLORS.find(color=>color.hex.toLowerCase()===appearance.bodyColor.toLowerCase())?.label||'Custom';$('#customColor').value=appearance.bodyColor;
  for(const button of controls.querySelectorAll('[data-option]'))button.setAttribute('aria-pressed',String(appearance[button.dataset.category]===button.dataset.option));
- for(const [category,options] of Object.entries(CATEGORIES)){const option=options.find(option=>option.id===appearance[category]);controls.querySelector(`[data-label="${category}"]`).textContent=option?.label||'';}
+ for(const [category,options] of Object.entries(characterCategories(appearance))){const option=options.find(option=>option.id===appearance[category]);controls.querySelector(`[data-label="${category}"]`).textContent=option?.label||'';}
 }
 function updateHistory(){
  const button=$('#undoLook');button.disabled=!history.canUndo&&!history.canRedo;
@@ -133,7 +141,9 @@ function updateHistory(){
 }
 async function applyLookState(value){
  const next=normalizeLook(value),version=++changeVersion;
- appearance=next.appearance;portraitOverlay=next.portrait.overlay;portraitBackground=next.portrait.background;portraitPosesEnabled=next.portrait.posesEnabled;portraitPose=next.portrait.pose;
+ characterLooks.set(characterId(appearance),{...appearance});appearance=next.appearance;characterLooks.set(characterId(appearance),{...appearance});
+ if(controlsCharacter!==characterId(appearance)){makeControls();void makeThumbnails();}
+ portraitOverlay=next.portrait.overlay;portraitBackground=next.portrait.background;portraitPosesEnabled=next.portrait.posesEnabled;portraitPose=next.portrait.pose;
  updateControls();setPortraitBackground(portraitBackground);if(portraitScene)void setPortraitOverlay(THREE,portraitScene,portraitOverlay).then(()=>portraitDirty=true).catch(()=>toast('Overlay could not load. Try selecting it again.'));
  $('#enablePortraitPoses').checked=portraitPosesEnabled;$('#portraitPose').hidden=!portraitPosesEnabled;$('#portraitPose').value=portraitPose;applyPortraitPose();updateHistory();
  try{if(avatar)await avatar.setAppearance(next.appearance);if(version!==changeVersion)return;if(portraitAvatar)await portraitAvatar.setAppearance(next.appearance);if(version!==changeVersion)return;applyPortraitPose();portraitDirty=true;}
@@ -169,7 +179,7 @@ $('#enablePortraitPoses').onchange=event=>changePortrait({posesEnabled:event.tar
 $('#portraitPose').onchange=event=>changePortrait({pose:normalizePortraitPose(event.target.value)||'salute'});
 $('#resetView').onclick=()=>{yaw=.18;pitch=.08;distance=7.0;autoRotate=false;$('#rotateView').setAttribute('aria-pressed','false');};
 $('#rotateView').onclick=()=>{autoRotate=!autoRotate;$('#rotateView').setAttribute('aria-pressed',String(autoRotate));};
-$('#captureView').onclick=()=>{if(viewMode==='portrait'){void exportPortrait();return;}if(!renderer)return;renderer.render(scene,camera);canvas.toBlob(blob=>{if(blob)download(blob,'my-drifella.png');else toast('The portrait could not be captured.');});};
+$('#captureView').onclick=()=>{if(viewMode==='portrait'){void exportPortrait();return;}if(!renderer)return;renderer.render(scene,camera);canvas.toBlob(blob=>{if(blob)download(blob,`my-${characterId(appearance)}.png`);else toast('The portrait could not be captured.');});};
 
 let drag=null,pinchDistance=0;
 const pointers=new Map();
@@ -217,7 +227,7 @@ function setViewMode(mode){
  $('#studioMode').setAttribute('aria-pressed',String(!fixed));$('#portraitMode').setAttribute('aria-pressed',String(fixed));
  $('.motion-panel').hidden=fixed;$('#portraitControls').hidden=!fixed;
  $('#resetView').hidden=fixed;$('#rotateView').hidden=fixed;
- canvas.setAttribute('aria-label',fixed?'Drifella portrait preview. Fixed pose and camera.':'3D Drifella preview. Drag or use arrow keys to rotate. Scroll or use plus and minus to zoom.');
+ canvas.setAttribute('aria-label',fixed?'Character portrait preview. Fixed pose and camera.':'3D character preview. Drag or use arrow keys to rotate. Scroll or use plus and minus to zoom.');
  canvas.tabIndex=fixed?-1:0;
  previousTime=0;resize();
 }
@@ -242,7 +252,7 @@ async function exportPortrait(){
   const dataURL=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(Error('Could not prepare the PNG.'));reader.readAsDataURL(blob);});
   if(disposed)return;
   $('#exportedPortrait').src=dataURL;$('#savePortraitFile').href=dataURL;
-  $('#savePortraitFile').download=`drifella-${PORTRAIT_COMPOSITION.width}x${PORTRAIT_COMPOSITION.height}.png`;
+  $('#savePortraitFile').download=`${characterId(appearance)}-${PORTRAIT_COMPOSITION.width}x${PORTRAIT_COMPOSITION.height}.png`;
   $('#portraitFileDetails').textContent=`${PORTRAIT_COMPOSITION.width} × ${PORTRAIT_COMPOSITION.height} pixels · PNG · ${Math.round(blob.size/1024)} KB`;
   $('#portraitExportDialog').showModal();
  }catch(error){console.error(error);toast('The PNG could not be exported. Please try again.');}
@@ -263,8 +273,9 @@ async function setupPortrait(){
 // remain responsive while thumbnails are prepared a few at a time.
 async function makeThumbnails(){
  let preview,previewRenderer,previewEnvironment;
+ const species=characterId(appearance),base=characterDefaults(appearance),generation=++thumbnailGeneration;
  try{
-  preview=await createShowroomAvatar();if(disposed){preview.dispose();return;}
+  preview=await createShowroomAvatar({appearance:base});if(disposed||generation!==thumbnailGeneration)return;
   preview.model.position.set(0,0,0);preview.model.rotation.set(0,0,0);preview.model.scale.setScalar(1);preview.update(.001,0,false);
   const thumbnailScene=new THREE.Scene();thumbnailScene.add(preview.model,new THREE.HemisphereLight(0xf7fcff,0x748b79,2.2));
   const light=new THREE.DirectionalLight(0xfff5df,3.2);light.position.set(-3,7,5);thumbnailScene.add(light);
@@ -274,11 +285,11 @@ async function makeThumbnails(){
   const portraitCamera=new THREE.OrthographicCamera(-1,1,1,-1,.05,20);
   const views={brows:{y:2.47,height:.75},eyes:{y:2.23,height:.70},mouth:{y:1.87,height:.60},shirt:{y:1.18,height:1.45},legs:{y:.47,height:1.08},hat:{y:2.82,height:1.68},accessory:{y:1.5,height:2.55},head:{y:2.25,height:2.05},extra:{y:1.80,height:3.25},nose:{y:1.98,height:.40},ears:{y:2.35,height:2.0},tattoo:{y:2.22,height:1.25}};
   const remaining=[...controls.querySelectorAll('[data-option]')].filter(button=>button.dataset.option!=='none');
-  while(remaining.length&&!disposed){
-   for(let batch=0;batch<3&&remaining.length;batch++){
+  while(remaining.length&&!disposed&&species===controlsCharacter&&generation===thumbnailGeneration){
+   for(let batch=0;batch<3&&remaining.length&&generation===thumbnailGeneration;batch++){
     const preferred=remaining.findIndex(button=>button.dataset.category===activeCategory),button=remaining.splice(preferred<0?0:preferred,1)[0],{category,option}=button.dataset;
     const view=views[category],rear=category==='accessory'&&['jetpack','backpack','wings','skateboard','sword','angelwings','batwings','mechwings','shield','machinegun'].includes(option);
-    await preview.setAppearance({...DEFAULT_APPEARANCE,accessory:'none',[category]:option});
+    await preview.setAppearance({...base,accessory:'none',[category]:option});
     portraitCamera.top=view.height/2;portraitCamera.bottom=-view.height/2;portraitCamera.right=view.height*180/132/2;portraitCamera.left=-portraitCamera.right;portraitCamera.updateProjectionMatrix();
     portraitCamera.position.set(category==='accessory'?(rear?-.9:.7):0,view.y+.03,rear?-5:5);portraitCamera.lookAt(0,view.y,0);
     previewRenderer.render(thumbnailScene,portraitCamera);
@@ -302,6 +313,7 @@ async function init(){
   avatar=await createShowroomAvatar({appearance});if(disposed){avatar.dispose();return;}avatar.model.position.set(0,0,0);avatar.model.rotation.y=0;avatar.model.scale.setScalar(1);scene.add(avatar.model);
   avatar.model.traverse(node=>{if(node.isMesh){node.castShadow=true;node.receiveShadow=true;}});
   card=createHeldCard(THREE);card.visible=holding;card.castShadow=true;scene.add(card);followHeldCard=createHeldCardFollower({THREE,card,avatar});followHeldCard();
+  for(const button of document.querySelectorAll('[data-character]'))button.disabled=false;
   settled=0;$('#loadState').hidden=true;controls.inert=false;$('#bookmarksPanel').inert=false;for(const id of ['randomize','saveBookmark','exportRarity','importRarity','captureView','studioMode','studioPose'])$(`#${id}`).disabled=false;
   void setupPortrait().catch(error=>{console.error(error);toast('Portrait mode could not load. Reload to try again.');});
   void makeThumbnails();

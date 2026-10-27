@@ -1,0 +1,2563 @@
+{
+  "character": "drilady",
+  "version": 4,
+  "asset": "drilady-base.glb",
+  "source": "drilady-base.blend",
+  "animationContract": "drifella-19-bone-v1",
+  "bones": [
+    "Root",
+    "Pelvis",
+    "Chest",
+    "Head",
+    "UpperArm.R",
+    "Forearm.R",
+    "Hand.R",
+    "CardSocket.R",
+    "UpperArm.L",
+    "Forearm.L",
+    "Hand.L",
+    "Thigh.R",
+    "Shin.R",
+    "Foot.R",
+    "Thigh.L",
+    "Shin.L",
+    "Foot.L",
+    "Tail",
+    "TailTip"
+  ],
+  "clips": [
+    {
+      "name": "Crouch",
+      "frames": [
+        1.0,
+        61.0
+      ]
+    },
+    {
+      "name": "Crouch_Hold_Right",
+      "frames": [
+        1.0,
+        61.0
+      ]
+    },
+    {
+      "name": "Crouch_Walk",
+      "frames": [
+        1.0,
+        41.0
+      ]
+    },
+    {
+      "name": "Crouch_Walk_Hold_Right",
+      "frames": [
+        1.0,
+        41.0
+      ]
+    },
+    {
+      "name": "Hold_Right",
+      "frames": [
+        1.0,
+        61.0
+      ]
+    },
+    {
+      "name": "Jump",
+      "frames": [
+        1.0,
+        34.0
+      ]
+    },
+    {
+      "name": "Jump_Hold_Right",
+      "frames": [
+        1.0,
+        34.0
+      ]
+    },
+    {
+      "name": "Neutral",
+      "frames": [
+        1.0,
+        61.0
+      ]
+    },
+    {
+      "name": "Pose_airguitar",
+      "frames": [
+        1.0,
+        61.0
+      ]
+    },
+    {
+      "name": "Pose_balancekick",
+      "frames": [
+        1.0,
+        61.0
+      ]
+    },
+    {
+      "name": "Pose_bow",
+      "frames": [
+        1.0,
+        61.0
+      ]
+    },
+    {
+      "name": "Pose_boxer",
+      "frames": [
+        1.0,
+        61.0
+      ]
+    },
+    {
+      "name": "Pose_conductor",
+      "frames": [
+        1.0,
+        61.0
+      ]
+    },
+    {
+      "name": "Pose_crane",
+      "frames": [
+        1.0,
+        61.0
+      ]
+    },
+    {
+      "name": "Pose_crossarms",
+      "frames": [
+        1.0,
+        61.0
+      ]
+    },
+    {
+      "name": "Pose_curtsey",
+      "frames": [
+        1.0,
+        61.0
+      ]
+    },
+    {
+      "name": "Pose_dab",
+      "frames": [
+        1.0,
+        61.0
+      ]
+    },
+    {
+      "name": "Pose_fistbump",
+      "frames": [
+        1.0,
+        61.0
+      ]
+    },
+    {
+      "name": "Pose_flex",
+      "frames": [
+        1.0,
+        61.0
+      ]
+    },
+    {
+      "name": "Pose_heart",
+      "frames": [
+        1.0,
+        61.0
+      ]
+    },
+    {
+      "name": "Pose_highfive",
+      "frames": [
+        1.0,
+        61.0
+      ]
+    },
+    {
+      "name": "Pose_kneel",
+      "frames": [
+        1.0,
+        61.0
+      ]
+    },
+    {
+      "name": "Pose_leanback",
+      "frames": [
+        1.0,
+        61.0
+      ]
+    },
+    {
+      "name": "Pose_lookout",
+      "frames": [
+        1.0,
+        61.0
+      ]
+    },
+    {
+      "name": "Pose_lunge",
+      "frames": [
+        1.0,
+        61.0
+      ]
+    },
+    {
+      "name": "Pose_micdrop",
+      "frames": [
+        1.0,
+        61.0
+      ]
+    },
+    {
+      "name": "Pose_mnangelspread",
+      "frames": [
+        1.0,
+        61.0
+      ]
+    },
+    {
+      "name": "Pose_mnartistlean",
+      "frames": [
+        1.0,
+        61.0
+      ]
+    },
+    {
+      "name": "Pose_mnbehindback",
+      "frames": [
+        1.0,
+        61.0
+      ]
+    },
+    {
+      "name": "Pose_mncheekrest",
+      "frames": [
+        1.0,
+        61.0
+      ]
+    },
+    {
+      "name": "Pose_mnlistening",
+      "frames": [
+        1.0,
+        61.0
+      ]
+    },
+    {
+      "name": "Pose_mnprayer",
+      "frames": [
+        1.0,
+        61.0
+      ]
+    },
+    {
+      "name": "Pose_mnreverie",
+      "frames": [
+        1.0,
+        61.0
+      ]
+    },
+    {
+      "name": "Pose_mnshy",
+      "frames": [
+        1.0,
+        61.0
+      ]
+    },
+    {
+      "name": "Pose_mnstepturn",
+      "frames": [
+        1.0,
+        61.0
+      ]
+    },
+    {
+      "name": "Pose_oath",
+      "frames": [
+        1.0,
+        61.0
+      ]
+    },
+    {
+      "name": "Pose_point",
+      "frames": [
+        1.0,
+        61.0
+      ]
+    },
+    {
+      "name": "Pose_powerpunch",
+      "frames": [
+        1.0,
+        61.0
+      ]
+    },
+    {
+      "name": "Pose_present",
+      "frames": [
+        1.0,
+        61.0
+      ]
+    },
+    {
+      "name": "Pose_salute",
+      "frames": [
+        1.0,
+        61.0
+      ]
+    },
+    {
+      "name": "Pose_shrug",
+      "frames": [
+        1.0,
+        61.0
+      ]
+    },
+    {
+      "name": "Pose_summon",
+      "frames": [
+        1.0,
+        61.0
+      ]
+    },
+    {
+      "name": "Pose_think",
+      "frames": [
+        1.0,
+        61.0
+      ]
+    },
+    {
+      "name": "Pose_tpose",
+      "frames": [
+        1.0,
+        61.0
+      ]
+    },
+    {
+      "name": "Pose_victory",
+      "frames": [
+        1.0,
+        61.0
+      ]
+    },
+    {
+      "name": "Pose_wave",
+      "frames": [
+        1.0,
+        61.0
+      ]
+    },
+    {
+      "name": "Pose_welcome",
+      "frames": [
+        1.0,
+        61.0
+      ]
+    },
+    {
+      "name": "Walk",
+      "frames": [
+        1.0,
+        31.0
+      ]
+    },
+    {
+      "name": "Walk_Hold_Right",
+      "frames": [
+        1.0,
+        31.0
+      ]
+    }
+  ],
+  "parts": [
+    {
+      "name": "Drif_Accessory_ladybackdrape",
+      "vertices": 11306
+    },
+    {
+      "name": "Drif_Accessory_ladybellchoker",
+      "vertices": 490
+    },
+    {
+      "name": "Drif_Accessory_ladybow",
+      "vertices": 542
+    },
+    {
+      "name": "Drif_Accessory_ladybowpack",
+      "vertices": 1022
+    },
+    {
+      "name": "Drif_Accessory_ladycape",
+      "vertices": 688
+    },
+    {
+      "name": "Drif_Accessory_ladychain",
+      "vertices": 5940
+    },
+    {
+      "name": "Drif_Accessory_ladychoker",
+      "vertices": 1962
+    },
+    {
+      "name": "Drif_Accessory_ladycoinbib",
+      "vertices": 4032
+    },
+    {
+      "name": "Drif_Accessory_ladycollar",
+      "vertices": 352
+    },
+    {
+      "name": "Drif_Accessory_ladycrystalbrooch",
+      "vertices": 90
+    },
+    {
+      "name": "Drif_Accessory_ladygearbodypearl",
+      "vertices": 6804
+    },
+    {
+      "name": "Drif_Accessory_ladygearbowcollar",
+      "vertices": 552
+    },
+    {
+      "name": "Drif_Accessory_ladygearcamstrap",
+      "vertices": 1516
+    },
+    {
+      "name": "Drif_Accessory_ladygearcd",
+      "vertices": 2372
+    },
+    {
+      "name": "Drif_Accessory_ladygearchainbelt",
+      "vertices": 5742
+    },
+    {
+      "name": "Drif_Accessory_ladygearchromeshoulder",
+      "vertices": 1332
+    },
+    {
+      "name": "Drif_Accessory_ladygearclock",
+      "vertices": 1672
+    },
+    {
+      "name": "Drif_Accessory_ladygeardg",
+      "vertices": 2408
+    },
+    {
+      "name": "Drif_Accessory_ladygearfurboa",
+      "vertices": 2304
+    },
+    {
+      "name": "Drif_Accessory_ladygeargoldlung",
+      "vertices": 2776
+    },
+    {
+      "name": "Drif_Accessory_ladygearledbadge",
+      "vertices": 820
+    },
+    {
+      "name": "Drif_Accessory_ladygearlegobrooch",
+      "vertices": 320
+    },
+    {
+      "name": "Drif_Accessory_ladygearpearlbib",
+      "vertices": 6546
+    },
+    {
+      "name": "Drif_Accessory_ladygearphonebag",
+      "vertices": 2182
+    },
+    {
+      "name": "Drif_Accessory_ladygearpincollar",
+      "vertices": 142
+    },
+    {
+      "name": "Drif_Accessory_ladygearpostbag",
+      "vertices": 1056
+    },
+    {
+      "name": "Drif_Accessory_ladygearribbonback",
+      "vertices": 886
+    },
+    {
+      "name": "Drif_Accessory_ladygearrosary",
+      "vertices": 2084
+    },
+    {
+      "name": "Drif_Accessory_ladygearsmallcapes",
+      "vertices": 480
+    },
+    {
+      "name": "Drif_Accessory_ladygearstampcharm",
+      "vertices": 3872
+    },
+    {
+      "name": "Drif_Accessory_ladygemshoulders",
+      "vertices": 728
+    },
+    {
+      "name": "Drif_Accessory_ladyheartlock",
+      "vertices": 640
+    },
+    {
+      "name": "Drif_Accessory_ladykey",
+      "vertices": 1250
+    },
+    {
+      "name": "Drif_Accessory_ladylacecollar",
+      "vertices": 1200
+    },
+    {
+      "name": "Drif_Accessory_ladylocket",
+      "vertices": 4352
+    },
+    {
+      "name": "Drif_Accessory_ladypearl",
+      "vertices": 6388
+    },
+    {
+      "name": "Drif_Accessory_ladyroses",
+      "vertices": 11388
+    },
+    {
+      "name": "Drif_Accessory_ladysash",
+      "vertices": 242
+    },
+    {
+      "name": "Drif_Accessory_ladysatchel",
+      "vertices": 564
+    },
+    {
+      "name": "Drif_Accessory_ladyshortcape",
+      "vertices": 666
+    },
+    {
+      "name": "Drif_Accessory_ladyshoulderpearls",
+      "vertices": 4644
+    },
+    {
+      "name": "Drif_Accessory_ladystarbelt",
+      "vertices": 430
+    },
+    {
+      "name": "Drif_Accessory_ladywaistchain",
+      "vertices": 10692
+    },
+    {
+      "name": "Drif_Accessory_ladywings",
+      "vertices": 1944
+    },
+    {
+      "name": "Drif_Accessory_original",
+      "vertices": 2004
+    },
+    {
+      "name": "Drif_Body",
+      "vertices": 3220
+    },
+    {
+      "name": "Drif_Brows_ladyangledbrow",
+      "vertices": 4000
+    },
+    {
+      "name": "Drif_Brows_ladyblock",
+      "vertices": 3200
+    },
+    {
+      "name": "Drif_Brows_ladyblonde",
+      "vertices": 3200
+    },
+    {
+      "name": "Drif_Brows_ladybrowarchedgap",
+      "vertices": 2800
+    },
+    {
+      "name": "Drif_Brows_ladybrowauburn",
+      "vertices": 3200
+    },
+    {
+      "name": "Drif_Brows_ladybrowblondcurve",
+      "vertices": 3200
+    },
+    {
+      "name": "Drif_Brows_ladybrowbrowbar",
+      "vertices": 3736
+    },
+    {
+      "name": "Drif_Brows_ladybrowbrunetsoft",
+      "vertices": 3200
+    },
+    {
+      "name": "Drif_Brows_ladybrowcuffs",
+      "vertices": 4664
+    },
+    {
+      "name": "Drif_Brows_ladybrowdarkcurve",
+      "vertices": 3200
+    },
+    {
+      "name": "Drif_Brows_ladybrowdoublepierce",
+      "vertices": 3864
+    },
+    {
+      "name": "Drif_Brows_ladybrowdroop",
+      "vertices": 3200
+    },
+    {
+      "name": "Drif_Brows_ladybrowflat",
+      "vertices": 3200
+    },
+    {
+      "name": "Drif_Brows_ladybrowhoney",
+      "vertices": 4100
+    },
+    {
+      "name": "Drif_Brows_ladybrowpencil",
+      "vertices": 3200
+    },
+    {
+      "name": "Drif_Brows_ladybrowpiercedarch",
+      "vertices": 3736
+    },
+    {
+      "name": "Drif_Brows_ladybrowpinkblock",
+      "vertices": 3200
+    },
+    {
+      "name": "Drif_Brows_ladybrowpinkpoint",
+      "vertices": 3200
+    },
+    {
+      "name": "Drif_Brows_ladybrowredsplit",
+      "vertices": 2800
+    },
+    {
+      "name": "Drif_Brows_ladybrowrouge",
+      "vertices": 3200
+    },
+    {
+      "name": "Drif_Brows_ladybrowsidelift",
+      "vertices": 3200
+    },
+    {
+      "name": "Drif_Brows_ladybrowspike",
+      "vertices": 4100
+    },
+    {
+      "name": "Drif_Brows_ladybrowthinlift",
+      "vertices": 3200
+    },
+    {
+      "name": "Drif_Brows_ladybrowtwinnotch",
+      "vertices": 2800
+    },
+    {
+      "name": "Drif_Brows_ladybrunette",
+      "vertices": 3200
+    },
+    {
+      "name": "Drif_Brows_ladybushy",
+      "vertices": 5000
+    },
+    {
+      "name": "Drif_Brows_ladycopperbrow",
+      "vertices": 5200
+    },
+    {
+      "name": "Drif_Brows_ladycurvedbrow",
+      "vertices": 4300
+    },
+    {
+      "name": "Drif_Brows_ladydiamondbrow",
+      "vertices": 4020
+    },
+    {
+      "name": "Drif_Brows_ladydouble",
+      "vertices": 6400
+    },
+    {
+      "name": "Drif_Brows_ladyfeatherlift",
+      "vertices": 5200
+    },
+    {
+      "name": "Drif_Brows_ladyfork",
+      "vertices": 3500
+    },
+    {
+      "name": "Drif_Brows_ladyheartnotch",
+      "vertices": 4320
+    },
+    {
+      "name": "Drif_Brows_ladyhigharch",
+      "vertices": 4000
+    },
+    {
+      "name": "Drif_Brows_ladyjewel",
+      "vertices": 4060
+    },
+    {
+      "name": "Drif_Brows_ladypierced",
+      "vertices": 3864
+    },
+    {
+      "name": "Drif_Brows_ladypink",
+      "vertices": 3200
+    },
+    {
+      "name": "Drif_Brows_ladyplatinumbrow",
+      "vertices": 4000
+    },
+    {
+      "name": "Drif_Brows_ladyred",
+      "vertices": 3200
+    },
+    {
+      "name": "Drif_Brows_ladysable",
+      "vertices": 4000
+    },
+    {
+      "name": "Drif_Brows_ladytaperbrow",
+      "vertices": 4000
+    },
+    {
+      "name": "Drif_Brows_ladythin",
+      "vertices": 3200
+    },
+    {
+      "name": "Drif_Brows_ladyvelvetbrow",
+      "vertices": 4000
+    },
+    {
+      "name": "Drif_Brows_ladyworry",
+      "vertices": 3200
+    },
+    {
+      "name": "Drif_Brows_original",
+      "vertices": 2352
+    },
+    {
+      "name": "Drif_Ears_ladyback",
+      "vertices": 2444
+    },
+    {
+      "name": "Drif_Ears_ladybow",
+      "vertices": 3058
+    },
+    {
+      "name": "Drif_Ears_ladycloseears",
+      "vertices": 4794
+    },
+    {
+      "name": "Drif_Ears_ladydiamondears",
+      "vertices": 3500
+    },
+    {
+      "name": "Drif_Ears_ladydippedears",
+      "vertices": 5690
+    },
+    {
+      "name": "Drif_Ears_ladyearbandage",
+      "vertices": 1974
+    },
+    {
+      "name": "Drif_Ears_ladyearblacktips",
+      "vertices": 1974
+    },
+    {
+      "name": "Drif_Ears_ladyearbridal",
+      "vertices": 2842
+    },
+    {
+      "name": "Drif_Ears_ladyearhighroot",
+      "vertices": 1638
+    },
+    {
+      "name": "Drif_Ears_ladyearlonghat",
+      "vertices": 1638
+    },
+    {
+      "name": "Drif_Ears_ladyearloop",
+      "vertices": 1950
+    },
+    {
+      "name": "Drif_Ears_ladyearmetalrim",
+      "vertices": 1638
+    },
+    {
+      "name": "Drif_Ears_ladyearoneback",
+      "vertices": 1950
+    },
+    {
+      "name": "Drif_Ears_ladyearoneup2",
+      "vertices": 3198
+    },
+    {
+      "name": "Drif_Ears_ladyearoutward",
+      "vertices": 1638
+    },
+    {
+      "name": "Drif_Ears_ladyearpetite",
+      "vertices": 1638
+    },
+    {
+      "name": "Drif_Ears_ladyearpinklining",
+      "vertices": 1638
+    },
+    {
+      "name": "Drif_Ears_ladyearplushfold",
+      "vertices": 1950
+    },
+    {
+      "name": "Drif_Ears_ladyearredrings",
+      "vertices": 1974
+    },
+    {
+      "name": "Drif_Ears_ladyearscooped",
+      "vertices": 1638
+    },
+    {
+      "name": "Drif_Ears_ladyearsoftbend",
+      "vertices": 1638
+    },
+    {
+      "name": "Drif_Ears_ladyearstitched",
+      "vertices": 2086
+    },
+    {
+      "name": "Drif_Ears_ladyearstraightdown",
+      "vertices": 1638
+    },
+    {
+      "name": "Drif_Ears_ladyeartalllean",
+      "vertices": 4758
+    },
+    {
+      "name": "Drif_Ears_ladyearwind",
+      "vertices": 1638
+    },
+    {
+      "name": "Drif_Ears_ladyfold",
+      "vertices": 2444
+    },
+    {
+      "name": "Drif_Ears_ladyheartears",
+      "vertices": 5114
+    },
+    {
+      "name": "Drif_Ears_ladylong",
+      "vertices": 2444
+    },
+    {
+      "name": "Drif_Ears_ladynotch",
+      "vertices": 2444
+    },
+    {
+      "name": "Drif_Ears_ladyoneflop",
+      "vertices": 2209
+    },
+    {
+      "name": "Drif_Ears_ladyonefold",
+      "vertices": 3619
+    },
+    {
+      "name": "Drif_Ears_ladypetal",
+      "vertices": 1974
+    },
+    {
+      "name": "Drif_Ears_ladyplate",
+      "vertices": 2614
+    },
+    {
+      "name": "Drif_Ears_ladyplushears",
+      "vertices": 6394
+    },
+    {
+      "name": "Drif_Ears_ladyrings",
+      "vertices": 3632
+    },
+    {
+      "name": "Drif_Ears_ladyroundlop",
+      "vertices": 2444
+    },
+    {
+      "name": "Drif_Ears_ladyshirredears",
+      "vertices": 4040
+    },
+    {
+      "name": "Drif_Ears_ladyshort",
+      "vertices": 1974
+    },
+    {
+      "name": "Drif_Ears_ladysideflick",
+      "vertices": 2444
+    },
+    {
+      "name": "Drif_Ears_ladystarcuffs",
+      "vertices": 3132
+    },
+    {
+      "name": "Drif_Ears_ladytalloval",
+      "vertices": 4794
+    },
+    {
+      "name": "Drif_Ears_ladytuft",
+      "vertices": 2766
+    },
+    {
+      "name": "Drif_Ears_ladyupright",
+      "vertices": 1974
+    },
+    {
+      "name": "Drif_Ears_ladyvelvetlop",
+      "vertices": 2444
+    },
+    {
+      "name": "Drif_Ears_original",
+      "vertices": 1150
+    },
+    {
+      "name": "Drif_Extra_ladyballoons",
+      "vertices": 1884
+    },
+    {
+      "name": "Drif_Extra_ladybooks",
+      "vertices": 960
+    },
+    {
+      "name": "Drif_Extra_ladycanopy",
+      "vertices": 1638
+    },
+    {
+      "name": "Drif_Extra_ladychains",
+      "vertices": 13068
+    },
+    {
+      "name": "Drif_Extra_ladychandelier",
+      "vertices": 2898
+    },
+    {
+      "name": "Drif_Extra_ladychess",
+      "vertices": 1466
+    },
+    {
+      "name": "Drif_Extra_ladycube",
+      "vertices": 2496
+    },
+    {
+      "name": "Drif_Extra_ladydice",
+      "vertices": 2016
+    },
+    {
+      "name": "Drif_Extra_ladyextrabrick",
+      "vertices": 3808
+    },
+    {
+      "name": "Drif_Extra_ladyextrabubble",
+      "vertices": 2210
+    },
+    {
+      "name": "Drif_Extra_ladyextracamcorder",
+      "vertices": 2264
+    },
+    {
+      "name": "Drif_Extra_ladyextracastle",
+      "vertices": 3784
+    },
+    {
+      "name": "Drif_Extra_ladyextracd",
+      "vertices": 3200
+    },
+    {
+      "name": "Drif_Extra_ladyextrachain",
+      "vertices": 17028
+    },
+    {
+      "name": "Drif_Extra_ladyextracomputer",
+      "vertices": 3316
+    },
+    {
+      "name": "Drif_Extra_ladyextracross",
+      "vertices": 576
+    },
+    {
+      "name": "Drif_Extra_ladyextraearth",
+      "vertices": 3026
+    },
+    {
+      "name": "Drif_Extra_ladyextraflipphone",
+      "vertices": 1990
+    },
+    {
+      "name": "Drif_Extra_ladyextragrenade",
+      "vertices": 3686
+    },
+    {
+      "name": "Drif_Extra_ladyextraled",
+      "vertices": 2364
+    },
+    {
+      "name": "Drif_Extra_ladyextrampc",
+      "vertices": 2048
+    },
+    {
+      "name": "Drif_Extra_ladyextraphones",
+      "vertices": 5682
+    },
+    {
+      "name": "Drif_Extra_ladyextrapolaroid",
+      "vertices": 2688
+    },
+    {
+      "name": "Drif_Extra_ladyextrascreen",
+      "vertices": 156
+    },
+    {
+      "name": "Drif_Extra_ladyextraskullpot",
+      "vertices": 2577
+    },
+    {
+      "name": "Drif_Extra_ladyextrasmoke",
+      "vertices": 1764
+    },
+    {
+      "name": "Drif_Extra_ladyextrastamp",
+      "vertices": 9580
+    },
+    {
+      "name": "Drif_Extra_ladyextrateeth",
+      "vertices": 2430
+    },
+    {
+      "name": "Drif_Extra_ladyfan",
+      "vertices": 841
+    },
+    {
+      "name": "Drif_Extra_ladyframes",
+      "vertices": 14742
+    },
+    {
+      "name": "Drif_Extra_ladyglass",
+      "vertices": 180
+    },
+    {
+      "name": "Drif_Extra_ladyglassarch",
+      "vertices": 2162
+    },
+    {
+      "name": "Drif_Extra_ladyheartframe",
+      "vertices": 15178
+    },
+    {
+      "name": "Drif_Extra_ladylilies",
+      "vertices": 5268
+    },
+    {
+      "name": "Drif_Extra_ladymirror",
+      "vertices": 18710
+    },
+    {
+      "name": "Drif_Extra_ladypearlorbit",
+      "vertices": 5256
+    },
+    {
+      "name": "Drif_Extra_ladypetalshower",
+      "vertices": 2600
+    },
+    {
+      "name": "Drif_Extra_ladyrose",
+      "vertices": 17574
+    },
+    {
+      "name": "Drif_Extra_ladysilkdrape",
+      "vertices": 2236
+    },
+    {
+      "name": "Drif_Extra_ladystair",
+      "vertices": 3720
+    },
+    {
+      "name": "Drif_Extra_ladystars",
+      "vertices": 500
+    },
+    {
+      "name": "Drif_Extra_ladyteaservice",
+      "vertices": 5904
+    },
+    {
+      "name": "Drif_Extra_ladyvase",
+      "vertices": 2012
+    },
+    {
+      "name": "Drif_Extra_ladywindow",
+      "vertices": 4298
+    },
+    {
+      "name": "Drif_Eyes_classic",
+      "vertices": 21054
+    },
+    {
+      "name": "Drif_Eyes_ladyalienlens",
+      "vertices": 5248
+    },
+    {
+      "name": "Drif_Eyes_ladyangryliner",
+      "vertices": 7148
+    },
+    {
+      "name": "Drif_Eyes_ladyblackmakeup",
+      "vertices": 8848
+    },
+    {
+      "name": "Drif_Eyes_ladybloodshot",
+      "vertices": 9448
+    },
+    {
+      "name": "Drif_Eyes_ladyblueteardrop",
+      "vertices": 9648
+    },
+    {
+      "name": "Drif_Eyes_ladyboredlid",
+      "vertices": 8848
+    },
+    {
+      "name": "Drif_Eyes_ladybridalshimmer",
+      "vertices": 8848
+    },
+    {
+      "name": "Drif_Eyes_ladycash",
+      "vertices": 9216
+    },
+    {
+      "name": "Drif_Eyes_ladycatliner",
+      "vertices": 10536
+    },
+    {
+      "name": "Drif_Eyes_ladycone",
+      "vertices": 9216
+    },
+    {
+      "name": "Drif_Eyes_ladycross",
+      "vertices": 2600
+    },
+    {
+      "name": "Drif_Eyes_ladydoe",
+      "vertices": 10648
+    },
+    {
+      "name": "Drif_Eyes_ladydualshade",
+      "vertices": 9348
+    },
+    {
+      "name": "Drif_Eyes_ladyemerald",
+      "vertices": 2516
+    },
+    {
+      "name": "Drif_Eyes_ladyemptyliner",
+      "vertices": 6848
+    },
+    {
+      "name": "Drif_Eyes_ladyfangred",
+      "vertices": 7148
+    },
+    {
+      "name": "Drif_Eyes_ladyfrost",
+      "vertices": 10616
+    },
+    {
+      "name": "Drif_Eyes_ladygoldhour",
+      "vertices": 10616
+    },
+    {
+      "name": "Drif_Eyes_ladyhalf",
+      "vertices": 8436
+    },
+    {
+      "name": "Drif_Eyes_ladyheartiris",
+      "vertices": 8856
+    },
+    {
+      "name": "Drif_Eyes_ladyjade",
+      "vertices": 10536
+    },
+    {
+      "name": "Drif_Eyes_ladykisswink",
+      "vertices": 6536
+    },
+    {
+      "name": "Drif_Eyes_ladylashfan",
+      "vertices": 9280
+    },
+    {
+      "name": "Drif_Eyes_ladymocha",
+      "vertices": 10536
+    },
+    {
+      "name": "Drif_Eyes_ladynegative",
+      "vertices": 8848
+    },
+    {
+      "name": "Drif_Eyes_ladyowllens",
+      "vertices": 8848
+    },
+    {
+      "name": "Drif_Eyes_ladypill",
+      "vertices": 9216
+    },
+    {
+      "name": "Drif_Eyes_ladypixel",
+      "vertices": 4384
+    },
+    {
+      "name": "Drif_Eyes_ladyredblack",
+      "vertices": 8848
+    },
+    {
+      "name": "Drif_Eyes_ladyrobot",
+      "vertices": 3480
+    },
+    {
+      "name": "Drif_Eyes_ladyruby",
+      "vertices": 8536
+    },
+    {
+      "name": "Drif_Eyes_ladyrubywing",
+      "vertices": 10648
+    },
+    {
+      "name": "Drif_Eyes_ladyscouter",
+      "vertices": 9368
+    },
+    {
+      "name": "Drif_Eyes_ladysmoke",
+      "vertices": 10536
+    },
+    {
+      "name": "Drif_Eyes_ladyspikes",
+      "vertices": 9306
+    },
+    {
+      "name": "Drif_Eyes_ladyspiral",
+      "vertices": 4296
+    },
+    {
+      "name": "Drif_Eyes_ladyspy",
+      "vertices": 3840
+    },
+    {
+      "name": "Drif_Eyes_ladystarlet",
+      "vertices": 8828
+    },
+    {
+      "name": "Drif_Eyes_ladysunset",
+      "vertices": 10536
+    },
+    {
+      "name": "Drif_Eyes_ladywedding",
+      "vertices": 9396
+    },
+    {
+      "name": "Drif_Eyes_ladywhite",
+      "vertices": 4536
+    },
+    {
+      "name": "Drif_Eyes_ladywhiteswirl",
+      "vertices": 3888
+    },
+    {
+      "name": "Drif_Eyes_ladywink",
+      "vertices": 5526
+    },
+    {
+      "name": "Drif_Eyes_ladyyellowstare",
+      "vertices": 8848
+    },
+    {
+      "name": "Drif_Hair_ladybob",
+      "vertices": 4573
+    },
+    {
+      "name": "Drif_Hair_ladybraidcrown",
+      "vertices": 4115
+    },
+    {
+      "name": "Drif_Hair_ladybraidedpony",
+      "vertices": 2963
+    },
+    {
+      "name": "Drif_Hair_ladybraids",
+      "vertices": 4817
+    },
+    {
+      "name": "Drif_Hair_ladybubblepony",
+      "vertices": 4833
+    },
+    {
+      "name": "Drif_Hair_ladycascade",
+      "vertices": 3105
+    },
+    {
+      "name": "Drif_Hair_ladychignon",
+      "vertices": 3011
+    },
+    {
+      "name": "Drif_Hair_ladycurls",
+      "vertices": 17485
+    },
+    {
+      "name": "Drif_Hair_ladycurltails",
+      "vertices": 6877
+    },
+    {
+      "name": "Drif_Hair_ladycurlycrown",
+      "vertices": 4539
+    },
+    {
+      "name": "Drif_Hair_ladycurtain",
+      "vertices": 3733
+    },
+    {
+      "name": "Drif_Hair_ladydoubleknot",
+      "vertices": 2577
+    },
+    {
+      "name": "Drif_Hair_ladyflipbob",
+      "vertices": 3967
+    },
+    {
+      "name": "Drif_Hair_ladyflowerhair",
+      "vertices": 8619
+    },
+    {
+      "name": "Drif_Hair_ladyfrenchroll",
+      "vertices": 2783
+    },
+    {
+      "name": "Drif_Hair_ladyglamwave",
+      "vertices": 3489
+    },
+    {
+      "name": "Drif_Hair_ladyheartbob",
+      "vertices": 4801
+    },
+    {
+      "name": "Drif_Hair_ladyherringbone",
+      "vertices": 3419
+    },
+    {
+      "name": "Drif_Hair_ladyhighpony",
+      "vertices": 2807
+    },
+    {
+      "name": "Drif_Hair_ladyice",
+      "vertices": 2473
+    },
+    {
+      "name": "Drif_Hair_ladylongfringe",
+      "vertices": 3655
+    },
+    {
+      "name": "Drif_Hair_ladylongsweep",
+      "vertices": 3501
+    },
+    {
+      "name": "Drif_Hair_ladymusicshag",
+      "vertices": 3501
+    },
+    {
+      "name": "Drif_Hair_ladyorchidbun",
+      "vertices": 2627
+    },
+    {
+      "name": "Drif_Hair_ladypixie",
+      "vertices": 3057
+    },
+    {
+      "name": "Drif_Hair_ladyplatinumbob",
+      "vertices": 5605
+    },
+    {
+      "name": "Drif_Hair_ladypony",
+      "vertices": 1999
+    },
+    {
+      "name": "Drif_Hair_ladyrazorbob",
+      "vertices": 3967
+    },
+    {
+      "name": "Drif_Hair_ladyribbonpony",
+      "vertices": 3023
+    },
+    {
+      "name": "Drif_Hair_ladyropebraids",
+      "vertices": 4909
+    },
+    {
+      "name": "Drif_Hair_ladysatin",
+      "vertices": 3009
+    },
+    {
+      "name": "Drif_Hair_ladyshortbangs",
+      "vertices": 3655
+    },
+    {
+      "name": "Drif_Hair_ladysplitfringe",
+      "vertices": 3733
+    },
+    {
+      "name": "Drif_Hair_ladytightcoil",
+      "vertices": 2865
+    },
+    {
+      "name": "Drif_Hair_ladytwinbun",
+      "vertices": 4949
+    },
+    {
+      "name": "Drif_Hair_ladytwintail",
+      "vertices": 4573
+    },
+    {
+      "name": "Drif_Hair_ladyupdo",
+      "vertices": 3021
+    },
+    {
+      "name": "Drif_Hair_ladyvictory",
+      "vertices": 3553
+    },
+    {
+      "name": "Drif_Hair_ladywaves",
+      "vertices": 2473
+    },
+    {
+      "name": "Drif_Hair_ladywetlook",
+      "vertices": 3733
+    },
+    {
+      "name": "Drif_Hair_original",
+      "vertices": 97242
+    },
+    {
+      "name": "Drif_Hat_ladybandana",
+      "vertices": 888
+    },
+    {
+      "name": "Drif_Hat_ladybeadveil",
+      "vertices": 7494
+    },
+    {
+      "name": "Drif_Hat_ladyboater",
+      "vertices": 894
+    },
+    {
+      "name": "Drif_Hat_ladybonnet",
+      "vertices": 4599
+    },
+    {
+      "name": "Drif_Hat_ladybow",
+      "vertices": 542
+    },
+    {
+      "name": "Drif_Hat_ladycrown",
+      "vertices": 3532
+    },
+    {
+      "name": "Drif_Hat_ladyearmuffs",
+      "vertices": 1200
+    },
+    {
+      "name": "Drif_Hat_ladyfascinator",
+      "vertices": 1252
+    },
+    {
+      "name": "Drif_Hat_ladyfbi",
+      "vertices": 2462
+    },
+    {
+      "name": "Drif_Hat_ladyflowers",
+      "vertices": 20878
+    },
+    {
+      "name": "Drif_Hat_ladyhatbackcap",
+      "vertices": 945
+    },
+    {
+      "name": "Drif_Hat_ladyhatbandage",
+      "vertices": 801
+    },
+    {
+      "name": "Drif_Hat_ladyhatbandit",
+      "vertices": 1559
+    },
+    {
+      "name": "Drif_Hat_ladyhatburger",
+      "vertices": 422
+    },
+    {
+      "name": "Drif_Hat_ladyhatclean",
+      "vertices": 2707
+    },
+    {
+      "name": "Drif_Hat_ladyhatcod",
+      "vertices": 1236
+    },
+    {
+      "name": "Drif_Hat_ladyhatdragon",
+      "vertices": 1201
+    },
+    {
+      "name": "Drif_Hat_ladyhatfrancoise",
+      "vertices": 1559
+    },
+    {
+      "name": "Drif_Hat_ladyhatgasmask",
+      "vertices": 1432
+    },
+    {
+      "name": "Drif_Hat_ladyhatjoker",
+      "vertices": 190
+    },
+    {
+      "name": "Drif_Hat_ladyhatkoss",
+      "vertices": 1392
+    },
+    {
+      "name": "Drif_Hat_ladyhatofficer",
+      "vertices": 454
+    },
+    {
+      "name": "Drif_Hat_ladyhatparty",
+      "vertices": 922
+    },
+    {
+      "name": "Drif_Hat_ladyhatpinkglass",
+      "vertices": 772
+    },
+    {
+      "name": "Drif_Hat_ladyhatpuca",
+      "vertices": 921
+    },
+    {
+      "name": "Drif_Hat_ladyhatspikecap",
+      "vertices": 1233
+    },
+    {
+      "name": "Drif_Hat_ladyhatstanczyk",
+      "vertices": 1365
+    },
+    {
+      "name": "Drif_Hat_ladyhatstrawberry",
+      "vertices": 1509
+    },
+    {
+      "name": "Drif_Hat_ladyhatumbra",
+      "vertices": 1013
+    },
+    {
+      "name": "Drif_Hat_ladyhatweldflip",
+      "vertices": 1412
+    },
+    {
+      "name": "Drif_Hat_ladyheartband",
+      "vertices": 572
+    },
+    {
+      "name": "Drif_Hat_ladyjester",
+      "vertices": 1508
+    },
+    {
+      "name": "Drif_Hat_ladylacebow",
+      "vertices": 622
+    },
+    {
+      "name": "Drif_Hat_ladymilitary",
+      "vertices": 944
+    },
+    {
+      "name": "Drif_Hat_ladyminitop",
+      "vertices": 270
+    },
+    {
+      "name": "Drif_Hat_ladynurse",
+      "vertices": 272
+    },
+    {
+      "name": "Drif_Hat_ladypearltiara",
+      "vertices": 3696
+    },
+    {
+      "name": "Drif_Hat_ladypillbox",
+      "vertices": 2480
+    },
+    {
+      "name": "Drif_Hat_ladyroseberet",
+      "vertices": 2974
+    },
+    {
+      "name": "Drif_Hat_ladyscarf",
+      "vertices": 3036
+    },
+    {
+      "name": "Drif_Hat_ladyspikes",
+      "vertices": 2240
+    },
+    {
+      "name": "Drif_Hat_ladyveil",
+      "vertices": 1673
+    },
+    {
+      "name": "Drif_Hat_ladyweld",
+      "vertices": 884
+    },
+    {
+      "name": "Drif_Hat_ladywrap",
+      "vertices": 2629
+    },
+    {
+      "name": "Drif_Head_ladyblossom",
+      "vertices": 52621
+    },
+    {
+      "name": "Drif_Head_ladycastle",
+      "vertices": 9850
+    },
+    {
+      "name": "Drif_Head_ladymetal",
+      "vertices": 8736
+    },
+    {
+      "name": "Drif_Head_ladytrojan",
+      "vertices": 2984
+    },
+    {
+      "name": "Drif_Head_original",
+      "vertices": 32438
+    },
+    {
+      "name": "Drif_Legs_ladyankleflare",
+      "vertices": 9899
+    },
+    {
+      "name": "Drif_Legs_ladyarmor",
+      "vertices": 9723
+    },
+    {
+      "name": "Drif_Legs_ladybell",
+      "vertices": 10061
+    },
+    {
+      "name": "Drif_Legs_ladybloom",
+      "vertices": 18758
+    },
+    {
+      "name": "Drif_Legs_ladycargo",
+      "vertices": 6961
+    },
+    {
+      "name": "Drif_Legs_ladychaps",
+      "vertices": 9420
+    },
+    {
+      "name": "Drif_Legs_ladyflare",
+      "vertices": 10061
+    },
+    {
+      "name": "Drif_Legs_ladygarter",
+      "vertices": 7787
+    },
+    {
+      "name": "Drif_Legs_ladyglosslegs",
+      "vertices": 8961
+    },
+    {
+      "name": "Drif_Legs_ladyhighshorts",
+      "vertices": 6800
+    },
+    {
+      "name": "Drif_Legs_ladylace",
+      "vertices": 7762
+    },
+    {
+      "name": "Drif_Legs_ladylegbikinishort",
+      "vertices": 7771
+    },
+    {
+      "name": "Drif_Legs_ladylegbowstock",
+      "vertices": 7771
+    },
+    {
+      "name": "Drif_Legs_ladylegcardpleat",
+      "vertices": 2908
+    },
+    {
+      "name": "Drif_Legs_ladylegcheongslit",
+      "vertices": 2557
+    },
+    {
+      "name": "Drif_Legs_ladylegchicpetal",
+      "vertices": 3280
+    },
+    {
+      "name": "Drif_Legs_ladylegchromeboot",
+      "vertices": 7871
+    },
+    {
+      "name": "Drif_Legs_ladylegcorsetwaist",
+      "vertices": 3624
+    },
+    {
+      "name": "Drif_Legs_ladylegdenimlow",
+      "vertices": 10904
+    },
+    {
+      "name": "Drif_Legs_ladylegfurcuff",
+      "vertices": 8447
+    },
+    {
+      "name": "Drif_Legs_ladyleggoldpanel",
+      "vertices": 10829
+    },
+    {
+      "name": "Drif_Legs_ladyleglacebloom",
+      "vertices": 7167
+    },
+    {
+      "name": "Drif_Legs_ladyleglaceupboot",
+      "vertices": 7615
+    },
+    {
+      "name": "Drif_Legs_ladylegmarieruffle",
+      "vertices": 3000
+    },
+    {
+      "name": "Drif_Legs_ladylegminimalflare",
+      "vertices": 10548
+    },
+    {
+      "name": "Drif_Legs_ladylegnurseskirt",
+      "vertices": 2728
+    },
+    {
+      "name": "Drif_Legs_ladylegpinshort",
+      "vertices": 6747
+    },
+    {
+      "name": "Drif_Legs_ladylegrobotgreaves",
+      "vertices": 7871
+    },
+    {
+      "name": "Drif_Legs_ladylegspacebrief",
+      "vertices": 6879
+    },
+    {
+      "name": "Drif_Legs_ladylegtweedpencil",
+      "vertices": 2998
+    },
+    {
+      "name": "Drif_Legs_ladylegwetboots",
+      "vertices": 10189
+    },
+    {
+      "name": "Drif_Legs_ladymicrocargo",
+      "vertices": 7008
+    },
+    {
+      "name": "Drif_Legs_ladypatch",
+      "vertices": 10049
+    },
+    {
+      "name": "Drif_Legs_ladypencilmini",
+      "vertices": 2008
+    },
+    {
+      "name": "Drif_Legs_ladypleat",
+      "vertices": 1464
+    },
+    {
+      "name": "Drif_Legs_ladypleatboot",
+      "vertices": 10628
+    },
+    {
+      "name": "Drif_Legs_ladyriding",
+      "vertices": 9624
+    },
+    {
+      "name": "Drif_Legs_ladyruffle",
+      "vertices": 2076
+    },
+    {
+      "name": "Drif_Legs_ladyrufflemini",
+      "vertices": 2254
+    },
+    {
+      "name": "Drif_Legs_ladysatinshorts",
+      "vertices": 7264
+    },
+    {
+      "name": "Drif_Legs_ladyslitskirt",
+      "vertices": 1613
+    },
+    {
+      "name": "Drif_Legs_ladytallboots",
+      "vertices": 6691
+    },
+    {
+      "name": "Drif_Legs_ladytrack",
+      "vertices": 9537
+    },
+    {
+      "name": "Drif_Legs_ladytweed",
+      "vertices": 1708
+    },
+    {
+      "name": "Drif_Legs_original",
+      "vertices": 3044
+    },
+    {
+      "name": "Drif_Mouth_ladyanimesmile",
+      "vertices": 432
+    },
+    {
+      "name": "Drif_Mouth_ladybandageteeth",
+      "vertices": 1408
+    },
+    {
+      "name": "Drif_Mouth_ladybarpierced",
+      "vertices": 508
+    },
+    {
+      "name": "Drif_Mouth_ladybiglip",
+      "vertices": 320
+    },
+    {
+      "name": "Drif_Mouth_ladybigred",
+      "vertices": 320
+    },
+    {
+      "name": "Drif_Mouth_ladybow",
+      "vertices": 160
+    },
+    {
+      "name": "Drif_Mouth_ladybridallip",
+      "vertices": 320
+    },
+    {
+      "name": "Drif_Mouth_ladybubble",
+      "vertices": 832
+    },
+    {
+      "name": "Drif_Mouth_ladybuck",
+      "vertices": 312
+    },
+    {
+      "name": "Drif_Mouth_ladybulletgrin",
+      "vertices": 1008
+    },
+    {
+      "name": "Drif_Mouth_ladybunnysmile",
+      "vertices": 432
+    },
+    {
+      "name": "Drif_Mouth_ladycartoonbite",
+      "vertices": 1008
+    },
+    {
+      "name": "Drif_Mouth_ladycherrykiss",
+      "vertices": 320
+    },
+    {
+      "name": "Drif_Mouth_ladychrome",
+      "vertices": 792
+    },
+    {
+      "name": "Drif_Mouth_ladyclench",
+      "vertices": 1008
+    },
+    {
+      "name": "Drif_Mouth_ladydemonpit",
+      "vertices": 480
+    },
+    {
+      "name": "Drif_Mouth_ladyfang",
+      "vertices": 852
+    },
+    {
+      "name": "Drif_Mouth_ladygloss",
+      "vertices": 240
+    },
+    {
+      "name": "Drif_Mouth_ladygoldgrill",
+      "vertices": 912
+    },
+    {
+      "name": "Drif_Mouth_ladygreen",
+      "vertices": 816
+    },
+    {
+      "name": "Drif_Mouth_ladygreenfang",
+      "vertices": 480
+    },
+    {
+      "name": "Drif_Mouth_ladygrilldiamond",
+      "vertices": 1088
+    },
+    {
+      "name": "Drif_Mouth_ladyhappymilady",
+      "vertices": 1008
+    },
+    {
+      "name": "Drif_Mouth_ladyheart",
+      "vertices": 240
+    },
+    {
+      "name": "Drif_Mouth_ladyheartgum",
+      "vertices": 474
+    },
+    {
+      "name": "Drif_Mouth_ladylipring",
+      "vertices": 438
+    },
+    {
+      "name": "Drif_Mouth_ladyogloss",
+      "vertices": 454
+    },
+    {
+      "name": "Drif_Mouth_ladyoutlinepout",
+      "vertices": 380
+    },
+    {
+      "name": "Drif_Mouth_ladypeachgloss",
+      "vertices": 320
+    },
+    {
+      "name": "Drif_Mouth_ladyplumpart",
+      "vertices": 912
+    },
+    {
+      "name": "Drif_Mouth_ladypout",
+      "vertices": 240
+    },
+    {
+      "name": "Drif_Mouth_ladyprintergrin",
+      "vertices": 480
+    },
+    {
+      "name": "Drif_Mouth_ladyrosesmirk",
+      "vertices": 320
+    },
+    {
+      "name": "Drif_Mouth_ladysidepout",
+      "vertices": 320
+    },
+    {
+      "name": "Drif_Mouth_ladysidesmile2",
+      "vertices": 240
+    },
+    {
+      "name": "Drif_Mouth_ladysilvergrill",
+      "vertices": 1008
+    },
+    {
+      "name": "Drif_Mouth_ladysmilingfang",
+      "vertices": 942
+    },
+    {
+      "name": "Drif_Mouth_ladysneer",
+      "vertices": 792
+    },
+    {
+      "name": "Drif_Mouth_ladysnowgrin",
+      "vertices": 912
+    },
+    {
+      "name": "Drif_Mouth_ladytongue",
+      "vertices": 356
+    },
+    {
+      "name": "Drif_Mouth_ladytonguepierce",
+      "vertices": 636
+    },
+    {
+      "name": "Drif_Mouth_ladytongueside",
+      "vertices": 464
+    },
+    {
+      "name": "Drif_Mouth_ladyvenom2",
+      "vertices": 704
+    },
+    {
+      "name": "Drif_Mouth_ladyzip",
+      "vertices": 1398
+    },
+    {
+      "name": "Drif_Mouth_original",
+      "vertices": 1561
+    },
+    {
+      "name": "Drif_Nose_ladybownose",
+      "vertices": 942
+    },
+    {
+      "name": "Drif_Nose_ladybutton",
+      "vertices": 314
+    },
+    {
+      "name": "Drif_Nose_ladyclovernose",
+      "vertices": 942
+    },
+    {
+      "name": "Drif_Nose_ladycrystal",
+      "vertices": 80
+    },
+    {
+      "name": "Drif_Nose_ladydiamondnose",
+      "vertices": 10
+    },
+    {
+      "name": "Drif_Nose_ladydouble",
+      "vertices": 232
+    },
+    {
+      "name": "Drif_Nose_ladydoublehoop",
+      "vertices": 710
+    },
+    {
+      "name": "Drif_Nose_ladyfacetednose",
+      "vertices": 10
+    },
+    {
+      "name": "Drif_Nose_ladyflower",
+      "vertices": 1168
+    },
+    {
+      "name": "Drif_Nose_ladygold",
+      "vertices": 80
+    },
+    {
+      "name": "Drif_Nose_ladyheart",
+      "vertices": 120
+    },
+    {
+      "name": "Drif_Nose_ladyheartpierce",
+      "vertices": 358
+    },
+    {
+      "name": "Drif_Nose_ladyivory",
+      "vertices": 80
+    },
+    {
+      "name": "Drif_Nose_ladymoonnose",
+      "vertices": 324
+    },
+    {
+      "name": "Drif_Nose_ladynosebandage",
+      "vertices": 640
+    },
+    {
+      "name": "Drif_Nose_ladynoseblacktip",
+      "vertices": 60
+    },
+    {
+      "name": "Drif_Nose_ladynosecandy",
+      "vertices": 396
+    },
+    {
+      "name": "Drif_Nose_ladynosecandyheart",
+      "vertices": 320
+    },
+    {
+      "name": "Drif_Nose_ladynosecharm",
+      "vertices": 268
+    },
+    {
+      "name": "Drif_Nose_ladynoseclosedring",
+      "vertices": 258
+    },
+    {
+      "name": "Drif_Nose_ladynosecross",
+      "vertices": 252
+    },
+    {
+      "name": "Drif_Nose_ladynosedrip",
+      "vertices": 292
+    },
+    {
+      "name": "Drif_Nose_ladynosefrecklebridge",
+      "vertices": 288
+    },
+    {
+      "name": "Drif_Nose_ladynosefreckled",
+      "vertices": 228
+    },
+    {
+      "name": "Drif_Nose_ladynosegoldhorseshoe",
+      "vertices": 432
+    },
+    {
+      "name": "Drif_Nose_ladynosehorseshoe",
+      "vertices": 432
+    },
+    {
+      "name": "Drif_Nose_ladynoseivorytip",
+      "vertices": 60
+    },
+    {
+      "name": "Drif_Nose_ladynoseled",
+      "vertices": 192
+    },
+    {
+      "name": "Drif_Nose_ladynosepearlbar",
+      "vertices": 328
+    },
+    {
+      "name": "Drif_Nose_ladynosepetiteband",
+      "vertices": 640
+    },
+    {
+      "name": "Drif_Nose_ladynoseroundclown",
+      "vertices": 222
+    },
+    {
+      "name": "Drif_Nose_ladynoserubyball",
+      "vertices": 96
+    },
+    {
+      "name": "Drif_Nose_ladynosetiny",
+      "vertices": 60
+    },
+    {
+      "name": "Drif_Nose_ladynosetwinstud",
+      "vertices": 232
+    },
+    {
+      "name": "Drif_Nose_ladypeachtip",
+      "vertices": 60
+    },
+    {
+      "name": "Drif_Nose_ladypearlnose",
+      "vertices": 324
+    },
+    {
+      "name": "Drif_Nose_ladyred",
+      "vertices": 314
+    },
+    {
+      "name": "Drif_Nose_ladyrosenose",
+      "vertices": 70
+    },
+    {
+      "name": "Drif_Nose_ladyseptum",
+      "vertices": 258
+    },
+    {
+      "name": "Drif_Nose_ladystripe",
+      "vertices": 394
+    },
+    {
+      "name": "Drif_Nose_ladytaperbridge",
+      "vertices": 80
+    },
+    {
+      "name": "Drif_Nose_ladyupturned",
+      "vertices": 628
+    },
+    {
+      "name": "Drif_Nose_ladyvelvet",
+      "vertices": 120
+    },
+    {
+      "name": "Drif_Nose_ladyviolet",
+      "vertices": 80
+    },
+    {
+      "name": "Drif_Nose_original",
+      "vertices": 125
+    },
+    {
+      "name": "Drif_Shirt_ladyarmor",
+      "vertices": 2316
+    },
+    {
+      "name": "Drif_Shirt_ladyasymbody",
+      "vertices": 2434
+    },
+    {
+      "name": "Drif_Shirt_ladychainhalter",
+      "vertices": 10304
+    },
+    {
+      "name": "Drif_Shirt_ladycheong",
+      "vertices": 7682
+    },
+    {
+      "name": "Drif_Shirt_ladycorset",
+      "vertices": 2114
+    },
+    {
+      "name": "Drif_Shirt_ladycutoutdress",
+      "vertices": 3027
+    },
+    {
+      "name": "Drif_Shirt_ladyfur",
+      "vertices": 2856
+    },
+    {
+      "name": "Drif_Shirt_ladyhalterbustier",
+      "vertices": 850
+    },
+    {
+      "name": "Drif_Shirt_ladylacecrop",
+      "vertices": 868
+    },
+    {
+      "name": "Drif_Shirt_ladymetal",
+      "vertices": 920
+    },
+    {
+      "name": "Drif_Shirt_ladymoto",
+      "vertices": 1316
+    },
+    {
+      "name": "Drif_Shirt_ladynun",
+      "vertices": 1628
+    },
+    {
+      "name": "Drif_Shirt_ladynurse",
+      "vertices": 1282
+    },
+    {
+      "name": "Drif_Shirt_ladyoffshoulder",
+      "vertices": 960
+    },
+    {
+      "name": "Drif_Shirt_ladyromper",
+      "vertices": 7935
+    },
+    {
+      "name": "Drif_Shirt_ladyruffle",
+      "vertices": 2992
+    },
+    {
+      "name": "Drif_Shirt_ladysatinmini",
+      "vertices": 3070
+    },
+    {
+      "name": "Drif_Shirt_ladyslipdress",
+      "vertices": 5251
+    },
+    {
+      "name": "Drif_Shirt_ladyspace",
+      "vertices": 1016
+    },
+    {
+      "name": "Drif_Shirt_ladysweetcorset",
+      "vertices": 864
+    },
+    {
+      "name": "Drif_Shirt_ladytopbutterfly",
+      "vertices": 730
+    },
+    {
+      "name": "Drif_Shirt_ladytopcheongmini",
+      "vertices": 3821
+    },
+    {
+      "name": "Drif_Shirt_ladytopchromecorset",
+      "vertices": 1980
+    },
+    {
+      "name": "Drif_Shirt_ladytopcroppedtweed",
+      "vertices": 1296
+    },
+    {
+      "name": "Drif_Shirt_ladytopfurshrug",
+      "vertices": 2688
+    },
+    {
+      "name": "Drif_Shirt_ladytopgoldbody",
+      "vertices": 1280
+    },
+    {
+      "name": "Drif_Shirt_ladytophalterneck",
+      "vertices": 2477
+    },
+    {
+      "name": "Drif_Shirt_ladytoplacebustier",
+      "vertices": 2198
+    },
+    {
+      "name": "Drif_Shirt_ladytopmarie",
+      "vertices": 3442
+    },
+    {
+      "name": "Drif_Shirt_ladytopmetalmini",
+      "vertices": 3560
+    },
+    {
+      "name": "Drif_Shirt_ladytopminimal",
+      "vertices": 440
+    },
+    {
+      "name": "Drif_Shirt_ladytopnursemini",
+      "vertices": 2936
+    },
+    {
+      "name": "Drif_Shirt_ladytoppearlcut",
+      "vertices": 2180
+    },
+    {
+      "name": "Drif_Shirt_ladytoppinchcorset",
+      "vertices": 1160
+    },
+    {
+      "name": "Drif_Shirt_ladytoppinkbikini",
+      "vertices": 1198
+    },
+    {
+      "name": "Drif_Shirt_ladytopscifibra",
+      "vertices": 1300
+    },
+    {
+      "name": "Drif_Shirt_ladytopspacecrop",
+      "vertices": 522
+    },
+    {
+      "name": "Drif_Shirt_ladytopsteampunk",
+      "vertices": 3064
+    },
+    {
+      "name": "Drif_Shirt_ladytopstraptweed",
+      "vertices": 1196
+    },
+    {
+      "name": "Drif_Shirt_ladytopzipsuit",
+      "vertices": 10066
+    },
+    {
+      "name": "Drif_Shirt_ladytube",
+      "vertices": 1502
+    },
+    {
+      "name": "Drif_Shirt_ladytweed",
+      "vertices": 3094
+    },
+    {
+      "name": "Drif_Shirt_ladywetsuit",
+      "vertices": 9823
+    },
+    {
+      "name": "Drif_Shirt_ladywomensa",
+      "vertices": 4442
+    },
+    {
+      "name": "Drif_Shirt_original",
+      "vertices": 3500
+    },
+    {
+      "name": "Drif_Tail_original",
+      "vertices": 362
+    },
+    {
+      "name": "Drif_Tattoo_ladybarcode",
+      "vertices": 2400
+    },
+    {
+      "name": "Drif_Tattoo_ladybeautyspade",
+      "vertices": 200
+    },
+    {
+      "name": "Drif_Tattoo_ladyblaze",
+      "vertices": 120
+    },
+    {
+      "name": "Drif_Tattoo_ladyblushhearts",
+      "vertices": 240
+    },
+    {
+      "name": "Drif_Tattoo_ladybutterflymark",
+      "vertices": 160
+    },
+    {
+      "name": "Drif_Tattoo_ladycheck",
+      "vertices": 800
+    },
+    {
+      "name": "Drif_Tattoo_ladycrescent",
+      "vertices": 720
+    },
+    {
+      "name": "Drif_Tattoo_ladycross",
+      "vertices": 480
+    },
+    {
+      "name": "Drif_Tattoo_ladydiamonds",
+      "vertices": 160
+    },
+    {
+      "name": "Drif_Tattoo_ladyflamemark",
+      "vertices": 280
+    },
+    {
+      "name": "Drif_Tattoo_ladyfloralmark",
+      "vertices": 800
+    },
+    {
+      "name": "Drif_Tattoo_ladyheart",
+      "vertices": 140
+    },
+    {
+      "name": "Drif_Tattoo_ladyhorseshoe",
+      "vertices": 1000
+    },
+    {
+      "name": "Drif_Tattoo_ladylacemark",
+      "vertices": 640
+    },
+    {
+      "name": "Drif_Tattoo_ladymarkascii",
+      "vertices": 800
+    },
+    {
+      "name": "Drif_Tattoo_ladymarkbandage",
+      "vertices": 320
+    },
+    {
+      "name": "Drif_Tattoo_ladymarkblush",
+      "vertices": 800
+    },
+    {
+      "name": "Drif_Tattoo_ladymarkchecker2",
+      "vertices": 480
+    },
+    {
+      "name": "Drif_Tattoo_ladymarkclown",
+      "vertices": 920
+    },
+    {
+      "name": "Drif_Tattoo_ladymarkcross",
+      "vertices": 960
+    },
+    {
+      "name": "Drif_Tattoo_ladymarkdewy",
+      "vertices": 1280
+    },
+    {
+      "name": "Drif_Tattoo_ladymarkdigi",
+      "vertices": 800
+    },
+    {
+      "name": "Drif_Tattoo_ladymarkdigi2",
+      "vertices": 800
+    },
+    {
+      "name": "Drif_Tattoo_ladymarkeyewhite",
+      "vertices": 240
+    },
+    {
+      "name": "Drif_Tattoo_ladymarkjester",
+      "vertices": 480
+    },
+    {
+      "name": "Drif_Tattoo_ladymarklightdots",
+      "vertices": 1280
+    },
+    {
+      "name": "Drif_Tattoo_ladymarkochre",
+      "vertices": 200
+    },
+    {
+      "name": "Drif_Tattoo_ladymarkpaint",
+      "vertices": 160
+    },
+    {
+      "name": "Drif_Tattoo_ladymarkrosebud",
+      "vertices": 960
+    },
+    {
+      "name": "Drif_Tattoo_ladymarksquiggle",
+      "vertices": 320
+    },
+    {
+      "name": "Drif_Tattoo_ladymarkstamp",
+      "vertices": 320
+    },
+    {
+      "name": "Drif_Tattoo_ladymarkstarburst",
+      "vertices": 400
+    },
+    {
+      "name": "Drif_Tattoo_ladymarktearblue",
+      "vertices": 720
+    },
+    {
+      "name": "Drif_Tattoo_ladymarkwedding",
+      "vertices": 800
+    },
+    {
+      "name": "Drif_Tattoo_ladymoonstars",
+      "vertices": 1200
+    },
+    {
+      "name": "Drif_Tattoo_ladynosefreckles",
+      "vertices": 1120
+    },
+    {
+      "name": "Drif_Tattoo_ladypawfreckles",
+      "vertices": 520
+    },
+    {
+      "name": "Drif_Tattoo_ladypearltears",
+      "vertices": 480
+    },
+    {
+      "name": "Drif_Tattoo_ladyracingcheck",
+      "vertices": 1280
+    },
+    {
+      "name": "Drif_Tattoo_ladyrose",
+      "vertices": 480
+    },
+    {
+      "name": "Drif_Tattoo_ladyshards",
+      "vertices": 640
+    },
+    {
+      "name": "Drif_Tattoo_ladystars",
+      "vertices": 640
+    },
+    {
+      "name": "Drif_Tattoo_ladystripe",
+      "vertices": 480
+    },
+    {
+      "name": "Drif_Tattoo_ladytear",
+      "vertices": 80
+    }
+  ],
+  "description": "New authored geometry with independent head, hair, ears, eyes, brows, nose, mouth, body, tail, top, legs and accessory. Reference: user-provided Drilady turnarounds.",
+  "collectionTraitCount": 528,
+  "categories": {
+    "head": 44,
+    "eyes": 44,
+    "brows": 44,
+    "mouth": 44,
+    "nose": 44,
+    "ears": 44,
+    "tattoo": 44,
+    "shirt": 44,
+    "legs": 44,
+    "hat": 44,
+    "accessory": 44,
+    "extra": 44
+  },
+  "packs": [
+    {
+      "file": "drilady-base.glb",
+      "parts": 300,
+      "animations": true
+    },
+    {
+      "file": "drilady-archive.glb",
+      "parts": 240,
+      "animations": false
+    }
+  ]
+}

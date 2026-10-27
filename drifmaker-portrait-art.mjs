@@ -1,6 +1,7 @@
+import {CHARACTER_COLLECTION} from './drifmaker-character-collection.mjs?v=1';
 import {MINOTE_CATALOG} from './drifmaker-minote.mjs?v=1';
-export const IMAGE_BACKGROUNDS=Object.freeze({...Object.fromEntries(MINOTE_CATALOG.background.map(({id})=>[id,`/assets/drifmaker/portrait/minote/${id}.svg`])),spiral:'/assets/drifmaker/portrait/spiral.png',blackops:'/assets/drifmaker/portrait/black-ops.png'});
-export const PORTRAIT_OVERLAYS=Object.freeze([...MINOTE_CATALOG.overlay.map(({id,label})=>({id,label,src:`/assets/drifmaker/portrait/minote/${id}.svg`})),
+export const IMAGE_BACKGROUNDS=Object.freeze({...Object.fromEntries(CHARACTER_COLLECTION.background.map(({id})=>[id,`/assets/drifmaker/portrait/collection-wave/${id}.png`])),...Object.fromEntries(MINOTE_CATALOG.background.map(({id})=>[id,`/assets/drifmaker/portrait/minote/${id}.svg`])),spiral:'/assets/drifmaker/portrait/spiral.png',blackops:'/assets/drifmaker/portrait/black-ops.png'});
+export const PORTRAIT_OVERLAYS=Object.freeze([...CHARACTER_COLLECTION.overlay.map(({id,label})=>({id,label,src:`/assets/drifmaker/portrait/collection-wave/${id}.png`})),...MINOTE_CATALOG.overlay.map(({id,label})=>({id,label,src:`/assets/drifmaker/portrait/minote/${id}.svg`})),
  {id:'none',label:'None'},
  {id:'hell',label:'Hell',src:'/assets/drifmaker/portrait/hell.png'},
  {id:'avantgarde',label:'Avant garde',src:'/assets/drifmaker/portrait/avant-garde.png'},

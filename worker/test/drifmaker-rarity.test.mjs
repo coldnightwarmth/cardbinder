@@ -6,7 +6,7 @@ import {DEFAULT_APPEARANCE,BODY_STYLES,BODY_STYLE_COLORS,HEAD_SCALES,normalizeAp
 import {RARITY_GROUPS,RARITY_STORAGE_KEY,DEFAULT_WEIGHT,MAX_WEIGHT,normalizeRarity,traitWeight,traitChances,pickTrait,randomizeLook,loadRarity,saveRarity} from '../../drifmaker-rarity.mjs';
 
 test('every trait, color, finish, background and pose starts with equal odds',()=>{
- assert.equal(Object.keys(RARITY_GROUPS).length,17);
+ assert.equal(Object.keys(RARITY_GROUPS).length,29);
  for(const [category,{options}] of Object.entries(RARITY_GROUPS)){
   assert.ok(options.every(option=>typeof option.id==='string'&&option.id));
   assert.equal(new Set(options.map(option=>option.id)).size,options.length);

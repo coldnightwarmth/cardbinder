@@ -45,7 +45,7 @@ test('ZIP pairs each PNG with categorized JSON metadata in its own folder, with 
   result.metadata.forEach((metadata,index)=>{
    assert.equal(metadata.id,index+1);assert.equal(metadata.name,entries[index].name);assert.deepEqual(normalizeLook(metadata),entries[index].look);
    assert.deepEqual(metadata.properties,{files:[{uri:metadata.image,type:'image/png'}],category:'image'});
-   const categories=metadata.attributes.map(trait=>trait.trait_type);assert.deepEqual(categories,[...categories].sort());assert.equal(new Set(categories).size,17);
+   const categories=metadata.attributes.map(trait=>trait.trait_type);assert.deepEqual(categories,[...categories].sort());assert.equal(new Set(categories).size,18);
    assert.equal(metadata.attributes.find(trait=>trait.trait_type==='mouth').value,index?'Venom mouth':'Original');
   });
  }finally{rmSync(dir,{recursive:true,force:true});}

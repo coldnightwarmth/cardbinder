@@ -1,3 +1,4 @@
+import {normalizeAppearance,characterId} from '../../drifmaker-config.mjs';
 import {POSES,PORTRAIT_POSES,normalizePose,normalizePoseTime} from '../../drifmaker-poses.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -34,7 +35,7 @@ function avatarFactory(){
   return new Track(`${nodes[channel.target.node].name}.${property}`,values(sampler.input),values(sampler.output),sampler.interpolation==='STEP'?THREE.InterpolateDiscrete:THREE.InterpolateLinear);
  })));
  const source=readFileSync(new URL('../../showroom-avatar.js',import.meta.url),'utf8');
- const context=vm.createContext({THREE,normalizePose,normalizePoseTime,createAvatarAppearance,asset:async()=>({scene,animations})});
+ const context=vm.createContext({normalizeAppearance,characterId,THREE,normalizePose,normalizePoseTime,createAvatarAppearance,asset:async()=>({scene,animations})});
  vm.runInContext(source.slice(source.indexOf('export function cloneAvatar')).replaceAll('export ',''),context);
  return context.createShowroomAvatar;
 }

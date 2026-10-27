@@ -1,4 +1,4 @@
-import {RARITY_GROUPS,MAX_WEIGHT,validWeight,traitWeight,traitChances,loadRarity,saveRarity,normalizeRarity} from './drifmaker-rarity.mjs?v=15';
+import {RARITY_GROUPS,MAX_WEIGHT,validWeight,traitWeight,traitChances,loadRarity,saveRarity,normalizeRarity} from './drifmaker-rarity.mjs?v=21';
 
 // Inputs are siblings of selection buttons, so editing a weight never selects
 // the trait or triggers a look-history action. All odds update as a group.
@@ -18,6 +18,7 @@ export function createRarityEditor({onError}){
  }
  return {
   get value(){return rarity;},
+  clear(){fields.length=0;},
   mount(button,category,id){
    const option=RARITY_GROUPS[category]?.options.find(option=>option.id===id);if(!option)throw Error(`Unknown rarity trait: ${category}/${id}`);
    const tile=document.createElement('div');tile.className='trait-tile';button.replaceWith(tile);tile.append(button);

@@ -2,16 +2,16 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import * as THREE from '../../vendor/three.module.min.js';
-import {PORTRAIT_OVERLAYS,IMAGE_BACKGROUNDS,setPortraitOverlay,renderPortraitScene,disposePortraitOverlay} from '../../drifmaker-portrait-art.mjs?v=2';
-import {setPortraitSceneBackground,validPortraitBackground,disposePortraitBackground} from '../../drifmaker-background.mjs?v=3';
-import {normalizeLook,createLookHistory,bookmarkMetadata} from '../../drifmaker-bookmarks.mjs?v=13';
-import {RARITY_GROUPS,randomizeLook} from '../../drifmaker-rarity.mjs?v=15';
-import {capturePortrait} from '../../drifmaker-portrait.mjs?v=9';
+import {PORTRAIT_OVERLAYS,IMAGE_BACKGROUNDS,setPortraitOverlay,renderPortraitScene,disposePortraitOverlay} from '../../drifmaker-portrait-art.mjs?v=3';
+import {setPortraitSceneBackground,validPortraitBackground,disposePortraitBackground} from '../../drifmaker-background.mjs?v=4';
+import {normalizeLook,createLookHistory,bookmarkMetadata} from '../../drifmaker-bookmarks.mjs?v=19';
+import {RARITY_GROUPS,randomizeLook} from '../../drifmaker-rarity.mjs?v=21';
+import {capturePortrait} from '../../drifmaker-portrait.mjs?v=10';
 
 const loaded=[];
 const fakeThree={...THREE,TextureLoader:class{async loadAsync(src){loaded.push(src);const texture=new THREE.Texture({width:1000,height:1250});texture.userData.src=src;return texture;}}};
 test('the supplied portrait images are shipped as original RGBA PNG assets',()=>{
- assert.equal(PORTRAIT_OVERLAYS.length,16);
+ assert.equal(PORTRAIT_OVERLAYS.length,28);
  for(const src of [...Object.values(IMAGE_BACKGROUNDS),...PORTRAIT_OVERLAYS.filter(o=>o.src).map(o=>o.src)]){
   const bytes=readFileSync(new URL('../..'+src,import.meta.url));if(src.endsWith('.svg')){assert.match(bytes.toString(),/^<svg /);assert.doesNotMatch(bytes.toString(),/<script|href=/);continue;}assert.equal(bytes.subarray(1,4).toString(),'PNG');assert.equal(bytes[25],6,'original alpha is retained');
  }

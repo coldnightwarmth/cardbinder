@@ -1,8 +1,8 @@
-import {normalizeLook} from './drifmaker-bookmarks.mjs?v=13';
-import {CATEGORIES,BODY_STYLES,BODY_COLORS,PORTRAIT_BACKGROUNDS} from './drifmaker-config.mjs?v=16';
+import {normalizeLook} from './drifmaker-bookmarks.mjs?v=19';
+import {CATEGORIES,BODY_STYLES,BODY_COLORS,PORTRAIT_BACKGROUNDS,characterCategories,CHARACTERS} from './drifmaker-config.mjs?v=22';
 import {PORTRAIT_POSES} from './drifmaker-poses.mjs?v=5';
-import {PORTRAIT_OVERLAYS} from './drifmaker-portrait-art.mjs?v=2';
-import {validPortraitBackground} from './drifmaker-background.mjs?v=3';
+import {PORTRAIT_OVERLAYS} from './drifmaker-portrait-art.mjs?v=3';
+import {validPortraitBackground} from './drifmaker-background.mjs?v=4';
 
 const object=value=>value!==null&&typeof value==='object'&&!Array.isArray(value);
 const match=(options,value)=>typeof value==='string'?options.find(option=>option.id===value||option.label.toLowerCase()===value.toLowerCase()):undefined;
@@ -14,11 +14,13 @@ export function parseBookmarkJSON(data,filename='Shared look.json'){
  if(!object(data))throw Error('Expected a character JSON object.');
  let value=object(data.look)?data.look:data;
  if(!object(value.appearance)&&Array.isArray(data.attributes)){
-  const appearance={},portrait={};let recognized=0;
+  const species=data.attributes.find(t=>t?.trait_type?.toLowerCase()==='character');
+  const chosen=match(CHARACTERS,species?.value);
+  const appearance=chosen?.id==='drilady'?{character:'drilady'}:{},portrait={};let recognized=chosen?1:0;
   for(const trait of data.attributes){
    if(!object(trait)||typeof trait.trait_type!=='string')continue;
    const key=trait.trait_type.toLowerCase(),category=categories[key]||key;
-   if(Object.hasOwn(CATEGORIES,category)){const option=match(CATEGORIES[category],trait.value);if(option){appearance[category]=option.id;recognized++;}}
+   if(Object.hasOwn(CATEGORIES,category)){const option=match(characterCategories(appearance)[category],trait.value);if(option){appearance[category]=option.id;recognized++;}}
    else if(key==='body finish'){const option=match(BODY_STYLES,trait.value);if(option){appearance.bodyStyle=option.id;recognized++;}}
    else if(key==='body color'){const hex=color(BODY_COLORS,trait.value);if(/^#[a-f\d]{6}$/i.test(hex)){appearance.bodyColor=hex;recognized++;}}
    else if(key==='background'){const background=color(PORTRAIT_BACKGROUNDS,trait.value);if(validPortraitBackground(background)){portrait.background=background;recognized++;}}
@@ -30,7 +32,8 @@ export function parseBookmarkJSON(data,filename='Shared look.json'){
  }
  const appearance=object(value.appearance)?value.appearance:value,portrait=value.portrait;
  let recognized=0;
- for(const [key,options] of Object.entries({...CATEGORIES,bodyStyle:BODY_STYLES}))if(Object.hasOwn(appearance,key)){
+ if(Object.hasOwn(appearance,'character')&&!CHARACTERS.some(c=>c.id===appearance.character))throw Error('Unknown character.');
+ for(const [key,options] of Object.entries({...characterCategories(appearance),bodyStyle:BODY_STYLES}))if(Object.hasOwn(appearance,key)){
   if(!options.some(option=>option.id===appearance[key]))throw Error(`Unknown ${key} trait.`);
   recognized++;
  }

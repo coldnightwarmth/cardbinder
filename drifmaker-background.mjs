@@ -1,4 +1,4 @@
-import {IMAGE_BACKGROUNDS,loadPortraitTexture} from './drifmaker-portrait-art.mjs?v=2';
+import {IMAGE_BACKGROUNDS,loadPortraitTexture} from './drifmaker-portrait-art.mjs?v=3';
 export const RAINBOW_BACKGROUND='rainbow';
 export const RAINBOW_CSS='linear-gradient(135deg,#ff537a 0%,#ffb94d 20%,#edee5b 38%,#46dca3 56%,#4b9cff 76%,#af6df5 100%)';
 export const validPortraitBackground=value=>typeof value==='string'&&(value===RAINBOW_BACKGROUND||Object.hasOwn(IMAGE_BACKGROUNDS,value)||/^#[a-f\d]{6}$/i.test(value));

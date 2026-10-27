@@ -1,0 +1,21 @@
+{
+  "species": "drilady",
+  "parts": 240,
+  "vertices": 378821,
+  "triangles": 746772,
+  "categories": {
+    "head": 20,
+    "eyes": 20,
+    "brows": 20,
+    "mouth": 20,
+    "nose": 20,
+    "ears": 20,
+    "tattoo": 20,
+    "shirt": 20,
+    "legs": 20,
+    "hat": 20,
+    "accessory": 20,
+    "extra": 20
+  },
+  "bytes": 19694812
+}

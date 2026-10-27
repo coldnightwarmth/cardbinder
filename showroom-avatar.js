@@ -1,9 +1,22 @@
 import * as THREE from 'three';
 import {GLTFLoader} from './vendor/GLTFLoader.js';
-import {createAvatarAppearance} from './drifmaker-avatar.mjs?v=17';
+import {mergeAvatarParts} from './showroom-avatar-parts.mjs?v=1';
+import {createAvatarAppearance} from './drifmaker-avatar.mjs?v=23';
 import {normalizePose,normalizePoseTime} from './drifmaker-poses.mjs?v=5';
-let assetPromise;
-function asset(){return assetPromise ||= new GLTFLoader().loadAsync(new URL('./assets/models/drifmaker/drifella-customizable.glb?v=16',import.meta.url).href).catch(error=>{assetPromise=null;throw error;});}
+import {characterId,normalizeAppearance} from './drifmaker-config.mjs?v=22';
+const assets=new Map();
+function asset(character='drifella'){
+ if(!assets.has(character))assets.set(character,(async()=>{
+  const loader=new GLTFLoader(),load=path=>loader.loadAsync(new URL(path,import.meta.url).href);
+  const paths=character==='drilady'
+   ? ['./assets/models/drilady/drilady-base.glb?v=8','./assets/models/drilady/drilady-archive.glb?v=3','./assets/models/drilady/drilady-collection-wave.glb?v=2']
+   : ['./assets/models/drifmaker/drifella-customizable.glb?v=16','./assets/models/drifmaker/drifella-collection-wave.glb?v=1'];
+  const [base,...packs]=await Promise.all(paths.map(load));
+  for(const pack of packs)mergeAvatarParts(base.scene,pack.scene);
+  return base;
+ })().catch(error=>{assets.delete(character);throw error;}));
+ return assets.get(character);
+}
 // Geometry and textures are shared; each visitor owns their bones and any
 // recolored materials. Wardrobe pieces on the same skin reuse that visitor's skeleton.
 export function cloneAvatar(source){
@@ -43,9 +56,9 @@ export function createAvatarLookPose(model){
   },
  };
 }
-export async function createShowroomAvatar({appearance}={}){
- const gltf=await asset(),model=cloneAvatar(gltf.scene);model.name='showroom-player-character';model.scale.setScalar(.75);model.position.y=-1.65;model.rotation.y=Math.PI;
- const wardrobe=createAvatarAppearance(model);
+async function createCharacterAvatar({appearance}={}){
+ const gltf=await asset(characterId(appearance)),model=cloneAvatar(gltf.scene);model.name='showroom-player-character';model.scale.setScalar(.75);model.position.y=-1.65;model.rotation.y=Math.PI;
+ const wardrobe=createAvatarAppearance(model,appearance);
  const mixer=new THREE.AnimationMixer(model),actions=new Map(gltf.animations.map(clip=>[clip.name,mixer.clipAction(clip)]));
  const socket=model.getObjectByName('CardSocketR')||model.getObjectByName('CardSocket.R');
  const look=createAvatarLookPose(model);
@@ -88,4 +101,27 @@ export async function createShowroomAvatar({appearance}={}){
   model.userData.animation=airborne?(holding?'Jump_Hold_Right':'Jump'):(crouch>.5?'Crouch'+(moving?'_Walk':'')+(holding?'_Hold_Right':''):(moving?(holding?'Walk_Hold_Right':'Walk'):(holding?'Hold_Right':'Neutral')));
   mixer.update(dt);wardrobe.applyHeadScale();handPitch=look.apply(dt,pitch,holding);
  },dispose(){mixer.stopAllAction();mixer.uncacheRoot(model);wardrobe.dispose();const skeletons=new Set();model.traverse(o=>{if(o.isSkinnedMesh)skeletons.add(o.skeleton);});for(const skeleton of skeletons)skeleton.dispose();model.removeFromParent();}};
+}
+
+// A stable root keeps camera, card, and scene attachments valid while species
+// change. Each loaded character owns its mixer, skeleton, and finish materials.
+export async function createShowroomAvatar({appearance}={}){
+ let active=await createCharacterAvatar({appearance:normalizeAppearance(appearance)});
+ const model=new THREE.Group();model.name='showroom-player-character';model.scale.setScalar(.75);model.position.y=-1.65;model.rotation.y=Math.PI;
+ let disposed=false,revision=0,pose='',poseOptions={},lastUpdate=[0,0,false,0,{}];
+ function attach(next){next.model.position.set(0,0,0);next.model.rotation.set(0,0,0);next.model.scale.setScalar(1);next.model.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});model.add(next.model);model.userData.appearance=next.appearance;}
+ attach(active);
+ return {model,get socket(){return active.socket;},get handPitch(){return active.handPitch;},get pose(){return active.pose;},get appearance(){return active.appearance;},
+  setPose(id,options={}){pose=id;poseOptions={...options};active.setPose(id,options);},
+  update(...args){lastUpdate=args;active.update(...args);model.userData.animation=active.model.userData.animation;},
+  async setAppearance(value){
+   if(disposed)throw Error('This character has been disposed.');
+   const clean=normalizeAppearance(value),version=++revision;
+   if(characterId(clean)===characterId(active.appearance)){const result=await active.setAppearance(clean);model.userData.appearance=result;return result;}
+   const next=await createCharacterAvatar({appearance:clean});
+   if(disposed||version!==revision){next.dispose();return active.appearance;}
+   active.dispose();active=next;attach(next);next.setPose(pose,poseOptions);next.update(...lastUpdate);return next.appearance;
+  },
+  dispose(){if(disposed)return;disposed=true;revision++;active.dispose();model.removeFromParent();},
+ };
 }

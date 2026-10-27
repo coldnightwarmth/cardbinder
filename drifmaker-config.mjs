@@ -1,3 +1,5 @@
+import {CHARACTER_COLLECTION} from './drifmaker-character-collection.mjs?v=1';
+import {DRILADY_TRAITS} from './drilady-traits.mjs?v=4';
 import {MINOTE_CATALOG} from './drifmaker-minote.mjs?v=1';
 import {NEW_TRAITS} from './drifmaker-expansion.mjs?v=9';
 // Shared by the browser and the showroom worker: only these small, validated
@@ -105,13 +107,13 @@ const ORIGINAL_CATEGORIES=Object.freeze({
   {id:'keychain',label:'Keychain',description:'A dangling charm and key ring.'},
  ]),
 });
-export const CATEGORIES=Object.freeze(Object.fromEntries([...new Set([...Object.keys(ORIGINAL_CATEGORIES),...Object.keys(NEW_TRAITS)])].map(category=>[category,options([...(ORIGINAL_CATEGORIES[category]||[]),...(NEW_TRAITS[category]||[]),...(MINOTE_CATALOG[category]||[])])])));
+export const CATEGORIES=Object.freeze(Object.fromEntries([...new Set([...Object.keys(ORIGINAL_CATEGORIES),...Object.keys(NEW_TRAITS)])].map(category=>[category,options([...(ORIGINAL_CATEGORIES[category]||[]),...(NEW_TRAITS[category]||[]),...(MINOTE_CATALOG[category]||[]),...(CHARACTER_COLLECTION.drifella[category]||[])])])));
 export const GOLD_COLOR='#e2ad32';
 export const FINISH_COLORS=Object.freeze({gold:GOLD_COLOR,silver:'#d7dee8',matteblack:'#08090b'});
-export const BODY_STYLE_COLORS=Object.freeze({...FINISH_COLORS,mnwatercolor:'#b2bed4',mnruledpaper:'#eee3cc',mngraphite:'#bcb5ad',mnroseglaze:'#e8b7bc',mninkmarble:'#d0dce4',mngoldleaf:'#b59b4e',mnpastelchalk:'#d8c3b9',mnwetgouache:'#5b859e',mnlinenpaper:'#e8dfcb',camo:'#62734a',marble:'#ffffff',holographic:'#d8d6f4',blackgem:'#151722',lava:'#dd4818',woods:'#926442',mossy:'#73833f',pinklatex:'#e785ad',cowhide:'#decbb0',blueporcelain:'#e0e8ef',verdigris:'#49a68d',pearl:'#e9d6ee',amethyst:'#8d4ac3',carbonfiber:'#252b35',candyglaze:'#ff7d45'});
+export const BODY_STYLE_COLORS=Object.freeze({...FINISH_COLORS,...Object.fromEntries(CHARACTER_COLLECTION.bodyStyle.map(({id,hex})=>[id,hex])),mnwatercolor:'#b2bed4',mnruledpaper:'#eee3cc',mngraphite:'#bcb5ad',mnroseglaze:'#e8b7bc',mninkmarble:'#d0dce4',mngoldleaf:'#b59b4e',mnpastelchalk:'#d8c3b9',mnwetgouache:'#5b859e',mnlinenpaper:'#e8dfcb',camo:'#62734a',marble:'#ffffff',holographic:'#d8d6f4',blackgem:'#151722',lava:'#dd4818',woods:'#926442',mossy:'#73833f',pinklatex:'#e785ad',cowhide:'#decbb0',blueporcelain:'#e0e8ef',verdigris:'#49a68d',pearl:'#e9d6ee',amethyst:'#8d4ac3',carbonfiber:'#252b35',candyglaze:'#ff7d45'});
 // Studied original 3drifellabody layers: black gem.PNG, lava.PNG, woods.PNG,
 // mossy.PNG, pink leather latex.PNG, cow hide.PNG. See drifmaker-finishes.mjs.
-export const BODY_STYLES=options([...MINOTE_CATALOG.bodyStyle,{"id": "blueporcelain", "label": "Blue porcelain"},{"id": "verdigris", "label": "Verdigris copper"},{"id": "pearl", "label": "Mother of pearl"},{"id": "amethyst", "label": "Amethyst"},{"id": "carbonfiber", "label": "Carbon fiber"},{"id": "candyglaze", "label": "Candy glaze"},{id:'marble',label:'Marble',description:'Matte white across all visible parts.'},{id:'holographic',label:'Holographic',description:'Rainbow interference and sparkling trading-card foil.'},{id:'solid',label:'Solid',description:'The familiar sculpted finish.'},{id:'ghost',label:'Ghost aura',description:'Clear, translucent skin with soft luminous fibers.'},{id:'gold',label:'Gold',description:'Polished gold across the whole body and face.'},{id:'silver',label:'Silver',description:'Polished silver across the whole body and face.'},{id:'matteblack',label:'Matte black',description:'A soft black finish across the whole body and face.'},{id:'camo',label:'Camo',description:'Woodland camouflage across the body and fins.'},
+export const BODY_STYLES=options([...CHARACTER_COLLECTION.bodyStyle,...MINOTE_CATALOG.bodyStyle,{"id": "blueporcelain", "label": "Blue porcelain"},{"id": "verdigris", "label": "Verdigris copper"},{"id": "pearl", "label": "Mother of pearl"},{"id": "amethyst", "label": "Amethyst"},{"id": "carbonfiber", "label": "Carbon fiber"},{"id": "candyglaze", "label": "Candy glaze"},{id:'marble',label:'Marble',description:'Matte white across all visible parts.'},{id:'holographic',label:'Holographic',description:'Rainbow interference and sparkling trading-card foil.'},{id:'solid',label:'Solid',description:'The familiar sculpted finish.'},{id:'ghost',label:'Ghost aura',description:'Clear, translucent skin with soft luminous fibers.'},{id:'gold',label:'Gold',description:'Polished gold across the whole body and face.'},{id:'silver',label:'Silver',description:'Polished silver across the whole body and face.'},{id:'matteblack',label:'Matte black',description:'A soft black finish across the whole body and face.'},{id:'camo',label:'Camo',description:'Woodland camouflage across the body and fins.'},
  {id:'blackgem',label:'Black gem',description:'Deep glossy resin inspired by the collection’s black gem body.'},
  {id:'lava',label:'Lava',description:'Glowing molten channels through a rough charcoal crust.'},
  {id:'woods',label:'Woods',description:'Warm carved timber with layered directional grain.'},
@@ -119,7 +121,7 @@ export const BODY_STYLES=options([...MINOTE_CATALOG.bodyStyle,{"id": "blueporcel
  {id:'pinklatex',label:'Pink latex',description:'A glossy pink coating with a fine pebbled texture.'},
  {id:'cowhide',label:'Cow hide',description:'Cream and brown hide patches with directional fibers.'},
 ]);
-export const BODY_COLORS=options([...MINOTE_CATALOG.bodyColor,...MINOTE_CATALOG.bodyStyle.map(({id,label})=>({id,label,hex:BODY_STYLE_COLORS[id],style:id})),{"id": "blueporcelain", "label": "Blue porcelain", "hex": "#e0e8ef", "style": "blueporcelain"},{"id": "verdigris", "label": "Verdigris copper", "hex": "#49a68d", "style": "verdigris"},{"id": "pearl", "label": "Mother of pearl", "hex": "#e9d6ee", "style": "pearl"},{"id": "amethyst", "label": "Amethyst", "hex": "#8d4ac3", "style": "amethyst"},{"id": "carbonfiber", "label": "Carbon fiber", "hex": "#252b35", "style": "carbonfiber"},{"id": "candyglaze", "label": "Candy glaze", "hex": "#ff7d45", "style": "candyglaze"},
+export const BODY_COLORS=options([...CHARACTER_COLLECTION.bodyStyle.map(({id,label,hex})=>({id,label,hex,style:id})),...MINOTE_CATALOG.bodyColor,...MINOTE_CATALOG.bodyStyle.map(({id,label})=>({id,label,hex:BODY_STYLE_COLORS[id],style:id})),{"id": "blueporcelain", "label": "Blue porcelain", "hex": "#e0e8ef", "style": "blueporcelain"},{"id": "verdigris", "label": "Verdigris copper", "hex": "#49a68d", "style": "verdigris"},{"id": "pearl", "label": "Mother of pearl", "hex": "#e9d6ee", "style": "pearl"},{"id": "amethyst", "label": "Amethyst", "hex": "#8d4ac3", "style": "amethyst"},{"id": "carbonfiber", "label": "Carbon fiber", "hex": "#252b35", "style": "carbonfiber"},{"id": "candyglaze", "label": "Candy glaze", "hex": "#ff7d45", "style": "candyglaze"},
  {id:'blackgem',label:'Black gem',hex:BODY_STYLE_COLORS.blackgem,style:'blackgem'},
  {id:'lava',label:'Lava',hex:BODY_STYLE_COLORS.lava,style:'lava'},
  {id:'woods',label:'Woods',hex:BODY_STYLE_COLORS.woods,style:'woods'},
@@ -185,7 +187,7 @@ export const BODY_COLORS=options([...MINOTE_CATALOG.bodyColor,...MINOTE_CATALOG.
  {id:'charcoal',label:'Charcoal',hex:'#303344'},
  {id:'porcelain',label:'Porcelain',hex:'#f5f0e7'},
 ]);
-export const PORTRAIT_BACKGROUNDS=options([...MINOTE_CATALOG.background.map(({id,label})=>({hex:id,label})),
+export const PORTRAIT_BACKGROUNDS=options([...CHARACTER_COLLECTION.background.map(({id,label})=>({label,hex:id})),...MINOTE_CATALOG.background.map(({id,label})=>({hex:id,label})),
  {label:'Spiral',hex:'spiral'},
  {label:'Black Ops',hex:'blackops'},
  {label:'Obsidian mist',hex:'#909ba8'},
@@ -218,16 +220,41 @@ export const PORTRAIT_BACKGROUNDS=options([...MINOTE_CATALOG.background.map(({id
  {label:'Pale lemon',hex:'#f1e3a0'},{label:'Ink',hex:'#131520'},{label:'Paper',hex:'#f4f0e6'},
 ]);
 export const DEFAULT_APPEARANCE=Object.freeze({bodyColor:'#1d5dea',eyes:'classic',mouth:'original',shirt:'original',legs:'original',hat:'none',accessory:'original',head:'original',extra:'none',nose:'original',ears:'original',tattoo:'none',brows:'original',bodyStyle:'solid'});
+// Character-specific catalogs keep future Drilady parts separate from Drifella.
+// Legacy looks without a character field continue to mean Drifella.
+export const CHARACTERS=Object.freeze([{id:'drifella',label:'Drifella'},{id:'drilady',label:'Drilady'}]);
+export const characterId=value=>value?.character==='drilady'?'drilady':'drifella';
+export const DRILADY_DEFAULT_APPEARANCE=Object.freeze({...DEFAULT_APPEARANCE,character:'drilady',bodyColor:'#da987c'});
+export const DRILADY_CATEGORIES=Object.freeze(Object.fromEntries(Object.entries({
+ head:[['original','Drilady']],eyes:[['classic','Violet eyes']],brows:[['original','Arched brows']],
+ mouth:[['original','Braced smile']],nose:[['original','Rose nose']],ears:[['original','Lop ears']],
+ shirt:[['original','Mensa tank']],legs:[['original','Indigo cargos']],hat:[['none','None']],
+ accessory:[['original','Disc charm'],['none','None']],extra:[['none','None']],tattoo:[['none','None']],
+}).map(([key,rows])=>[key,[...rows.map(([id,label])=>({id,label})),...DRILADY_TRAITS[key],...CHARACTER_COLLECTION.drilady[key]]])));
+export const characterCategories=value=>characterId(value)==='drilady'?DRILADY_CATEGORIES:CATEGORIES;
+export const characterDefaults=value=>characterId(value)==='drilady'?DRILADY_DEFAULT_APPEARANCE:DEFAULT_APPEARANCE;
+// Hairstyle heads retain the accepted face; sculptural replacement heads own it.
+export const usesBaseHead=value=>isOriginalHead(value.head)||characterCategories(value).head.some(option=>option.id===value.head&&option.baseHead);
+export const headAllowsEars=value=>usesBaseHead(value)||EAR_COMPATIBLE_HEADS.includes(value.head)||characterId(value)==='drilady';
+export const topOverridesLegs=value=>characterCategories(value).shirt.some(option=>option.id===value.shirt&&option.overridesLegs)||(characterId(value)==='drifella'&&LEG_OVERRIDE_TOPS.includes(value.shirt));
+export const characterHair=value=>{
+ if(!usesBaseHead(value)||characterCategories(value).hat.some(option=>option.id===value.hat&&option.coversHair))return 'none';
+ if(characterId(value)==='drilady')return ['ladyfbi','ladymilitary','ladyjester','ladywrap','ladyveil','ladyboater','ladyroseberet','ladybonnet','ladyscarf'].includes(value.hat)?'none':value.head;
+ return CHARACTER_COLLECTION.drifella.head.some(option=>option.id===value.head)?value.head:'original';
+};
+
 // Keep the storage key: normalization supplies defaults for new categories
 // without resetting any existing selections in older saved looks.
 export const APPEARANCE_STORAGE_KEY='cards-art:drifmaker:appearance:v1';
 export const APPEARANCE_EVENT='drifmaker:appearance';
 export function normalizeAppearance(value){
  const input=value&&typeof value==='object'&&!Array.isArray(value)?value:{};
- const result={bodyColor:typeof input.bodyColor==='string'&&/^#[0-9a-f]{6}$/i.test(input.bodyColor)?input.bodyColor.toLowerCase():DEFAULT_APPEARANCE.bodyColor};
+ const defaults=characterDefaults(input);
+ const result={bodyColor:typeof input.bodyColor==='string'&&/^#[0-9a-f]{6}$/i.test(input.bodyColor)?input.bodyColor.toLowerCase():defaults.bodyColor};
+ if(characterId(input)==='drilady')result.character='drilady';
  result.bodyStyle=BODY_STYLES.some(item=>item.id===input.bodyStyle)?input.bodyStyle:'solid';
  if(Object.hasOwn(BODY_STYLE_COLORS,result.bodyStyle))result.bodyColor=BODY_STYLE_COLORS[result.bodyStyle];
- for(const [category,items] of Object.entries(CATEGORIES))result[category]=items.some(item=>item.id===input[category])?input[category]:DEFAULT_APPEARANCE[category];
+ for(const [category,items] of Object.entries(characterCategories(input)))result[category]=items.some(item=>item.id===input[category])?input[category]:defaults[category];
  return result;
 }
 export function appearanceKey(value){return JSON.stringify(normalizeAppearance(value));}

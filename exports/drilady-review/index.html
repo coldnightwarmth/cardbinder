@@ -1,0 +1,33 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Drilady trait review</title><script type="importmap">{"imports":{"three":"/vendor/three.module.min.js?v=three-r165-min-1"}}</script><style>body{margin:0;background:#eee;font:13px system-ui;color:#222}header{padding:12px;display:flex;gap:8px;flex-wrap:wrap;position:sticky;top:0;background:white;z-index:1}button,select{font:inherit;padding:7px}main{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}figure{margin:0;background:white;min-width:0}img{display:block;width:100%;height:auto}figcaption{padding:5px 10px}#status{padding:6px}</style></head><body><header><select id="category" aria-label="Category"></select><select id="batch" aria-label="Batch"><option value="0">First collection</option><option value="12">Runway collection</option><option value="24" selected>Drilady archive</option></select><select id="angle" aria-label="View"><option value="portrait">Portrait</option><option value="front">Front</option><option value="back">Back</option><option value="side">Side</option><option value="pose">Salute</option></select><button id="save">Save review grid</button><span id="status">Loading</span></header><main></main><script type="module">
+import * as THREE from 'three';
+import {createShowroomAvatar} from '/showroom-avatar.js?v=40';
+import {DRILADY_TRAITS} from '/drilady-traits.mjs?v=4';
+import {DRILADY_DEFAULT_APPEARANCE} from '/drifmaker-config.mjs?v=22';
+import {configurePortraitCamera} from '/drifmaker-portrait.mjs?v=10';
+import {createDrifmakerEnvironment} from '/drifmaker-lighting.mjs?v=1';
+const $=s=>document.querySelector(s),sel=$('#category'),view=$('#angle');
+for(const key of Object.keys(DRILADY_TRAITS)){const o=document.createElement('option');o.value=key;o.textContent=key;sel.append(o)}
+{const o=document.createElement('option');o.value='showcase';o.textContent='Mixed looks';sel.prepend(o)}
+sel.value=new URLSearchParams(location.search).get('category')||'head';
+const scene=new THREE.Scene();scene.background=new THREE.Color('#d4d7df');
+scene.add(new THREE.HemisphereLight(0xf7fcff,0x748b79,2.2));
+for(const [color,power,pos] of [[0xfff5df,3.2,[-3,7,5]],[0xa9d4ec,1.2,[4,3,-4]]]){const l=new THREE.DirectionalLight(color,power);l.position.fromArray(pos);scene.add(l)}
+const renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setSize(300,324);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.1;
+const env=createDrifmakerEnvironment(renderer);scene.environment=env.texture;
+const camera=new THREE.OrthographicCamera();const avatar=await createShowroomAvatar({appearance:DRILADY_DEFAULT_APPEARANCE});scene.add(avatar.model);avatar.model.position.set(0,0,0);avatar.model.scale.setScalar(1);avatar.model.rotation.set(0,0,0);
+let generation=0;
+async function render(){const g=++generation;const category=sel.value;document.querySelector('main').replaceChildren();$('#status').textContent='Rendering';
+for(const [i,option] of (category==='showcase'?DRILADY_TRAITS.shirt:DRILADY_TRAITS[category]).slice(Number($('#batch').value),Number($('#batch').value)+(Number($('#batch').value)===24?20:12)).entries()){
+ if(g!==generation)return;const look={...DRILADY_DEFAULT_APPEARANCE,accessory:'none',[category]:option.id};
+ if(category==='showcase'){for(const [key,options] of Object.entries(DRILADY_TRAITS))look[key]=options[Number($('#batch').value)+(i+(key==='extra'?2:0))%(Number($('#batch').value)===24?20:12)].id;if(i%2===0)look.hat='none';look.bodyStyle='solid';}
+ await avatar.setAppearance(look);if(g!==generation)return;avatar.setPose(view.value==='pose'?'salute':'',{static:true});avatar.update(0,0,false);
+ configurePortraitCamera(THREE,camera);avatar.model.rotation.y=0;
+ if(view.value==='back'||view.value==='side'||view.value==='front'){
+  camera.position.set(view.value==='side'?7:0,2.0,view.value==='back'?-7:7);camera.lookAt(0,1.70,0);camera.top=1.73;camera.bottom=-1.73;camera.left=-1.60;camera.right=1.60;camera.updateProjectionMatrix();
+ }
+ renderer.render(scene,camera);const img=new Image();img.src=renderer.domElement.toDataURL('image/png');img.alt=option.label;await img.decode();if(g!==generation)return;const fig=document.createElement('figure');fig.append(img);const cap=document.createElement('figcaption');cap.textContent=option.label;fig.append(cap);$('main').append(fig);
+ await new Promise(r=>requestAnimationFrame(r));
+}$('#status').textContent=Number($('#batch').value)===24?'20 / 20 rendered':'12 / 12 rendered';}
+sel.onchange=render;view.onchange=render;$('#batch').onchange=render;$('#save').onclick=()=>{const canvas=document.createElement('canvas');canvas.width=1200;canvas.height=Math.ceil(document.querySelectorAll('figure').length/4)*354;const c=canvas.getContext('2d');c.fillStyle='#fff';c.fillRect(0,0,canvas.width,canvas.height);document.querySelectorAll('figure').forEach((f,i)=>{c.drawImage(f.querySelector('img'),i%4*300,Math.floor(i/4)*354);c.fillStyle='#222';c.font='14px sans-serif';c.fillText(f.textContent,i%4*300+8,Math.floor(i/4)*354+344)});const a=document.createElement('a');a.download='drilady-'+sel.value+'-'+view.value+'.png';a.href=canvas.toDataURL();a.click();};
+await render();
+</script></body></html>

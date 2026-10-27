@@ -1,3 +1,4 @@
+import {normalizeAppearance,characterId} from '../../drifmaker-config.mjs';
 import {POSES,normalizePose,normalizePoseTime} from '../../drifmaker-poses.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -75,11 +76,11 @@ function animationPipeline(legacy){
  const rig=shippedAnimationRig();
  let code=source.slice(source.indexOf('export function cloneAvatar')).replaceAll('export ','');
  if(legacy)code=code.replace('model.getWorldQuaternion(parentRotation);','model.updateWorldMatrix(true,true);model.getWorldQuaternion(parentRotation);');
- const context=vm.createContext({THREE,normalizePose,normalizePoseTime,asset:async()=>rig,createAvatarAppearance});vm.runInContext(code,context);
+ const context=vm.createContext({normalizeAppearance,characterId,THREE,normalizePose,normalizePoseTime,asset:async()=>rig,createAvatarAppearance});vm.runInContext(code,context);
  const multiplayer=readFileSync(new URL('../../showroom-multiplayer.js',import.meta.url),'utf8');
  let update=multiplayer.slice(multiplayer.indexOf('  if(p.avatar){'),multiplayer.indexOf('  if(p.layoutDirty)'));
  if(legacy)update=update.replace('p.avatar.update(dt,velocity,p.holding,sample.pitch,sample);','p.avatar.update(dt,velocity,p.holding,sample.pitch,sample);p.group.updateWorldMatrix(true,true);');
- const updateContext=vm.createContext({THREE,normalizePose,normalizePoseTime,jumpHeight,socketPosition:new THREE.Vector3()});
+ const updateContext=vm.createContext({normalizeAppearance,characterId,THREE,normalizePose,normalizePoseTime,jumpHeight,socketPosition:new THREE.Vector3()});
  vm.runInContext(`function updatePeer(p,sample,dt,velocity){${update}}`,updateContext);
  return {create:context.createShowroomAvatar,update:updateContext.updatePeer};
 }
@@ -140,7 +141,7 @@ test('look and held-card placement leave unrelated descendants to the renderer',
    unrelated.updateWorldMatrix=function(...args){visits++;return update.apply(this,args);};
   }
   pipeline.update({avatar,group,cardsRoot,holding:true},{y:1.65,pitch:.7,crouch:.4,jumpTime:.3},1/60,1);
-  assert.equal(visits,legacy?3:0,'only required ancestors need eager matrix updates');
+  assert.equal(visits,legacy?2:0,'only required ancestors need eager matrix updates');
   avatar.dispose();
  }
 });

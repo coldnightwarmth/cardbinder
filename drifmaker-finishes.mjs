@@ -6,6 +6,18 @@
 // without extra textures, world-space swimming, or changes to silhouette/rigging.
 const finish=(color,roughness,metalness,envMapIntensity,source)=>Object.freeze({color,roughness,metalness,envMapIntensity,source});
 export const COLLECTION_FINISHES=Object.freeze({
+ cxpixelstatic:finish('#a9abbe',0.84,0.05,0.7,'Collection material study'),
+ cxcheetahvelvet:finish('#c89b58',0.94,0,0.5,'Collection material study'),
+ cxtigerplush:finish('#e6a158',0.93,0,0.5,'Collection material study'),
+ cxzebrasatin:finish('#e4e3dc',0.42,0.08,0.8,'Collection material study'),
+ cxrobotalloy:finish('#a7bac0',0.26,0.85,1.4,'Collection material study'),
+ cxzombiepatina:finish('#84a979',0.88,0.15,0.7,'Collection material study'),
+ cxdalmatianceramic:finish('#eee6d6',0.24,0.02,1.1,'Collection material study'),
+ cxacidwash:finish('#708bc1',0.95,0,0.5,'Collection material study'),
+ cxrubberducky:finish('#f7ca3d',0.68,0,0.8,'Collection material study'),
+ cxglitchfoil:finish('#d69eff',0.2,0.68,1.5,'Collection material study'),
+ cxcrackedleather:finish('#654432',0.87,0,0.55,'Collection material study'),
+ cxvelournoise:finish('#88465e',0.97,0,0.6,'Collection material study'),
  mnwatercolor:finish('#b2bed4',0.88,0,0.6,'Mi Note #2'),
  mnruledpaper:finish('#eee3cc',0.96,0,0.4,'Mi Note #1'),
  mngraphite:finish('#bcb5ad',0.89,0.05,0.6,'Mi Note #1'),
@@ -55,6 +67,18 @@ vec3 drifSurfaceNormal(vec3 n,float height,vec3 viewPosition,float faceDirection
 // Broad bands/patches remain readable at portrait size; fine detail is filtered
 // through derivatives rather than screen-space noise or decorative line meshes.
 const samples={
+ cxpixelstatic:`vec3 cell=floor(p*30.0);float n=drifSurfaceHash(cell);vec3 pixel=mix(vec3(.16,.21,.36),vec3(.83,.78,.87),n);pixel=mix(pixel,vec3(.35,.88,.85),step(.88,n));color=drifSurfaceLinear(pixel);roughness=.72+.18*n;height=n*.0008;`,
+ cxcheetahvelvet:`vec3 q=p*13.0;float spot=length(fract(q)-.5);float jitter=drifSurfaceHash(floor(q));float ink=1.0-smoothstep(.18+jitter*.08,.23+jitter*.08,spot);vec3 tan=mix(vec3(.60,.36,.12),vec3(.90,.69,.32),drifSurfaceFbm(p*4.0));color=drifSurfaceLinear(mix(tan,vec3(.07,.035,.018),ink));roughness=.94;height=drifSurfaceNoise(p*vec3(240.0,25.0,240.0))*.0012;`,
+ cxtigerplush:`float bend=p.x*20.0+p.y*8.0+drifSurfaceFbm(p*5.0)*11.0;float stripe=smoothstep(.55,.76,sin(bend));color=drifSurfaceLinear(mix(vec3(.89,.47,.16),vec3(.065,.035,.025),stripe));roughness=.92;height=drifSurfaceNoise(p*180.0)*.0011;`,
+ cxzebrasatin:`float wave=p.x*25.0+sin(p.y*11.0)*2.5+drifSurfaceFbm(p*4.0)*7.0;float stripe=smoothstep(-.12,.13,sin(wave));color=drifSurfaceLinear(mix(vec3(.90,.89,.82),vec3(.02,.026,.038),stripe));roughness=.33+.12*drifSurfaceNoise(p*130.0);height=sin(p.y*280.0)*.00025;`,
+ cxrobotalloy:`vec3 q=p*9.0;vec3 edge=min(fract(q),1.0-fract(q));float seam=1.0-smoothstep(.015,.04,min(edge.x,edge.y));float plate=drifSurfaceHash(floor(q));vec3 steel=mix(vec3(.30,.40,.47),vec3(.75,.82,.84),plate);color=drifSurfaceLinear(mix(steel,vec3(.045,.065,.08),seam));roughness=.18+.26*drifSurfaceNoise(p*vec3(25.0,350.0,25.0));height=-seam*.0018;`,
+ cxzombiepatina:`float stain=drifSurfaceFbm(p*9.0);float pore=drifSurfaceNoise(p*125.0);color=drifSurfaceLinear(mix(vec3(.28,.37,.23),vec3(.67,.77,.46),stain));color=mix(color,drifSurfaceLinear(vec3(.22,.17,.30)),smoothstep(.64,.78,drifSurfaceFbm(p*6.0+9.0))*.8);roughness=.82+.16*pore;height=pore*.0013;`,
+ cxdalmatianceramic:`vec3 q=p*11.0;float seed=drifSurfaceHash(floor(q));float spot=length(fract(q)-.5);float ink=(1.0-smoothstep(.23,.29,spot))*step(.38,seed);color=drifSurfaceLinear(mix(vec3(.96,.92,.83),vec3(.035,.04,.05),ink));roughness=.17+.10*drifSurfaceNoise(p*90.0);height=ink*.0005;`,
+ cxacidwash:`float wash=drifSurfaceFbm(p*15.0);float twill=.5+.5*sin((p.x+p.y)*400.0);color=drifSurfaceLinear(mix(vec3(.13,.22,.43),vec3(.74,.81,.91),smoothstep(.28,.73,wash)));roughness=.94;height=twill*.0006+drifSurfaceNoise(p*240.0)*.0005;`,
+ cxrubberducky:`float orange=drifSurfaceFbm(p*4.0);color=drifSurfaceLinear(mix(vec3(1.0,.73,.06),vec3(.95,.49,.025),orange*.35));float micro=drifSurfaceNoise(p*190.0);roughness=.59+.20*micro;height=micro*.0005;`,
+ cxglitchfoil:`vec3 cell=floor(p*vec3(14.0,45.0,14.0));float n=drifSurfaceHash(cell);vec3 foil=.55+.40*cos(vec3(0.0,2.1,4.2)+n*6.28+p.y*3.0);float spark=step(.97,drifSurfaceHash(floor(p*180.0)));color=drifSurfaceLinear(mix(foil,vec3(1.0),spark));roughness=.15+.17*n;height=n*.0003;glow=color*spark*.28;`,
+ cxcrackedleather:`float n=drifSurfaceFbm(p*45.0);float crack=1.0-smoothstep(.012,.055,abs(n-.49));float grain=drifSurfaceNoise(p*150.0);color=drifSurfaceLinear(mix(mix(vec3(.22,.10,.052),vec3(.43,.24,.13),grain),vec3(.065,.026,.018),crack));roughness=.73+.22*grain;height=grain*.0012-crack*.002;`,
+ cxvelournoise:`float pile=drifSurfaceNoise(p*vec3(190.0,28.0,190.0));float nap=drifSurfaceFbm(p*vec3(8.0,2.0,8.0));color=drifSurfaceLinear(mix(vec3(.23,.07,.16),vec3(.62,.26,.40),nap))*(.84+.16*pile);roughness=.96;height=pile*.0012;`,
  mnwatercolor:`float wash=drifSurfaceFbm(p*5.0);float edge=abs(wash-.5);vec3 pigment=mix(vec3(.27,.39,.60),vec3(.82,.67,.74),drifSurfaceNoise(p*2.0));color=drifSurfaceLinear(mix(vec3(.94,.91,.83),pigment,(1.0-smoothstep(.0,.09,edge))*.72+wash*.25));roughness=.86;height=drifSurfaceNoise(p*130.0)*.0012;`,
  mnruledpaper:`float ruled=1.0-smoothstep(.018,.05,abs(fract(p.y*15.0)-.5));float margin=1.0-smoothstep(.005,.014,abs(p.x+.31));vec3 paper=mix(vec3(.94,.90,.80),vec3(.81,.79,.73),drifSurfaceNoise(p*150.0)*.25);paper=mix(paper,vec3(.48,.62,.69),ruled*.4);paper=mix(paper,vec3(.80,.34,.38),margin*.55);color=drifSurfaceLinear(paper);roughness=.96;height=drifSurfaceNoise(p*160.0)*.0008;`,
  mngraphite:`float strokes=.5+.5*sin((p.x+p.y*.33)*210.0+drifSurfaceFbm(p*18.0)*12.0);float shade=drifSurfaceFbm(p*5.0);color=drifSurfaceLinear(mix(vec3(.90,.86,.80),vec3(.23,.24,.27),shade*.7+strokes*.15));roughness=.90;height=strokes*.0004;`,

@@ -1,7 +1,7 @@
-import {CATEGORIES,DEFAULT_APPEARANCE,FINISH_COLORS,EAR_COMPATIBLE_HEADS,LEG_OVERRIDE_TOPS,HEAD_SCALES,isOriginalHead,normalizeAppearance} from './drifmaker-config.mjs?v=16';
+import {CATEGORIES,DEFAULT_APPEARANCE,FINISH_COLORS,EAR_COMPATIBLE_HEADS,LEG_OVERRIDE_TOPS,HEAD_SCALES,isOriginalHead,normalizeAppearance,characterCategories,characterDefaults,usesBaseHead,headAllowsEars,topOverridesLegs,characterHair} from './drifmaker-config.mjs?v=22';
 import {applyHoloShader} from './drifmaker-holo.mjs?v=1';
 import {applyCamoShader} from './drifmaker-camo.mjs?v=1';
-import {COLLECTION_FINISHES,applyCollectionFinishShader} from './drifmaker-finishes.mjs?v=3';
+import {COLLECTION_FINISHES,applyCollectionFinishShader} from './drifmaker-finishes.mjs?v=4';
 
 // The original tail shares the body mesh with the hands. Filter its complete
 // Tail/TailTip-weighted triangles without changing shared geometry or the rig.
@@ -31,18 +31,19 @@ function bodyWithoutTail(node){
 
 // Each character owns its surface finishes and visibility; geometry and textures
 // remain shared. A material shared by a face and a shirt must get separate roles.
-export function createAvatarAppearance(model){
- const categories=Object.fromEntries(Object.keys(CATEGORIES).map(category=>[category,[]])),owned=new Map(),surfaces=[],fuzz=[],tailParts=[];
+export function createAvatarAppearance(model,initialAppearance){
+ const catalog=characterCategories(initialAppearance),defaults=characterDefaults(initialAppearance);
+ const categories=Object.fromEntries(Object.keys(catalog).map(category=>[category,[]])),owned=new Map(),surfaces=[],fuzz=[],tailParts=[],hairParts=[];
  const partName=node=>{for(let current=node;current&&current!==model;current=current.parent)if(/^Drif_(?:Body(?:_|$)|Head_|Ears_|Nose_|Eyes_|Brows_|Mouth_|Legs_|Shirt_|Ghost_)/.test(current.name))return current.name;return node.name;};
  model.traverse(node=>{
   const match=/^Drif_([a-z]+)_([a-z0-9]+)(?:_|$)/i.exec(node.name);
-  if(match){const category=match[1].toLowerCase(),id=match[2].toLowerCase();if(Object.hasOwn(categories,category)&&CATEGORIES[category].some(item=>item.id===id))categories[category].push({node,id});}
+  if(match){const category=match[1].toLowerCase(),id=match[2].toLowerCase();if(category==='hair')hairParts.push({node,id});if(Object.hasOwn(categories,category)&&catalog[category].some(item=>item.id===id))categories[category].push({node,id});}
   if(node.name.startsWith('Drif_Ghost_Fuzz'))fuzz.push(node);
   if(!node.material)return;
   const part=partName(node),skinPart=/^Drif_(?:Body(?:_|$)|Head_|Ears_|Nose_)/.test(part),face=/^Drif_(?:Eyes_|Brows_|Mouth_)/.test(part),fiber=part.startsWith('Drif_Ghost_Fuzz');
   if(node.isSkinnedMesh&&/^Drif_Body(?:_|$)/.test(part))tailParts.push({node,original:node.geometry,hidden:null,prepared:false});
   const isolate=source=>{
-   const recolor=/^(?:Drif_Body_Main|Azure blue)(?:[._]|$)/.test(source?.name||'');
+   const recolor=/^(?:Drif_Body_Main|Drilady_Fur|Azure blue)(?:[._]|$)/.test(source?.name||'');
    const feet=(part.startsWith('Drif_Legs_')||LEG_OVERRIDE_TOPS.some(id=>part.startsWith('Drif_Shirt_'+id)))&&/^Drif_Original_Warm_ivory/.test(source?.name||'');
    const skin=skinPart||recolor,gilded=skin||face||feet;
    if(!source?.color)return source;
@@ -68,7 +69,7 @@ outgoingLight += diffuse * drifRim * 0.7;
   node.material=Array.isArray(node.material)?node.material.map(isolate):isolate(node.material);
  });
  const headBone=model.getObjectByName('Head'),headScale=headBone?.scale.clone();
- let current={...DEFAULT_APPEARANCE},disposed=false,headScaleApplied=false;
+ let current={...defaults},disposed=false,headScaleApplied=false;
  function restoreHeadScale(){if(headBone&&headScaleApplied)headBone.scale.copy(headScale);headScaleApplied=false;}
  function applyHeadScale(){
   if(!headBone||headScaleApplied)return;
@@ -86,16 +87,18 @@ outgoingLight += diffuse * drifRim * 0.7;
     part.node.geometry=current.shirt==='dinosaursuit'&&part.hidden?part.hidden:part.original;
    }
    for(const [category,parts] of Object.entries(categories))for(const {node,id} of parts){
-    if(category==='legs'&&LEG_OVERRIDE_TOPS.includes(current.shirt))node.visible=false;
-    else if(category==='ears'&&EAR_COMPATIBLE_HEADS.includes(current.head))node.visible=id===current.ears;
-    else node.visible=id===(category==='head'&&isOriginalHead(current.head)?'original':current[category])&&(!['eyes','brows','mouth','nose','ears','tattoo'].includes(category)||isOriginalHead(current.head));
+    if(category==='legs'&&topOverridesLegs(current))node.visible=false;
+    else if(category==='ears'&&headAllowsEars(current))node.visible=id===current.ears;
+    else node.visible=id===(category==='head'&&usesBaseHead(current)?'original':current[category])&&(!['eyes','brows','mouth','nose','ears','tattoo'].includes(category)||usesBaseHead(current));
    }
+   for(const {node,id} of hairParts)node.visible=id===characterHair(current);
    for(const node of fuzz)node.visible=current.bodyStyle==='ghost';
    for(const saved of surfaces){
     const {material}=saved,finish=(saved.skin||saved.feet)&&Object.hasOwn(COLLECTION_FINISHES,current.bodyStyle)?COLLECTION_FINISHES[current.bodyStyle]:null,marble=current.bodyStyle==='marble',holo=current.bodyStyle==='holographic'&&saved.gilded,ghost=current.bodyStyle==='ghost'&&saved.gilded,camo=current.bodyStyle==='camo'&&(saved.skin||saved.feet),coated=Object.hasOwn(FINISH_COLORS,current.bodyStyle)&&saved.gilded,metallic=coated&&current.bodyStyle!=='matteblack',matte=coated&&!metallic;
-    if(marble||holo)material.color.set('#ffffff');else if(coated)material.color.set(FINISH_COLORS[current.bodyStyle]);else if(ghost)material.color.set(current.bodyColor);else if(saved.recolor&&current.bodyColor!==DEFAULT_APPEARANCE.bodyColor)material.color.set(current.bodyColor);else material.color.copy(saved.color);
+    if(marble||holo)material.color.set('#ffffff');else if(coated)material.color.set(FINISH_COLORS[current.bodyStyle]);else if(ghost)material.color.set(current.bodyColor);else if(saved.recolor&&current.bodyColor!==defaults.bodyColor)material.color.set(current.bodyColor);else material.color.copy(saved.color);
     const map=marble||holo||coated||camo||finish?null:saved.map;
-    if(material.vertexColors!==(marble||finish?false:saved.vertexColors)){material.vertexColors=marble||finish?false:saved.vertexColors;material.needsUpdate=true;}
+    const vertexColors=marble||finish||holo||coated||ghost?false:saved.vertexColors;
+    if(material.vertexColors!==vertexColors){material.vertexColors=vertexColors;material.needsUpdate=true;}
     for(const slot of ['normalMap','bumpMap','roughnessMap','metalnessMap','alphaMap','emissiveMap']){const value=marble||finish?null:saved[slot];if(material[slot]!==value){material[slot]=value;material.needsUpdate=true;}}
     const finishId=finish?current.bodyStyle:'';
     if(material.userData.drifFinish!==finishId){material.userData.drifFinish=finishId;material.needsUpdate=true;}

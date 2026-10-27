@@ -32,3 +32,5 @@ html,body{overscroll-behavior-y:none;overflow-x:clip}
 @media(min-width:761px) and (max-height:560px){.wardrobe{overflow-y:auto}.sidebar-panel{flex-shrink:0;overflow:visible}.editor-controls{flex:none;max-height:240px}.bookmarks-panel{overflow:visible}}
 /* Anchor hidden tile labels inside the scroller so they cannot extend the document. */
 .editor-controls,.bookmarks-panel,.tile-rarity{position:relative}
+
+.character-switch{display:flex;gap:4px;margin:0 18px 12px;padding:4px;background:#edf0e9;border-radius:12px;flex-shrink:0}.character-switch button{flex:1;border:0;background:transparent;padding:9px 12px;border-radius:9px;font:inherit;font-weight:600;color:#687168;cursor:pointer}.character-switch button[aria-pressed="true"]{background:#fff;color:#202b21;box-shadow:0 1px 4px #20301e18}.character-switch button:focus-visible{outline:2px solid #4b6a47;outline-offset:2px}

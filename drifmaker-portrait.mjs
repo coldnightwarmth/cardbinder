@@ -1,5 +1,5 @@
-import {setPortraitOverlay,renderPortraitScene,disposePortraitOverlay} from './drifmaker-portrait-art.mjs?v=2';
-import {setPortraitSceneBackground,disposePortraitBackground} from './drifmaker-background.mjs?v=3';
+import {setPortraitOverlay,renderPortraitScene,disposePortraitOverlay} from './drifmaker-portrait-art.mjs?v=3';
+import {setPortraitSceneBackground,disposePortraitBackground} from './drifmaker-background.mjs?v=4';
 import {createHeldCard,createHeldCardFollower,disposeHeldCard} from './drifmaker-held-card.mjs?v=1';
 import {normalizePortraitPose} from './drifmaker-poses.mjs?v=5';
 // Composition is shared by the fixed preview and its PNG export. These framing

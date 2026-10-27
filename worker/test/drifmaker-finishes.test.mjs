@@ -1,3 +1,5 @@
+import {CHARACTER_COLLECTION} from '../../drifmaker-character-collection.mjs';
+import {characterId} from '../../drifmaker-config.mjs';
 import {MINOTE_CATALOG} from '../../drifmaker-minote.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -10,7 +12,7 @@ import {BODY_COLORS,BODY_STYLES,BODY_STYLE_COLORS,HEAD_SCALES,isOriginalHead,DEF
 import {normalizePose,normalizePoseTime} from '../../drifmaker-poses.mjs';
 import {createPortraitAvatar} from '../../drifmaker-portrait.mjs';
 
-const finishIds=[...MINOTE_CATALOG.bodyStyle.map(({id})=>id),'blueporcelain','verdigris','pearl','amethyst','carbonfiber','candyglaze','blackgem','lava','woods','mossy','pinklatex','cowhide'];
+const finishIds=[...CHARACTER_COLLECTION.bodyStyle.map(({id})=>id),...MINOTE_CATALOG.bodyStyle.map(({id})=>id),'blueporcelain','verdigris','pearl','amethyst','carbonfiber','candyglaze','blackgem','lava','woods','mossy','pinklatex','cowhide'];
 function fixture(){
  const geometry=new THREE.BoxGeometry(),texture=new THREE.Texture();
  const source=new THREE.MeshStandardMaterial({color:'#dbbd96',map:texture,normalMap:texture,bumpMap:texture,roughnessMap:texture,metalnessMap:texture,alphaMap:texture,emissiveMap:texture,alphaTest:.35,vertexColors:true,emissive:'#351724',emissiveIntensity:.7,metalness:.19,roughness:.61,transparent:true,opacity:.6,depthWrite:false});
@@ -32,7 +34,7 @@ test('source-inspired finishes are normalized and exposed by the shared palettes
   assert.equal(BODY_STYLE_COLORS[id],finish.color);
   const selected=normalizeAppearance({...DEFAULT_APPEARANCE,bodyStyle:id,bodyColor:'#ffffff'});
   assert.equal(selected.bodyStyle,id);assert.equal(selected.bodyColor,finish.color);
-  assert.match(finish.source,/\.PNG$|Original stagecraft material|Mi Note #\d+/);
+  assert.match(finish.source,/\.PNG$|Original stagecraft material|Collection material study|Mi Note #\d+/);
  }
  assert.equal(normalizeAppearance({...DEFAULT_APPEARANCE,bodyStyle:'constructor'}).bodyStyle,'solid');
 });
@@ -56,7 +58,7 @@ test('all new finishes cover skin, ears, nose and bare feet while preserving exp
   assert.deepEqual(state(other.getObjectByName('Drif_Body').children[0].material),original,'other character stays isolated');
   assert.deepEqual(state(f.source),original,'shared loaded material remains untouched');
  }
- assert.equal(cacheKeys.size,21,'each shader has a separate Three program cache key');
+ assert.equal(cacheKeys.size,33,'each shader has a separate Three program cache key');
  a.dispose();b.dispose();f.dispose();
 });
 
@@ -89,7 +91,7 @@ test('finish shaders use real Standard chunks, stable bind coordinates and disti
   assert.equal((shader.fragmentShader.match(/void drifFinishSample/g)||[]).length,1);
   results.push(shader.fragmentShader);
  }
- assert.equal(new Set(results).size,21);
+ assert.equal(new Set(results).size,33);
  assert.equal(applyCollectionFinishShader({},'unknown'),false);
  assert.throws(()=>applyCollectionFinishShader({vertexShader:'',fragmentShader:''},'lava'),/Unsupported Three shader/);
 });
@@ -101,7 +103,7 @@ function animatedFactory(){
  const clip=name=>new THREE.AnimationClip(name,2,[new THREE.VectorKeyframeTrack('Head.scale',[0,2],[1,1,1,1.1,1.2,.9]),new THREE.VectorKeyframeTrack('Hips.scale',[0,2],[1,1,1,1,1,1])]);
  const animations=['Neutral','Walk','Hold_Right','Walk_Hold_Right','Crouch','Crouch_Walk','Crouch_Hold_Right','Crouch_Walk_Hold_Right','Jump','Jump_Hold_Right','Pose_wave'].map(clip);
  const source=readFileSync(new URL('../../showroom-avatar.js',import.meta.url),'utf8');
- const context=vm.createContext({THREE,normalizePose,normalizePoseTime,createAvatarAppearance,asset:async()=>({scene:root,animations})});
+ const context=vm.createContext({normalizeAppearance,characterId,THREE,normalizePose,normalizePoseTime,createAvatarAppearance,asset:async()=>({scene:root,animations})});
  vm.runInContext(source.slice(source.indexOf('export function cloneAvatar')).replaceAll('export ',''),context);
  return context.createShowroomAvatar;
 }

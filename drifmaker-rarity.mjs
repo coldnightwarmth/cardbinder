@@ -1,6 +1,6 @@
 import {DEFAULT_RARITY} from './drifmaker-rarity-defaults.mjs?v=1';
-import {PORTRAIT_OVERLAYS} from './drifmaker-portrait-art.mjs?v=2';
-import {BODY_COLORS,BODY_STYLES,PORTRAIT_BACKGROUNDS,CATEGORIES} from './drifmaker-config.mjs?v=16';
+import {PORTRAIT_OVERLAYS} from './drifmaker-portrait-art.mjs?v=3';
+import {BODY_COLORS,BODY_STYLES,PORTRAIT_BACKGROUNDS,CATEGORIES,characterId,characterCategories,DRILADY_CATEGORIES} from './drifmaker-config.mjs?v=22';
 import {PORTRAIT_POSES} from './drifmaker-poses.mjs?v=5';
 
 export const RARITY_STORAGE_KEY='cards-art:drifmaker:rarity:v1';
@@ -10,11 +10,13 @@ export const RARITY_GROUPS=Object.freeze({
  bodyColor:{label:'Body colors',options:BODY_COLORS},
  bodyStyle:{label:'Body finishes',options:BODY_STYLES},
  ...Object.fromEntries(['head','eyes','brows','mouth','nose','ears','tattoo','shirt','legs','hat','accessory','extra'].map((key,index)=>[key,{label:['Heads','Eyes','Eyebrows','Mouth','Nose','Ears','Tattoos','Tops','Legs','Hats','Accessories','Extra'][index],options:CATEGORIES[key]}])),
+ ...Object.fromEntries(Object.entries(DRILADY_CATEGORIES).map(([key,options])=>['drilady.'+key,{label:'Drilady '+key,options}])),
  background:{label:'Backgrounds',options:PORTRAIT_BACKGROUNDS.map(color=>({...color,id:color.hex}))},
  overlay:{label:'Overlays',options:PORTRAIT_OVERLAYS},
  pose:{label:'Portrait poses',options:PORTRAIT_POSES},
 });
 
+export const rarityCategory=(appearance,category)=>characterId(appearance)==='drilady'&&Object.hasOwn(DRILADY_CATEGORIES,category)?'drilady.'+category:category;
 export const validWeight=value=>Number.isInteger(value)&&value>=0&&value<=MAX_WEIGHT;
 export function traitWeight(rarity,category,id){
  const value=rarity?.[category]?.[id];
@@ -54,7 +56,9 @@ export function pickTrait(rarity,category,random=Math.random){
 }
 export function randomizeLook({rarity,appearance,background,overlay='none',pose,posesEnabled=false},random=Math.random){
  const next={...appearance};
- for(const category of ['bodyStyle',...Object.keys(CATEGORIES)]){const option=pickTrait(rarity,category,random);if(option)next[category]=option.id;}
+ for(const category of ['bodyStyle',...Object.keys(CATEGORIES)]){
+  const option=pickTrait(rarity,rarityCategory(appearance,category),random);if(option)next[category]=option.id;
+ }
  const color=pickTrait(rarity,'bodyColor',random),backdrop=pickTrait(rarity,'background',random);
  if(color)next.bodyColor=color.hex;
  return {appearance:next,overlay:pickTrait(rarity,'overlay',random)?.id??overlay,background:backdrop?.hex??background,pose:posesEnabled?(pickTrait(rarity,'pose',random)?.id??pose):pose};
