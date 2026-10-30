@@ -1,4 +1,4 @@
-import {POSES,createPoseState} from './drifmaker-poses.mjs?v=5';
+import {createPoseState} from './drifmaker-poses.mjs?v=5';
 import {createVerticalMovement} from './showroom-locomotion.mjs?v=2';
 import {createShowroomPointerLock} from './showroom-pointer-lock.mjs';
 import {createChatInput} from './showroom-chat.js?v=5';
@@ -53,10 +53,6 @@ export async function initShowroom(bridge) {
     }
   } catch { /* Invalid return destinations go to the main page. */ }
   hud.append(leave);
-  const drifmaker = document.createElement('a');
-  drifmaker.id='showroomDrifmaker'; drifmaker.textContent='Edit Drifella';
-  drifmaker.href='/drifmaker';
-  hud.append(drifmaker);
   let resumeOnEscapeRelease=false;
   document.addEventListener('keyup',event=>{if(event.code==='Escape'&&resumeOnEscapeRelease){resumeOnEscapeRelease=false;if(!active&&!busy&&!columns?.selecting)lock();}},true);
   document.addEventListener('keydown',event=>{
@@ -397,10 +393,7 @@ export async function initShowroom(bridge) {
 
   const tables=[], binders=[], addresses=new Set(), keys=new Set();
   const verticalMovement=createVerticalMovement(),poseState=createPoseState();
-  const posePicker=document.createElement('select');posePicker.id='showroomPose';posePicker.setAttribute('aria-label','Character pose');posePicker.hidden=true;
-  for(const pose of [{id:'',label:'Pose'},...POSES]){const option=document.createElement('option');option.value=pose.id;option.textContent=pose.label;posePicker.append(option);}hud.append(posePicker);
-  const cancelPose=()=>{poseState.cancel();posePicker.value='';camera.userData.pose=poseState.value;};
-  posePicker.onchange=()=>{keys.clear();poseState.select(posePicker.value);camera.userData.pose=poseState.value;};
+  const cancelPose=()=>{poseState.cancel();camera.userData.pose=poseState.value;};
   let endZ=-8, active=null, hovered=null, busy=false, directoryLoading=false;
   let columns=null, hoveredColumn=null, sharedRowsBuilt=0;
   const portal=createShowroomPortal({renderer,scene,camera,
@@ -1150,7 +1143,6 @@ export async function initShowroom(bridge) {
     multiplayer.update(now,{speechVisible:!active && !busy,typing:chat.typing});
     ritualEffects.update(multiplayer.network.now());
     const escapeControls=!active && !busy && !fallback && document.pointerLockElement!==canvas && !leave.hidden;
-    posePicker.hidden=Boolean(active||busy||columns.selecting)||!(escapeControls||touchMode||fallback);
     chat.update(escapeControls);if(!escapeControls)favoritesEmpty.hidden=true;favoritesButton.hidden=!favoritesReady || !escapeControls || columns.selecting;
     // Reserve the shared wallet-table footprint even when a visitor's private
     // directory fetch differs. Portal position and player coordinates agree.

@@ -60,17 +60,6 @@ body.showroom { background:#151718; }
   white-space: nowrap;
 }
 #showroomLeave[hidden] { display: none !important; }
-#showroomDrifmaker {
-  display: none;
-  position: absolute;
-  top: calc(max(28px, env(safe-area-inset-top)) + 54px);
-  left: 50%;
-  transform: translateX(-50%);
-  white-space: nowrap;
-}
-.showroom.showroom-walking:has(#showroomLeave:not([hidden])) #showroomDrifmaker {
-  display: block;
-}
 
 #showroomTouchJoystick {
   position: absolute;
@@ -252,5 +241,3 @@ body.showroom { background:#151718; }
 .showroom-typing i:nth-child(3) {animation-delay:.3s;}
 @keyframes showroom-typing-dot {0%,60%,100% {opacity:.35;transform:translateY(0);}30% {opacity:1;transform:translateY(-3px);}}
 @media(prefers-reduced-motion:reduce){.showroom-typing i {animation:none;opacity:.7;}}
-
-#showroomPose{position:fixed;left:20px;bottom:78px;z-index:24;pointer-events:auto;max-width:155px;padding:10px 12px;border:1px solid #ffffff40;border-radius:8px;background:#17251ee8;color:#fff;font:12px system-ui}#showroomPose[hidden]{display:none}@media(max-width:760px){#showroomPose{left:auto;right:14px;bottom:90px;max-width:140px}}
