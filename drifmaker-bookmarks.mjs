@@ -1,6 +1,6 @@
 import {normalizeOverlay,PORTRAIT_OVERLAYS} from './drifmaker-portrait-art.mjs?v=3';
 import {validPortraitBackground} from './drifmaker-background.mjs?v=4';
-import {normalizeAppearance,BODY_COLORS,BODY_STYLES,PORTRAIT_BACKGROUNDS,CATEGORIES,isOriginalHead,EAR_COMPATIBLE_HEADS,LEG_OVERRIDE_TOPS,characterId,characterCategories,CHARACTERS,usesBaseHead,headAllowsEars,topOverridesLegs} from './drifmaker-config.mjs?v=22';
+import {normalizeAppearance,BODY_COLORS,BODY_STYLES,PORTRAIT_BACKGROUNDS,CATEGORIES,isOriginalHead,EAR_COMPATIBLE_HEADS,LEG_OVERRIDE_TOPS,characterId,characterCategories,CHARACTERS,usesBaseHead,headAllowsEars,topOverridesLegs} from './drifmaker-config.mjs?v=23';
 import {normalizePortraitPose,PORTRAIT_POSES} from './drifmaker-poses.mjs?v=5';
 import {PORTRAIT_COMPOSITION} from './drifmaker-portrait.mjs?v=10';
 import {createZipWriter} from './minotecurator/zip-writer.js';

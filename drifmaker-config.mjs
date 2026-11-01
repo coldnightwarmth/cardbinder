@@ -1,5 +1,6 @@
 import {CHARACTER_COLLECTION} from './drifmaker-character-collection.mjs?v=1';
 import {DRILADY_TRAITS} from './drilady-traits.mjs?v=4';
+import {DRILADY_BUNNY_STUDY} from './drilady-bunny-study.mjs?v=1';
 import {MINOTE_CATALOG} from './drifmaker-minote.mjs?v=1';
 import {NEW_TRAITS} from './drifmaker-expansion.mjs?v=9';
 // Shared by the browser and the showroom worker: only these small, validated
@@ -230,7 +231,7 @@ export const DRILADY_CATEGORIES=Object.freeze(Object.fromEntries(Object.entries(
  mouth:[['original','Braced smile']],nose:[['original','Rose nose']],ears:[['original','Lop ears']],
  shirt:[['original','Mensa tank']],legs:[['original','Indigo cargos']],hat:[['none','None']],
  accessory:[['original','Disc charm'],['none','None']],extra:[['none','None']],tattoo:[['none','None']],
-}).map(([key,rows])=>[key,[...rows.map(([id,label])=>({id,label})),...DRILADY_TRAITS[key],...CHARACTER_COLLECTION.drilady[key]]])));
+}).map(([key,rows])=>[key,[...rows.map(([id,label])=>({id,label})),...DRILADY_TRAITS[key],...CHARACTER_COLLECTION.drilady[key],...(DRILADY_BUNNY_STUDY[key]||[])]])));
 export const characterCategories=value=>characterId(value)==='drilady'?DRILADY_CATEGORIES:CATEGORIES;
 export const characterDefaults=value=>characterId(value)==='drilady'?DRILADY_DEFAULT_APPEARANCE:DEFAULT_APPEARANCE;
 // Hairstyle heads retain the accepted face; sculptural replacement heads own it.

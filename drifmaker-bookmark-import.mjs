@@ -1,5 +1,5 @@
-import {normalizeLook} from './drifmaker-bookmarks.mjs?v=19';
-import {CATEGORIES,BODY_STYLES,BODY_COLORS,PORTRAIT_BACKGROUNDS,characterCategories,CHARACTERS} from './drifmaker-config.mjs?v=22';
+import {normalizeLook} from './drifmaker-bookmarks.mjs?v=20';
+import {CATEGORIES,BODY_STYLES,BODY_COLORS,PORTRAIT_BACKGROUNDS,characterCategories,CHARACTERS} from './drifmaker-config.mjs?v=23';
 import {PORTRAIT_POSES} from './drifmaker-poses.mjs?v=5';
 import {PORTRAIT_OVERLAYS} from './drifmaker-portrait-art.mjs?v=3';
 import {validPortraitBackground} from './drifmaker-background.mjs?v=4';

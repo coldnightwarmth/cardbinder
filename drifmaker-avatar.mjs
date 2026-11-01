@@ -1,4 +1,4 @@
-import {CATEGORIES,DEFAULT_APPEARANCE,FINISH_COLORS,EAR_COMPATIBLE_HEADS,LEG_OVERRIDE_TOPS,HEAD_SCALES,isOriginalHead,normalizeAppearance,characterCategories,characterDefaults,usesBaseHead,headAllowsEars,topOverridesLegs,characterHair} from './drifmaker-config.mjs?v=22';
+import {CATEGORIES,DEFAULT_APPEARANCE,FINISH_COLORS,EAR_COMPATIBLE_HEADS,LEG_OVERRIDE_TOPS,HEAD_SCALES,isOriginalHead,normalizeAppearance,characterCategories,characterDefaults,usesBaseHead,headAllowsEars,topOverridesLegs,characterHair} from './drifmaker-config.mjs?v=23';
 import {applyHoloShader} from './drifmaker-holo.mjs?v=1';
 import {applyCamoShader} from './drifmaker-camo.mjs?v=1';
 import {COLLECTION_FINISHES,applyCollectionFinishShader} from './drifmaker-finishes.mjs?v=4';

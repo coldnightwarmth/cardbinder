@@ -1,8 +1,8 @@
 <!doctype html><html><head><meta charset="utf-8"><title>Drilady trait review</title><script type="importmap">{"imports":{"three":"/vendor/three.module.min.js?v=three-r165-min-1"}}</script><style>body{margin:0;background:#eee;font:13px system-ui;color:#222}header{padding:12px;display:flex;gap:8px;flex-wrap:wrap;position:sticky;top:0;background:white;z-index:1}button,select{font:inherit;padding:7px}main{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}figure{margin:0;background:white;min-width:0}img{display:block;width:100%;height:auto}figcaption{padding:5px 10px}#status{padding:6px}</style></head><body><header><select id="category" aria-label="Category"></select><select id="batch" aria-label="Batch"><option value="0">First collection</option><option value="12">Runway collection</option><option value="24" selected>Drilady archive</option></select><select id="angle" aria-label="View"><option value="portrait">Portrait</option><option value="front">Front</option><option value="back">Back</option><option value="side">Side</option><option value="pose">Salute</option></select><button id="save">Save review grid</button><span id="status">Loading</span></header><main></main><script type="module">
 import * as THREE from 'three';
-import {createShowroomAvatar} from '/showroom-avatar.js?v=40';
+import {createShowroomAvatar} from '/showroom-avatar.js?v=41';
 import {DRILADY_TRAITS} from '/drilady-traits.mjs?v=4';
-import {DRILADY_DEFAULT_APPEARANCE} from '/drifmaker-config.mjs?v=22';
+import {DRILADY_DEFAULT_APPEARANCE} from '/drifmaker-config.mjs?v=23';
 import {configurePortraitCamera} from '/drifmaker-portrait.mjs?v=10';
 import {createDrifmakerEnvironment} from '/drifmaker-lighting.mjs?v=1';
 const $=s=>document.querySelector(s),sel=$('#category'),view=$('#angle');

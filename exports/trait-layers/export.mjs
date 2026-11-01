@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import {createShowroomAvatar} from '/showroom-avatar.js?v=40';
-import {characterCategories,characterDefaults,BODY_COLORS,BODY_STYLES,PORTRAIT_BACKGROUNDS,HEAD_SCALES,usesBaseHead,headAllowsEars,topOverridesLegs,characterHair} from '/drifmaker-config.mjs?v=22';
+import {createShowroomAvatar} from '/showroom-avatar.js?v=41';
+import {characterCategories,characterDefaults,BODY_COLORS,BODY_STYLES,PORTRAIT_BACKGROUNDS,HEAD_SCALES,usesBaseHead,headAllowsEars,topOverridesLegs,characterHair} from '/drifmaker-config.mjs?v=23';
 import {configurePortraitCamera,PORTRAIT_COMPOSITION} from '/drifmaker-portrait.mjs?v=10';
 import {createDrifmakerEnvironment} from '/drifmaker-lighting.mjs?v=1';
 import {setPortraitSceneBackground} from '/drifmaker-background.mjs?v=4';

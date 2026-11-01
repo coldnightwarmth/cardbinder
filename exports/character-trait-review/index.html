@@ -1,17 +1,20 @@
-<!doctype html><html><head><meta charset="utf-8"><title>Character trait review</title><script type="importmap">{"imports":{"three":"/vendor/three.module.min.js?v=three-r165-min-1"}}</script><style>body{margin:0;background:#eee;font:13px system-ui;color:#222}header{padding:12px;display:flex;gap:8px;flex-wrap:wrap;position:sticky;top:0;background:white;z-index:1}button,select{font:inherit;padding:7px}main{min-width:1200px;display:grid;grid-template-columns:repeat(5,1fr);gap:4px}figure{margin:0;background:white;min-width:0}img{display:block;width:100%;height:auto}figcaption{padding:5px 10px}#status{padding:6px}</style></head><body><header><select id="category" aria-label="Category"></select><select id="species" aria-label="Character"><option value="drilady">Drilady</option><option value="drifella">Drifella</option></select><select id="angle" aria-label="View"><option value="portrait">Portrait</option><option value="front">Front</option><option value="back">Back</option><option value="side">Side</option><option value="pose">Salute</option></select><button id="checks">Run validation</button><button id="save">Save review grid</button><span id="status">Loading</span></header><main></main><script type="module">
+<!doctype html><html><head><meta charset="utf-8"><title>Character trait review</title><script type="importmap">{"imports":{"three":"/vendor/three.module.min.js?v=three-r165-min-1"}}</script><style>body{margin:0;background:#eee;font:13px system-ui;color:#222}header{padding:12px;display:flex;gap:8px;flex-wrap:wrap;position:sticky;top:0;background:white;z-index:1}button,select{font:inherit;padding:7px}main{min-width:1200px;display:grid;grid-template-columns:repeat(5,1fr);gap:4px}figure{margin:0;background:white;min-width:0}img{display:block;width:100%;height:auto}figcaption{padding:5px 10px}#status{padding:6px}</style></head><body><header><select id="category" aria-label="Category"></select><select id="species" aria-label="Character"><option value="drilady">Drilady</option><option value="drifella">Drifella</option></select><select id="angle" aria-label="View"><option value="portrait">Portrait</option><option value="front">Front</option><option value="back">Back</option><option value="side">Side</option><option value="pose">Salute</option></select><button id="checks">Run validation</button><button id="save">Save review grid</button><span id="status">Loading</span></header><main></main><script>addEventListener("error",e=>{document.querySelector("#status").textContent="FAILED: "+e.message});addEventListener("unhandledrejection",e=>{document.querySelector("#status").textContent="FAILED: "+e.reason});</script><script type="module">
 import * as THREE from 'three';
-import {createShowroomAvatar} from '/showroom-avatar.js?v=40';
+import {createShowroomAvatar} from '/showroom-avatar.js?v=41';
 import {CHARACTER_COLLECTION} from '/drifmaker-character-collection.mjs?v=1';
-import {DRILADY_DEFAULT_APPEARANCE,DEFAULT_APPEARANCE} from '/drifmaker-config.mjs?v=22';
+import {DRILADY_BUNNY_STUDY} from '/drilady-bunny-study.mjs?v=1';
+const bunnyStudy=new URLSearchParams(location.search).get('pack')==='bunny-study';
+import {DRILADY_DEFAULT_APPEARANCE,DEFAULT_APPEARANCE} from '/drifmaker-config.mjs?v=23';
 import {configurePortraitCamera,capturePortrait} from '/drifmaker-portrait.mjs?v=10';
 import {setPortraitSceneBackground} from '/drifmaker-background.mjs?v=4';
 import {setPortraitOverlay,renderPortraitScene} from '/drifmaker-portrait-art.mjs?v=3';
 import {POSES} from '/drifmaker-poses.mjs?v=5';
 import {createDrifmakerEnvironment} from '/drifmaker-lighting.mjs?v=1';
 const $=s=>document.querySelector(s),sel=$('#category'),view=$('#angle');
-const DRILADY_TRAITS=CHARACTER_COLLECTION.drilady;
-for(const key of [...Object.keys(DRILADY_TRAITS),"bodyStyle","background","overlay"]){const o=document.createElement('option');o.value=key;o.textContent=key;sel.append(o)}
-{const o=document.createElement('option');o.value='showcase';o.textContent='Mixed looks';sel.prepend(o)}
+const DRILADY_TRAITS=bunnyStudy?DRILADY_BUNNY_STUDY:CHARACTER_COLLECTION.drilady;
+if(bunnyStudy)$('#species').disabled=true;
+for(const key of [...Object.keys(DRILADY_TRAITS),...(bunnyStudy?[]:["bodyStyle","background","overlay"])]){const o=document.createElement('option');o.value=key;o.textContent=key;sel.append(o)}
+if(!bunnyStudy){const o=document.createElement('option');o.value='showcase';o.textContent='Mixed looks';sel.prepend(o)}
 sel.value=new URLSearchParams(location.search).get('category')||'head';
 const scene=new THREE.Scene();scene.background=new THREE.Color('#d4d7df');
 scene.add(new THREE.HemisphereLight(0xf7fcff,0x748b79,2.2));
@@ -20,23 +23,56 @@ const renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:tru
 const env=createDrifmakerEnvironment(renderer);scene.environment=env.texture;
 const camera=new THREE.OrthographicCamera();const avatar=await createShowroomAvatar({appearance:DRILADY_DEFAULT_APPEARANCE});scene.add(avatar.model);avatar.model.position.set(0,0,0);avatar.model.scale.setScalar(1);avatar.model.rotation.set(0,0,0);
 let generation=0;
-async function render(){const g=++generation;const category=sel.value;history.replaceState(null,'',`?category=${category}`);document.querySelector('main').replaceChildren();$('#status').textContent='Rendering';
-const species=$('#species').value,catalog=CHARACTER_COLLECTION[species],defaults=species==='drilady'?DRILADY_DEFAULT_APPEARANCE:DEFAULT_APPEARANCE;
+async function render(){const g=++generation;const category=sel.value;history.replaceState(null,'',`?category=${category}${bunnyStudy?'&pack=bunny-study':''}`);document.querySelector('main').replaceChildren();$('#status').textContent='Rendering';
+const species=$('#species').value,catalog=bunnyStudy?DRILADY_BUNNY_STUDY:CHARACTER_COLLECTION[species],defaults=species==='drilady'?DRILADY_DEFAULT_APPEARANCE:DEFAULT_APPEARANCE;
 const rows=category==='showcase'?catalog.shirt:catalog[category]||CHARACTER_COLLECTION[category];
 for(const [i,option] of rows.entries()){
  if(g!==generation)return;const look={...defaults,accessory:'none',[category]:option.id};
  if(category==='showcase'){for(const [key,options] of Object.entries(catalog))look[key]=options[(i+(key==='extra'?3:0))%20].id;if(i%2===0)look.hat='none';}
+ if(bunnyStudy){look.character='drilady';if(category==='head')look.ears='ladyrefalert';}
  await avatar.setAppearance(look);if(g!==generation)return;avatar.setPose(view.value==='pose'?'salute':'',{static:true});avatar.update(0,0,false);
  configurePortraitCamera(THREE,camera);avatar.model.rotation.y=0;
  if(view.value==='back'||view.value==='side'||view.value==='front'){
   camera.position.set(view.value==='side'?7:0,2.0,view.value==='back'?-7:7);camera.lookAt(0,1.70,0);camera.top=1.73;camera.bottom=-1.73;camera.left=-1.60;camera.right=1.60;camera.updateProjectionMatrix();
  }
  await setPortraitSceneBackground(THREE,scene,category==='background'?option.id:'#d4d7df');await setPortraitOverlay(THREE,scene,category==='overlay'?option.id:'none');
- renderPortraitScene(renderer,scene,camera);const img=new Image();img.src=renderer.domElement.toDataURL('image/png');img.alt=option.label;await img.decode();if(g!==generation)return;const fig=document.createElement('figure');fig.append(img);const cap=document.createElement('figcaption');cap.textContent=option.label;fig.append(cap);$('main').append(fig);
+ renderPortraitScene(renderer,scene,camera);const img=new Image();img.src=renderer.domElement.toDataURL('image/png');img.alt=option.label;await img.decode();if(g!==generation)return;const fig=document.createElement('figure');fig.append(img);const cap=document.createElement('figcaption');cap.textContent=option.label;fig.append(cap);if(bunnyStudy){const node=avatar.model.getObjectByName(`Drif_${category==='head'?'Hair':'Ears'}_${option.id}`);const box=new THREE.Box3().setFromObject(node,true);const limits=[];for(const x of [box.min.x,box.max.x])for(const y of [box.min.y,box.max.y])for(const z of [box.min.z,box.max.z])limits.push(new THREE.Vector3(x,y,z).project(camera).toArray());fig.dataset.bounds=JSON.stringify(limits);}
+ $('main').append(fig);
  await new Promise(r=>requestAnimationFrame(r));
 }$('#status').textContent=`${rows.length} / ${rows.length} rendered`;}
 sel.onchange=render;view.onchange=render;$('#species').onchange=render;$('#save').onclick=()=>{const canvas=document.createElement('canvas');canvas.width=1200;canvas.height=Math.ceil(document.querySelectorAll('figure').length/4)*354;const c=canvas.getContext('2d');c.fillStyle='#fff';c.fillRect(0,0,canvas.width,canvas.height);document.querySelectorAll('figure').forEach((f,i)=>{c.drawImage(f.querySelector('img'),i%4*300,Math.floor(i/4)*354,300,324);c.fillStyle='#222';c.font='14px sans-serif';c.fillText(f.textContent,i%4*300+8,Math.floor(i/4)*354+344)});const a=document.createElement('a');a.download=$('#species').value+'-'+sel.value+'-'+view.value+'.png';a.href=canvas.toDataURL();a.click();};
+async function validateBunny(){
+ ++generation;$('#checks').disabled=true;
+ const result={combinations:0,poseFrames:0,finishRenders:0,pngBytes:0,webglErrors:[]};
+ try{
+  avatar.model.rotation.y=0;configurePortraitCamera(THREE,camera);
+  for(const hair of DRILADY_BUNNY_STUDY.head)for(const ear of DRILADY_BUNNY_STUDY.ears){
+   await avatar.setAppearance({...DRILADY_DEFAULT_APPEARANCE,head:hair.id,ears:ear.id});
+   avatar.setPose('',{static:true});avatar.update(0,0,false);renderer.render(scene,camera);
+   for(const name of [`Drif_Hair_${hair.id}`,`Drif_Ears_${ear.id}`]){
+    const root=avatar.model.getObjectByName(name);if(!root?.visible)throw Error(`Missing part ${name}`);
+    let meshes=0;root.traverseVisible(n=>{if(n.isMesh){meshes++;if(!n.isSkinnedMesh)throw Error(`Unskinned ${n.name}`);}});
+    if(!meshes)throw Error(`No visible geometry ${name}`);
+   }
+   result.combinations++;
+  }
+  for(const [i,pose] of POSES.entries()){
+   await avatar.setAppearance({...DRILADY_DEFAULT_APPEARANCE,head:DRILADY_BUNNY_STUDY.head[i%5].id,ears:DRILADY_BUNNY_STUDY.ears[i%10].id});
+   for(const time of [0,.5,1,2]){avatar.setPose(pose.id,{time});avatar.update(0,0,false);renderer.render(scene,camera);avatar.model.traverse(n=>{if(!n.matrixWorld.elements.every(Number.isFinite))throw Error(`Invalid pose matrix ${n.name}`)});result.poseFrames++;}
+   await new Promise(requestAnimationFrame);
+  }
+  for(const bodyStyle of ['gold','silver','ghost','holographic','marble']){
+   await avatar.setAppearance({...DRILADY_DEFAULT_APPEARANCE,head:'ladyrefhoneybraids',ears:'ladyrefalert',bodyStyle});avatar.setPose('',{static:true});avatar.update(0,0,false);renderer.render(scene,camera);result.finishRenders++;
+  }
+  await avatar.setAppearance({...DRILADY_DEFAULT_APPEARANCE,head:'ladyrefhoneybraids',ears:'ladyrefalert'});
+  const blob=await capturePortrait({THREE,scene,camera,environmentFactory:createDrifmakerEnvironment});if(!blob?.size)throw Error('PNG export failed');result.pngBytes=blob.size;result.pngResolution='1200 × 1295';
+  const gl=renderer.getContext();let error;while((error=gl.getError())!==gl.NO_ERROR)result.webglErrors.push(error);
+  if(result.webglErrors.length||renderer.info.programs.some(p=>p.diagnostics?.runnable===false))throw Error('WebGL validation failed');
+  $('#status').textContent=JSON.stringify(result);
+ }catch(error){$('#status').textContent='FAILED: '+error.message;console.error(error)}finally{$('#checks').disabled=false}
+}
 $('#checks').onclick=async()=>{
+ if(bunnyStudy)return validateBunny();
  ++generation;$('#checks').disabled=true;const result={modeledParts:0,poseRenders:0,finishRenders:0,portraitLayers:0,pngBytes:0,webglErrors:[]};
  try{
   configurePortraitCamera(THREE,camera);await setPortraitSceneBackground(THREE,scene,'#d4d7df');await setPortraitOverlay(THREE,scene,'none');

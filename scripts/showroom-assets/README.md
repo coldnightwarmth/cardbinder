@@ -42,6 +42,20 @@ Each `*-collection-wave.blend` is a separate editable source. Its GLB has 240 sk
 
 The twelve procedural finishes, twelve baked backgrounds, and twelve transparent portrait overlays are shared across both characters. Grain is deterministic, baked into PNGs; finishes use rest-space shaders. `/exports/character-trait-review/` is a local review harness that renders all new parts, poses, finishes and portrait layers without reading or writing saved editor looks.
 
+## Drilady bunny reference study
+
+`drilady-bunny-study.mjs` adds ten independently sculpted ear pairs (six upright) and five hairstyles from the user-supplied `IMG_8017`, `IMG_8015`, `IMG_9763`, and `IMG_8016` cutouts. The ears have integrated cupped inner surfaces and rounded rims. Hairstyles retain the existing bunny face and use joined scalp volumes, real interwoven braid strands, and gathered fabric ties. No reference image is used as a texture.
+
+`assets/models/drilady/drilady-bunny-study.blend` is the editable source, with a fitting reference and the accepted 19-bone rig. Its 15-part GLB is a separate pack without duplicate animations; it rebinds to the base's existing 49 clips. Hair is selected through the Heads picker. All additions participate in rarity, randomization, bookmarks, and portrait exports.
+
+Rebuild in a fresh Blender file, or run the stages in `build_drilady_bunny_study.py` through the Blender bridge:
+
+```sh
+/Applications/Blender.app/Contents/MacOS/Blender --background --factory-startup --python-exit-code 1 --python scripts/showroom-assets/build_drilady_bunny_study.py
+```
+
+`/exports/character-trait-review/?pack=bunny-study&category=ears` provides portrait/front/side/back reviews and checks all 50 ear/hair combinations, animated poses, representative finishes, and PNG export without accessing editor storage. Regression tests also verify bind matrices, skin weights, stable multi-material names, species isolation, rarity, and bookmark round trips.
+
 ## Single-file portrait trait exports
 
 The local exporter renders every character-specific trait at 1200 × 1295 in the neutral portrait frame. Run `python3 tools/trait-layers/server.py` from the repository root, open `http://localhost:8768/exports/trait-layers/`, render the samples, then export both characters. This creates separate Drifella and Drilady folders in the current user's Downloads without overwriting an existing export.

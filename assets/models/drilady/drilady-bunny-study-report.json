@@ -1,0 +1,84 @@
+{
+  "parts": 15,
+  "bones": 19,
+  "ears": 10,
+  "uprightEars": 6,
+  "hair": 5,
+  "meshes": [
+    {
+      "name": "Drif_Ears_ladyrefalert",
+      "vertices": 3552,
+      "triangles": 7096
+    },
+    {
+      "name": "Drif_Ears_ladyrefvsplay",
+      "vertices": 3552,
+      "triangles": 7096
+    },
+    {
+      "name": "Drif_Ears_ladyreftulip",
+      "vertices": 3552,
+      "triangles": 7096
+    },
+    {
+      "name": "Drif_Ears_ladyrefperkfold",
+      "vertices": 3120,
+      "triangles": 6232
+    },
+    {
+      "name": "Drif_Ears_ladyrefbackswept",
+      "vertices": 3552,
+      "triangles": 7096
+    },
+    {
+      "name": "Drif_Ears_ladyreftipcurl",
+      "vertices": 3552,
+      "triangles": 7096
+    },
+    {
+      "name": "Drif_Ears_ladyrefclassiclop",
+      "vertices": 4416,
+      "triangles": 8824
+    },
+    {
+      "name": "Drif_Ears_ladyrefwinglop",
+      "vertices": 3552,
+      "triangles": 7096
+    },
+    {
+      "name": "Drif_Ears_ladyrefasymmetric",
+      "vertices": 3552,
+      "triangles": 7096
+    },
+    {
+      "name": "Drif_Ears_ladyrefforward",
+      "vertices": 3552,
+      "triangles": 7096
+    },
+    {
+      "name": "Drif_Hair_ladyrefcaramel",
+      "vertices": 18175,
+      "triangles": 36350
+    },
+    {
+      "name": "Drif_Hair_ladyrefhoneybraids",
+      "vertices": 26653,
+      "triangles": 53270
+    },
+    {
+      "name": "Drif_Hair_ladyrefsidebraid",
+      "vertices": 21459,
+      "triangles": 42902
+    },
+    {
+      "name": "Drif_Hair_ladyrefcurtains",
+      "vertices": 19869,
+      "triangles": 39734
+    },
+    {
+      "name": "Drif_Hair_ladyrefplumpony",
+      "vertices": 21621,
+      "triangles": 43224
+    }
+  ]
+}

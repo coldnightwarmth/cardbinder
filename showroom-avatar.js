@@ -1,15 +1,15 @@
 import * as THREE from 'three';
 import {GLTFLoader} from './vendor/GLTFLoader.js';
 import {mergeAvatarParts} from './showroom-avatar-parts.mjs?v=1';
-import {createAvatarAppearance} from './drifmaker-avatar.mjs?v=23';
+import {createAvatarAppearance} from './drifmaker-avatar.mjs?v=24';
 import {normalizePose,normalizePoseTime} from './drifmaker-poses.mjs?v=5';
-import {characterId,normalizeAppearance} from './drifmaker-config.mjs?v=22';
+import {characterId,normalizeAppearance} from './drifmaker-config.mjs?v=23';
 const assets=new Map();
 function asset(character='drifella'){
  if(!assets.has(character))assets.set(character,(async()=>{
   const loader=new GLTFLoader(),load=path=>loader.loadAsync(new URL(path,import.meta.url).href);
   const paths=character==='drilady'
-   ? ['./assets/models/drilady/drilady-base.glb?v=8','./assets/models/drilady/drilady-archive.glb?v=3','./assets/models/drilady/drilady-collection-wave.glb?v=2']
+   ? ['./assets/models/drilady/drilady-base.glb?v=8','./assets/models/drilady/drilady-archive.glb?v=3','./assets/models/drilady/drilady-collection-wave.glb?v=2','./assets/models/drilady/drilady-bunny-study.glb?v=1']
    : ['./assets/models/drifmaker/drifella-customizable.glb?v=16','./assets/models/drifmaker/drifella-collection-wave.glb?v=1'];
   const [base,...packs]=await Promise.all(paths.map(load));
   for(const pack of packs)mergeAvatarParts(base.scene,pack.scene);
